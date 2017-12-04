@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Girl Effect: Core authentication service'
-copyright = '2017, Altus Barry'
+copyright = '2017, Girl Effect'
 author = 'Altus Barry'
 
 # The version info for the project you're documenting, acts as replacement for
