@@ -1,11 +1,10 @@
 swagger: '2.0'
 
 schemes:
+  - https
   - http
 
 securityDefinitions:
-  basic:
-    type: basic
   APIKeyHeader:
     type: apiKey
     in: header
@@ -70,7 +69,7 @@ info:
   title: Authentication API
   version: ''
 
-# basePath: /api/v1
+basePath: /api/v1
 
 definitions:
   client:
@@ -408,7 +407,7 @@ parameters:
     type: string
     format: uuid
   user_id:
-    description: A unique integer value identifying the user.
+    description: A UUID value identifying the user.
     in: path
     name: user_id
     required: true
