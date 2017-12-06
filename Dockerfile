@@ -1,0 +1,2 @@
+FROM praekeltfoundation/django-bootstrap
+
