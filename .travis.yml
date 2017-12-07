@@ -1,12 +1,9 @@
-sudo: false
+sudo: required
 cache: pip
 language: python
 
 env:
   - TOXENV=django111
-
-services:
-  - redis-server
 
 install:
   - pip install tox
