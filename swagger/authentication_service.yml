@@ -4,11 +4,25 @@ schemes:
   - https
   - http
 
+info:
+  description: ''
+  title: Test
+  version: '1.0'
+
 securityDefinitions:
   APIKeyHeader:
     type: apiKey
     in: header
     name: X-API-Key
+
+  OAuth2:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: 'http://localhost:8000/openid/authorize'
+    tokenUrl: 'http:///localhost:8000/openid/token'
+    scopes:
+      roles: Grants access to user roles
+      site: Grants access to site-specific data
 
   client_secret:
     description: Session management by confidential clients.
@@ -422,6 +436,8 @@ paths:
       parameters:
         - $ref: '#/parameters/optional_offset'
         - $ref: '#/parameters/optional_limit'
+      produces:
+        - application/json
       responses:
         '200':
           description: ''
@@ -438,6 +454,8 @@ paths:
       - $ref: '#/parameters/client_id'
     get:
       operationId: client_read
+      produces:
+        - application/json
       responses:
         '200':
           description: ''
@@ -452,6 +470,8 @@ paths:
       parameters:
         - $ref: '#/parameters/optional_offset'
         - $ref: '#/parameters/optional_limit'
+      produces:
+        - application/json
       responses:
         '200':
           description: ''
@@ -474,6 +494,8 @@ paths:
         - oidc_provider
     get:
       operationId: user_read
+      produces:
+        - application/json
       responses:
         '200':
           description: ''
@@ -491,6 +513,8 @@ paths:
           name: data
           schema:
             $ref: '#/definitions/user'
+      produces:
+        - application/json
       responses:
         '200':
           description: ''
@@ -685,6 +709,8 @@ paths:
                 type: string
             required:
               - client_id
+      produces:
+        - application/json
       responses:
         '200':
           $ref: '#/responses/Token'
@@ -709,6 +735,8 @@ paths:
          See also:
          - [OIDC UserInfo endpoint](http://openid.net/specs/openid-connect-core-1_0.html#UserInfo)
       operationId: userInfo
+      produces:
+        - application/json
       responses:
         '200':
           $ref: '#/responses/UserInfo'
