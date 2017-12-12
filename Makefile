@@ -62,7 +62,8 @@ prism:
 	curl -L https://github.com/stoplightio/prism/releases/download/v0.6.21/prism_linux_amd64 -o prism
 	chmod +x prism
 
-
 mock-authentication-service-api: prism
 	./prism run --mockDynamic --list -s swagger/authentication_service.yml -p 8010
 
+validate-swagger: prism
+	./prism validate -s swagger/authentication_service.yml && echo "The Swagger spec contains no errors"
