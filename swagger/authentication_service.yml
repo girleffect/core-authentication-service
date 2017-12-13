@@ -5,8 +5,13 @@ schemes:
   - http
 
 info:
-  description: ''
-  title: Test
+  title: Authentication Service API
+  description: >
+    This is the API that will be exposed by the Authentication Service.
+
+
+    The Authentication service facilitates user registration and login via web-based flows as defined for the
+    OpenID Connect specification.
   version: '1.0'
 
 securityDefinitions:
@@ -77,11 +82,6 @@ security:
   - APIKeyHeader: []
 
 host: 'localhost:8000'
-
-info:
-  description: ''
-  title: Authentication API
-  version: ''
 
 basePath: /api/v1
 
@@ -419,6 +419,15 @@ parameters:
     type: integer
     default: 0
     minimum: 0
+#  optional_filter:
+#    description: An optional filter of the form "field_name:value".
+#    name: filter
+#    in: query
+#    required: false
+#    type: array
+#    items:
+#      type: string
+#      pattern: '[a-z_]:.+'
   client_id:
     description: A UUID value identifying the client
     in: path
@@ -476,6 +485,12 @@ paths:
       parameters:
         - $ref: '#/parameters/optional_offset'
         - $ref: '#/parameters/optional_limit'
+        - name: email
+          description: An optional email filter
+          in: query
+          required: false
+          type: string
+          format: email
       produces:
         - application/json
       responses:
