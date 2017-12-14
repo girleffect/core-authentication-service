@@ -106,3 +106,7 @@ ve/
 
 # mypy
 .mypy_cache/
+
+# Prism mocking tool
+prism
+
