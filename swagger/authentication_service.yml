@@ -177,11 +177,67 @@ definitions:
         description: ''
         type: string
         readOnly: true
+      email_verified:
+        type: boolean
+      msisdn_verified:
+        type: boolean
+      msisdn:
+        type: string
+        maxLength: 15
+      gender:
+        type: string
+      birth_date:
+        type: string
+        format: date
+      avatar:
+        type: string
+        format: uri
+      country_code:
+        type: string
+        maxLength: 2
     required:
       - id
       - username
       - is_active
       - date_joined
+
+  user_update:
+    type: object
+    properties:
+      first_name:
+        description: ''
+        type: string
+      last_name:
+        description: ''
+        type: string
+      email:
+        description: ''
+        type: string
+        format: email
+      is_active:
+        description: >-
+          Designates whether this user should be treated as active.
+          Deselect this instead of deleting accounts.
+        type: boolean
+      email_verified:
+        type: boolean
+      msisdn_verified:
+        type: boolean
+      msisdn:
+        type: string
+        maxLength: 15
+      gender:
+        type: string
+      birth_date:
+        type: string
+        format: date
+      avatar:
+        type: string
+        format: uri
+      country_code:
+        type: string
+        maxLength: 2
+    minProperties: 1
 
   Token:
     description: |
@@ -211,6 +267,7 @@ definitions:
       scope:
         description: The scope of the granted tokens.
         type: string
+
   OAuth2Error:
     description: |
       Error Response defined as in Section 5.2 of OAuth 2.0 [RFC6749].
@@ -221,6 +278,7 @@ definitions:
         type: string
       error_description:
         type: string
+
   ProblemDetail:
     description: |
       HTTP Problem Detail
@@ -244,6 +302,7 @@ definitions:
         description: >
           Human-readable explanation specific to this occurrence of the
           problem.
+
   Session:
     description: Session object
     properties:
@@ -319,6 +378,7 @@ definitions:
         type: array
         items:
           type: string
+
   UserInfo:
     description: OIDC UserInfo structure
     required:
@@ -342,6 +402,7 @@ definitions:
         type: boolean
       address:
         $ref: '#/definitions/Address'
+
   Address:
     description: OIDC Address structure
     properties:
@@ -355,6 +416,7 @@ definitions:
         type: string
       country:
         type: string
+
   Client:
     description: Client object
     required:
@@ -442,7 +504,6 @@ parameters:
     required: true
     type: string
     format: uuid
-
 
 paths:
   /clients/:
@@ -533,7 +594,7 @@ paths:
         - in: body
           name: data
           schema:
-            $ref: '#/definitions/user'
+            $ref: '#/definitions/user_update'
       produces:
         - application/json
       responses:
