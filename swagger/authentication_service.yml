@@ -10,7 +10,7 @@ info:
     This is the API that will be exposed by the Authentication Service.
 
 
-    The Authentication service facilitates user registration and login via web-based flows as defined for the
+    The Authentication Service facilitates user registration and login via web-based flows as defined for the
     OpenID Connect specification.
   version: '1.0'
 
