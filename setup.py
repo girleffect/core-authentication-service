@@ -1,10 +1,12 @@
 from setuptools import setup, find_packages
 
+LONG_DESCRIPTION_FILES = ["README.rst", "AUTHORS.rst", "CHANGELOG.rst"]
+
 setup(
     name="core-authentication-service",
     version="0.0.1",
     description="Girl Effect Core Authentication Service",
-    long_description=open("README.rst", "r").read() + open("AUTHORS.rst", "r").read() + open("CHANGELOG.rst", "r").read(),
+    long_description="".join(open(filename, "r").read() for filename in LONG_DESCRIPTION_FILES),
     author="Praekelt Consulting",
     author_email="dev@praekelt.com",
     license="BSD",

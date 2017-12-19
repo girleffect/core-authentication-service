@@ -1,6 +1,7 @@
 VENV=./ve
 PYTHON=$(VENV)/bin/python
 PIP=$(VENV)/bin/pip
+FLAKE8=$(VENV)/bin/flake8
 
 # Colours.
 CLEAR=\033[0m
@@ -9,6 +10,7 @@ GREEN=\033[0;32m
 CYAN=\033[0;36m
 
 .SILENT: docs-build
+.PHONY: check
 
 help:
 	@echo "usage: make <target>"
@@ -67,3 +69,9 @@ mock-authentication-service-api: prism
 
 validate-swagger: prism
 	@./prism validate -s swagger/authentication_service.yml && echo "The Swagger spec contains no errors"
+
+$(FLAKE8): $(VENV)
+	$(PIP) install flake8
+
+check: $(FLAKE8)
+	$(FLAKE8)
