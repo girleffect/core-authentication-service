@@ -2,6 +2,8 @@ from django.core.urlresolvers import reverse_lazy
 from project.settings_base import *
 
 
+SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
+
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
@@ -15,6 +17,7 @@ DATABASES = {
 }
 
 INSTALLED_APPS = list(INSTALLED_APPS)
+
 ADDITIONAL_APPS = [
     # Open ID prodiver.
     "oidc_provider",
