@@ -1,4 +1,3 @@
-# TODO See if this is needed, settings might need to move so as to not end up with relative path imports.
 """
 WSGI config for core_authentication_service project.
 
