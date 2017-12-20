@@ -15,9 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from two_factor.urls import urlpatterns as two_factor_patterns
 
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
-    url(r"two-factor-auth", include("two_factor.urls", namespace="two_factor_auth")),
+    url(r"^two-factor-auth", include(two_factor_patterns, namespace="two_factor_auth")),
 ]
