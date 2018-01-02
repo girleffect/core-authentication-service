@@ -1,11 +1,19 @@
-FROM praekeltfoundation/django-bootstrap
+FROM praekeltfoundation/python-base:3.6
 
-COPY authentication_service/ /app
-RUN pip install -e .
+ARG EXTRA_DEPS
 
-ENV DJANGO_SETTINGS_MODULE authentication_service.settings
-ENV CELERY_APP authentication_service
+ENV DJANGO_SETTINGS_MODULE=project.settings
 
-RUN django-admin collectstatic --noinput
+RUN apt-get update && apt-get install -y gcc $EXTRA_DEPS
 
-CMD ["authentication_service.wsgi:application"]
+WORKDIR /app/
+
+COPY ./requirements /app/requirements
+
+RUN pip install -r requirements/requirements.txt
+
+COPY . /app/
+
+RUN chmod -R +x /app/scripts/
+
+EXPOSE 8000
