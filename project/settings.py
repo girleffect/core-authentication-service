@@ -18,6 +18,9 @@ DATABASES = {
 
 INSTALLED_APPS = list(INSTALLED_APPS)
 
+ALLOWED_HOSTS = [os.environ.get("ALLOWED_HOSTS")]
+
+
 ADDITIONAL_APPS = [
     # Open ID prodiver.
     "oidc_provider",
