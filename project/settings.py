@@ -39,6 +39,7 @@ INSTALLED_APPS = ["core_authentication_service"] + INSTALLED_APPS + ADDITIONAL_A
 # arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("two_factor_auth:login")
 
+OIDC_USERINFO = "core_authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "core_authentication_service.oidc_provider_settings.CustomScopeClaims"
 
