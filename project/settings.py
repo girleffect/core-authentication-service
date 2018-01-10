@@ -35,3 +35,6 @@ INSTALLED_APPS = ["core_authentication_service"] + INSTALLED_APPS + ADDITIONAL_A
 # Only change this once custom login flow has been decided on and the need
 # arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("two_factor_auth:login")
+
+OIDC_EXTRA_SCOPE_CLAIMS = \
+    "core_authentication_service.oidc_provider_settings.CustomScopeClaims"
