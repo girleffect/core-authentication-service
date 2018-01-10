@@ -27,7 +27,7 @@ urlpatterns = [
     url(r"^two-factor-auth", include(two_factor_patterns, namespace="two_factor_auth")),
     # Registration URLs
     url(
-        r"^registration/(?P<security>.+)/$",
+        r"^registration/$",
         views.RegistrationView.as_view(),
         name="registration"
     ),

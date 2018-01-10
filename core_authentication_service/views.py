@@ -7,3 +7,4 @@ class RegistrationView(CreateView):
     template_name = "core_authentication_service/registration.html"
     model = get_user_model()
     form_class = UserCreationForm
+    success_url = "/"
