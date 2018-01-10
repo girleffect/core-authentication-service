@@ -32,11 +32,8 @@ ADDITIONAL_APPS = [
 # Project app has to be first in the list.
 INSTALLED_APPS = ["core_authentication_service"] + INSTALLED_APPS + ADDITIONAL_APPS
 
-MIDDLEWARE = MIDDLEWARE + ["django_otp.middleware.OTPMiddleware"]
+MIDDLEWARE += ["django_otp.middleware.OTPMiddleware"]
 
 # Only change this once custom login flow has been decided on and the need
 # arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("two_factor_auth:login")
-
-MAX_ATTEMPTS = 3
-ATTEMPT_WINDOW = 60
