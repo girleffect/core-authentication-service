@@ -94,7 +94,7 @@ class LoginView(IdempotentSessionWizardView):
             context["device"] = default_device(self.get_user())
             try:
                 context["backup_tokens"] = self.get_user().staticdevice_set.get(
-                    name="backup".token_set.count())
+                    name="backup").token_set.count()
             except StaticDevice.DoesNotExist:
                 context["backup_tokens"] = 0
         return context
