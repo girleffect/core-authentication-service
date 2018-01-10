@@ -13,7 +13,7 @@ from two_factor import signals
 from two_factor.models import PhoneDevice
 from two_factor.utils import default_device
 from two_factor.views.utils import IdempotentSessionWizardView
-from two_factor.forms import AuthenticationTokenForm
+from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
 
 from core_authentication_service import forms
 
@@ -29,22 +29,30 @@ class LoginView(IdempotentSessionWizardView):
     template_name = "core-authentication-service/login.html"
     form_list = (
         ("credentials", forms.LoginForm),
-        ("token", AuthenticationTokenForm)
+        ("token", AuthenticationTokenForm),
+        ("backup", BackupTokenForm),
     )
     idempotent_dict = {
         "token": False,
+        "backup": False,
     }
 
     def has_token_step(self):
         return default_device(self.get_user())
 
+    def has_backup_step(self):
+        return default_device(self.get_user()) and \
+               "token" not in self.storage.validated_step_data
+
     condition_dict = {
         "token": has_token_step,
+        "backup": has_backup_step,
     }
 
     def __init__(self, **kwargs):
         super(LoginView, self).__init__(**kwargs)
         self.user_cache = None
+        self.device_cache = None
 
     def done(self, form_list, **kwargs):
         login(self.request, self.get_user())
@@ -67,12 +75,23 @@ class LoginView(IdempotentSessionWizardView):
             return {
                 "request": self.request
             }
-        if step == "token":
+        if step in ("token", "backup"):
             return {
                 "user": self.get_user(),
                 "initial_device": default_device(self.get_user())
             }
         return {}
+
+    def get_device(self, step=None):
+        if not self.device_cache:
+            self.device_cache = default_device(self.get_user())
+        if step == "backup":
+            try:
+                self.device_cache = self.get_user().staticdevice_set.get(
+                    name="backup")
+            except StaticDevice.DoesNotExist:
+                pass
+        return self.device_cache
 
     def render(self, form=None, **kwargs):
         if self.steps.current == "token":

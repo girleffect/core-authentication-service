@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block content %}
     <form method="post">
@@ -6,5 +7,12 @@
         {{ wizard.management_form }}
         {{ form.as_p }}
         <button type="submit">Login</button>
+
+        {% if backup_tokens %}
+            <p>{% trans "As a last resort, you can use a backup token:" %}</p>
+            <p>
+                <button name="wizard_goto_step" type="submit" value="backup" class="btn btn-default btn-block">{% trans "Use Backup Token" %}</button>
+            </p>
+        {% endif %}
     </form>
 {% endblock %}
