@@ -27,6 +27,9 @@ ADDITIONAL_APPS = [
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "two_factor",
+
+    # Form helpers
+    "form_renderers",
 ]
 
 # Project app has to be first in the list.
@@ -39,6 +42,8 @@ LOGIN_URL = reverse_lazy("two_factor_auth:login")
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "core_authentication_service.oidc_provider_settings.CustomScopeClaims"
 
+FORM_RENDERERS = {"replace-as-p": True, "replace-as-table": True}
+FORM_RENDERERS = {"enable-bem-classes": True}
 
 # Attempt to import local settings if present.
 try:
