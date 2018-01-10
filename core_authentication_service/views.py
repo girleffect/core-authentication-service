@@ -77,7 +77,7 @@ class LoginView(IdempotentSessionWizardView):
         if step in ("token", "backup"):
             return {
                 "user": self.get_user(),
-                "initial_device": default_device(self.get_user())
+                "initial_device": self.get_device(step)
             }
         return {}
 
@@ -105,7 +105,7 @@ class LoginView(IdempotentSessionWizardView):
     def get_context_data(self, form, **kwargs):
         context = super(LoginView, self).get_context_data(form, **kwargs)
         if self.steps.current == "token":
-            context["device"] = default_device(self.get_user())
+            context["device"] = self.get_device()
             try:
                 context["backup_tokens"] = self.get_user().staticdevice_set.get(
                     name="backup").token_set.count()
