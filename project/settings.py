@@ -38,3 +38,10 @@ LOGIN_URL = reverse_lazy("two_factor_auth:login")
 
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "core_authentication_service.oidc_provider_settings.CustomScopeClaims"
+
+
+# Attempt to import local settings if present.
+try:
+    from project.settings_local import *
+except ImportError:
+    raise
