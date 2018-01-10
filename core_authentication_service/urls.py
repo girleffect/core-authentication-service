@@ -24,5 +24,7 @@ urlpatterns = [
     url(r"^admin/", admin.site.urls),
     url(r"^login/", LoginView.as_view(), name="login"),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
-    url(r"^two-factor-auth", include(two_factor_patterns, namespace="two_factor_auth")),
+    url(r"^two-factor-auth/",
+        include(two_factor_patterns, namespace="two_factor_auth")
+    ),
 ]

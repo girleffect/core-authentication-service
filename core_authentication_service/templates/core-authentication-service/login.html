@@ -3,6 +3,7 @@
 {% block content %}
     <form method="post">
         {% csrf_token %}
+        {{ wizard.management_form }}
         {{ form.as_p }}
         <button type="submit">Login</button>
     </form>
