@@ -4,7 +4,6 @@ from django.utils.timezone import now
 from django.views.generic.edit import FormView
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
-from django.conf import settings
 
 from core_authentication_service import forms
 
@@ -14,17 +13,6 @@ class LoginView(FormView):
     template_name = "core-authentication-service/login.html"
 
     def form_valid(self, form):
-        # If attempts does not exist, set to 0
-        if "attempts" not in self.request.session:
-            self.request.session["attempts"] = 0
-        self.request.session["attempts"] = self.request.session["attempts"] + 1
-
-        if self.request.session["attempts"] > settings.MAX_ATTEMPTS:
-            self.request.session["last_attempt"] = now().timestamp()
-            form.add_error(None, ValueError(
-                _("Too many failed attempts. Please try again later.")))
-            return super(LoginView, self).form_invalid(form)
-
         if form.is_valid():
             username = form.cleaned_data["username"]
             # Form is invalid if the user does not exist. Skip the rest of the
