@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
+from core_authentication_service.utils import update_form_fields
 
 class RegistrationForm(UserCreationForm):
 
@@ -17,6 +18,8 @@ class RegistrationForm(UserCreationForm):
         self.security = security
         # TODO Remove help text if not high security.
         super(RegistrationForm, self).__init__(*args, **kwargs)
+        if self.security == "high":
+            update_form_fields(self, required=["email"])
 
     def clean_password2(self):
         # Short circuit normal validation if not high security.

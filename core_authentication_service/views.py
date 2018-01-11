@@ -16,8 +16,10 @@ class RegistrationView(CreateView):
         if isinstance(security, str):
             kwargs["security"] = security.lower()
         return kwargs
+
     # TODO:
     #   - Split high and none security requirements.
+    #   - Add extra password validator for high security, in settings. upper, lower, digit and special check.
     #   - Handle required field querystring value.
     #   - Security question formset on registration.
     #   - Add 2FA to flow.
