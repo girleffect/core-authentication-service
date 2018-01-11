@@ -5,33 +5,28 @@ from oidc_provider.lib.claims import ScopeClaims
 
 USER_MODEL = get_user_model()
 
-'''
 # Claims that map to None are known, but have no value we can set.
 # Claims for which the resulting function returns None will be automatically
 # omitted from the response.
 CLAIMS_MAP = {
     "address": None,
-    "birthdate": lambda user: user.extra_data.birth_date,
+    "birthdate": lambda user: user.birth_date,
     "email": lambda user: user.email,
-    "email_verified": lambda user: user.extra_data.email_verified if
+    "email_verified": lambda user: user.email_verified if
         user.email else None,
     "family_name": lambda user: user.last_name,
-    "gender": lambda user: user.extra_data.gender,
+    "gender": lambda user: user.gender,
     "given_name": lambda user: user.first_name,
-    "locale": lambda user: user.extra_data.country.name if
-        user.extra_data.country else None,
-    # TODO: Using country for locale technically correct. Just using as an
-    # example for now.
-    "middle_name": lambda user: None,
-    "name": lambda user: "{0} {1}".format(user.first_name, user.last_name),
+    "locale": lambda user: None #TODO Add FK and make use of that.
+    "name": lambda user: "%s %s" % (user.first_name, user.last_name),
     "nickname": lambda user: user.username,
-    "phone_number": lambda user: user.extra_data.msisdn,
-    "phone_number_verified": lambda user: user.extra_data.msisdn_verified if
-        user.extra_data.msisdn else None,
-    "picture": lambda user: user.extra_data.avatar,
+    "phone_number": lambda user: user.msisdn,
+    "phone_number_verified": lambda user: user.msisdn_verified if
+        user.msisdn else None,
+    "picture": lambda user: user.avatar,
     "preferred_username": lambda user: None,
     "profile": lambda user: None,
-    "updated_at": lambda user: None,  # TODO: Add to user model
+    "updated_at": lambda user: user.updated_at,
     "website": lambda user: None,
     "zoneinfo": lambda user: None,
 }
@@ -58,7 +53,6 @@ def userinfo(claims: dict, user: USER_MODEL) -> dict:
 
     LOGGER.debug("Userinfo request for {}: Response: {}".format(user, claims))
     return claims
-'''
 
 class CustomScopeClaims(ScopeClaims):
     info_roles = (

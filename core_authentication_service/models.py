@@ -15,3 +15,4 @@ class CoreUser(AbstractUser):
     avatar = models.ImageField(blank=True, null=True)
     is_employee = models.BooleanField(default=False)
     is_system_user = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)

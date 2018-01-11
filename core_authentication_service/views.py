@@ -11,7 +11,6 @@ class RegistrationView(CreateView):
     success_url = "/"
 
     # TODO:
-    #   - Confirm base required fields, model and project wise.
     #   - Add GE user model with extra fields, update oidc default claims as needed.
     #   - Add security question models, multi language questions.
     #   - Logic for msisdn and email required.
