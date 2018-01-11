@@ -20,7 +20,7 @@ CLAIMS_MAP = {
     "family_name": lambda user: user.last_name,
     "gender": lambda user: user.gender,
     "given_name": lambda user: user.first_name,
-    "locale": lambda user: user.country_set.first().code if
+    "locale": lambda user: user.country.code if
         user.country else None,
     "name": lambda user: "%s %s" % (user.first_name, user.last_name),
     "nickname": lambda user: user.username,

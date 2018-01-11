@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from core_authentication_service.models import CoreUser, Country
+from core_authentication_service import models
 
-@admin.register(CoreUser)
+@admin.register(models.CoreUser)
 class CoreUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ("Extra data",
@@ -13,4 +13,7 @@ class CoreUserAdmin(UserAdmin):
         ),
     )
 
-admin.site.register(Country, admin.ModelAdmin)
+admin.site.register(models.Country, admin.ModelAdmin)
+admin.site.register(models.UserSecurityQuestion, admin.ModelAdmin)
+admin.site.register(models.SecurityQuestion, admin.ModelAdmin)
+admin.site.register(models.QuestionLaguageText, admin.ModelAdmin)

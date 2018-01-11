@@ -2,6 +2,7 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.exceptions import ValidationError
 
 
 # NOTE: Changing AUTH_USER_MODEL will cause migration 0001 from otp_totp to
@@ -27,3 +28,41 @@ class Country(models.Model):
 
     class Meta:
         verbose_name_plural = "Countries"
+
+    def __str__(self):
+        return "%s - %s" % (self.code, self.name)
+
+
+class UserSecurityQuestion(models.Model):
+    user = models.ForeignKey("CoreUser", blank=True, null=True)
+    answer = models.TextField(blank=True, null=True)
+    language_code = models.CharField(blank=True, null=True, max_length=3)
+    question = models.ForeignKey("SecurityQuestion", blank=True, null=True)
+
+    def __str__(self):
+        return "%s - %s" % (self.language_code, self.question.slug)
+
+
+# TODO Using a model like this seems wrong.
+class SecurityQuestion(models.Model):
+    slug = models.SlugField()
+
+    def __str__(self):
+        return self.slug
+
+
+class QuestionLaguageText(models.Model):
+    language_code = models.CharField(blank=True, null=True, max_length=3)
+    question = models.ForeignKey("SecurityQuestion", blank=True, null=True, on_delete=models.CASCADE)
+    question_text = models.TextField()
+
+    def validate_unique(self, *args, **kwargs):
+        super(QuestionLaguageText, self).validate_unique(*args, **kwargs)
+        if QuestionLaguageText.objects.filter(
+                question__slug=self.question.slug,
+                language_code=self.language_code
+                ).count() > 0:
+            raise ValidationError("Question text can not be reused between questions.")
+
+    def __str__(self):
+        return "%s - %s" % (self.language_code, self.question.slug)
