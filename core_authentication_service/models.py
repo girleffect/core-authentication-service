@@ -11,8 +11,16 @@ class CoreUser(AbstractUser):
     msisdn_verified = models.BooleanField(default=False)
     gender = models.IntegerField(blank=True, null=True)
     birth_date = models.DateTimeField(blank=True, null=True)
-    country_code = models.CharField(blank=True, null=True, max_length=2)
+    country = models.ForeignKey("Country", blank=True, null=True)
     avatar = models.ImageField(blank=True, null=True)
     is_employee = models.BooleanField(default=False)
     is_system_user = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class Country(models.Model):
+    code = models.CharField(blank=True, null=True, max_length=2)
+    name = models.CharField(blank=True, null=True, max_length=100)
+
+    class Meta:
+        verbose_name_plural = "Countries"

@@ -7,5 +7,5 @@ class RegistrationForm(UserCreationForm):
         model = get_user_model()
         fields = [
             "username", "first_name", "last_name", "email",
-            "nickname", "msisd", "birth_date", "country_code", "avatar"
+            "nickname", "msisd", "birth_date", "country", "avatar"
         ]

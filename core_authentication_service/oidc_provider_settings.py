@@ -1,7 +1,10 @@
 import logging
 
 from django.utils.translation import ugettext as _
+from django.contrib.auth import get_user_model
+
 from oidc_provider.lib.claims import ScopeClaims
+
 
 USER_MODEL = get_user_model()
 
@@ -17,7 +20,8 @@ CLAIMS_MAP = {
     "family_name": lambda user: user.last_name,
     "gender": lambda user: user.gender,
     "given_name": lambda user: user.first_name,
-    "locale": lambda user: None #TODO Add FK and make use of that.
+    "locale": lambda user: user.country_set.first().code if
+        user.country else None,
     "name": lambda user: "%s %s" % (user.first_name, user.last_name),
     "nickname": lambda user: user.username,
     "phone_number": lambda user: user.msisdn,

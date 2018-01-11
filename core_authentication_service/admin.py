@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from core_authentication_service.models import CoreUser
+from core_authentication_service.models import CoreUser, Country
 
 @admin.register(CoreUser)
 class CoreUserAdmin(UserAdmin):
@@ -12,3 +12,5 @@ class CoreUserAdmin(UserAdmin):
             )}
         ),
     )
+
+admin.site.register(Country, admin.ModelAdmin)
