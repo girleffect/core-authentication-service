@@ -6,6 +6,12 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m
 
 AUTH_USER_MODEL = "core_authentication_service.CoreUser"
 
+AUTH_PASSWORD_VALIDATORS = AUTH_PASSWORD_VALIDATORS + [
+    {
+        "NAME": "core_authentication_service.password_validation.DiversityValidator",
+    },
+]
+
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
