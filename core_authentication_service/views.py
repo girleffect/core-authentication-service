@@ -10,6 +10,12 @@ class RegistrationView(CreateView):
     form_class = forms.RegistrationForm
     success_url = "/"
 
+    def get_form_kwargs(self):
+        kwargs = super(RegistrationView, self).get_form_kwargs()
+        security = self.request.GET.get("security")
+        if isinstance(security, str):
+            kwargs["security"] = security.lower()
+        return kwargs
     # TODO:
     #   - Split high and none security requirements.
     #   - Handle required field querystring value.
