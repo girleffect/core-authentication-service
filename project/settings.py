@@ -4,6 +4,8 @@ from project.settings_base import *
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
 
+AUTH_USER_MODEL = "core_authentication_service.CoreUser"
+
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
