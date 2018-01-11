@@ -11,10 +11,9 @@ class RegistrationView(CreateView):
     success_url = "/"
 
     # TODO:
-    #   - Add security question models, multi language questions.
-    #   - Logic for msisdn and email required.
     #   - Split high and none security requirements.
     #   - Handle required field querystring value.
+    #   - Security question formset on registration.
     #   - Add 2FA to flow.
     #   - Handle theme querystring value, will need to effect 2FA templates as well.
     #   - Make it optional, but enforce able as required.
