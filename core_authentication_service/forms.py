@@ -20,6 +20,15 @@ class RegistrationForm(UserCreationForm):
         super(RegistrationForm, self).__init__(*args, **kwargs)
         if self.security == "high":
             update_form_fields(self, required=["email"])
+        else:
+            data = {
+                "password1": {
+                    "attributes": {
+                        "help_text": ""
+                    }
+                }
+            }
+            update_form_fields(self, fields_data=data)
 
     def clean_password2(self):
         # Short circuit normal validation if not high security.
@@ -34,7 +43,10 @@ class RegistrationForm(UserCreationForm):
                 code='password_mismatch',
             )
         self.instance.username = self.cleaned_data.get('username')
-        if not len(password1) > 4 and not len(password2) > 4:
+
+        # NOTE: Min length might need to be defined somewhere easier to change.
+        # Setting doesn't feel 100% right though.
+        if not len(password1) > 3 and not len(password2) > 3:
             raise forms.ValidationError(
                 "Password not long enough."
             )
