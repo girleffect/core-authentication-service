@@ -120,6 +120,9 @@ class SecurityQuestionForm(forms.Form):
 
         super(SecurityQuestionForm, self).__init__(*args, **kwargs)
         self.fields["question"].queryset = questions
+
+        # Choice tuple can't be directly updated. Update only the widget choice
+        # text, value is used for validation and saving.
         updated_choices = []
         for choice in self.fields["question"].widget.choices:
             choice = list(choice)
@@ -128,8 +131,13 @@ class SecurityQuestionForm(forms.Form):
                 text = questions.get(
                     id=choice[0]).questionlanguagetext_set.filter(
                     language_code="GE").first()
+
+                # If there is not language specific text available, default to
+                # original.
                 choice[1] = text.question_text if text else choice[1]
             updated_choices.append(tuple(choice))
+
+        # Replace choices with new set.
         self.fields["question"].widget.choices = updated_choices
 
 

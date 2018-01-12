@@ -54,7 +54,9 @@ class SecurityQuestion(models.Model):
 
 class QuestionLanguageText(models.Model):
     language_code = models.CharField(max_length=3)
-    question = models.ForeignKey("SecurityQuestion", blank=True, null=True, on_delete=models.CASCADE)
+    question = models.ForeignKey(
+        "SecurityQuestion", blank=True, null=True, on_delete=models.CASCADE
+    )
     question_text = models.TextField()
 
     def validate_unique(self, *args, **kwargs):
