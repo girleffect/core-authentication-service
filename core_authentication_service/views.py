@@ -15,11 +15,13 @@ class RegistrationView(CreateView):
         security = self.request.GET.get("security")
         if isinstance(security, str):
             kwargs["security"] = security.lower()
+
+        required = self.request.GET.getlist("requires")
+        if required:
+            kwargs["required"] = required
         return kwargs
 
     # TODO:
-    #   - Add extra password validator for high security, in settings. upper, lower, digit and special check.
-    #   - Handle required field querystring value.
     #   - Security question formset on registration.
     #   - Add 2FA to flow.
     #   - Handle theme querystring value, will need to effect 2FA templates as well.

@@ -19,7 +19,6 @@ def update_form_fields(form, required=[], validators={}, fields_data={}):
     Helper method for setting field and widget atrributes, can
     be used for any form instance. Sets attributes on both fields and widgets.
     """
-
     # For the event where required is all that needs to be toggled, a list will
     # suffice.
     for field in required:
@@ -32,7 +31,6 @@ def update_form_fields(form, required=[], validators={}, fields_data={}):
 
     # Update field and widget attributes.
     for field, data in fields_data.items():
-
         if data.get("attributes", None):
             widget = form.fields[field].widget
             field = form.fields[field]

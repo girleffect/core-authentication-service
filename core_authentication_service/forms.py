@@ -1,9 +1,21 @@
+import logging
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
 from core_authentication_service.utils import update_form_fields
+
+
+LOGGER = logging.getLogger(__name__)
+
+
+REQUIREMENT_DEFINITION = {
+    "names": ["username", "first_name", "last_name", "nickname"],
+    "picture": ["avatar"]
+}
+
 
 class RegistrationForm(UserCreationForm):
 
@@ -14,21 +26,47 @@ class RegistrationForm(UserCreationForm):
             "nickname", "msisdn", "birth_date", "country", "avatar"
         ]
 
-    def __init__(self, security=None, *args, **kwargs):
+    def __init__(self, security=None, required=[],*args, **kwargs):
+        # Security value is required later in form processes as well.
         self.security = security
-        # TODO Remove help text if not high security.
+
+        # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
+
+        # Set update form update variables, for manipulation as init
+        # progresses.
+        required_fields = []
+        fields_data = {}
+        if required:
+            for field in required:
+                required_fields += REQUIREMENT_DEFINITION.get(field, [field])
+
+        # Security level needs some additions before the form is rendered.
         if self.security == "high":
-            update_form_fields(self, required=["email"])
+            required_fields += ["email"]
         else:
-            data = {
+            fields_data = {
                 "password1": {
                     "attributes": {
                         "help_text": ""
                     }
                 }
             }
-            update_form_fields(self, fields_data=data)
+
+        incorrect_fields = set(required_fields) - set(self.fields.keys())
+        for field in incorrect_fields:
+            LOGGER.warning(
+                "Received field to alter that is not on form: %s" % field
+            )
+            while required_fields.count(field) > 0:
+                required_fields.remove(field)
+
+        # Update the actual fields and widgets.
+        update_form_fields(
+            self,
+            fields_data=fields_data,
+            required=required_fields
+        )
 
     def clean_password2(self):
         # Short circuit normal validation if not high security.
