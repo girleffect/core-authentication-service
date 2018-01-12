@@ -120,7 +120,6 @@ class SecurityQuestionForm(forms.Form):
 
 class SecurityQuestionFormSetClass(BaseFormSet):
     def clean(self):
-
         # Save some time, if we already have errors, just return without doing
         # extra work.
         if all(self.errors):
@@ -128,16 +127,23 @@ class SecurityQuestionFormSetClass(BaseFormSet):
 
         # This is the email as found on RegistrationForm.
         email = self.data.get("email", None)
-        #if not email:
-        #    # TODO Actual validation.
-        #    raise ValidationError("Please fill in all Security Question fields")
+
+        # Enforce question selection if no email was provided.
+        if not email:
+            for form in self.forms:
+                if not form.cleaned_data.get("question", None):
+                    raise ValidationError(
+                        "Please fill in all Security Question fields"
+                    )
 
         # Ensure unique questions are used.
         questions = []
         for form in self.forms:
             question = form.cleaned_data["question"]
             if question in questions:
-                raise forms.ValidationError("Each question can only be answered once.")
+                raise forms.ValidationError(
+                    "Each question can only be answered once."
+                )
             questions.append(question)
 
 
