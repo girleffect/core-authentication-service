@@ -59,10 +59,8 @@ class QuestionLaguageText(models.Model):
 
     def validate_unique(self, *args, **kwargs):
         super(QuestionLaguageText, self).validate_unique(*args, **kwargs)
-        if QuestionLaguageText.objects.filter(
-                question__slug=self.question.slug,
-                language_code=self.language_code
-                ).count() > 0:
+        if SecurityQuestion.objects.filter(
+                questionlaguagetext__id=self.id).count() > 1:
             raise ValidationError("Question text can not be reused between questions.")
 
     def __str__(self):

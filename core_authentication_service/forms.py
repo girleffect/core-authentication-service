@@ -6,6 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.forms import BaseFormSet
 from django.forms import formset_factory
+from django.db.models import QuerySet
 
 from core_authentication_service import models
 from core_authentication_service.utils import update_form_fields
@@ -106,16 +107,19 @@ class RegistrationForm(UserCreationForm):
 
 class SecurityQuestionForm(forms.Form):
     question = forms.ModelChoiceField(
-        queryset=models.SecurityQuestion.objects.all(),
+        queryset=QuerySet(),
         empty_label="Select a question"
     )
     answer = forms.CharField()
 
     def __init__(self, *args, **kwargs):
-        # TODO change question display value based on language.
-        # TODO rather assign queryset in init, can do a preselect on the
-        # language alternatives.
+        # TODO Look into making the call once on the FormsetClass and not once
+        # per form.
+        questions = models.SecurityQuestion.objects.prefetch_related("questionlaguagetext_set").all()
+
         super(SecurityQuestionForm, self).__init__(*args, **kwargs)
+        # TODO change question display value based on language.
+        self.fields["question"].queryset = questions
 
 
 class SecurityQuestionFormSetClass(BaseFormSet):
