@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from core_authentication_service import models
 
+
 @admin.register(models.CoreUser)
 class CoreUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
@@ -13,7 +14,20 @@ class CoreUserAdmin(UserAdmin):
         ),
     )
 
+
+class QuestionTextInline(admin.TabularInline):
+    model = models.QuestionLaguageText
+    extra = 0
+    fields = ["language_code", "question_text"]
+
+
+class SecurityQuestionForm(admin.ModelAdmin):
+    inlines = [
+        QuestionTextInline,
+    ]
+
+
 admin.site.register(models.Country, admin.ModelAdmin)
 admin.site.register(models.UserSecurityQuestion, admin.ModelAdmin)
-admin.site.register(models.SecurityQuestion, admin.ModelAdmin)
+admin.site.register(models.SecurityQuestion, SecurityQuestionForm)
 admin.site.register(models.QuestionLaguageText, admin.ModelAdmin)
