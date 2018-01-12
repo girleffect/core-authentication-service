@@ -4,6 +4,8 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
+from django.forms import BaseFormSet
+from django.forms import formset_factory
 
 from core_authentication_service.utils import update_form_fields
 
@@ -16,6 +18,7 @@ REQUIREMENT_DEFINITION = {
     "picture": ["avatar"]
 }
 
+SECURITY_QUESTION_COUNT = 2
 
 class RegistrationForm(UserCreationForm):
 
@@ -98,3 +101,25 @@ class RegistrationForm(UserCreationForm):
             raise ValidationError("Enter either email or msisdn")
 
         return super(RegistrationForm, self).clean()
+
+
+class SecurityQuestionForm(forms.Form):
+    answer = forms.CharField(
+        required=True,
+    )
+
+
+class SecurityQuestionFormSetClass(BaseFormSet):
+    def clean(self):
+        # This is the email as found on RegistrationForm.
+        email = self.data.get("email", None)
+        if not email:
+            # TODO Actual validation.
+            raise ValidationError("Please fill in all Security Question fields")
+
+
+SecurityQuestionFormSet = formset_factory(
+    SecurityQuestionForm,
+    formset=SecurityQuestionFormSetClass,
+    extra=SECURITY_QUESTION_COUNT
+)
