@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.forms import BaseFormSet
 from django.forms import formset_factory
 
+from core_authentication_service import models
 from core_authentication_service.utils import update_form_fields
 
 
@@ -104,18 +105,40 @@ class RegistrationForm(UserCreationForm):
 
 
 class SecurityQuestionForm(forms.Form):
-    answer = forms.CharField(
-        required=True,
+    question = forms.ModelChoiceField(
+        queryset=models.SecurityQuestion.objects.all(),
+        empty_label="Select a question"
     )
+    answer = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        # TODO change question display value based on language.
+        # TODO rather assign queryset in init, can do a preselect on the
+        # language alternatives.
+        super(SecurityQuestionForm, self).__init__(*args, **kwargs)
 
 
 class SecurityQuestionFormSetClass(BaseFormSet):
     def clean(self):
+
+        # Save some time, if we already have errors, just return without doing
+        # extra work.
+        if all(self.errors):
+            return
+
         # This is the email as found on RegistrationForm.
         email = self.data.get("email", None)
-        if not email:
-            # TODO Actual validation.
-            raise ValidationError("Please fill in all Security Question fields")
+        #if not email:
+        #    # TODO Actual validation.
+        #    raise ValidationError("Please fill in all Security Question fields")
+
+        # Ensure unique questions are used.
+        questions = []
+        for form in self.forms:
+            question = form.cleaned_data["question"]
+            if question in questions:
+                raise forms.ValidationError("Each question can only be answered once.")
+            questions.append(question)
 
 
 SecurityQuestionFormSet = formset_factory(

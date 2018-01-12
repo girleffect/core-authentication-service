@@ -29,19 +29,20 @@ class RegistrationView(CreateView):
             ct["question_formset"] = forms.SecurityQuestionFormSet()
         return ct
 
-    def form_valid(self, form):
-        # Because the formset is an extra addition to the view, it needs to be
-        # manually validated, but the entire form as it stands needs to be sent
-        # to context in the event of errors.
+    def form_invalid(self, form):
         formset = forms.SecurityQuestionFormSet(self.request.POST)
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
+        return self.render_to_response(self.get_context_data(
+            form=form, question_formset=formset
+        ))
 
-        if not formset.is_valid():
+    def form_valid(self, form):
+        formset = forms.SecurityQuestionFormSet(self.request.POST)
+
+        if not formset.is_valid() or not form.is_valid():
             return self.render_to_response(self.get_context_data(
                 form=form, question_formset=formset)
             )
-        return super(RegistrationView, self).form_valid(form)
+        #return super(RegistrationView, self).form_valid(form)
 
     # TODO:
     #   - Security question formset on registration.

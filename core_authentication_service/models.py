@@ -46,13 +46,14 @@ class UserSecurityQuestion(models.Model):
 # TODO Using a model like this seems wrong.
 class SecurityQuestion(models.Model):
     slug = models.SlugField()
+    question_text = models.TextField(help_text="Default question text")
 
     def __str__(self):
-        return self.slug
+        return self.question_text
 
 
 class QuestionLaguageText(models.Model):
-    language_code = models.CharField(blank=True, null=True, max_length=3)
+    language_code = models.CharField(max_length=3)
     question = models.ForeignKey("SecurityQuestion", blank=True, null=True, on_delete=models.CASCADE)
     question_text = models.TextField()
 
