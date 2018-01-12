@@ -126,7 +126,7 @@ class SecurityQuestionForm(forms.Form):
             if isinstance(choice[0], int):
                 # TODO Language code as kwarg.
                 text = questions.get(
-                    id=choice[0]).questionlaguagetext_set.filter(
+                    id=choice[0]).questionlanguagetext_set.filter(
                     language_code="GE").first()
                 choice[1] = text.question_text if text else choice[1]
             updated_choices.append(tuple(choice))
