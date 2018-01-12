@@ -52,13 +52,13 @@ class SecurityQuestion(models.Model):
         return self.question_text
 
 
-class QuestionLaguageText(models.Model):
+class QuestionLanguageText(models.Model):
     language_code = models.CharField(max_length=3)
     question = models.ForeignKey("SecurityQuestion", blank=True, null=True, on_delete=models.CASCADE)
     question_text = models.TextField()
 
     def validate_unique(self, *args, **kwargs):
-        super(QuestionLaguageText, self).validate_unique(*args, **kwargs)
+        super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
         if SecurityQuestion.objects.filter(
                 questionlaguagetext__id=self.id).count() > 1:
             raise ValidationError("Question text can not be reused between questions.")

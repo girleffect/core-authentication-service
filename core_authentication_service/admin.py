@@ -16,7 +16,7 @@ class CoreUserAdmin(UserAdmin):
 
 
 class QuestionTextInline(admin.TabularInline):
-    model = models.QuestionLaguageText
+    model = models.QuestionLanguageText
     extra = 0
     fields = ["language_code", "question_text"]
 
@@ -30,4 +30,4 @@ class SecurityQuestionForm(admin.ModelAdmin):
 admin.site.register(models.Country, admin.ModelAdmin)
 admin.site.register(models.UserSecurityQuestion, admin.ModelAdmin)
 admin.site.register(models.SecurityQuestion, SecurityQuestionForm)
-admin.site.register(models.QuestionLaguageText, admin.ModelAdmin)
+admin.site.register(models.QuestionLanguageText, admin.ModelAdmin)

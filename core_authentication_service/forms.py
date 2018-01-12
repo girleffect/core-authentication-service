@@ -115,11 +115,22 @@ class SecurityQuestionForm(forms.Form):
     def __init__(self, *args, **kwargs):
         # TODO Look into making the call once on the FormsetClass and not once
         # per form.
-        questions = models.SecurityQuestion.objects.prefetch_related("questionlaguagetext_set").all()
+        questions = models.SecurityQuestion.objects.prefetch_related(
+            "questionlanguagetext_set").all()
 
         super(SecurityQuestionForm, self).__init__(*args, **kwargs)
-        # TODO change question display value based on language.
         self.fields["question"].queryset = questions
+        updated_choices = []
+        for choice in self.fields["question"].widget.choices:
+            choice = list(choice)
+            if isinstance(choice[0], int):
+                # TODO Language code as kwarg.
+                text = questions.get(
+                    id=choice[0]).questionlaguagetext_set.filter(
+                    language_code="GE").first()
+                choice[1] = text.question_text if text else choice[1]
+            updated_choices.append(tuple(choice))
+        self.fields["question"].widget.choices = updated_choices
 
 
 class SecurityQuestionFormSetClass(BaseFormSet):
