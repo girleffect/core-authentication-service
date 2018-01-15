@@ -107,11 +107,14 @@ class RegistrationForm(UserCreationForm):
 
 
 class SecurityQuestionFormSetClass(BaseFormSet):
+    def __init__(self, language, *args, **kwargs):
+        self.language = language
+        super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
+
     def get_form_kwargs(self, index):
         kwargs = super(SecurityQuestionFormSetClass, self).get_form_kwargs(index)
         kwargs["questions"] = self.get_questions
-        # TODO view to pass based on request.
-        kwargs["language"] = "GE"
+        kwargs["language"] = self.language
         return kwargs
 
     @cached_property

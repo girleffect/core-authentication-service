@@ -23,10 +23,15 @@ class RegistrationView(CreateView):
 
     def get_context_data(self, *args, **kwargs):
         ct = super(RegistrationView, self).get_context_data(*args, **kwargs)
+
+        # Grab language off of querystring first else default to django
+        # middleware set one.
+        language = self.request.GET.get("language") \
+            if self.request.GET.get("language") else self.request.LANGUAGE_CODE
         if kwargs.get("question_formset"):
             ct["question_formset"] = kwargs["question_formset"]
         else:
-            ct["question_formset"] = forms.SecurityQuestionFormSet()
+            ct["question_formset"] = forms.SecurityQuestionFormSet(language=language)
         return ct
 
     def form_invalid(self, form):
@@ -45,8 +50,6 @@ class RegistrationView(CreateView):
         #return super(RegistrationView, self).form_valid(form)
 
     # TODO:
-    #   - Move question query up one level to management form class, not form.
-    #   - i18l setup.
     #   - Add 2FA to flow.
     #   - Handle theme querystring value, will need to effect 2FA templates as well.
     #   - Make it optional, but enforce able as required.
