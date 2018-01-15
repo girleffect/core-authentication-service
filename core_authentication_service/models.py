@@ -63,7 +63,9 @@ class QuestionLanguageText(models.Model):
         super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
         if SecurityQuestion.objects.filter(
                 questionlanguagetext__id=self.id).count() > 1:
-            raise ValidationError("Question text can not be reused between questions.")
+            raise ValidationError(
+                "Question text can not be assigned to more than one question."
+            )
 
     def __str__(self):
         return "%s - %s" % (self.language_code, self.question.id)

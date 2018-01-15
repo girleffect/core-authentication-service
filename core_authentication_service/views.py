@@ -31,7 +31,9 @@ class RegistrationView(CreateView):
         if kwargs.get("question_formset"):
             ct["question_formset"] = kwargs["question_formset"]
         else:
-            ct["question_formset"] = forms.SecurityQuestionFormSet(language=language)
+            ct["question_formset"] = forms.SecurityQuestionFormSet(
+                language=language
+            )
         return ct
 
     def form_invalid(self, form):
