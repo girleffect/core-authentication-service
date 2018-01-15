@@ -45,6 +45,8 @@ class RegistrationView(CreateView):
         #return super(RegistrationView, self).form_valid(form)
 
     # TODO:
+    #   - Move question query up one level to management form class, not form.
+    #   - i18l setup.
     #   - Add 2FA to flow.
     #   - Handle theme querystring value, will need to effect 2FA templates as well.
     #   - Make it optional, but enforce able as required.

@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -34,18 +35,17 @@ class Country(models.Model):
 
 
 class UserSecurityQuestion(models.Model):
-    user = models.ForeignKey("CoreUser", blank=True, null=True)
-    answer = models.TextField(blank=True, null=True)
-    language_code = models.CharField(blank=True, null=True, max_length=3)
-    question = models.ForeignKey("SecurityQuestion", blank=True, null=True)
+    user = models.ForeignKey("CoreUser")
+    answer = models.TextField()
+    language_code = models.CharField(max_length=3, choices=settings.LANGUAGES)
+    question = models.ForeignKey("SecurityQuestion")
 
     def __str__(self):
-        return "%s - %s" % (self.language_code, self.question.slug)
+        return "%s - %s" % (self.language_code, self.question.id)
+    # TODO Hash answer in save()
 
 
-# TODO Using a model like this seems wrong.
 class SecurityQuestion(models.Model):
-    slug = models.SlugField()
     question_text = models.TextField(help_text="Default question text")
 
     def __str__(self):
@@ -53,9 +53,9 @@ class SecurityQuestion(models.Model):
 
 
 class QuestionLanguageText(models.Model):
-    language_code = models.CharField(max_length=3)
+    language_code = models.CharField(max_length=3, choices=settings.LANGUAGES)
     question = models.ForeignKey(
-        "SecurityQuestion", blank=True, null=True, on_delete=models.CASCADE
+        "SecurityQuestion", on_delete=models.CASCADE
     )
     question_text = models.TextField()
 
@@ -66,4 +66,4 @@ class QuestionLanguageText(models.Model):
             raise ValidationError("Question text can not be reused between questions.")
 
     def __str__(self):
-        return "%s - %s" % (self.language_code, self.question.slug)
+        return "%s - %s" % (self.language_code, self.question.id)

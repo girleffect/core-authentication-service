@@ -4,9 +4,10 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
+from django.db.models import QuerySet
 from django.forms import BaseFormSet
 from django.forms import formset_factory
-from django.db.models import QuerySet
+from django.utils.functional import cached_property
 
 from core_authentication_service import models
 from core_authentication_service.utils import update_form_fields
@@ -105,43 +106,19 @@ class RegistrationForm(UserCreationForm):
         return super(RegistrationForm, self).clean()
 
 
-class SecurityQuestionForm(forms.Form):
-    question = forms.ModelChoiceField(
-        queryset=QuerySet(),
-        empty_label="Select a question"
-    )
-    answer = forms.CharField()
+class SecurityQuestionFormSetClass(BaseFormSet):
+    def get_form_kwargs(self, index):
+        kwargs = super(SecurityQuestionFormSetClass, self).get_form_kwargs(index)
+        kwargs["questions"] = self.get_questions
+        # TODO view to pass based on request.
+        kwargs["language"] = "GE"
+        return kwargs
 
-    def __init__(self, *args, **kwargs):
-        # TODO Look into making the call once on the FormsetClass and not once
-        # per form.
-        questions = models.SecurityQuestion.objects.prefetch_related(
+    @cached_property
+    def get_questions(self):
+        return models.SecurityQuestion.objects.prefetch_related(
             "questionlanguagetext_set").all()
 
-        super(SecurityQuestionForm, self).__init__(*args, **kwargs)
-        self.fields["question"].queryset = questions
-
-        # Choice tuple can't be directly updated. Update only the widget choice
-        # text, value is used for validation and saving.
-        updated_choices = []
-        for choice in self.fields["question"].widget.choices:
-            choice = list(choice)
-            if isinstance(choice[0], int):
-                # TODO Language code as kwarg.
-                text = questions.get(
-                    id=choice[0]).questionlanguagetext_set.filter(
-                    language_code="GE").first()
-
-                # If there is not language specific text available, default to
-                # original.
-                choice[1] = text.question_text if text else choice[1]
-            updated_choices.append(tuple(choice))
-
-        # Replace choices with new set.
-        self.fields["question"].widget.choices = updated_choices
-
-
-class SecurityQuestionFormSetClass(BaseFormSet):
     def clean(self):
         # Save some time, if we already have errors, just return without doing
         # extra work.
@@ -168,6 +145,36 @@ class SecurityQuestionFormSetClass(BaseFormSet):
                     "Each question can only be answered once."
                 )
             questions.append(question)
+
+
+class SecurityQuestionForm(forms.Form):
+    question = forms.ModelChoiceField(
+        queryset=QuerySet(),
+        empty_label="Select a question"
+    )
+    answer = forms.CharField()
+
+    def __init__(self, questions, language, *args, **kwargs):
+        super(SecurityQuestionForm, self).__init__(*args, **kwargs)
+        self.fields["question"].queryset = questions
+
+        # Choice tuple can't be directly updated. Update only the widget choice
+        # text, value is used for validation and saving.
+        updated_choices = []
+        for choice in self.fields["question"].widget.choices:
+            choice = list(choice)
+            if isinstance(choice[0], int):
+                text = questions.get(
+                    id=choice[0]).questionlanguagetext_set.filter(
+                    language_code=language).first()
+
+                # If there is not language specific text available, default to
+                # original.
+                choice[1] = text.question_text if text else choice[1]
+            updated_choices.append(tuple(choice))
+
+        # Replace choices with new set.
+        self.fields["question"].widget.choices = updated_choices
 
 
 SecurityQuestionFormSet = formset_factory(
