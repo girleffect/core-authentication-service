@@ -131,23 +131,29 @@ class SecurityQuestionFormSetClass(BaseFormSet):
         # This is the email as found on RegistrationForm.
         email = self.data.get("email", None)
 
-        # Enforce question selection if no email was provided.
-        if not email:
-            for form in self.forms:
+        questions = []
+        for form in self.forms:
+            # Enforce question selection if no email was provided.
+            if not email:
                 if not form.cleaned_data.get("question", None):
                     raise ValidationError(
                         "Please fill in all Security Question fields"
                     )
 
-        # Ensure unique questions are used.
-        questions = []
-        for form in self.forms:
-            question = form.cleaned_data["question"]
-            if question in questions:
+            # Ensure unique questions are used.
+            question = form.cleaned_data.get("question", None)
+            if question in questions and question is not None:
                 raise forms.ValidationError(
-                    "Each question can only be answered once."
+                    "Each question can only be picked once."
                 )
             questions.append(question)
+
+        # If all questions are not all None but less than all is selected,
+        # raise.
+        if not all(questions) and any(questions):
+            raise ValidationError(
+                "Please fill in all Security Question fields"
+            )
 
 
 class SecurityQuestionForm(forms.Form):
