@@ -155,11 +155,118 @@ class TestRegistrationForm(TestCase):
             "__all__": ["Enter either email or msisdn"]
         })
 
-    def test_hight_security_default_state(self):
-        form = RegistrationForm(data={})
+    def test_high_security_default_state(self):
+        form = RegistrationForm(data={}, security="high")
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "username": ["This field is required."],
+            "email": ["This field is required."],
+            "password1": ["This field is required."],
+            "password2": ["This field is required."],
+            "__all__": ["Enter either email or msisdn"]
+        })
+
+    def test_high_security_password_validation(self):
+
+        # Test both required
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "password1": "password",
+        },
+        security="high")
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "password2": ["This field is required."],
+        })
+
+        # Test both must match
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "password1": "password",
+            "password2": "password2"
+        },
+        security="high")
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "password2": ["The two password fields didn't match."],
+        })
+
+        # Test min length, unique validation and contains more than numeric
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "password1": "123",
+            "password2": "123"
+        },
+        security="high")
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+        "password2": [
+            "This password is too short. It must contain at least 8 characters.",
+            "This password is entirely numeric.",
+            "This password must container at least one uppercase letter, one lowercase one, a digit and special character."
+        ]})
+
+
+        # Test unique validation
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "password1": "asdasdasd",
+            "password2": "asdasdasd"
+        },
+        security="high")
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+        "password2": [
+            "This password must container at least one uppercase letter, one lowercase one, a digit and special character."
+        ]})
+
+        # Test close to username
+        form = RegistrationForm(data={
+            "username": "asdasd",
+            "email": "email@email.com",
+            "password1": "asdasdasd",
+            "password2": "asdasdasd"
+        },
+        security="high")
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+        "password2": [
+            "The password is too similar to the username.",
+            "This password must container at least one uppercase letter, one lowercase one, a digit and special character."
+        ]})
+
+        # Test success
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
+        },
+        security="high")
+        self.assertTrue(form.is_valid())
+
+    def test_high_security_required_toggle(self):
+        required = [
+            "username", "first_name", "last_name", "email",
+            "nickname", "msisdn", "gender", "birth_date", "country", "avatar"
+        ]
+        form = RegistrationForm(data={}, security="high", required=required)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "username": ["This field is required."],
+            "first_name": ["This field is required."],
+            "last_name": ["This field is required."],
+            "email": ["This field is required."],
+            "nickname": ["This field is required."],
+            "msisdn": ["This field is required."],
+            "gender": ["This field is required."],
+            "birth_date": ["This field is required."],
+            "country": ["This field is required."],
+            "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
