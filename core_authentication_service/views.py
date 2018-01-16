@@ -14,7 +14,7 @@ REDIRECT_COOKIE_KEY = "register_redirect"
 
 
 class RegistrationView(CreateView):
-    template_name = "core_authentication_service/registration.html"
+    template_name = "core_authentication_service/registration/registration.html"
     form_class = forms.RegistrationForm
     success_url = "/"
 
@@ -24,7 +24,22 @@ class RegistrationView(CreateView):
         self.language = self.request.GET.get("language") \
             if self.request.GET.get("language") else self.request.LANGUAGE_CODE
         self.redirect_url = self.request.GET.get("redirect_url")
+        self.theme = self.request.GET.get("theme")
         return super(RegistrationView, self).dispatch(*args, **kwargs)
+
+    def get_template_names(self):
+        template_names = []
+
+        # Allow for possible sub classing of view without needing extra work to
+        # assign base template.
+        if self.template_name is not None:
+            template_names = [self.template_name]
+
+        # Any extra templates need to be before the base.
+        template_names = [
+            "core_authentication_service/registration/registration_%s.html" % self.theme,
+        ] + template_names
+        return template_names
 
     @property
     def get_formset(self):
@@ -118,9 +133,3 @@ class RedirectView(View):
         response.delete_cookie(REDIRECT_COOKIE_KEY)
         logout(request)
         return response
-
-
-    # TODO:
-    #   - Listen to redirect_url and logout after 2fa.
-    #   - Handle theme querystring value, will need to effect 2FA templates as well.
-    #   - Will need to check client_id as provided for oidc login, for redirects not on domain. Validate client_id and redirect_uri before rendering form.
