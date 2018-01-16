@@ -84,9 +84,10 @@ class RegistrationView(CreateView):
                 question.language_code = self.language
                 question.user = self.object
                 question.save()
+
         if self.redirect_url:
             response.set_cookie(
-                REDIRECT_COOKIE_KEY, value=self.redirect_url, http_only=True
+                REDIRECT_COOKIE_KEY, value=self.redirect_url, httponly=True
             )
         return response
 
