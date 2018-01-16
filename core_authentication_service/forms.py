@@ -29,7 +29,7 @@ class RegistrationForm(UserCreationForm):
         model = get_user_model()
         fields = [
             "username", "first_name", "last_name", "email",
-            "nickname", "msisdn", "birth_date", "country", "avatar"
+            "nickname", "msisdn", "gender", "birth_date", "country", "avatar"
         ]
 
     def __init__(self, security=None, required=[],*args, **kwargs):
