@@ -12,14 +12,12 @@ AUTH_PASSWORD_VALIDATORS = AUTH_PASSWORD_VALIDATORS + [
     },
 ]
 
+# NOTE missing password, host and port for passwordless connection.
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
         "NAME": os.environ.get("DB_NAME", "core_authentication_service"),
         "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
         "CONN_MAX_AGE": 600
     }
 }
@@ -59,9 +57,3 @@ OIDC_EXTRA_SCOPE_CLAIMS = \
 
 FORM_RENDERERS = {"replace-as-p": True, "replace-as-table": True}
 FORM_RENDERERS = {"enable-bem-classes": True}
-
-# Attempt to import local settings if present.
-try:
-    from project.settings_local import *
-except ImportError:
-    raise
