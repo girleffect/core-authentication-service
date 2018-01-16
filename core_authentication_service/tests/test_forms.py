@@ -1,22 +1,12 @@
 from django.test import TestCase
+from django.http import QueryDict
 
-from core_authentication_service.forms import RegistrationForm
+from core_authentication_service.forms import RegistrationForm, \
+    SecurityQuestionForm, SecurityQuestionFormSet
 from core_authentication_service.models import SecurityQuestion
 
 
 class TestRegistrationForm(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        super(TestRegistrationForm, cls).setUpTestData()
-
-        # Security questions
-        cls.question_one = SecurityQuestion.objects.create(
-            question_text="Some text for the one question"
-        )
-        cls.question_two = SecurityQuestion.objects.create(
-            question_text="Some text for the other question"
-        )
 
     def test_default_state(self):
         form = RegistrationForm(data={})
@@ -271,3 +261,189 @@ class TestRegistrationForm(TestCase):
             "password2": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
+
+
+class TestSecurityQuestionForm(TestCase):
+
+    def test_default_state(self):
+        form = SecurityQuestionForm(
+            data={},
+            questions=SecurityQuestion.objects.all(),
+            language="en"
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "question": ["This field is required."],
+            "answer": ["This field is required."],
+        })
+
+
+class TestSecurityQuestionFormSet(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestSecurityQuestionFormSet, cls).setUpTestData()
+
+        # Security questions
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+
+    def test_default_state(self):
+        data = {
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": "",
+            "form-0-answer": "",
+            "form-1-question": "",
+            "form-1-answer": ""
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertFalse(formset.is_valid())
+        self.assertEqual(formset.non_form_errors(),
+            ["Please fill in all Security Question fields."]
+        )
+
+    def test_validation(self):
+        # Ensure that all questions need to be answered when email is not
+        # present.
+        data = {
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": "",
+            "form-0-answer": "",
+            "form-1-question": "",
+            "form-1-answer": ""
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertFalse(formset.is_valid())
+        self.assertEqual(formset.non_form_errors(),
+            ["Please fill in all Security Question fields."]
+        )
+
+        # Ensure its valid if email is present
+        data = {
+            "email": "email@email.com",
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": "",
+            "form-0-answer": "",
+            "form-1-question": "",
+            "form-1-answer": ""
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertTrue(formset.is_valid())
+
+        # Ensure that all questions need to be answered. If anything was filled
+        # in on the questions.
+        data = {
+            "email": "email@email.com",
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": self.question_one.id,
+            "form-0-answer": "",
+            "form-1-question": "",
+            "form-1-answer": ""
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertFalse(formset.is_valid())
+        self.assertEqual(formset.non_form_errors(),
+            ["Please fill in all Security Question fields."]
+        )
+        data = {
+            "email": "email@email.com",
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": "",
+            "form-0-answer": "",
+            "form-1-question": self.question_two.id,
+            "form-1-answer": ""
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertFalse(formset.is_valid())
+        self.assertEqual(formset.non_form_errors(),
+            ["Please fill in all Security Question fields."]
+        )
+
+        # Test answer validation
+        data = {
+            "email": "email@email.com",
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": self.question_one.id,
+            "form-0-answer": "",
+            "form-1-question": self.question_two.id,
+            "form-1-answer": ""
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertFalse(formset.is_valid())
+        self.assertEqual(formset.errors,
+            [
+                {"answer": ["This field is required."]},
+                {"answer": ["This field is required."]}
+            ]
+        )
+
+        # Test same questions can't be selected more than once.
+        data = {
+            "email": "",
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": self.question_one.id,
+            "form-0-answer": "Answer1",
+            "form-1-question": self.question_one.id,
+            "form-1-answer": "Answer2"
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertFalse(formset.is_valid())
+        self.assertEqual(formset.non_form_errors(),
+            ["Each question can only be picked once."]
+        )
+
+        # Test valid with email.
+        data = {
+            "email": "email@email.com",
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": self.question_one.id,
+            "form-0-answer": "Answer1",
+            "form-1-question": self.question_two.id,
+            "form-1-answer": "Answer2"
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertTrue(formset.is_valid())
+
+        # Test valid without email.
+        data = {
+            "email": "",
+            "form-TOTAL_FORMS": "2",
+            "form-INITIAL_FORMS": "0",
+            "form-MIN_NUM_FORMS": "0",
+            "form-MAX_NUM_FORMS": "1000",
+            "form-0-question": self.question_one.id,
+            "form-0-answer": "Answer1",
+            "form-1-question": self.question_two.id,
+            "form-1-answer": "Answer2"
+        }
+        formset = SecurityQuestionFormSet(data=data, language="en")
+        self.assertTrue(formset.is_valid())

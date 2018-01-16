@@ -137,7 +137,7 @@ class SecurityQuestionFormSetClass(BaseFormSet):
             if not email:
                 if not form.cleaned_data.get("question", None):
                     raise ValidationError(
-                        "Please fill in all Security Question fields"
+                        "Please fill in all Security Question fields."
                     )
 
             # Ensure unique questions are used.
@@ -152,7 +152,7 @@ class SecurityQuestionFormSetClass(BaseFormSet):
         # raise.
         if not all(questions) and any(questions):
             raise ValidationError(
-                "Please fill in all Security Question fields"
+                "Please fill in all Security Question fields."
             )
 
 
