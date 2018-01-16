@@ -16,7 +16,6 @@ REDIRECT_COOKIE_KEY = "register_redirect"
 class RegistrationView(CreateView):
     template_name = "core_authentication_service/registration/registration.html"
     form_class = forms.RegistrationForm
-    success_url = "/"
 
     def dispatch(self, *args, **kwargs):
         # Grab language off of querystring first. Otherwise default to django
