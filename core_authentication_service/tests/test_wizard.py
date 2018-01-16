@@ -4,6 +4,7 @@ from django.urls import reverse
 from django_otp.oath import totp
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.util import random_hex
+from django.conf import settings
 
 
 class BaseTestCase(TestCase):
@@ -17,12 +18,14 @@ class BaseTestCase(TestCase):
             username="standard_user"
         )
         cls.standard_user.set_password("1234")
+        cls.standard_user.is_staff = True
         cls.standard_user.save()
 
         cls.twofa_user = User.objects.create(
             username="2fa_user"
         )
         cls.twofa_user.set_password("1234")
+        cls.twofa_user.is_staff = True
         cls.twofa_user.save()
 
         cls.totp_device = TOTPDevice.objects.create(
@@ -91,7 +94,7 @@ class StandardTestCase(BaseTestCase):
         # users will see another login screen.
         response = self.post_credential_step(self.standard_user)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Username")
+        self.assertRedirects(response, reverse(settings.LOGIN_REDIRECT_URL))
 
 
 class TwoFATestCase(BaseTestCase):
@@ -110,7 +113,7 @@ class TwoFATestCase(BaseTestCase):
         # Post token step
         response = self.post_token_step()
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Username")
+        self.assertRedirects(response, reverse(settings.LOGIN_REDIRECT_URL))
 
 
 class BackupCodeTestCase(BaseTestCase):
@@ -156,4 +159,4 @@ class BackupCodeTestCase(BaseTestCase):
         # Post backup step
         response = self.post_backup_step()
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Username")
+        self.assertRedirects(response, reverse(settings.LOGIN_REDIRECT_URL))

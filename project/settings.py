@@ -38,5 +38,7 @@ MIDDLEWARE += ["django_otp.middleware.OTPMiddleware"]
 # arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("login")
 
+LOGIN_REDIRECT_URL = "admin:index"
+
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "core_authentication_service.oidc_provider_settings.CustomScopeClaims"
