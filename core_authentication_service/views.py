@@ -106,13 +106,13 @@ class RegistrationView(CreateView):
         return response
 
     def get_success_url(self):
+        url = settings.LOGIN_URL
         if self.security == "high" or self.request.GET.get(
                 "show2fa") == "true":
-            return reverse("two_factor_auth:setup")
+            url =reverse("two_factor_auth:setup")
         elif self.redirect_url:
-            return self.redirect_url
-        else:
-            settings.LOGIN_URL
+            url = self.redirect_url
+        return url
 
 
 # Class based view for more flwxibility if needed.
