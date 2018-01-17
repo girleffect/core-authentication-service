@@ -172,7 +172,7 @@ class TestRegistrationView(TestCase):
         response = self.client.get(reverse("redirect_view"))
         self.assertIn(response.url, "/test-redirect-after2fa/")
 
-    def test_incorrect_field_logget(self):
+    def test_incorrect_field_logger(self):
         with LogCapture() as l:
             self.client.get(
                 reverse("registration") +
@@ -186,13 +186,13 @@ class TestRegistrationView(TestCase):
                 (
                     "core_authentication_service.forms",
                     "WARNING",
-                    "Received field to alter that is not on form: notontheform"
+                    "Received field to alter that is not on form: "
+                    "someawesomefield"
                 ),
                 (
                     "core_authentication_service.forms",
                     "WARNING",
-                    "Received field to alter that is not on form: "
-                    "someawesomefield"
+                    "Received field to alter that is not on form: notontheform"
                 ),
 
             )

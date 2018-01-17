@@ -1,3 +1,4 @@
+import itertools
 import logging
 
 from django import forms
@@ -41,14 +42,14 @@ class RegistrationForm(UserCreationForm):
 
         # Set update form update variables, for manipulation as init
         # progresses.
-        required_fields = []
         fields_data = {}
-        for field in required:
-            required_fields += REQUIREMENT_DEFINITION.get(field, [field])
+        required_fields = set(itertools.chain.from_iterable(
+            REQUIREMENT_DEFINITION.get(field, [field]) for field in required
+        ))
 
         # Security level needs some additions before the form is rendered.
         if self.security == "high":
-            required_fields += ["email"]
+            required_fields.add("email")
         else:
             # Remove default help text, added by password validation,
             # middleware.
@@ -65,8 +66,7 @@ class RegistrationForm(UserCreationForm):
             LOGGER.warning(
                 "Received field to alter that is not on form: %s" % field
             )
-            while required_fields.count(field) > 0:
-                required_fields.remove(field)
+            required_fields.discard(field)
 
         # Update the actual fields and widgets.
         update_form_fields(
