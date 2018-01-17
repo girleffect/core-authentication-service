@@ -1,3 +1,5 @@
+from testfixtures import LogCapture
+
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -169,3 +171,28 @@ class TestRegistrationView(TestCase):
         self.client.cookies.load({"register_redirect": "/test-redirect-after2fa/"})
         response = self.client.get(reverse("redirect_view"))
         self.assertIn(response.url, "/test-redirect-after2fa/")
+
+    def test_incorrect_field_logget(self):
+        with LogCapture() as l:
+            self.client.get(
+                reverse("registration") +
+                "?requires=names" \
+                "&requires=picture"\
+                "&requires=someawesomefield"\
+                "&requires=notontheform"
+            )
+
+            l.check(
+                (
+                    "core_authentication_service.forms",
+                    "WARNING",
+                    "Received field to alter that is not on form: notontheform"
+                ),
+                (
+                    "core_authentication_service.forms",
+                    "WARNING",
+                    "Received field to alter that is not on form: "
+                    "someawesomefield"
+                ),
+
+            )

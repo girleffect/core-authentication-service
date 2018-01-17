@@ -50,6 +50,8 @@ class RegistrationForm(UserCreationForm):
         if self.security == "high":
             required_fields += ["email"]
         else:
+            # Remove default help text, added by password validation,
+            # middleware.
             fields_data = {
                 "password1": {
                     "attributes": {
