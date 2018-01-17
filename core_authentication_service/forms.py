@@ -89,7 +89,6 @@ class RegistrationForm(UserCreationForm):
                 self.error_messages['password_mismatch'],
                 code='password_mismatch',
             )
-        self.instance.username = self.cleaned_data.get('username')
 
         # NOTE: Min length might need to be defined somewhere easier to change.
         # Setting doesn't feel 100% right though.
