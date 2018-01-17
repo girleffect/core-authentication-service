@@ -28,7 +28,7 @@ CLAIMS_MAP = {
     "phone_number_verified": lambda user: user.msisdn_verified if
         user.msisdn else None,
     "picture": lambda user: user.avatar,
-    "preferred_username": lambda user: None,
+    "preferred_username": lambda user: user.username,
     "profile": lambda user: None,
     "updated_at": lambda user: user.updated_at,
     "website": lambda user: None,
