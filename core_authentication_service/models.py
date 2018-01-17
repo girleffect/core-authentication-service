@@ -15,7 +15,7 @@ class CoreUser(AbstractUser):
     msisdn = models.CharField(blank=True, null=True, max_length=16)
     msisdn_verified = models.BooleanField(default=False)
     gender = models.IntegerField(blank=True, null=True)
-    birth_date = models.DateTimeField(blank=True, null=True)
+    birth_date = models.DateField(blank=True, null=True)
     country = models.ForeignKey("Country", blank=True, null=True)
     avatar = models.ImageField(blank=True, null=True)
     is_employee = models.BooleanField(default=False)
