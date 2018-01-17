@@ -177,16 +177,19 @@ class TestRegistrationView(TestCase):
             self.client.get(
                 reverse("registration") +
                 "?requires=names" \
-                "&requires=picture"\
-                "&requires=someawesomefield"\
+                "&requires=picture" \
+                "&requires=someawesomefield" \
                 "&requires=notontheform"
             )
-            self.assertListEqual(cm.output, [
+            test_output = [
                 "WARNING:core_authentication_service.forms:"
                 "Received field to alter that is "
                 "not on form: someawesomefield",
                 "WARNING:core_authentication_service.forms:"
                 "Received field to alter that is "
                 "not on form: notontheform"
-                ]
-            )
+            ]
+            test_output.sort()
+            output = cm.output
+            output.sort()
+            self.assertListEqual(output, test_output)
