@@ -145,8 +145,8 @@ class SecurityQuestionFormSetClass(BaseFormSet):
                 )
             questions.append(question)
 
-        # If all questions are not all None but less than all is selected,
-        # raise.
+        # If not all questions are selected (i.e. has a value other than None),
+        # but some have been, raise an error.
         if not all(questions) and any(questions):
             raise ValidationError(
                 "Please fill in all Security Question fields."
