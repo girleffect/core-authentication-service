@@ -168,15 +168,14 @@ class SecurityQuestionForm(forms.Form):
         # text, value is used for validation and saving.
         updated_choices = []
         for choice in self.fields["question"].widget.choices:
-            choice = list(choice)
             if isinstance(choice[0], int):
                 text = questions.get(
                     id=choice[0]).questionlanguagetext_set.filter(
                     language_code=language).first()
 
-                # If there is not language specific text available, default to
-                # original.
-                choice[1] = text.question_text if text else choice[1]
+                # If there is no language specific text available, default to
+                # the original.
+                choice = (choice[0], text.question_text if text else choice[1])
             updated_choices.append(tuple(choice))
 
         # Replace choices with new set.
