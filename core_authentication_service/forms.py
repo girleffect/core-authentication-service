@@ -24,6 +24,8 @@ REQUIREMENT_DEFINITION = {
 
 SECURITY_QUESTION_COUNT = 2
 
+MIN_NON_HIGH_PASSWORD_LENGTH = 4
+
 class RegistrationForm(UserCreationForm):
 
     class Meta:
@@ -91,7 +93,7 @@ class RegistrationForm(UserCreationForm):
 
         # NOTE: Min length might need to be defined somewhere easier to change.
         # Setting doesn't feel 100% right though.
-        if not len(password1) > 3 and not len(password2) > 3:
+        if not len(password2) >= MIN_NON_HIGH_PASSWORD_LENGTH:
             raise forms.ValidationError(
                 "Password not long enough."
             )
