@@ -110,8 +110,8 @@ class RegistrationForm(UserCreationForm):
 
 class SecurityQuestionFormSetClass(BaseFormSet):
     def __init__(self, language, *args, **kwargs):
-        self.language = language
         super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
+        self.language = language
 
     def get_form_kwargs(self, index):
         kwargs = super(SecurityQuestionFormSetClass, self).get_form_kwargs(index)
