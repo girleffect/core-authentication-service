@@ -125,11 +125,6 @@ class SecurityQuestionFormSetClass(BaseFormSet):
             "questionlanguagetext_set").all()
 
     def clean(self):
-        # Save some time, if we already have errors, just return without doing
-        # extra work.
-        if all(self.errors):
-            return
-
         # This is the email as found on RegistrationForm.
         email = self.data.get("email", None)
 
