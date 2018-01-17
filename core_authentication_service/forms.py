@@ -33,11 +33,11 @@ class RegistrationForm(UserCreationForm):
         ]
 
     def __init__(self, security=None, required=[],*args, **kwargs):
-        # Security value is required later in form processes as well.
-        self.security = security
-
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
+
+        # Security value is required later in form processes as well.
+        self.security = security
 
         # Set update form update variables, for manipulation as init
         # progresses.
