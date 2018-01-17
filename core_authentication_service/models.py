@@ -9,7 +9,7 @@ from django.db import models
 # NOTE: Changing AUTH_USER_MODEL will cause migration 0001 from otp_totp to
 # break once migrations have already been run once.
 class CoreUser(AbstractUser):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid1, editable=False)
     email_verified = models.BooleanField(default=False)
     nickname = models.CharField(blank=True, null=True, max_length=30)
     msisdn = models.CharField(blank=True, null=True, max_length=16)
