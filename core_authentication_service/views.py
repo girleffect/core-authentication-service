@@ -94,10 +94,13 @@ class RegistrationView(CreateView):
             if form.cleaned_data.get(
                     "answer", None) and form.cleaned_data.get(
                     "question", None):
-                question = models.UserSecurityQuestion.objects.create(**form.cleaned_data)
-                question.language_code = self.language
-                question.user = self.object
-                question.save()
+
+                # All fields on model are required, as such it requires the
+                # full set of data.
+                data = form.cleaned_data
+                data["user_id"] = self.object.id
+                data["language_code"] = self.language
+                question = models.UserSecurityQuestion.objects.create(**data)
 
         if self.redirect_url:
             response.set_cookie(
