@@ -43,9 +43,8 @@ class RegistrationForm(UserCreationForm):
         # progresses.
         required_fields = []
         fields_data = {}
-        if required:
-            for field in required:
-                required_fields += REQUIREMENT_DEFINITION.get(field, [field])
+        for field in required:
+            required_fields += REQUIREMENT_DEFINITION.get(field, [field])
 
         # Security level needs some additions before the form is rendered.
         if self.security == "high":
