@@ -37,7 +37,7 @@ class Country(models.Model):
 class UserSecurityQuestion(models.Model):
     user = models.ForeignKey("CoreUser")
     answer = models.TextField()
-    language_code = models.CharField(max_length=3, choices=settings.LANGUAGES)
+    language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
     question = models.ForeignKey("SecurityQuestion")
 
     def __str__(self):
@@ -53,7 +53,7 @@ class SecurityQuestion(models.Model):
 
 
 class QuestionLanguageText(models.Model):
-    language_code = models.CharField(max_length=3, choices=settings.LANGUAGES)
+    language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
     question = models.ForeignKey(
         "SecurityQuestion", on_delete=models.CASCADE
     )
