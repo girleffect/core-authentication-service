@@ -181,7 +181,7 @@ class TestRegistrationView(TestCase):
                 "&requires=someawesomefield"\
                 "&requires=notontheform"
             )
-            self.assertEqual(cm.output, [
+            self.assertListEqual(cm.output, [
                 "WARNING:core_authentication_service.forms:"
                 "Received field to alter that is "
                 "not on form: someawesomefield",

@@ -35,7 +35,7 @@ class RegistrationForm(UserCreationForm):
             "nickname", "msisdn", "gender", "birth_date", "country", "avatar"
         ]
 
-    def __init__(self, security=None, required=[],*args, **kwargs):
+    def __init__(self, security=None, required=[], *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
 
