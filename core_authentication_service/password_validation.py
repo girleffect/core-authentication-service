@@ -10,12 +10,16 @@ class DiversityValidator(object):
     """
 
     def validate(self, password, user=None):
-        valid = all([
-            len(set(string.ascii_lowercase).intersection(password)) > 0,
-            len(set(string.ascii_uppercase).intersection(password)) > 0,
-            len(set(string.digits).intersection(password)) > 0,
-            len(set(string.punctuation).intersection(password)) > 0
-        ])
+        charsets = [
+            set(string.ascii_lowercase),
+            set(string.ascii_uppercase),
+            set(string.digits),
+            set(string.punctuation)
+        ]
+        password_chars = set(password)
+
+        # Check that the password characters comes from all charsets.
+        valid = all(password_chars.intersection(charset) for charset in charsets)
         if not valid:
             raise ValidationError(
                 ugettext(
