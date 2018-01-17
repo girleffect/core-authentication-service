@@ -1,4 +1,4 @@
-def update_form_fields(form, required=[], validators={}, fields_data={}):
+def update_form_fields(form, required=None, validators=None, fields_data=None):
     """Update form fields and widgets.
 
     form --  Instance of a form.
@@ -19,6 +19,10 @@ def update_form_fields(form, required=[], validators={}, fields_data={}):
     Helper method for setting field and widget atrributes, can
     be used for any form instance. Sets attributes on both fields and widgets.
     """
+    required = required or []
+    validators = validators or {}
+    fields_data = fields_data or {}
+
     # For the event where required is all that needs to be toggled, a list will
     # suffice.
     for field in required:

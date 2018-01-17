@@ -35,7 +35,7 @@ class RegistrationForm(UserCreationForm):
             "nickname", "msisdn", "gender", "birth_date", "country", "avatar"
         ]
 
-    def __init__(self, security=None, required=[], *args, **kwargs):
+    def __init__(self, security=None, required=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
 
@@ -45,6 +45,7 @@ class RegistrationForm(UserCreationForm):
         # Set update form update variables, for manipulation as init
         # progresses.
         fields_data = {}
+        required = required or []
         required_fields = set(itertools.chain.from_iterable(
             REQUIREMENT_DEFINITION.get(field, [field]) for field in required
         ))
