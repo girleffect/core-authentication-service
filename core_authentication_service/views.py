@@ -118,8 +118,16 @@ class RegistrationView(CreateView):
         return url
 
 
-# Class based view for more flwxibility if needed.
 class RedirectView(View):
+    """
+    Simple view that redirects in the event the client passes a cookie
+    containing the correct key. In the event a cookie is not present, redirect
+    to the django default login url.
+
+    User is explicitly logged out to clear the user session. In anticipation
+    that the referrer will prompt them to login again so as to obtain the oidc
+    tokens.
+    """
     def dispatch(self, request, *args, **kwargs):
         # No need for super, this view should at this stage not need any of its
         # http method functions.
