@@ -29,6 +29,8 @@ class LoginView(IdempotentSessionWizardView):
         ("backup", BackupTokenForm),
     )
 
+    # A dictionary used by the IdempotentSessionWizardView to define which steps
+    # are only validated/executed once.
     idempotent_dict = {
         "token": False,
         "backup": False,
@@ -52,8 +54,8 @@ class LoginView(IdempotentSessionWizardView):
         self.device_cache = None
 
     def done(self, form_list, **kwargs):
-        """Log user in and direct them back to the site they came from."""
-        login(self.request, self.get_user())
+        if self.get_user().is_superuser:
+            login(self.request, self.get_user())
 
         redirect_to = self.request.POST.get(
             "next",
