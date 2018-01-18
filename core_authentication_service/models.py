@@ -1,9 +1,17 @@
 import uuid
 
 from django.conf import settings
+from django.contrib.auth import hashers
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+
+
+GENDER_CHOICES = (
+    ("female", "Female"),
+    ("male", "Male"),
+    ("other", "Other")
+)
 
 
 # NOTE: Changing AUTH_USER_MODEL will cause migration 0001 from otp_totp to
@@ -14,7 +22,9 @@ class CoreUser(AbstractUser):
     nickname = models.CharField(blank=True, null=True, max_length=30)
     msisdn = models.CharField(blank=True, null=True, max_length=16)
     msisdn_verified = models.BooleanField(default=False)
-    gender = models.IntegerField(blank=True, null=True)
+    gender = models.CharField(
+        max_length=10, blank=True, null=True, choices=GENDER_CHOICES
+    )
     birth_date = models.DateField(blank=True, null=True)
     country = models.ForeignKey("Country", blank=True, null=True)
     avatar = models.ImageField(blank=True, null=True)
@@ -40,9 +50,17 @@ class UserSecurityQuestion(models.Model):
     language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
     question = models.ForeignKey("SecurityQuestion")
 
+    # NOTE as always, be aware certain update, create and save paths will never
+    # trigger save() or the post/pre save signals.
+    def save(self, *args, **kwargs):
+        # Make use of django built in password hasher, gives us
+        # "check_password" method for comparison later on. In short, salts and
+        # hashes the text.
+        self.answer = hashers.make_password(self.answer.strip().lower())
+        super(UserSecurityQuestion, self).save(*args, **kwargs)
+
     def __str__(self):
         return "%s - %s" % (self.language_code, self.question.id)
-    # TODO Hash answer in save()
 
 
 class SecurityQuestion(models.Model):

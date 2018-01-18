@@ -154,11 +154,13 @@ class TestRegistrationView(TestCase):
         self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
         question_one = UserSecurityQuestion.objects.get(
-            answer="Answer1", question=self.question_one, language_code="en"
+            question=self.question_one,
+            language_code="en"
         )
         self.assertEquals(question_one.user, user)
         question_two = UserSecurityQuestion.objects.get(
-            answer="Answer2", question=self.question_two, language_code="en"
+            question=self.question_two,
+            language_code="en"
         )
         self.assertEquals(question_two.user, user)
 
