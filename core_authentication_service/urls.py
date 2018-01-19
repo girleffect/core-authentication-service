@@ -21,12 +21,13 @@ from two_factor.urls import urlpatterns as two_factor_patterns
 
 from core_authentication_service import views
 
-
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
+    url(r"^login/", views.LoginView.as_view(), name="login"),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
-    url(r"^two-factor-auth/", include(two_factor_patterns, namespace="two_factor_auth")),
-
+    url(r"^two-factor-auth/",
+        include(two_factor_patterns, namespace="two_factor_auth")
+    ),
     # Registration URLs
     url(
         r"^registration/$",

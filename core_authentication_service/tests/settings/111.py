@@ -49,7 +49,9 @@ MIDDLEWARE = MIDDLEWARE + [
 
 # Only change this once custom login flow has been decided on and the need
 # arises to bypass two factor for certain users.
-LOGIN_URL = reverse_lazy("two_factor_auth:login")
+LOGIN_URL = reverse_lazy("login")
+
+LOGIN_REDIRECT_URL = "admin:index"
 
 OIDC_USERINFO = "core_authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
