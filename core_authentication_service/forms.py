@@ -12,6 +12,8 @@ from django.utils.functional import cached_property
 
 from core_authentication_service import models
 from core_authentication_service.utils import update_form_fields
+from core_authentication_service.constants import SECURITY_QUESTION_COUNT, \
+    MIN_NON_HIGH_PASSWORD_LENGTH
 
 
 LOGGER = logging.getLogger(__name__)
@@ -22,9 +24,6 @@ REQUIREMENT_DEFINITION = {
     "picture": ["avatar"]
 }
 
-SECURITY_QUESTION_COUNT = 2
-
-MIN_NON_HIGH_PASSWORD_LENGTH = 4
 
 class RegistrationForm(UserCreationForm):
 
