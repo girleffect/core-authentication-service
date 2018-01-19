@@ -1,9 +1,10 @@
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 from django_otp.oath import totp
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.util import random_hex
+
+from core_authentication_service.models import CoreUser as User
 
 
 class BaseTestCase(TestCase):
