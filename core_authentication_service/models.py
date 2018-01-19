@@ -5,12 +5,13 @@ from django.contrib.auth import hashers
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import ugettext as _
 
 
 GENDER_CHOICES = (
-    ("female", "Female"),
-    ("male", "Male"),
-    ("other", "Other")
+    ("female", _("Female")),
+    ("male", _("Male")),
+    ("other", _("Other"))
 )
 
 
@@ -18,6 +19,7 @@ GENDER_CHOICES = (
 # break once migrations have already been run once.
 class CoreUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid1, editable=False)
+    email = models.EmailField(_('email address'), blank=True, null=True, unique=True)
     email_verified = models.BooleanField(default=False)
     nickname = models.CharField(blank=True, null=True, max_length=30)
     msisdn = models.CharField(blank=True, null=True, max_length=16)
@@ -26,7 +28,7 @@ class CoreUser(AbstractUser):
         max_length=10, blank=True, null=True, choices=GENDER_CHOICES
     )
     birth_date = models.DateField(blank=True, null=True)
-    country = models.ForeignKey("Country", blank=True, null=True)
+    country = models.ForeignKey(_("Country"), blank=True, null=True)
     avatar = models.ImageField(blank=True, null=True)
     is_employee = models.BooleanField(default=False)
     is_system_user = models.BooleanField(default=False)
@@ -38,7 +40,7 @@ class Country(models.Model):
     name = models.CharField(blank=True, null=True, max_length=100)
 
     class Meta:
-        verbose_name_plural = "Countries"
+        verbose_name_plural = _("Countries")
 
     def __str__(self):
         return "%s - %s" % (self.code, self.name)
@@ -64,7 +66,7 @@ class UserSecurityQuestion(models.Model):
 
 
 class SecurityQuestion(models.Model):
-    question_text = models.TextField(help_text="Default question text")
+    question_text = models.TextField(help_text=_("Default question text"))
 
     def __str__(self):
         return self.question_text
@@ -82,7 +84,7 @@ class QuestionLanguageText(models.Model):
         if SecurityQuestion.objects.filter(
                 questionlanguagetext__id=self.id).count() > 1:
             raise ValidationError(
-                "Question text can not be assigned to more than one question."
+                _("Question text can not be assigned to more than one question.")
             )
 
     def __str__(self):
