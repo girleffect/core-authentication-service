@@ -21,12 +21,12 @@ class LoginView(core.LoginView):
 
         redirect_to = self.request.POST.get(
             "next",
-            self.request.GET.get("next", '')
+            self.request.GET.get("next", "")
         )
         if not is_safe_url(url=redirect_to, host=self.request.get_host()):
             redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
 
-        device = getattr(self.get_user(), 'otp_device', None)
+        device = getattr(self.get_user(), "otp_device", None)
         if device:
             signals.user_verified.send(sender=__name__, request=self.request,
                                        user=self.get_user(), device=device)

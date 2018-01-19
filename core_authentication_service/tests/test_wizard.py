@@ -32,6 +32,12 @@ class BaseTestCase(TestCase):
             key=random_hex().decode()
         )
 
+        cls.super_user = User.objects.create_superuser(
+            username="super_user", email="super@user.com",
+            password="1234"
+        )
+        cls.super_user.save()
+
     def get_credential_step(self):
         print("Getting credential step")
         response = self.client.get(
@@ -40,14 +46,14 @@ class BaseTestCase(TestCase):
         )
         return response
 
-    def post_credential_step(self, user):
+    def post_credential_step(self, user, password):
         print("Posting credential step")
         response = self.client.post(
             self.wizard_url,
             {
                 "login_view-current_step": "auth",
                 "auth-username": user,
-                "auth-password": "1234"
+                "auth-password": password
             },
             follow=True
         )
@@ -65,13 +71,13 @@ class BaseTestCase(TestCase):
         )
         return response
 
-    def post_backup_step(self):
+    def post_backup_step(self, token):
         print("Posting backup step")
         response = self.client.post(
             self.wizard_url,
             {
                 "login_view-current_step": "backup",
-                "backup-otp_token": "abcdef123",
+                "backup-otp_token": token
             },
             follow=True
         )
@@ -89,7 +95,7 @@ class StandardTestCase(BaseTestCase):
         # Post credentials step. We check for a username field in the response
         # since only staff memebers will actually have access to admin, other
         # users will see another login screen.
-        response = self.post_credential_step(self.standard_user)
+        response = self.post_credential_step(self.standard_user, "1234")
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, "/login/?next=/admin/")
 
@@ -103,7 +109,7 @@ class TwoFATestCase(BaseTestCase):
         self.assertContains(response, "Username")
 
         # Post credentials step
-        response = self.post_credential_step(self.twofa_user)
+        response = self.post_credential_step(self.twofa_user, "1234")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Token")
 
@@ -126,7 +132,7 @@ class BackupCodeTestCase(BaseTestCase):
         self.assertContains(response, "Username")
 
         # Post credentials step
-        response = self.post_credential_step(self.twofa_user)
+        response = self.post_credential_step(self.twofa_user, "1234")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "backup token")
 
@@ -154,6 +160,21 @@ class BackupCodeTestCase(BaseTestCase):
         )
 
         # Post backup step
-        response = self.post_backup_step()
+        response = self.post_backup_step("abcdef123")
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, "/login/?next=/admin/")
+
+
+class SuperUserTestCase(BaseTestCase):
+    """Test case for superusers. These users will/should be signed in"""
+    def test_it(self):
+        # Get credentials step
+        response = self.get_credential_step()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Username")
+
+        # Post credentials step. Since 2FA isn't set up on the superuser
+        # account, they should immediately be signed into the admin interface.
+        response = self.post_credential_step(self.super_user, "1234")
+        self.assertEquals(response.status_code, 200)
+        self.assertRedirects(response, "/admin/")
