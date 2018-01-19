@@ -1,0 +1,36 @@
+import string
+
+from django.utils.translation import ugettext
+from django.core.exceptions import ValidationError
+
+
+class DiversityValidator(object):
+    """
+    Validate whether the password has uppercase, lowercase, digits and special characters.
+    """
+
+    def validate(self, password, user=None):
+        charsets = [
+            set(string.ascii_lowercase),
+            set(string.ascii_uppercase),
+            set(string.digits),
+            set(string.punctuation)
+        ]
+        password_chars = set(password)
+
+        # Check that the password characters comes from all charsets.
+        valid = all(password_chars.intersection(charset) for charset in charsets)
+        if not valid:
+            raise ValidationError(
+                ugettext(
+                    "This password must container at least one uppercase "\
+                    "letter, one lowercase one, a digit and special character.",
+                ),
+                code='password_not_diverse',
+            )
+
+    def get_help_text(self):
+        return ugettext(
+            "This password must container at least one uppercase "\
+            "letter, one lowercase one, a digit and special character.",
+        )
