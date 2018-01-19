@@ -45,9 +45,9 @@ class BaseTestCase(TestCase):
         response = self.client.post(
             self.wizard_url,
             {
-                "login_view-current_step": "credentials",
-                "credentials-username": user,
-                "credentials-password": "1234"
+                "login_view-current_step": "auth",
+                "auth-username": user,
+                "auth-password": "1234"
             },
             follow=True
         )
