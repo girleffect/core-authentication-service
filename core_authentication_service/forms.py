@@ -9,6 +9,7 @@ from django.db.models import QuerySet
 from django.forms import BaseFormSet
 from django.forms import formset_factory
 from django.utils.functional import cached_property
+from django.utils.translation import ugettext as _
 
 from core_authentication_service import models
 from core_authentication_service.utils import update_form_fields
@@ -94,7 +95,7 @@ class RegistrationForm(UserCreationForm):
         # Setting doesn't feel 100% right though.
         if not len(password2) >= MIN_NON_HIGH_PASSWORD_LENGTH:
             raise forms.ValidationError(
-                "Password not long enough."
+                _("Password not long enough.")
             )
         return password2
 
@@ -103,7 +104,7 @@ class RegistrationForm(UserCreationForm):
         msisdn = self.cleaned_data.get("msisdn")
 
         if not email and not msisdn:
-            raise ValidationError("Enter either email or msisdn")
+            raise ValidationError(_("Enter either email or msisdn"))
 
         return super(RegistrationForm, self).clean()
 
@@ -134,14 +135,14 @@ class SecurityQuestionFormSetClass(BaseFormSet):
             if not email:
                 if not form.cleaned_data.get("question", None):
                     raise ValidationError(
-                        "Please fill in all Security Question fields."
+                        _("Please fill in all Security Question fields.")
                     )
 
             # Ensure unique questions are used.
             question = form.cleaned_data.get("question", None)
             if question in questions and question is not None:
                 raise forms.ValidationError(
-                    "Each question can only be picked once."
+                    _("Each question can only be picked once.")
                 )
             questions.append(question)
 
@@ -149,7 +150,7 @@ class SecurityQuestionFormSetClass(BaseFormSet):
         # but some have been, raise an error.
         if not all(questions) and any(questions):
             raise ValidationError(
-                "Please fill in all Security Question fields."
+                _("Please fill in all Security Question fields.")
             )
 
 
