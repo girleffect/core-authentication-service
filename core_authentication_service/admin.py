@@ -9,7 +9,7 @@ class CoreUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ("Extra data",
             {"fields": (
-                "nickname", "msisdn", "birth_date", "country_code", "avatar"
+                "nickname", "msisdn", "birth_date", "country", "avatar"
             )}
         ),
     )
