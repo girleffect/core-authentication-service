@@ -12,6 +12,22 @@ AUTH_PASSWORD_VALIDATORS += [
     },
 ]
 
+# Defender options
+DEFENDER_LOGIN_FAILURE_LIMIT = 3
+DEFENDER_BEHIND_REVERSE_PROXY = False
+DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
+DEFENDER_DISABLE_IP_LOCKOUT = True
+DEFENDER_DISABLE_USERNAME_LOCKOUT = False
+DEFENDER_COOLOFF_TIME = 300  # seconds
+DEFENDER_LOCKOUT_TEMPLATE = 'core-authentication-service/lockout.html'
+DEFENDER_REVERSE_PROXY_HEADER = 'HTTP_X_FORWARDED_FOR'
+DEFENDER_CACHE_PREFIX = 'defender'
+DEFENDER_LOCKOUT_URL = '/lockout'
+DEFENDER_REDIS_URL = 'redis://localhost:6379/0'
+DEFENDER_STORE_ACCESS_ATTEMPTS = True
+DEFENDER_ACCESS_ATTEMPT_EXPIRATION = 24  # hours
+DEFENDER_USERNAME_FORM_FIELD = "auth-username"
+
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
@@ -35,6 +51,7 @@ ADDITIONAL_APPS = [
     "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
     "two_factor",
+    "defender",
 
     # Form helpers.
     "form_renderers",
@@ -46,7 +63,7 @@ INSTALLED_APPS = ["core_authentication_service"] + INSTALLED_APPS + ADDITIONAL_A
 MIDDLEWARE = MIDDLEWARE + [
     "django.middleware.locale.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django_otp.middleware.OTPMiddleware"
+    "django_otp.middleware.OTPMiddleware",
 ]
 
 # Only change this once custom login flow has been decided on and the need
@@ -59,11 +76,14 @@ OIDC_USERINFO = "core_authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "core_authentication_service.oidc_provider_settings.CustomScopeClaims"
 
-FORM_RENDERERS = {"replace-as-p": True, "replace-as-table": True}
-FORM_RENDERERS = {"enable-bem-classes": True}
+FORM_RENDERERS = {
+    "replace-as-p": True,
+    "replace-as-table": True,
+    "enable-bem-classes": True
+}
 
 # Attempt to import local settings if present.
 try:
     from project.settings_local import *
 except ImportError:
-    raise
+    pass

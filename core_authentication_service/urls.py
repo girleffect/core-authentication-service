@@ -23,6 +23,7 @@ from core_authentication_service import views
 
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
+    url(r'^admin/defender/', include('defender.urls')),  # defender admin
     url(r"^login/", views.LoginView.as_view(), name="login"),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
     url(r"^two-factor-auth/",
@@ -39,7 +40,7 @@ urlpatterns = [
         views.RedirectView.as_view(),
         name="redirect_view"
     ),
-
+    url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
     # Useful url to have, not currently used in any flows.
     url(r"^logout/$",
         logout
