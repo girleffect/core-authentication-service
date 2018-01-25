@@ -1,5 +1,6 @@
-from testfixtures import LogCapture
+import random
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -7,6 +8,43 @@ from django.test.client import Client
 
 from core_authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
+from core_authentication_service.views import LockoutView
+
+
+class TestLockout(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestLockout, cls).setUpClass()
+        cls.client = Client()
+
+    def setUp(self):
+        super(TestLockout, self).setUp()
+        self.client = Client()
+
+    def test_lockout(self):
+        login_url = reverse("login")
+        login_data = {
+            "login_view-current_step": "auth",
+            "auth-username": "unknown_user_{}".format(random.randint(0, 10000)),
+            "auth-password": "anything"
+        }
+        allowed_attempts = settings.DEFENDER_LOGIN_FAILURE_LIMIT
+        attempt = 0
+        while attempt < allowed_attempts:
+            attempt += 1
+            self.client.get(login_url)
+            response = self.client.post(login_url, login_data)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.template_name,
+                             ["core-authentication-service/login.html"])
+
+        # The next (failed) attempt needs to prevent further login attempts
+        self.client.get(login_url)
+        response = self.client.post(login_url, login_data, follow=True)
+        self.assertEqual([template.name for template in response.templates],
+                         ['core-authentication-service/lockout.html',
+                          'base.html'])
 
 
 class TestRegistrationView(TestCase):
