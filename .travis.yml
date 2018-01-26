@@ -5,6 +5,7 @@ python: "3.6"
 
 services:
     - docker
+    - redis-server
 
 env:
   - TOXENV=django111
