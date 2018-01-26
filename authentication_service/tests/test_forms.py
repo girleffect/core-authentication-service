@@ -1,9 +1,9 @@
 from django.test import TestCase
 from django.http import QueryDict
 
-from core_authentication_service.forms import RegistrationForm, \
+from authentication_service.forms import RegistrationForm, \
     SecurityQuestionForm, SecurityQuestionFormSet
-from core_authentication_service.models import SecurityQuestion
+from authentication_service.models import SecurityQuestion
 
 
 class TestRegistrationForm(TestCase):

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model, hashers
 
-from core_authentication_service.models import SecurityQuestion, \
+from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 
 

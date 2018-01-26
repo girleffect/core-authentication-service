@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
 
-from core_authentication_service.models import SecurityQuestion, \
+from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 
 
@@ -38,13 +38,13 @@ class TestLockout(TestCase):
             response = self.client.post(login_url, login_data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.template_name,
-                             ["core-authentication-service/login.html"])
+                             ["authentication_service/login.html"])
 
         # The next (failed) attempt needs to prevent further login attempts
         self.client.get(login_url)
         response = self.client.post(login_url, login_data, follow=True)
         self.assertEqual([template.name for template in response.templates],
-                         ["core-authentication-service/lockout.html",
+                         ["authentication_service/lockout.html",
                           "base.html"])
 
         # Manually unblock the username. This allows the user to try again.
@@ -54,7 +54,7 @@ class TestLockout(TestCase):
         response = self.client.post(login_url, login_data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.template_name,
-                         ["core-authentication-service/login.html"])
+                         ["authentication_service/login.html"])
 
 
 class TestRegistrationView(TestCase):
@@ -81,17 +81,17 @@ class TestRegistrationView(TestCase):
         self.assertListEqual(
             response.template_name,
             [
-                "core_authentication_service/registration/registration_django"
+                "authentication_service/registration/registration_django"
                 ".html",
-                "core_authentication_service/registration/registration.html"]
+                "authentication_service/registration/registration.html"]
         )
         self.assertContains(response, "Girl Effect using django admin theme")
 
         response = self.client.get(reverse("registration") + "?theme=ge")
         self.assertListEqual(
             response.template_name,
-            ["core_authentication_service/registration/registration_ge.html",
-             "core_authentication_service/registration/registration.html"]
+            ["authentication_service/registration/registration_ge.html",
+             "authentication_service/registration/registration.html"]
         )
         self.assertContains(response, "Girl Effect themed form")
 
@@ -243,10 +243,10 @@ class TestRegistrationView(TestCase):
                 "&requires=notontheform"
             )
             test_output = [
-                "WARNING:core_authentication_service.forms:"
+                "WARNING:authentication_service.forms:"
                 "Received field to alter that is "
                 "not on form: someawesomefield",
-                "WARNING:core_authentication_service.forms:"
+                "WARNING:authentication_service.forms:"
                 "Received field to alter that is "
                 "not on form: notontheform"
             ]
