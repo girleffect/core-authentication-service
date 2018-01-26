@@ -11,9 +11,9 @@ from django.forms import formset_factory
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext as _
 
-from core_authentication_service import models
-from core_authentication_service.utils import update_form_fields
-from core_authentication_service.constants import SECURITY_QUESTION_COUNT, \
+from authentication_service import models
+from authentication_service.utils import update_form_fields
+from authentication_service.constants import SECURITY_QUESTION_COUNT, \
     MIN_NON_HIGH_PASSWORD_LENGTH
 
 

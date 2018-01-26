@@ -1,5 +1,5 @@
 """
-WSGI config for core_authentication_service project.
+WSGI config for authentication_service project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core_authentication_service.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authentication_service.settings")
 
 application = get_wsgi_application()

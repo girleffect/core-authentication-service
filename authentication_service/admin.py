@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from core_authentication_service import models
+from authentication_service import models
 
 
 @admin.register(models.CoreUser)

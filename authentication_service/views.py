@@ -13,7 +13,7 @@ from django.views.generic.edit import CreateView
 from two_factor import signals
 from two_factor.views import core
 
-from core_authentication_service import forms, models
+from authentication_service import forms, models
 
 
 class LockoutView(View):
@@ -21,7 +21,7 @@ class LockoutView(View):
     A view used by Defender to inform the user that they have exceeded the
     threshold for allowed login failures or password reset attempts.
     """
-    template_name = "core-authentication-service/lockout.html"
+    template_name = "authentication_service/lockout.html"
 
 
 class LoginView(core.LoginView):
@@ -30,7 +30,7 @@ class LoginView(core.LoginView):
     superusers.
     """
 
-    template_name = "core-authentication-service/login.html"
+    template_name = "authentication_service/login.html"
 
     def done(self, form_list, **kwargs):
         if self.get_user().is_superuser:
@@ -64,7 +64,7 @@ REDIRECT_COOKIE_KEY = "register_redirect"
 
 
 class RegistrationView(CreateView):
-    template_name = "core_authentication_service/registration/registration.html"
+    template_name = "authentication_service/registration/registration.html"
     form_class = forms.RegistrationForm
 
     def dispatch(self, *args, **kwargs):
@@ -86,7 +86,7 @@ class RegistrationView(CreateView):
 
         # Any extra templates need to be before the base.
         template_names = [
-            "core_authentication_service/registration/registration_%s.html" % self.theme,
+            "authentication_service/registration/registration_%s.html" % self.theme,
         ] + template_names
         return template_names
 

@@ -1,4 +1,4 @@
-"""core_authentication_service URL Configuration
+"""authentication_service URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
@@ -19,7 +19,7 @@ from django.contrib.auth.views import logout
 
 from two_factor.urls import urlpatterns as two_factor_patterns
 
-from core_authentication_service import views
+from authentication_service import views
 
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
