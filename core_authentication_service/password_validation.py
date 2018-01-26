@@ -23,7 +23,7 @@ class DiversityValidator(object):
         if not valid:
             raise ValidationError(
                 ugettext(
-                    "This password must container at least one uppercase "\
+                    "The password must contain at least one uppercase "
                     "letter, one lowercase one, a digit and special character.",
                 ),
                 code='password_not_diverse',
@@ -31,6 +31,6 @@ class DiversityValidator(object):
 
     def get_help_text(self):
         return ugettext(
-            "This password must container at least one uppercase "\
+            "The password must contain at least one uppercase "
             "letter, one lowercase one, a digit and special character.",
         )

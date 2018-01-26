@@ -196,7 +196,8 @@ class TestRegistrationForm(TestCase):
         "password2": [
             "This password is too short. It must contain at least 8 characters.",
             "This password is entirely numeric.",
-            "This password must container at least one uppercase letter, one lowercase one, a digit and special character."
+            "The password must contain at least one uppercase letter, "
+            "one lowercase one, a digit and special character."
         ]})
 
 
@@ -211,7 +212,8 @@ class TestRegistrationForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
         "password2": [
-            "This password must container at least one uppercase letter, one lowercase one, a digit and special character."
+            "The password must contain at least one uppercase letter, "
+            "one lowercase one, a digit and special character."
         ]})
 
         # Test close to username
@@ -226,7 +228,8 @@ class TestRegistrationForm(TestCase):
         self.assertEqual(form.errors, {
         "password2": [
             "The password is too similar to the username.",
-            "This password must container at least one uppercase letter, one lowercase one, a digit and special character."
+            "The password must contain at least one uppercase letter, "
+            "one lowercase one, a digit and special character."
         ]})
 
         # Test success

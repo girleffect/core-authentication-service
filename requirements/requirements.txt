@@ -18,3 +18,4 @@ django-form-renderers>=0.3.2,<1.0
 # 3rd party image related.
 Pillow==5.0.0
 
+django-defender>=0.5.1,<0.6

@@ -1,6 +1,8 @@
+from defender.decorators import watch_login
 from django.conf import settings
 from django.contrib.auth import login
 from django.shortcuts import redirect, resolve_url
+from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
@@ -12,6 +14,14 @@ from two_factor import signals
 from two_factor.views import core
 
 from core_authentication_service import forms, models
+
+
+class LockoutView(View):
+    """
+    A view used by Defender to inform the user that they have exceeded the
+    threshold for allowed login failures or password reset attempts.
+    """
+    template_name = "core-authentication-service/lockout.html"
 
 
 class LoginView(core.LoginView):
@@ -38,6 +48,16 @@ class LoginView(core.LoginView):
             signals.user_verified.send(sender=__name__, request=self.request,
                                        user=self.get_user(), device=device)
         return redirect(redirect_to)
+
+
+# Protect the login view using Defender. Defendor provides a method decorator
+# which we have to tweak to apply to the dispatch method of a view.
+# This is based on their own implementation of their middleware class:
+# https://github.com/kencochrane/django-defender/blob/master/defender/middleware.py#L24-L27
+defender_decorator = watch_login()
+watch_login_method = method_decorator(defender_decorator)
+LoginView.dispatch = watch_login_method(LoginView.dispatch)
+# TODO: Do something similar to the password reset view when it is implemented.
 
 
 REDIRECT_COOKIE_KEY = "register_redirect"

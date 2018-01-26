@@ -1,5 +1,7 @@
-from testfixtures import LogCapture
+import random
 
+from defender.utils import unblock_username
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -7,6 +9,52 @@ from django.test.client import Client
 
 from core_authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
+
+
+class TestLockout(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestLockout, cls).setUpClass()
+        cls.client = Client()
+
+    def setUp(self):
+        super(TestLockout, self).setUp()
+        self.client = Client()
+
+    def test_lockout(self):
+        username = "unknown_user_{}".format(random.randint(0, 10000))
+        login_url = reverse("login")
+        login_data = {
+            "login_view-current_step": "auth",
+            "auth-username": username,
+            "auth-password": "anything"
+        }
+        allowed_attempts = settings.DEFENDER_LOGIN_FAILURE_LIMIT
+        attempt = 0
+        while attempt < allowed_attempts:
+            attempt += 1
+            self.client.get(login_url)
+            response = self.client.post(login_url, login_data)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.template_name,
+                             ["core-authentication-service/login.html"])
+
+        # The next (failed) attempt needs to prevent further login attempts
+        self.client.get(login_url)
+        response = self.client.post(login_url, login_data, follow=True)
+        self.assertEqual([template.name for template in response.templates],
+                         ["core-authentication-service/lockout.html",
+                          "base.html"])
+
+        # Manually unblock the username. This allows the user to try again.
+        unblock_username(username)
+
+        self.client.get(login_url)
+        response = self.client.post(login_url, login_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name,
+                         ["core-authentication-service/login.html"])
 
 
 class TestRegistrationView(TestCase):
@@ -32,8 +80,10 @@ class TestRegistrationView(TestCase):
         response = self.client.get(reverse("registration") + "?theme=django")
         self.assertListEqual(
             response.template_name,
-            ["core_authentication_service/registration/registration_django.html",
-            "core_authentication_service/registration/registration.html"]
+            [
+                "core_authentication_service/registration/registration_django"
+                ".html",
+                "core_authentication_service/registration/registration.html"]
         )
         self.assertContains(response, "Girl Effect using django admin theme")
 
@@ -41,7 +91,7 @@ class TestRegistrationView(TestCase):
         self.assertListEqual(
             response.template_name,
             ["core_authentication_service/registration/registration_ge.html",
-            "core_authentication_service/registration/registration.html"]
+             "core_authentication_service/registration/registration.html"]
         )
         self.assertContains(response, "Girl Effect themed form")
 
@@ -80,7 +130,9 @@ class TestRegistrationView(TestCase):
 
         # Test redirect url, 2fa
         response = self.client.post(
-            reverse("registration") + "?show2fa=true&redirect_url=/test-redirect-url/",
+            reverse(
+                "registration") +
+            "?show2fa=true&redirect_url=/test-redirect-url/",
             {
                 "username": "Username2",
                 "password1": "password",
@@ -92,11 +144,14 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url, "/two-factor-auth/account/two_factor/setup/")
+        self.assertIn(response.url,
+                      "/two-factor-auth/account/two_factor/setup/")
 
         # Test redirect url, high security
         response = self.client.post(
-            reverse("registration") + "?security=high&redirect_url=/test-redirect-url/",
+            reverse(
+                "registration") +
+            "?security=high&redirect_url=/test-redirect-url/",
             {
                 "username": "Username3",
                 "password1": "awesom#saFe3",
@@ -108,7 +163,8 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url, "/two-factor-auth/account/two_factor/setup/")
+        self.assertIn(response.url,
+                      "/two-factor-auth/account/two_factor/setup/")
 
     def test_user_save(self):
         response = self.client.post(
@@ -125,7 +181,8 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url, "/two-factor-auth/account/two_factor/setup/")
+        self.assertIn(response.url,
+                      "/two-factor-auth/account/two_factor/setup/")
         user = get_user_model().objects.get(username="Unique@User@Name")
         self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
@@ -149,7 +206,8 @@ class TestRegistrationView(TestCase):
                 "form-1-answer": "Answer2"
             }
         )
-        self.assertIn(response.url, "/two-factor-auth/account/two_factor/setup/")
+        self.assertIn(response.url,
+                      "/two-factor-auth/account/two_factor/setup/")
         user = get_user_model().objects.get(username="Unique@User@Name")
         self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
@@ -170,7 +228,8 @@ class TestRegistrationView(TestCase):
         self.assertIn(response.url, "/two-factor-auth/account/login/")
 
         # Test with redirect cookie set.
-        self.client.cookies.load({"register_redirect": "/test-redirect-after2fa/"})
+        self.client.cookies.load(
+            {"register_redirect": "/test-redirect-after2fa/"})
         response = self.client.get(reverse("redirect_view"))
         self.assertIn(response.url, "/test-redirect-after2fa/")
 
