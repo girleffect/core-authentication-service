@@ -141,8 +141,7 @@ class RegistrationView(CreateView):
         # user must be logged in.
         if self.security == "high" or self.request.GET.get("show2fa") == "true":
             new_user = authenticate(username=form.cleaned_data['username'],
-                                    password=form.cleaned_data['password1'],
-                                    )
+                                    password=form.cleaned_data['password1'])
             login(self.request, new_user)
 
         # Do some work and assign questions to the user.
