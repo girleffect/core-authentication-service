@@ -1,0 +1,18 @@
+<html>
+    <body style="background-color:black;color:white;">
+        <h1>Girl Effect themed form</h1>
+        <form action="" method="post" novalidate>
+            {% csrf_token %}
+            {{ form.as_div }}
+
+            <div>
+                {{ question_formset.management_form }}
+                {{ question_formset.non_form_errors }}
+                {% for qform in question_formset %}
+                    {{ qform.as_div }}
+                {% endfor %}
+            </div>
+            <input type="submit" value="Register" />
+        </form>
+    </body>
+</html>

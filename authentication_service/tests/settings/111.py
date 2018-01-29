@@ -1,4 +1,3 @@
-import os
 from django.core.urlresolvers import reverse_lazy
 from project.settings_base import *
 
@@ -29,22 +28,17 @@ DEFENDER_STORE_ACCESS_ATTEMPTS = True
 DEFENDER_ACCESS_ATTEMPT_EXPIRATION = 24  # hours
 DEFENDER_USERNAME_FORM_FIELD = "auth-username"
 
+# NOTE missing password, host and port for passwordless connection.
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
         "NAME": os.environ.get("DB_NAME", "authentication_service"),
         "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
         "CONN_MAX_AGE": 600
     }
 }
 
 INSTALLED_APPS = list(INSTALLED_APPS)
-
-ALLOWED_HOSTS = [os.environ.get("ALLOWED_HOSTS")]
-
 
 ADDITIONAL_APPS = [
     # Open ID prodiver.
@@ -86,8 +80,3 @@ FORM_RENDERERS = {
     "enable-bem-classes": True
 }
 
-# Attempt to import local settings if present.
-try:
-    from project.settings_local import *
-except ImportError:
-    pass

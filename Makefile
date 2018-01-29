@@ -2,6 +2,8 @@ VENV=./ve
 PYTHON=$(VENV)/bin/python
 PIP=$(VENV)/bin/pip
 FLAKE8=$(VENV)/bin/flake8
+DB_NAME=authentication_service
+DB_USER=authentication_service
 
 # Colours.
 CLEAR=\033[0m
@@ -10,7 +12,7 @@ GREEN=\033[0;32m
 CYAN=\033[0;36m
 
 .SILENT: docs-build
-.PHONY: check
+.PHONY: check test
 
 help:
 	@echo "usage: make <target>"
@@ -75,3 +77,9 @@ $(FLAKE8): $(VENV)
 
 check: $(FLAKE8)
 	$(FLAKE8)
+
+database:
+	sql/create_database.sh $(DB_NAME) $(DB_USER) | sudo -u postgres psql -f -
+
+test:
+	$(PYTHON) manage.py test

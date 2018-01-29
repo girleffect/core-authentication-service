@@ -5,6 +5,7 @@ python: "3.6"
 
 services:
     - docker
+    - redis-server
 
 env:
   - TOXENV=django111
@@ -15,7 +16,7 @@ install:
 script: tox
 
 after_success:
-  - export REPO=dockerhubowner/core-authentication-service
+  - export REPO=dockerhubowner/authentication-service
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH_CLEAN ; fi`
   - export build -t $REPO:$TAG .
 

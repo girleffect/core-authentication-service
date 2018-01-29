@@ -1,4 +1,4 @@
-"""core_authentication_service URL Configuration
+"""authentication_service URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
@@ -15,12 +15,34 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.contrib.auth.views import logout
 
 from two_factor.urls import urlpatterns as two_factor_patterns
 
+from authentication_service import views
 
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
+    url(r'^admin/defender/', include('defender.urls')),  # defender admin
+    url(r"^login/", views.LoginView.as_view(), name="login"),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
-    url(r"^two-factor-auth", include(two_factor_patterns, namespace="two_factor_auth")),
+    url(r"^two-factor-auth/",
+        include(two_factor_patterns, namespace="two_factor_auth")
+    ),
+    # Registration URLs
+    url(
+        r"^registration/$",
+        views.RegistrationView.as_view(),
+        name="registration"
+    ),
+    url(
+        r"^redirect/$",
+        views.RedirectView.as_view(),
+        name="redirect_view"
+    ),
+    url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
+    # Useful url to have, not currently used in any flows.
+    url(r"^logout/$",
+        logout
+    ),
 ]

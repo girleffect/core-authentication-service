@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+    {% blocktrans %}
+    You have exceeded the maximum number of allowed incorrect login attempts ({{ failure_limit }}).
+    Please wait {{ cooloff_time_minutes }} minutes before trying again.
+    {% endblocktrans %}
+    </ul>
+{% endblock %}
