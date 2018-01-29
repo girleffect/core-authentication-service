@@ -1,6 +1,6 @@
 from defender.decorators import watch_login
 from django.conf import settings
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.shortcuts import redirect, resolve_url
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
@@ -136,6 +136,14 @@ class RegistrationView(CreateView):
 
         # Let the user model save.
         response = super(RegistrationView, self).form_valid(form)
+
+        # When we need to show the option to enable 2FA the newly created
+        # user must be logged in.
+        if self.security == "high" or self.request.GET.get("show2fa") == "true":
+            new_user = authenticate(username=form.cleaned_data['username'],
+                                    password=form.cleaned_data['password1'],
+                                    )
+            login(self.request, new_user)
 
         # Do some work and assign questions to the user.
         for form in formset.forms:
