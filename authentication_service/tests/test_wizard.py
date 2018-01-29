@@ -1,3 +1,4 @@
+from defender.utils import unblock_username, reset_failed_attempts
 from django.test import TestCase
 from django.urls import reverse
 from django_otp.oath import totp
@@ -38,6 +39,12 @@ class BaseTestCase(TestCase):
             password="1234"
         )
         cls.super_user.save()
+
+    def setUp(self):
+        # Make sure none of the test users are blocked before running a test.
+        for user in [self.standard_user, self.twofa_user, self.super_user]:
+            unblock_username(user.username)
+            reset_failed_attempts(username=user.username)
 
     def get_credential_step(self):
         print("Getting credential step")
@@ -94,7 +101,7 @@ class StandardTestCase(BaseTestCase):
         self.assertContains(response, "Username")
 
         # Post credentials step. We check for a username field in the response
-        # since only staff memebers will actually have access to admin, other
+        # since only staff members will actually have access to admin, other
         # users will see another login screen.
         response = self.post_credential_step(self.standard_user, "1234")
         self.assertEqual(response.status_code, 200)
@@ -122,6 +129,7 @@ class TwoFATestCase(BaseTestCase):
 
 class BackupCodeTestCase(BaseTestCase):
     """Test case where user uses one of their backup codes."""
+
     def test_it(self):
         # Create backup tokens for user
         device = self.twofa_user.staticdevice_set.create(name='backup')

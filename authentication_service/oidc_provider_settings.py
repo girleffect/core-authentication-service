@@ -58,6 +58,7 @@ def userinfo(claims: dict, user: USER_MODEL) -> dict:
     LOGGER.debug("Userinfo request for {}: Response: {}".format(user, claims))
     return claims
 
+
 class CustomScopeClaims(ScopeClaims):
     info_roles = (
         _(u"Roles"), _(u"User roles for the requesting site"),
@@ -77,7 +78,7 @@ class CustomScopeClaims(ScopeClaims):
 
         # TODO: Roles need to actually get fetched.
         roles = ["not", "implemented", "yet", "Role G", "Role C"]
-        LOGGER.debug("Got roles after possible blocking api call " \
+        LOGGER.debug("Got roles after possible blocking api call "
             "to access-control for user: %s on site: %s" % (
             self.user.username,  self.client))
         result = {"roles": roles}

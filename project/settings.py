@@ -1,3 +1,4 @@
+import os
 from django.core.urlresolvers import reverse_lazy
 from project.settings_base import *
 
