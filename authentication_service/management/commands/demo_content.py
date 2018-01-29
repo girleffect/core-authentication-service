@@ -20,6 +20,17 @@ class Command(BaseCommand):
         )
         c.save()
 
+        c = Client(
+            name="Wagtail client 2",
+            client_id="client_id_2",
+            client_secret="super_client_secret_2",
+            response_type="code",
+            redirect_uris=[
+                os.environ.get("WAGTAIL_2_IP",'http://example.com/')
+            ]
+        )
+        c.save()
+
         # Super user
         user = User.objects.create(username="admin", is_superuser=1, is_staff=1)
         user.set_password("local")
