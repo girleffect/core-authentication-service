@@ -12,7 +12,7 @@ GREEN=\033[0;32m
 CYAN=\033[0;36m
 
 .SILENT: docs-build
-.PHONY: check
+.PHONY: check test
 
 help:
 	@echo "usage: make <target>"
@@ -81,3 +81,5 @@ check: $(FLAKE8)
 database:
 	sql/create_database.sh $(DB_NAME) $(DB_USER) | sudo -u postgres psql -f -
 
+test:
+	$(PYTHON) manage.py test
