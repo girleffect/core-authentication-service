@@ -1,4 +1,6 @@
 from defender.decorators import watch_login
+from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
+    get_username_blocked_cache_key
 from django.conf import settings
 from django.contrib.auth import login, authenticate
 from django.shortcuts import redirect, resolve_url
@@ -32,6 +34,16 @@ class LoginView(core.LoginView):
 
     template_name = "authentication_service/login.html"
 
+    def __init__(self, **kwargs):
+        super(LoginView, self).__init__(**kwargs)
+        # This is a workaround for the following issue:
+        # https://github.com/kencochrane/django-defender/issues/110
+        # We should be able to remove this when the issue is fixed.
+        pipe = REDIS_SERVER.pipeline()
+        pipe.delete(get_username_attempt_cache_key(None))
+        pipe.delete(get_username_blocked_cache_key(None))
+        pipe.execute()
+
     def done(self, form_list, **kwargs):
         if self.get_user().is_superuser:
             login(self.request, self.get_user())
@@ -50,7 +62,7 @@ class LoginView(core.LoginView):
         return redirect(redirect_to)
 
 
-# Protect the login view using Defender. Defendor provides a method decorator
+# Protect the login view using Defender. Defender provides a method decorator
 # which we have to tweak to apply to the dispatch method of a view.
 # This is based on their own implementation of their middleware class:
 # https://github.com/kencochrane/django-defender/blob/master/defender/middleware.py#L24-L27
