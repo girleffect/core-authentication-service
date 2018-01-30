@@ -1,21 +1,23 @@
 sudo: required
 cache: pip
 language: python
-python: "3.6"
-
+python:
+  - "3.6"
 services:
-    - docker
-    - redis-server
+  - docker
+  - redis-server
+  - postgres
 
 env:
   - TOXENV=django111
 
 install:
-  - pip install tox
+  - pip install tox coveralls
 
 script: tox
 
 after_success:
+  - coveralls
   - export REPO=dockerhubowner/authentication-service
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH_CLEAN ; fi`
   - export build -t $REPO:$TAG .
