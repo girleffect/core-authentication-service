@@ -12,3 +12,4 @@ README.rst
 docs/
 tox.ini
 ve/
+project/settings_local.py
