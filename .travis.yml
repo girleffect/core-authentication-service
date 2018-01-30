@@ -6,7 +6,7 @@ python:
 services:
   - docker
   - redis-server
-  - postgres
+  - postgresql
 
 env:
   - TOXENV=django111
