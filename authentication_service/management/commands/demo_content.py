@@ -1,3 +1,8 @@
+# NOTE: Management command only to be used for setting up demo environments, do
+# not use for anything else. Clients being set is bad enough, however the super
+# user is created with an unsecure password that is visible in clear text in a
+# public repo.
+
 import os
 
 from django.contrib.auth.models import User
@@ -7,6 +12,7 @@ from oidc_provider.models import Client
 
 
 class Command(BaseCommand):
+    help = "Setup used for demonstration purposes only"
 
     def handle(self, *args, **options):
         c = Client(
