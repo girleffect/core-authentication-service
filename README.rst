@@ -1,4 +1,10 @@
-# core-authentication-service
+core-authentication-service
+===========================
+.. image:: https://travis-ci.org/girleffect/core-authentication-service.svg?branch=develop
+    :target: https://travis-ci.org/girleffect/core-authentication-service
+
+.. image:: https://coveralls.io/repos/github/girleffect/core-authentication-service/badge.svg?branch=develop
+     :target: https://coveralls.io/github/girleffect/core-authentication-service?branch=develop
 
 Documentation for this project can be found here:
 https://girleffect.github.io/core-authentication-service/
