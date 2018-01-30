@@ -5,7 +5,7 @@
 
 import os
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 
 from oidc_provider.models import Client
@@ -38,6 +38,6 @@ class Command(BaseCommand):
         c.save()
 
         # Super user
-        user = User.objects.create(username="admin", is_superuser=1, is_staff=1)
+        user = get_user_model().objects.create(username="admin", is_superuser=1, is_staff=1)
         user.set_password("local")
         user.save()
