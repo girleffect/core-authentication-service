@@ -4,7 +4,7 @@ ARG EXTRA_DEPS
 
 ENV DJANGO_SETTINGS_MODULE=project.settings
 
-RUN apt-get update && apt-get install -y gcc $EXTRA_DEPS
+RUN apt-get update && apt-get install -y gcc netcat $EXTRA_DEPS
 
 WORKDIR /app/
 
@@ -14,6 +14,8 @@ RUN pip install -r requirements/requirements.txt
 
 COPY . /app/
 
-RUN chmod -R +x /app/scripts/
-
 EXPOSE 8000
+
+ENTRYPOINT ["scripts/waitFor.sh"]
+
+CMD ["scripts/startDjango.sh"]
