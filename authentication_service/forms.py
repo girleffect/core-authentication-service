@@ -188,3 +188,11 @@ SecurityQuestionFormSet = formset_factory(
     formset=SecurityQuestionFormSetClass,
     extra=SECURITY_QUESTION_COUNT
 )
+
+
+class EditProfileForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "first_name", "last_name", "nickname", "email"
+        ]

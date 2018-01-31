@@ -40,6 +40,12 @@ urlpatterns = [
         views.RedirectView.as_view(),
         name="redirect_view"
     ),
+
+    url(
+        r"^profile/edit/",
+        views.EditProfileView.as_view(),
+        name="edit_profile"
+    ),
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
     # Useful url to have, not currently used in any flows.
     url(r"^logout/$",

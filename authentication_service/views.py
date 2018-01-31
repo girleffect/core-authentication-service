@@ -1,6 +1,7 @@
 from defender.decorators import watch_login
 from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
     get_username_blocked_cache_key
+
 from django.conf import settings
 from django.contrib.auth import login, authenticate
 from django.shortcuts import redirect, resolve_url
@@ -10,7 +11,7 @@ from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import View
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 
 from two_factor import signals
 from two_factor.views import core
@@ -59,6 +60,7 @@ class LoginView(core.LoginView):
         if device:
             signals.user_verified.send(sender=__name__, request=self.request,
                                        user=self.get_user(), device=device)
+
         return redirect(redirect_to)
 
 
@@ -212,3 +214,29 @@ class RedirectView(View):
         response.delete_cookie(REDIRECT_COOKIE_KEY)
         logout(request)
         return response
+
+
+class EditProfileView(UpdateView):
+    template_name = "authentication_service/edit_profile.html"
+    form_class = forms.EditProfileForm
+    success_url = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.success_url = self.request.GET.get("redirect_url")
+        self.theme = self.request.GET.get("theme")
+        return super(EditProfileView, self).dispatch(request, *args, **kwargs)
+
+    def get_template_names(self):
+        template_names = []
+
+        if self.template_name is not None:
+            template_names = [self.template_name]
+
+        # Any extra templates need to be before the base.
+        template_names = [
+            "authentication_service/registration/registration_%s.html" % self.theme,
+        ] + template_names
+        return template_names
+
+    def get_object(self, queryset=None):
+        return self.request.user

@@ -34,6 +34,17 @@ class CoreUser(AbstractUser):
     is_system_user = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        # If email or msisdn has changed, their verified flags need
+        # to be updated.
+        if self.id is not None:
+            original = CoreUser.objects.get(id=self.id)
+            if self.email != original.email:
+                self.email_verified = False
+            if self.msisdn != original.msisdn:
+                self.msisdn_verified = False
+        super(CoreUser, self).save(*args, **kwargs)
+
 
 class Country(models.Model):
     code = models.CharField(blank=True, null=True, max_length=2)
