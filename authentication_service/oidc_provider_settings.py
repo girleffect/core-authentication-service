@@ -12,27 +12,28 @@ USER_MODEL = get_user_model()
 # Claims for which the resulting function returns None will be automatically
 # omitted from the response.
 CLAIMS_MAP = {
-    "address": None,
+    "name": lambda user: "%s %s" % (user.first_name, user.last_name),
+    "given_name": lambda user: user.first_name,
+    "family_name": lambda user: user.last_name,
+    "middle_name": None,
+    "nickname": lambda user: user.nickname,
+    "profile": lambda user: None,
+    "preferred_username": lambda user: user.username,
+    "picture": lambda user: user.avatar,
+    "website": lambda user: None,
+    "gender": lambda user: user.gender,
     "birthdate": lambda user: user.birth_date,
+    "zoneinfo": lambda user: None,
+    "locale": lambda user: user.country.code if
+        user.country else None,
+    "updated_at": lambda user: user.updated_at,
     "email": lambda user: user.email,
     "email_verified": lambda user: user.email_verified if
         user.email else None,
-    "family_name": lambda user: user.last_name,
-    "gender": lambda user: user.gender,
-    "given_name": lambda user: user.first_name,
-    "locale": lambda user: user.country.code if
-        user.country else None,
-    "name": lambda user: "%s %s" % (user.first_name, user.last_name),
-    "nickname": lambda user: user.username,
     "phone_number": lambda user: user.msisdn,
     "phone_number_verified": lambda user: user.msisdn_verified if
         user.msisdn else None,
-    "picture": lambda user: user.avatar,
-    "preferred_username": lambda user: user.username,
-    "profile": lambda user: None,
-    "updated_at": lambda user: user.updated_at,
-    "website": lambda user: None,
-    "zoneinfo": lambda user: None,
+    "address": None,
 }
 
 LOGGER = logging.getLogger(__name__)

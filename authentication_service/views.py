@@ -44,23 +44,6 @@ class LoginView(core.LoginView):
         pipe.delete(get_username_blocked_cache_key(None))
         pipe.execute()
 
-    def done(self, form_list, **kwargs):
-        if self.get_user().is_superuser:
-            login(self.request, self.get_user())
-
-        redirect_to = self.request.POST.get(
-            "next",
-            self.request.GET.get("next", "")
-        )
-        if not is_safe_url(url=redirect_to, host=self.request.get_host()):
-            redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
-
-        device = getattr(self.get_user(), "otp_device", None)
-        if device:
-            signals.user_verified.send(sender=__name__, request=self.request,
-                                       user=self.get_user(), device=device)
-        return redirect(redirect_to)
-
 
 # Protect the login view using Defender. Defender provides a method decorator
 # which we have to tweak to apply to the dispatch method of a view.
