@@ -217,7 +217,7 @@ class RedirectView(View):
 
 
 class EditProfileView(UpdateView):
-    template_name = "authentication_service/edit_profile.html"
+    template_name = "authentication_service/profile/edit_profile.html"
     form_class = forms.EditProfileForm
     success_url = None
 

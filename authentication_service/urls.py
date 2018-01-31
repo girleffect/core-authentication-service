@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import logout
 
 from two_factor.urls import urlpatterns as two_factor_patterns
@@ -43,7 +44,7 @@ urlpatterns = [
 
     url(
         r"^profile/edit/",
-        views.EditProfileView.as_view(),
+        login_required(views.EditProfileView.as_view()),
         name="edit_profile"
     ),
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),

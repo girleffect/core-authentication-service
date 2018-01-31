@@ -37,8 +37,8 @@ class CoreUser(AbstractUser):
     def save(self, *args, **kwargs):
         # If email or msisdn has changed, their verified flags need
         # to be updated.
-        if self.id is not None:
-            original = CoreUser.objects.get(id=self.id)
+        original = CoreUser.objects.filter(pk=self.pk).first()
+        if original:
             if self.email != original.email:
                 self.email_verified = False
             if self.msisdn != original.msisdn:

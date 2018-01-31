@@ -194,5 +194,19 @@ class EditProfileForm(forms.ModelForm):
     class Meta:
         model = get_user_model()
         fields = [
-            "first_name", "last_name", "nickname", "email"
+            "first_name", "last_name", "nickname", "email", "msisdn", "gender",
+            "birth_date", "country", "avatar"
         ]
+
+    def __init__(self, *args, **kwargs):
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+
+        # Remove either msisdn or email
+        if self.instance.email:
+            self.fields.pop("msisdn")
+        if self.instance.msisdn:
+            self.fields.pop("email")
+
+    email = forms.EmailField(
+        required=True,
+    )
