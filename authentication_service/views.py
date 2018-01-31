@@ -3,7 +3,8 @@ from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
     get_username_blocked_cache_key
 
 from django.conf import settings
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import redirect, resolve_url
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
@@ -234,9 +235,46 @@ class EditProfileView(UpdateView):
 
         # Any extra templates need to be before the base.
         template_names = [
-            "authentication_service/registration/registration_%s.html" % self.theme,
+            "authentication_service/profile/edit_profile_%s.html" % self.theme,
         ] + template_names
         return template_names
 
     def get_object(self, queryset=None):
         return self.request.user
+
+
+class UpdatePasswordView(UpdateView):
+    template_name = "authentication_service/profile/update_password.html"
+    form_class = PasswordChangeForm
+    success_url = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.success_url = self.request.GET.get("redirect_url")
+        self.theme = self.request.GET.get("theme")
+        return super(UpdatePasswordView, self).dispatch(
+            request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_form_kwargs(self):
+        kwargs = super(UpdatePasswordView, self).get_form_kwargs()
+        kwargs["user"] = kwargs.pop("instance")
+        return kwargs
+
+    def get_template_names(self):
+        template_names = []
+
+        if self.template_name is not None:
+            template_names = [self.template_name]
+
+        # Any extra templates need to be before the base.
+        template_names = [
+            "authentication_service/profile/update_password_%s.html" % self.theme,
+        ] + template_names
+        return template_names
+
+    def form_valid(self, form):
+        if form.is_valid():
+            update_session_auth_hash(self.request, form.save())
+        super(UpdatePasswordView, self).form_valid(form)

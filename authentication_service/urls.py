@@ -47,6 +47,11 @@ urlpatterns = [
         login_required(views.EditProfileView.as_view()),
         name="edit_profile"
     ),
+    url(
+        r"^profile/password/",
+        login_required(views.UpdatePasswordView.as_view()),
+        name="update_password"
+    ),
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
     # Useful url to have, not currently used in any flows.
     url(r"^logout/$",
