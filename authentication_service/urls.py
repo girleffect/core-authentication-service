@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import logout
 
 from two_factor.urls import urlpatterns as two_factor_patterns
+from two_factor.views import ProfileView
 
 from authentication_service import views
 
@@ -41,7 +42,7 @@ urlpatterns = [
         views.RedirectView.as_view(),
         name="redirect_view"
     ),
-
+    # Profile Edit URLs
     url(
         r"^profile/edit/",
         login_required(views.EditProfileView.as_view()),
@@ -52,6 +53,17 @@ urlpatterns = [
         login_required(views.UpdatePasswordView.as_view()),
         name="update_password"
     ),
+    url(
+        r"^profile/security/",
+        login_required(views.UpdateSecurityQuestionsView.as_view()),
+        name="update_security_questions"
+    ),
+    url(
+        r"^profile/2fa/",
+        login_required(ProfileView.as_view()),
+        name="update_2fa"
+    ),
+
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
     # Useful url to have, not currently used in any flows.
     url(r"^logout/$",

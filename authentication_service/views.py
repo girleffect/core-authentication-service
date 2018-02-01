@@ -12,9 +12,10 @@ from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import View
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, FormView
 
 from two_factor import signals
+from two_factor.utils import default_device
 from two_factor.views import core
 
 from authentication_service import forms, models
@@ -227,6 +228,13 @@ class EditProfileView(UpdateView):
         self.theme = self.request.GET.get("theme")
         return super(EditProfileView, self).dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(EditProfileView, self).get_context_data(**kwargs)
+        # Check if user has 2fa enabled
+        if default_device(self.request.user):
+            context["2fa_enabled"] = True
+        return context
+
     def get_template_names(self):
         template_names = []
 
@@ -278,3 +286,19 @@ class UpdatePasswordView(UpdateView):
         if form.is_valid():
             update_session_auth_hash(self.request, form.save())
         super(UpdatePasswordView, self).form_valid(form)
+
+
+class UpdateSecurityQuestionsView(FormView):
+    template_name = \
+        "authentication_service/profile/update_security_questions.html"
+    form_class = forms.UpdateSecurityQuestionsForm
+    success_url = None
+
+    # def get_form_kwargs(self):
+    #     kwargs = super(UpdateSecurityQuestionsView, self).get_form_kwargs()
+    #     kwargs["user_answers"] = models.UserSecurityQuestion.objects.filter(
+    #         id=self.request.user.id)
+    #     return kwargs
+
+    # TODO: Security Question Update
+    pass
