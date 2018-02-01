@@ -1,8 +1,10 @@
+from django.contrib.auth import get_user_model
+from django.db.models.fields.files import ImageFieldFile
 from django.test import TestCase
 from django.http import QueryDict
 
 from authentication_service.forms import RegistrationForm, \
-    SecurityQuestionForm, SecurityQuestionFormSet
+    SecurityQuestionForm, SecurityQuestionFormSet, EditProfileForm
 from authentication_service.models import SecurityQuestion
 
 
@@ -450,3 +452,48 @@ class TestSecurityQuestionFormSet(TestCase):
         }
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertTrue(formset.is_valid())
+
+
+class EditProfileFormTestCase(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="testuser",
+            email="wrong@email.com"
+        )
+        cls.user.save()
+
+        cls.user_1 = get_user_model().objects.create_user(
+            username="testuser1",
+            msisdn="+27821234567"
+        )
+        cls.user_1.save()
+
+    def test_default_state(self):
+        form = EditProfileForm(instance=self.user)
+
+        initial_dict = {
+            "email": "wrong@email.com"
+        }
+
+        # Check initial values
+        self.assertTrue(
+            set(initial_dict.items()).issubset(set(form.initial.items())))
+
+        # Check msisdn missing from fields
+        self.assertNotIn("msisdn", form.fields)
+
+    def test_msisdn_present(self):
+        form = EditProfileForm(instance=self.user_1)
+
+        initial_dict = {
+            "msisdn": "+27821234567"
+        }
+
+        # Check initial values
+        self.assertTrue(
+            set(initial_dict.items()).issubset(set(form.initial.items())))
+
+        # Check msisdn missing from fields
+        self.assertNotIn("email", form.fields)

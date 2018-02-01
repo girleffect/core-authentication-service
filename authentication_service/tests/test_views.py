@@ -2,10 +2,13 @@ import random
 
 from defender.utils import unblock_username
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
+from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.util import random_hex
 
 from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
@@ -254,3 +257,61 @@ class TestRegistrationView(TestCase):
             output = cm.output
             output.sort()
             self.assertListEqual(output, test_output)
+
+
+class EditProfileViewTestCase(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_superuser(
+            username="testuser",
+            email="wrong@email.com",
+            password="Qwer!234"
+        )
+        cls.user.save()
+
+        cls.twofa_user = get_user_model().objects.create_superuser(
+            username="2fa_user", password="1234", email="2fa_user@test.com"
+        )
+        cls.twofa_user.save()
+
+        cls.totp_device = TOTPDevice.objects.create(
+            user=cls.twofa_user,
+            name="default",
+            confirmed=True,
+            key=random_hex().decode()
+        )
+
+    def test_profile_edit(self):
+        # Login user
+        self.client.login(username="testuser", password="Qwer!234")
+
+        # Get form
+        response = self.client.get(
+            "%s?redirect_url=/admin/" % reverse("edit_profile"))
+
+        # Check 2FA isn't enabled
+        self.assertNotContains(response, "2fa")
+
+        # Post form
+        response = self.client.post(
+            "%s?redirect_url=/admin/" % reverse("edit_profile"),
+            {
+                "email": "test@user.com",
+            },
+        )
+        updated = get_user_model().objects.get(username="testuser")
+
+        self.assertEquals(updated.email, "test@user.com")
+        self.assertRedirects(response, "/admin/")
+
+    def test_2fa_link_enabled(self):
+        # Login user
+        self.client.login(username="2fa_user", password="1234")
+
+        # Get form
+        response = self.client.get(
+            "%s?redirect_url=/admin/" % reverse("edit_profile"))
+
+        # Check 2FA is enabled and present on edit page
+        self.assertContains(response, "2fa")

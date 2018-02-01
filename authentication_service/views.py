@@ -9,7 +9,7 @@ from django.shortcuts import redirect, resolve_url
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.contrib.auth import logout
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.views.generic import View
 from django.views.generic.edit import CreateView, UpdateView, FormView
