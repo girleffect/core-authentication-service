@@ -9,6 +9,6 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
             current_host = request.get_host()
             location = response.get("Location", "")
             parsed_url = urlparse(location)
-            if parsed_url.netloc != "" and location != parsed_url.netloc:
+            if parsed_url.netloc != "" and current_host != parsed_url.netloc:
                 request.session.flush()
         return response
