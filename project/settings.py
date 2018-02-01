@@ -24,7 +24,7 @@ DEFENDER_LOCKOUT_TEMPLATE = "authentication_service/lockout.html"
 DEFENDER_REVERSE_PROXY_HEADER = "HTTP_X_FORWARDED_FOR"
 DEFENDER_CACHE_PREFIX = "defender"
 DEFENDER_LOCKOUT_URL = "/lockout"
-DEFENDER_REDIS_URL = "redis://localhost:6379/0"
+DEFENDER_REDIS_URL = os.environ.get("REDIS_URI", "redis://localhost:6379/0")
 DEFENDER_STORE_ACCESS_ATTEMPTS = True
 DEFENDER_ACCESS_ATTEMPT_EXPIRATION = 24  # hours
 DEFENDER_USERNAME_FORM_FIELD = "auth-username"
@@ -42,6 +42,9 @@ DATABASES = {
 }
 
 INSTALLED_APPS = list(INSTALLED_APPS)
+
+ALLOWED_HOSTS = [os.environ.get("ALLOWED_HOSTS")]
+
 
 ADDITIONAL_APPS = [
     # Open ID prodiver.
