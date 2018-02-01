@@ -12,25 +12,26 @@ USER_MODEL = get_user_model()
 # Claims for which the resulting function returns None will be automatically
 # omitted from the response.
 CLAIMS_MAP = {
-    "name": lambda user: "%s %s" % (user.first_name, user.last_name),
-    "given_name": lambda user: user.first_name,
-    "family_name": lambda user: user.last_name,
+    "name": lambda user: "%s %s" % (user.first_name, user.last_name) \
+        if user.first_name and user.last_name else None,
+    "given_name": lambda user: user.first_name if user.first_name else None,
+    "family_name": lambda user: user.last_name if user.last_name else None,
     "middle_name": None,
-    "nickname": lambda user: user.nickname,
+    "nickname": lambda user: user.nickname if user.nickname else None,
     "profile": lambda user: None,
     "preferred_username": lambda user: user.username,
-    "picture": lambda user: user.avatar,
+    "picture": lambda user: user.avatar if user.avatar else None,
     "website": lambda user: None,
-    "gender": lambda user: user.gender,
-    "birthdate": lambda user: user.birth_date,
+    "gender": lambda user: user.gender if user.gender else None,
+    "birthdate": lambda user: user.birth_date if user.birth_date else None,
     "zoneinfo": lambda user: None,
     "locale": lambda user: user.country.code if
         user.country else None,
     "updated_at": lambda user: user.updated_at,
-    "email": lambda user: user.email,
+    "email": lambda user: user.email if user.email else None,
     "email_verified": lambda user: user.email_verified if
         user.email else None,
-    "phone_number": lambda user: user.msisdn,
+    "phone_number": lambda user: user.msisdn if user.msisdn else None,
     "phone_number_verified": lambda user: user.msisdn_verified if
         user.msisdn else None,
     "address": None,
