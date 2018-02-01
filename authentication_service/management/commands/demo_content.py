@@ -20,6 +20,7 @@ class Command(BaseCommand):
             client_id="client_id_1",
             client_secret="super_client_secret_1",
             response_type="code",
+            jwt_alg="HS256",
             redirect_uris=[
                 os.environ.get("WAGTAIL_1_IP",'http://example.com/')
             ]
@@ -31,6 +32,7 @@ class Command(BaseCommand):
             client_id="client_id_2",
             client_secret="super_client_secret_2",
             response_type="code",
+            jwt_alg="HS256",
             redirect_uris=[
                 os.environ.get("WAGTAIL_2_IP",'http://example.com/')
             ]
