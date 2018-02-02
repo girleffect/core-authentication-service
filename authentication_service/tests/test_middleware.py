@@ -32,7 +32,7 @@ class TestOIDCSessionMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "oidc_provider:authorize"
-            ) + "?client_id=client_id_1&redirect_uri=http://example.com/&response_type=code",
+            ) + "?client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F&response_type=code",
             follow=True
         )
 
