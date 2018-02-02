@@ -56,3 +56,28 @@ class TestOIDCSessionMiddleware(TestCase):
 
         # Make sure session is flushed.
         self.assertEqual(len(self.client.session.items()), 0)
+
+    def test_redirect_view(self):
+        self.client.login(username=self.user.username, password="P0ppy")
+       # Ensure there is indeed auth data on the session.
+        self.assertIn("_auth_user_id", self.client.session.keys())
+        # Test with redirect cookie set.
+        self.client.cookies.load(
+            {"register_redirect": "http://somecoolsite.com/test-redirect/"})
+        response = self.client.get(reverse("redirect_view"))
+
+        # Make sure session is flushed.
+        self.assertEqual(len(self.client.session.items()), 0)
+
+    def test_session_flush_logger(self):
+        with self.assertLogs(level="WARNING") as cm:
+            self.client.cookies.load(
+                {"register_redirect": "http://nuked-session.com/logging/test-redirect/"})
+            self.client.get(reverse("redirect_view"))
+            test_output = [
+                "WARNING:authentication_service.middleware:" \
+                "User redirected off domain; " \
+                "(testserver) -> (nuked-session.com). Session flushed."
+            ]
+            output = cm.output
+            self.assertListEqual(output, test_output)

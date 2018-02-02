@@ -1,6 +1,10 @@
 from urllib.parse import urlparse
+import logging
 
 from django.utils.deprecation import MiddlewareMixin
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class OIDCSessionManagementMiddleware(MiddlewareMixin):
@@ -24,4 +28,10 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
             parsed_url = urlparse(location)
             if parsed_url.netloc != "" and current_host != parsed_url.netloc:
                 request.session.flush()
+                LOGGER.warning(
+                    "User redirected off domain; " \
+                    "(%s) -> (%s). Session flushed." % (
+                        current_host, parsed_url.netloc
+                    )
+                )
         return response
