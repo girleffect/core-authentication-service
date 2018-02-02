@@ -199,20 +199,6 @@ class EditProfileForm(forms.ModelForm):
             "birth_date", "country", "avatar"
         ]
 
-    def __init__(self, *args, **kwargs):
-        super(EditProfileForm, self).__init__(*args, **kwargs)
-
-        # Remove either msisdn or email
-        if self.instance.email:
-            self.fields.pop("msisdn")
-        if self.instance.msisdn:
-            self.fields.pop("email")
-
-    # Make field required
-    email = forms.EmailField(
-        required=True,
-    )
-
 
 class UpdateSecurityQuestionsForm(forms.ModelForm):
     class Meta:

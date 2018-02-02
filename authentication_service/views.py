@@ -48,8 +48,7 @@ class LoginView(core.LoginView):
         pipe.execute()
 
     def done(self, form_list, **kwargs):
-        if self.get_user().is_superuser:
-            login(self.request, self.get_user())
+        login(self.request, self.get_user())
 
         redirect_to = self.request.POST.get(
             "next",

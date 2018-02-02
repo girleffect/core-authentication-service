@@ -480,20 +480,3 @@ class EditProfileFormTestCase(TestCase):
         # Check initial values
         self.assertTrue(
             set(initial_dict.items()).issubset(set(form.initial.items())))
-
-        # Check msisdn missing from fields
-        self.assertNotIn("msisdn", form.fields)
-
-    def test_msisdn_present(self):
-        form = EditProfileForm(instance=self.user_1)
-
-        initial_dict = {
-            "msisdn": "+27821234567"
-        }
-
-        # Check initial values
-        self.assertTrue(
-            set(initial_dict.items()).issubset(set(form.initial.items())))
-
-        # Check msisdn missing from fields
-        self.assertNotIn("email", form.fields)
