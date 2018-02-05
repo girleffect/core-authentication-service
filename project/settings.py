@@ -71,8 +71,6 @@ MIDDLEWARE = MIDDLEWARE + [
     "authentication_service.middleware.OIDCSessionManagementMiddleware",
 ]
 
-# Only change this once custom login flow has been decided on and the need
-# arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("login")
 
 LOGIN_REDIRECT_URL = "admin:index"
