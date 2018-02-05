@@ -28,6 +28,8 @@ REQUIREMENT_DEFINITION = {
 
 
 class RegistrationForm(UserCreationForm):
+    error_css_class = "error"
+    required_css_class = "required"
 
     class Meta:
         model = get_user_model()
@@ -192,6 +194,9 @@ SecurityQuestionFormSet = formset_factory(
 
 
 class EditProfileForm(forms.ModelForm):
+    error_css_class = "error"
+    required_css_class = "required"
+
     class Meta:
         model = get_user_model()
         fields = [
