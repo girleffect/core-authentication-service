@@ -19,7 +19,7 @@ from authentication_service import forms, models
 
 
 class ThemeMixin:
-    """This mixin gets the theme parameter from a request url, if it exists, and
+    """This mixin gets the theme parameter from a request URL, if it exists, and
     sets the appropriate template.
     """
     TEMPLATE_PREFIX = ""
@@ -37,23 +37,25 @@ class ThemeMixin:
 
         # Any extra templates need to be before the base.
         template_names = [
-            "%s_%s.html" % (self.TEMPLATE_PREFIX, self.theme),
+            "%s%s%s.html" % (
+                self.TEMPLATE_PREFIX,
+                "_" if self.TEMPLATE_PREFIX else "",
+                self.theme
+            ),
         ] + template_names
         return template_names
 
 
 class RedirectMixin:
-    """This mixin gets the redirect url parameter from the request url. This url
+    """This mixin gets the redirect URL parameter from the request URL. This URL
     is used as the success_url attribute. If no redirect_url is set, it will
-    default to the Login url.
+    default to the Login URL.
 
     For registration, this mixin also checks the security level of the request.
-    If the security level is high, the success url will redirect to 2FA setup.
+    If the security level is high, the success URL will redirect to 2FA setup.
 
     TODO: Security should be moved out.
     """
-    success_url = None
-
     def dispatch(self, *args, **kwargs):
         self.redirect_url = self.request.GET.get("redirect_url")
         return super(RedirectMixin, self).dispatch(*args, **kwargs)
@@ -230,7 +232,6 @@ class EditProfileView(ThemeMixin, RedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/edit_profile"
     template_name = "authentication_service/profile/edit_profile.html"
     form_class = forms.EditProfileForm
-    success_url = None
 
     def get_context_data(self, **kwargs):
         context = super(EditProfileView, self).get_context_data(**kwargs)
@@ -248,7 +249,6 @@ class UpdatePasswordView(ThemeMixin, RedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/update_password"
     template_name = "authentication_service/profile/update_password.html"
     form_class = PasswordChangeForm
-    success_url = None
 
     def dispatch(self, request, *args, **kwargs):
         self.success_url = self.request.GET.get("redirect_url")
@@ -273,7 +273,6 @@ class UpdateSecurityQuestionsView(FormView):
     template_name = \
         "authentication_service/profile/update_security_questions.html"
     form_class = forms.UpdateSecurityQuestionsForm
-    success_url = None
 
     # def get_form_kwargs(self):
     #     kwargs = super(UpdateSecurityQuestionsView, self).get_form_kwargs()
