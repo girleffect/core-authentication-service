@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block content %}
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Update</button>
-        <a href="{% url "update_password" %}">Password Update</a>
+        {{ form.as_div }}
+        <button type="submit">{% trans "Update" %}</button>
+        <a href="{% url "update_password" %}">{% trans "Password Update" %}</a>
         <!--<a href="{% url "update_security_questions" %}">Security Questions Update</a>-->
         {% if 2fa_enabled %}
-            <a href="{% url "update_2fa" %}">2FA settings</a>
+            <a href="{% url "update_2fa" %}">{% trans "2FA settings" %}</a>
         {% endif %}
     </form>
 {% endblock %}
