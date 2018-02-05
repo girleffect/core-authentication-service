@@ -12,6 +12,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext as _
 
 from authentication_service import models
+from authentication_service.models import UserSecurityQuestion
 from authentication_service.utils import update_form_fields
 from authentication_service.constants import SECURITY_QUESTION_COUNT, \
     MIN_NON_HIGH_PASSWORD_LENGTH
@@ -188,3 +189,24 @@ SecurityQuestionFormSet = formset_factory(
     formset=SecurityQuestionFormSetClass,
     extra=SECURITY_QUESTION_COUNT
 )
+
+
+class EditProfileForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "first_name", "last_name", "nickname", "email", "msisdn", "gender",
+            "birth_date", "country", "avatar"
+        ]
+
+
+class UpdateSecurityQuestionsForm(forms.ModelForm):
+    class Meta:
+        model = UserSecurityQuestion
+        fields = []
+
+    # def __init__(self, *args, **kwargs):
+    #     user_answers = kwargs.pop("user_answers")
+    #     super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)
+    # TODO: Security Question Update
+    pass

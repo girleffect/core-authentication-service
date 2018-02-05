@@ -1,8 +1,10 @@
+from django.contrib.auth import get_user_model
+from django.db.models.fields.files import ImageFieldFile
 from django.test import TestCase
 from django.http import QueryDict
 
 from authentication_service.forms import RegistrationForm, \
-    SecurityQuestionForm, SecurityQuestionFormSet
+    SecurityQuestionForm, SecurityQuestionFormSet, EditProfileForm
 from authentication_service.models import SecurityQuestion
 
 
@@ -450,3 +452,67 @@ class TestSecurityQuestionFormSet(TestCase):
         }
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertTrue(formset.is_valid())
+
+
+class EditProfileFormTestCase(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="testuser",
+            email="wrong@email.com",
+            email_verified=True
+        )
+        cls.user.save()
+
+    def test_default_state(self):
+        form = EditProfileForm(instance=self.user)
+
+        initial_dict = {
+            "email": "wrong@email.com"
+        }
+
+        # Check initial values
+        self.assertTrue(
+            set(initial_dict.items()).issubset(set(form.initial.items())))
+
+    def test_update_profile(self):
+        data = {
+            "email": "right@email.com",
+            "msisdn": "+27821234567"
+        }
+
+        form = EditProfileForm(instance=self.user, data=data)
+
+        self.assertTrue(form.is_valid())
+
+    def test_nothing_updated(self):
+        data = {}
+
+        form = EditProfileForm(instance=self.user, data=data)
+
+        self.assertTrue(form.is_valid())
+        self.assertTrue(self.user.email_verified)
+
+    def test_invalid_form(self):
+        data = {
+            "email": "not_an_email",
+            "gender": "no",
+            "country": "abc"
+        }
+
+        form = EditProfileForm(instance=self.user, data=data)
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors, {
+                "email":
+                    ["Enter a valid email address."],
+                "gender":
+                    ["Select a valid choice. no is not one of the available "
+                     "choices."],
+                "country":
+                    ["Select a valid choice. That choice is not one of the "
+                     "available choices."],
+            }
+        )

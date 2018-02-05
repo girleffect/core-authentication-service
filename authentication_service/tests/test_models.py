@@ -41,3 +41,31 @@ class TestRegistrationModels(TestCase):
         )
         text = "Some spacious _text"
         self.assertTrue(hashers.check_password(text.lower(), answer.answer))
+
+
+class UserModelTestCase(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(UserModelTestCase, cls).setUpTestData()
+        cls.user = get_user_model().objects.create(
+            username="username1", email="someverified@email.com"
+        )
+        cls.user.email_verified = True
+        cls.user.save()
+
+    def test_email_verification(self):
+        # Change user email
+        self.user.email = "notverified@email.com"
+        self.user.save()
+
+        # Check verification is false
+        self.assertFalse(self.user.email_verified)
+
+    def test_msisdn_verification(self):
+        # Add user msisdn
+        self.user.msisdn = "+27821234567"
+        self.user.save()
+
+        # Check verification is false
+        self.assertFalse(self.user.msisdn_verified)
