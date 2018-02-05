@@ -82,4 +82,4 @@ database:
 	sql/create_database.sh $(DB_NAME) $(DB_USER) | sudo -u postgres psql -f -
 
 test:
-	$(PYTHON) manage.py test
+	$(PYTHON) manage.py test --settings=authentication_service.tests.settings.111
