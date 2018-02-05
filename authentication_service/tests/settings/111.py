@@ -62,6 +62,7 @@ MIDDLEWARE = MIDDLEWARE + [
     "django.middleware.locale.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django_otp.middleware.OTPMiddleware",
+    "authentication_service.middleware.OIDCSessionManagementMiddleware",
 ]
 
 # Only change this once custom login flow has been decided on and the need
