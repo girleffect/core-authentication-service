@@ -105,7 +105,7 @@ class StandardTestCase(BaseTestCase):
         # users will see another login screen.
         response = self.post_credential_step(self.standard_user, "1234")
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, "/login/?next=/admin/")
+        self.assertRedirects(response, "/login/?next=%2Fadmin%2F")
 
 
 class TwoFATestCase(BaseTestCase):
@@ -124,7 +124,7 @@ class TwoFATestCase(BaseTestCase):
         # Post token step
         response = self.post_token_step()
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, "/login/?next=/admin/")
+        self.assertRedirects(response, "/login/?next=%2Fadmin%2F")
 
 
 class BackupCodeTestCase(BaseTestCase):
@@ -171,7 +171,7 @@ class BackupCodeTestCase(BaseTestCase):
         # Post backup step
         response = self.post_backup_step("abcdef123")
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, "/login/?next=/admin/")
+        self.assertRedirects(response, "/login/?next=%2Fadmin%2F")
 
 
 class SuperUserTestCase(BaseTestCase):
