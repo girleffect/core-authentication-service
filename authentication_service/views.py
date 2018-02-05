@@ -5,24 +5,23 @@ from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
 from django.conf import settings
 from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from django.shortcuts import redirect, resolve_url
 from django.utils.decorators import method_decorator
-from django.utils.http import is_safe_url
 from django.contrib.auth import logout
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import View
-from django.views.generic.base import TemplateResponseMixin
 from django.views.generic.edit import CreateView, UpdateView, FormView
 
-from two_factor import signals
 from two_factor.utils import default_device
 from two_factor.views import core
 
 from authentication_service import forms, models
 
 
-class ThemeMixin(object):
+class ThemeMixin:
+    """This mixin gets the theme parameter from a request url, if it exists, and
+    sets the appropriate template.
+    """
     TEMPLATE_PREFIX = ""
     theme = None
 
@@ -41,6 +40,34 @@ class ThemeMixin(object):
             "%s_%s.html" % (self.TEMPLATE_PREFIX, self.theme),
         ] + template_names
         return template_names
+
+
+class RedirectMixin:
+    """This mixin gets the redirect url parameter from the request url. This url
+    is used as the success_url attribute. If no redirect_url is set, it will
+    default to the Login url.
+
+    For registration, this mixin also checks the security level of the request.
+    If the security level is high, the success url will redirect to 2FA setup.
+
+    TODO: Security should be moved out.
+    """
+    success_url = None
+
+    def dispatch(self, *args, **kwargs):
+        self.redirect_url = self.request.GET.get("redirect_url")
+        return super(RedirectMixin, self).dispatch(*args, **kwargs)
+
+    def get_success_url(self):
+        url = settings.LOGIN_URL
+        if hasattr(
+                self, "security"
+        ) and self.security == "high" or self.request.GET.get(
+                "show2fa") == "true":
+            url = reverse("two_factor_auth:setup")
+        elif self.redirect_url:
+            url = self.redirect_url
+        return url
 
 
 class LockoutView(View):
@@ -83,17 +110,17 @@ LoginView.dispatch = watch_login_method(LoginView.dispatch)
 REDIRECT_COOKIE_KEY = "register_redirect"
 
 
-class RegistrationView(ThemeMixin, CreateView):
+class RegistrationView(ThemeMixin, RedirectMixin, CreateView):
     TEMPLATE_PREFIX = "authentication_service/registration/registration"
     template_name = "authentication_service/registration/registration.html"
     form_class = forms.RegistrationForm
+    security = None
 
     def dispatch(self, *args, **kwargs):
         # Grab language off of querystring first. Otherwise default to django
         # middleware set one.
         self.language = self.request.GET.get("language") \
             if self.request.GET.get("language") else self.request.LANGUAGE_CODE
-        self.redirect_url = self.request.GET.get("redirect_url")
         return super(RegistrationView, self).dispatch(*args, **kwargs)
 
     @property
@@ -171,15 +198,6 @@ class RegistrationView(ThemeMixin, CreateView):
             )
         return response
 
-    def get_success_url(self):
-        url = settings.LOGIN_URL
-        if self.security == "high" or self.request.GET.get(
-                "show2fa") == "true":
-            url = reverse("two_factor_auth:setup")
-        elif self.redirect_url:
-            url = self.redirect_url
-        return url
-
 
 class RedirectView(View):
     """
@@ -208,15 +226,11 @@ class RedirectView(View):
         return response
 
 
-class EditProfileView(ThemeMixin, UpdateView):
+class EditProfileView(ThemeMixin, RedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/edit_profile"
     template_name = "authentication_service/profile/edit_profile.html"
     form_class = forms.EditProfileForm
     success_url = None
-
-    def dispatch(self, request, *args, **kwargs):
-        self.success_url = self.request.GET.get("redirect_url")
-        return super(EditProfileView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(EditProfileView, self).get_context_data(**kwargs)
@@ -230,7 +244,7 @@ class EditProfileView(ThemeMixin, UpdateView):
         return self.request.user
 
 
-class UpdatePasswordView(ThemeMixin, UpdateView):
+class UpdatePasswordView(ThemeMixin, RedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/update_password"
     template_name = "authentication_service/profile/update_password.html"
     form_class = PasswordChangeForm
