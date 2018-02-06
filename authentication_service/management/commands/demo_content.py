@@ -46,7 +46,8 @@ class Command(BaseCommand):
 
         # End User
         end_user = get_user_model().objects.create(
-            username="enduser", first_name="End", last_name="User"
+            username="enduser", first_name="End", last_name="User",
+            email="enduser@here.com", nickname="l33t"
         )
         end_user.set_password("enduser")
         end_user.save()
