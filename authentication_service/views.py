@@ -201,7 +201,7 @@ class RegistrationView(ThemeMixin, RedirectMixin, CreateView):
         return response
 
 
-class RedirectView(View):
+class CookieRedirectView(View):
     """
     Simple view that redirects in the event the client passes a cookie
     containing the correct key. In the event a cookie is not present, redirect
