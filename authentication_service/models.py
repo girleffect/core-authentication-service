@@ -30,8 +30,6 @@ class CoreUser(AbstractUser):
     birth_date = models.DateField(blank=True, null=True)
     country = models.ForeignKey(_("Country"), blank=True, null=True)
     avatar = models.ImageField(blank=True, null=True)
-    is_employee = models.BooleanField(default=False)
-    is_system_user = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __init__(self, *args, **kwargs):
