@@ -43,3 +43,10 @@ class Command(BaseCommand):
         user = get_user_model().objects.create(username="admin", is_superuser=1, is_staff=1)
         user.set_password("local")
         user.save()
+
+        # End User
+        end_user = get_user_model().objects.create(
+            username="enduser", first_name="End", last_name="User"
+        )
+        end_user.set_password("enduser")
+        end_user.save()
