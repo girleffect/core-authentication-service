@@ -47,4 +47,12 @@ class Command(BaseCommand):
         user.set_password("local")
         user.save()
 
+        # End User
+        end_user = get_user_model().objects.create(
+            username="enduser", first_name="End", last_name="User",
+            email="enduser@here.com", nickname="l33t"
+        )
+        end_user.set_password("enduser")
+        end_user.save()
+
         call_command("load_security_questions")
