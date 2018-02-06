@@ -52,7 +52,7 @@ urlpatterns = [
     ),
     url(
         r"^redirect/$",
-        views.RedirectView.as_view(),
+        views.CookieRedirectView.as_view(),
         name="redirect_view"
     ),
     # Profile Edit URLs

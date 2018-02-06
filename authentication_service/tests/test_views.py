@@ -3,7 +3,6 @@ import random
 from defender.utils import unblock_username
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
-from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
