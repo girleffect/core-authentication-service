@@ -143,6 +143,11 @@ class RegistrationView(ThemeMixin, RedirectMixin, CreateView):
         required = self.request.GET.getlist("requires")
         if required:
             kwargs["required"] = required
+
+        hidden = self.request.GET.getlist("hide")
+        if hidden:
+            kwargs["hidden"] = hidden
+
         return kwargs
 
     def get_context_data(self, *args, **kwargs):

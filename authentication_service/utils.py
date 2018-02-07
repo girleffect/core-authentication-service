@@ -1,8 +1,12 @@
-def update_form_fields(form, required=None, validators=None, fields_data=None):
+from django.forms import HiddenInput
+
+
+def update_form_fields(form, required=None, hidden=None, validators=None, fields_data=None):
     """Update form fields and widgets.
 
     form --  Instance of a form.
     required -- list of fields to toggle required for.
+    hidden -- list of fields to hide.
     validators -- a dictionary
         {
             "<fieldname>": [<list of validators>]
@@ -16,18 +20,22 @@ def update_form_fields(form, required=None, validators=None, fields_data=None):
             }
         }
 
-    Helper method for setting field and widget atrributes, can
+    Helper method for setting field and widget attributes, can
     be used for any form instance. Sets attributes on both fields and widgets.
     """
     required = required or []
+    hidden = hidden or []
     validators = validators or {}
     fields_data = fields_data or {}
 
-    # For the event where required is all that needs to be toggled, a list will
-    # suffice.
+    # Mark fields as required on both the form and widget
     for field in required:
         form.fields[field].required = True
         form.fields[field].widget.is_required = True
+
+    # Mark fields as hidden on the widget
+    for field in hidden:
+        form.fields[field].widget = HiddenInput()
 
     # Set validators on fields.
     for field, data in validators.items():
