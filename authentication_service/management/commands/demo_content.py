@@ -80,7 +80,7 @@ class Command(BaseCommand):
         totp_device.save()
         sys.stdout.write(get_otpauth_url(
             accountname=system_user.username,
-            secret= b32encode(totp_device.bin_key),
+            secret=b32encode(totp_device.bin_key),
             issuer="Girl Effect Demo",
             digits=totp_device.digits
         ))
