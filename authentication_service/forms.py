@@ -20,10 +20,16 @@ from authentication_service.constants import SECURITY_QUESTION_COUNT, \
 
 LOGGER = logging.getLogger(__name__)
 
-
+# Groupings of form fields which can be used to simplify specifying sets of required fields.
 REQUIREMENT_DEFINITION = {
     "names": ["username", "first_name", "last_name", "nickname"],
     "picture": ["avatar"]
+}
+
+
+# Groupings of form fields which can be used to simplify specifying sets of hidden fields.
+HIDDEN_DEFINITION = {
+    "end-user": ["first_name", "last_name", "country", "gender", "avatar"]
 }
 
 
@@ -38,7 +44,7 @@ class RegistrationForm(UserCreationForm):
             "nickname", "msisdn", "gender", "birth_date", "country", "avatar"
         ]
 
-    def __init__(self, security=None, required=None, *args, **kwargs):
+    def __init__(self, security=None, required=None, hidden=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
 
@@ -51,6 +57,11 @@ class RegistrationForm(UserCreationForm):
         required = required or []
         required_fields = set(itertools.chain.from_iterable(
             REQUIREMENT_DEFINITION.get(field, [field]) for field in required
+        ))
+
+        hidden = hidden or []
+        hidden_fields = set(itertools.chain.from_iterable(
+            HIDDEN_DEFINITION.get(field, [field]) for field in hidden
         ))
 
         # Security level needs some additions before the form is rendered.
@@ -67,18 +78,29 @@ class RegistrationForm(UserCreationForm):
                 }
             }
 
-        incorrect_fields = set(required_fields) - set(self.fields.keys())
+        form_fields = set(self.fields.keys())
+        # Handle incorrectly specified required fields
+        incorrect_fields = required_fields - form_fields
         for field in incorrect_fields:
             LOGGER.warning(
-                "Received field to alter that is not on form: %s" % field
+                "Received required field that is not on form: %s" % field
             )
             required_fields.discard(field)
+
+        # Handle incorrectly specified hidden fields
+        incorrect_fields = hidden_fields - form_fields
+        for field in incorrect_fields:
+            LOGGER.warning(
+                "Received hidden field that is not on form: %s" % field
+            )
+            hidden_fields.discard(field)
 
         # Update the actual fields and widgets.
         update_form_fields(
             self,
             fields_data=fields_data,
-            required=required_fields
+            required=required_fields,
+            hidden=hidden_fields
         )
 
     def clean_password2(self):

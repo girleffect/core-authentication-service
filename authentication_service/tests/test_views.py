@@ -235,27 +235,49 @@ class TestRegistrationView(TestCase):
         response = self.client.get(reverse("redirect_view"))
         self.assertIn(response.url, "/test-redirect-after2fa/")
 
-    def test_incorrect_field_logger(self):
+    def test_incorrect_required_field_logger(self):
+        test_output = [
+            "WARNING:authentication_service.forms:"
+            "Received required field that is "
+            "not on form: someawesomefield",
+            "WARNING:authentication_service.forms:"
+            "Received required field that is "
+            "not on form: notontheform"
+        ]
+        test_output.sort()
         with self.assertLogs(level="WARNING") as cm:
             self.client.get(
                 reverse("registration") +
-                "?requires=names" \
-                "&requires=picture" \
-                "&requires=someawesomefield" \
+                "?requires=names"
+                "&requires=picture"
+                "&requires=someawesomefield"
                 "&requires=notontheform"
             )
-            test_output = [
-                "WARNING:authentication_service.forms:"
-                "Received field to alter that is "
-                "not on form: someawesomefield",
-                "WARNING:authentication_service.forms:"
-                "Received field to alter that is "
-                "not on form: notontheform"
-            ]
-            test_output.sort()
-            output = cm.output
-            output.sort()
-            self.assertListEqual(output, test_output)
+        output = cm.output
+        output.sort()
+        self.assertListEqual(output, test_output)
+
+    def test_incorrect_hidden_field_logger(self):
+        test_output = [
+            "WARNING:authentication_service.forms:"
+            "Received hidden field that is "
+            "not on form: someawesomefield",
+            "WARNING:authentication_service.forms:"
+            "Received hidden field that is "
+            "not on form: notontheform"
+        ]
+        test_output.sort()
+        with self.assertLogs(level="WARNING") as cm:
+            self.client.get(
+                reverse("registration") +
+                "?hide=end-user"
+                "&hide=avatar"
+                "&hide=someawesomefield"
+                "&hide=notontheform"
+            )
+        output = cm.output
+        output.sort()
+        self.assertListEqual(output, test_output)
 
 
 class EditProfileViewTestCase(TestCase):
