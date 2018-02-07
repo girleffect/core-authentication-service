@@ -80,7 +80,7 @@ class Command(BaseCommand):
         print(get_otpauth_url(
             accountname=system_user.username,
             secret= b32encode(totp_device.bin_key),
-            issuer="Girl%20Effect%20Demo",
+            issuer="Girl Effect Demo",
             digits=totp_device.digits
         ))
 
