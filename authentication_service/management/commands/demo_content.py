@@ -64,7 +64,7 @@ class Command(BaseCommand):
             username="sysuser", first_name="System", last_name="User",
             email="sysuser@here.com", nickname="5y5"
         )
-        system_user.set_password("local")
+        system_user.set_password("sysuser")
         system_user.save()
 
         # System User 2FA Device. We set up a device that will always generate
