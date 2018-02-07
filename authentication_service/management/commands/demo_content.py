@@ -68,7 +68,7 @@ class Command(BaseCommand):
 
         # System User 2FA Device. We set up a device that will always generate
         # the following URL that can be used to create a QR code:
-        #
+        # otpauth://totp/Girl%2520Effect%2520Demo%3A%20sysuser?secret=a94a663fefdfa1f9a335de33eee567541e07dd0c&digits=6&issuer=Girl%2520Effect%2520Demo
         totp_device = TOTPDevice.objects.create(
             key="a94a663fefdfa1f9a335de33eee567541e07dd0c",
             user=system_user,
