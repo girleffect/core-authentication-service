@@ -8,6 +8,8 @@ import os
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django_otp.oath import TOTP
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from oidc_provider.models import Client
 
@@ -54,5 +56,24 @@ class Command(BaseCommand):
         )
         end_user.set_password("enduser")
         end_user.save()
+
+        # System User
+        system_user = get_user_model().objects.create(
+            username="sysuser", first_name="System", last_name="User",
+            email="sysuser@here.com", nickname="5y5"
+        )
+        system_user.set_password("local")
+        system_user.save()
+
+        # System User 2FA Device. We set up a device that will always generate
+        # the following URL that can be used to create a QR code:
+        # otpauth://totp/sysuser?secret=VFFGMP7P36Q7TIZV3YZ65ZLHKQPAPXIM&algorithm=SHA1&digits=6&period=30
+        totp_device = TOTPDevice.objects.create(
+            key="a94a663fefdfa1f9a335de33eee567541e07dd0c",
+            user=system_user,
+            name="default",
+            confirmed=True
+        )
+        totp_device.save()
 
         call_command("load_security_questions")
