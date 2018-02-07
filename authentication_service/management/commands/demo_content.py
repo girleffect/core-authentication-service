@@ -6,6 +6,7 @@
 import os
 from base64 import b32encode
 
+import sys
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
@@ -70,14 +71,14 @@ class Command(BaseCommand):
         # System User 2FA Device. We set up a device that will always generate
         # the following URL that can be used to create a QR code:
         # otpauth://totp/Girl%2520Effect%2520Demo%3A%20sysuser?secret=VFFGMP7P36Q7TIZV3YZ65ZLHKQPAPXIM&digits=6&issuer=Girl%2520Effect%2520Demo
-        totp_device = TOTPDevice.objects.create(
+        totp_device, created = TOTPDevice.objects.update_or_create(
             key="a94a663fefdfa1f9a335de33eee567541e07dd0c",
             user=system_user,
             name="default",
             confirmed=True
         )
         totp_device.save()
-        print(get_otpauth_url(
+        sys.stdout.write(get_otpauth_url(
             accountname=system_user.username,
             secret= b32encode(totp_device.bin_key),
             issuer="Girl Effect Demo",

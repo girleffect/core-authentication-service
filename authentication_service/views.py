@@ -4,13 +4,15 @@ from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
 
 from django.conf import settings
 from django.contrib.auth import login, authenticate, update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import View
 from django.views.generic.edit import CreateView, UpdateView, FormView
+from two_factor.forms import AuthenticationTokenForm
+from two_factor.forms import BackupTokenForm
 
 from two_factor.utils import default_device
 from two_factor.views import core
@@ -87,6 +89,12 @@ class LoginView(core.LoginView):
     """
 
     template_name = "authentication_service/login.html"
+
+    form_list = (
+        ('auth', AuthenticationForm),
+        ('token', AuthenticationTokenForm),
+        ('backup', BackupTokenForm),
+    )
 
     def __init__(self, **kwargs):
         super(LoginView, self).__init__(**kwargs)

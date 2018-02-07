@@ -13,6 +13,9 @@ AUTH_PASSWORD_VALIDATORS += [
     },
 ]
 
+AUTHENTICATION_BACKENDS = \
+    ["authentication_service.backends.GirlEffectAuthBackend"]
+
 # Defender options
 DEFENDER_LOGIN_FAILURE_LIMIT = 3
 DEFENDER_BEHIND_REVERSE_PROXY = False
