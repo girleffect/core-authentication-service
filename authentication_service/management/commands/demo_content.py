@@ -12,6 +12,7 @@ from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from oidc_provider.models import Client
+from two_factor.utils import get_otpauth_url
 
 
 class Command(BaseCommand):
@@ -67,7 +68,7 @@ class Command(BaseCommand):
 
         # System User 2FA Device. We set up a device that will always generate
         # the following URL that can be used to create a QR code:
-        # otpauth://totp/sysuser?secret=VFFGMP7P36Q7TIZV3YZ65ZLHKQPAPXIM&algorithm=SHA1&digits=6&period=30
+        #
         totp_device = TOTPDevice.objects.create(
             key="a94a663fefdfa1f9a335de33eee567541e07dd0c",
             user=system_user,
@@ -75,5 +76,11 @@ class Command(BaseCommand):
             confirmed=True
         )
         totp_device.save()
+        print(get_otpauth_url(
+            accountname=system_user.username,
+            secret=totp_device.key,
+            issuer="Girl%20Effect%20Demo",
+            digits=totp_device.digits
+        ))
 
         call_command("load_security_questions")
