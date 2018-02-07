@@ -13,6 +13,49 @@ from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 
 
+class TestLogin(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestLogin, cls).setUpTestData()
+        cls.user = get_user_model().objects.create_user(
+            username="inactiveuser1",
+            email="inactive@email.com",
+            password="Qwer!234"
+        )
+        cls.user.is_active = False
+        cls.user.save()
+
+    def test_inactive_user_login(self):
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": "inactiveuser1",
+            "auth-password": "Qwer!234"
+        }
+        response = self.client.post(
+            reverse("login"),
+            data=data,
+            follow=True
+        )
+        self.assertContains(response, "This account is inactive")
+
+    def test_active_user_login(self):
+        self.user.is_active = True
+        self.user.save()
+
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": "inactiveuser1",
+            "auth-password": "Qwer!234"
+        }
+        response = self.client.post(
+            reverse("login"),
+            data=data,
+            follow=True
+        )
+        self.assertRedirects(response, "/login/?next=%2Fadmin%2F")
+
+
 class TestLockout(TestCase):
 
     @classmethod
