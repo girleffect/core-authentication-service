@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model, hashers
 
@@ -12,6 +14,7 @@ class TestRegistrationModels(TestCase):
         super(TestRegistrationModels, cls).setUpTestData()
         cls.user = get_user_model().objects.create(
             username="AnswerTest@User@Name",
+            birth_date=datetime.date(2000, 1, 1)
         )
 
         # Security questions
@@ -49,7 +52,8 @@ class UserModelTestCase(TestCase):
     def setUpTestData(cls):
         super(UserModelTestCase, cls).setUpTestData()
         cls.user = get_user_model().objects.create(
-            username="username1", email="someverified@email.com"
+            username="username1", email="someverified@email.com",
+            birth_date=datetime.date(2000, 1, 1)
         )
         cls.user.email_verified = True
         cls.user.save()

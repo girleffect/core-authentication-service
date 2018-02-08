@@ -1,3 +1,5 @@
+import datetime
+
 from defender.utils import unblock_username, reset_failed_attempts
 from django.test import TestCase
 from django.urls import reverse
@@ -16,13 +18,13 @@ class BaseTestCase(TestCase):
         cls.wizard_url = reverse("login")
 
         cls.standard_user = User.objects.create(
-            username="standard_user"
+            username="standard_user", birth_date=datetime.date(2000, 1, 1)
         )
         cls.standard_user.set_password("1234")
         cls.standard_user.save()
 
         cls.twofa_user = User.objects.create(
-            username="2fa_user"
+            username="2fa_user", birth_date=datetime.date(2000, 1, 1)
         )
         cls.twofa_user.set_password("1234")
         cls.twofa_user.save()
@@ -36,7 +38,7 @@ class BaseTestCase(TestCase):
 
         cls.super_user = User.objects.create_superuser(
             username="super_user", email="super@user.com",
-            password="1234"
+            password="1234", birth_date=datetime.date(2000, 1, 1)
         )
         cls.super_user.save()
 

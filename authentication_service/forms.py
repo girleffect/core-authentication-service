@@ -1,7 +1,10 @@
+import datetime
 import itertools
 import logging
 
+from dateutil.relativedelta import relativedelta
 from django import forms
+from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
@@ -36,12 +39,15 @@ HIDDEN_DEFINITION = {
 class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
+    # Helper field that user's who don't know their birth date can use instead.
+    age = forms.IntegerField(min_value=1, max_value=100, required=False)
 
     class Meta:
         model = get_user_model()
         fields = [
             "username", "first_name", "last_name", "email",
-            "nickname", "msisdn", "gender", "birth_date", "country", "avatar"
+            "nickname", "msisdn", "gender", "birth_date", "age",
+            "country", "avatar"
         ]
 
     def __init__(self, security=None, required=None, hidden=None, *args, **kwargs):
@@ -103,6 +109,17 @@ class RegistrationForm(UserCreationForm):
             hidden=hidden_fields
         )
 
+        # Override the birth date widget to not be required.
+        # Although the birth_date field is required, it can be populated directly by
+        # the user, or indirectly when the user provides an age. The form needs
+        # to cater for this.
+        this_year = datetime.date.today().year
+        self.fields["birth_date"].widget = AdminDateWidget()
+        #  forms.SelectDateWidget(
+        #      years=range(this_year-10, this_year-100, -1)
+        #  )
+        self.fields["birth_date"].widget.is_required = False
+
     def clean_password2(self):
         # Short circuit normal validation if not high security.
         if self.security == "high":
@@ -125,13 +142,26 @@ class RegistrationForm(UserCreationForm):
         return password2
 
     def clean(self):
-        email = self.cleaned_data.get("email")
-        msisdn = self.cleaned_data.get("msisdn")
+        cleaned_data = super(RegistrationForm, self).clean()
+
+        # Check that either the email or the MSISDN or both is supplied.
+        email = cleaned_data.get("email")
+        msisdn = cleaned_data.get("msisdn")
 
         if not email and not msisdn:
             raise ValidationError(_("Enter either email or msisdn"))
 
-        return super(RegistrationForm, self).clean()
+        # Check that either the birth date or age is provided. If the birth date is provided, we
+        # use it, else we calculate the birth date from the age.
+        birth_date = cleaned_data.get("birth_date")
+        if not birth_date:
+            age = cleaned_data.get("age")
+            if age:
+                cleaned_data["birth_date"] = datetime.date.today() - relativedelta(years=age)
+            else:
+                raise ValidationError(_("Enter either birth date or age"))
+
+        return cleaned_data
 
 
 class SecurityQuestionFormSetClass(BaseFormSet):

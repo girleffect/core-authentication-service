@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -22,6 +24,7 @@ class TestOIDCSessionMiddleware(TestCase):
 
         cls.user = get_user_model().objects.create(
             username="Lilly",
+            birth_date=datetime.date(2000, 1, 1)
         )
         cls.user.set_password("P0ppy")
         cls.user.save()

@@ -43,7 +43,7 @@ DATABASES = {
 
 INSTALLED_APPS = list(INSTALLED_APPS)
 
-ALLOWED_HOSTS = [os.environ.get("ALLOWED_HOSTS")]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
 
 ADDITIONAL_APPS = [

@@ -2,7 +2,7 @@
 # not use for anything else. Clients being set is bad enough, however the super
 # user is created with an unsecure password that is visible in clear text in a
 # public repo.
-
+import datetime
 import os
 
 from django.contrib.auth import get_user_model
@@ -43,14 +43,16 @@ class Command(BaseCommand):
 
         # Super user
         self.stdout.write(self.style.SUCCESS("Creating superuser..."))
-        user = get_user_model().objects.create(username="admin", is_superuser=1, is_staff=1)
+        user = get_user_model().objects.create(username="admin", is_superuser=1, is_staff=1,
+                                               birth_date=datetime.date(2000, 1, 1))
         user.set_password("local")
         user.save()
 
         # End User
         end_user = get_user_model().objects.create(
             username="enduser", first_name="End", last_name="User",
-            email="enduser@here.com", nickname="l33t"
+            email="enduser@here.com", nickname="l33t",
+            birth_date=datetime.date(2000, 1, 1)
         )
         end_user.set_password("enduser")
         end_user.save()

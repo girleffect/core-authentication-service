@@ -1,5 +1,8 @@
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.db.models.fields.files import ImageFieldFile
+from django.forms import model_to_dict
 from django.test import TestCase
 from django.http import QueryDict
 
@@ -15,6 +18,7 @@ class TestRegistrationForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "username": ["This field is required."],
+            "birth_date": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
@@ -26,6 +30,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "password",
         })
         self.assertFalse(form.is_valid())
@@ -37,6 +42,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "password",
             "password2": "password2"
         })
@@ -49,6 +55,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "123",
             "password2": "123"
         })
@@ -61,10 +68,12 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "1234",
             "password2": "1234"
         })
         self.assertTrue(form.is_valid())
+        form.clean()  # We need to clean the form to ensure birth_date is set appropriately
 
     def test_default_email_msisdn(self):
 
@@ -73,6 +82,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "password1": "password",
             "password2": "password",
+            "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
@@ -85,6 +95,7 @@ class TestRegistrationForm(TestCase):
             "password1": "password",
             "password2": "password",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
 
@@ -94,6 +105,7 @@ class TestRegistrationForm(TestCase):
             "password1": "password",
             "password2": "password",
             "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
 
@@ -104,6 +116,7 @@ class TestRegistrationForm(TestCase):
             "password2": "password",
             "email": "email@email.com",
             "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
 
@@ -141,6 +154,7 @@ class TestRegistrationForm(TestCase):
             "first_name": ["This field is required."],
             "last_name": ["This field is required."],
             "nickname": ["This field is required."],
+            "birth_date": ["This field is required."],
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
@@ -153,6 +167,7 @@ class TestRegistrationForm(TestCase):
         self.assertEqual(form.errors, {
             "username": ["This field is required."],
             "email": ["This field is required."],
+            "birth_date": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
@@ -163,6 +178,7 @@ class TestRegistrationForm(TestCase):
         # Test both required
         form = RegistrationForm(data={
             "username": "Username",
+            "birth_date": datetime.date(2000, 1, 1),
             "email": "email@email.com",
             "password1": "password",
         },
@@ -176,6 +192,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "password",
             "password2": "password2"
         },
@@ -189,6 +206,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2001, 1, 1),
             "password1": "123",
             "password2": "123"
         },
@@ -207,6 +225,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "asdasdasd",
             "password2": "asdasdasd"
         },
@@ -222,6 +241,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "asdasd",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "asdasdasd",
             "password2": "asdasdasd"
         },
@@ -238,6 +258,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2001, 1, 1),
             "password1": "asdasdasdA@1",
             "password2": "asdasdasdA@1"
         },
@@ -460,6 +481,7 @@ class EditProfileFormTestCase(TestCase):
     def setUpTestData(cls):
         cls.user = get_user_model().objects.create_user(
             username="testuser",
+            birth_date=datetime.date(2000, 1, 1),
             email="wrong@email.com",
             email_verified=True
         )
@@ -479,20 +501,20 @@ class EditProfileFormTestCase(TestCase):
     def test_update_profile(self):
         data = {
             "email": "right@email.com",
-            "msisdn": "+27821234567"
+            "msisdn": "+27821234567",
+            "birth_date": datetime.date(2005, 1, 1)
         }
 
         form = EditProfileForm(instance=self.user, data=data)
-
+        self.assertTrue(form.has_changed())
         self.assertTrue(form.is_valid())
 
     def test_nothing_updated(self):
-        data = {}
+        data = model_to_dict(self.user)
 
-        form = EditProfileForm(instance=self.user, data=data)
-
+        form = EditProfileForm(data, instance=self.user)
+        self.assertFalse(form.has_changed())
         self.assertTrue(form.is_valid())
-        self.assertTrue(self.user.email_verified)
 
     def test_invalid_form(self):
         data = {
@@ -514,5 +536,7 @@ class EditProfileFormTestCase(TestCase):
                 "country":
                     ["Select a valid choice. That choice is not one of the "
                      "available choices."],
+                "birth_date":
+                    ["This field is required."]
             }
         )
