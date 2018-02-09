@@ -18,7 +18,6 @@ class TestRegistrationForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "username": ["This field is required."],
-            "birth_date": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
@@ -133,7 +132,6 @@ class TestRegistrationForm(TestCase):
             "nickname": ["This field is required."],
             "msisdn": ["This field is required."],
             "gender": ["This field is required."],
-            "birth_date": ["This field is required."],
             "country": ["This field is required."],
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
@@ -152,7 +150,6 @@ class TestRegistrationForm(TestCase):
             "first_name": ["This field is required."],
             "last_name": ["This field is required."],
             "nickname": ["This field is required."],
-            "birth_date": ["This field is required."],
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
@@ -165,7 +162,6 @@ class TestRegistrationForm(TestCase):
         self.assertEqual(form.errors, {
             "username": ["This field is required."],
             "email": ["This field is required."],
-            "birth_date": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
@@ -299,7 +295,6 @@ class TestRegistrationForm(TestCase):
             "nickname": ["This field is required."],
             "msisdn": ["This field is required."],
             "gender": ["This field is required."],
-            "birth_date": ["This field is required."],
             "country": ["This field is required."],
             "avatar": ["This field is required."],
             "password1": ["This field is required."],

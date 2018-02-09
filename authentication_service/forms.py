@@ -109,10 +109,11 @@ class RegistrationForm(UserCreationForm):
             hidden=hidden_fields
         )
 
-        # Override the birth date widget to not be required.
-        # Although the birth_date field is required, it can be populated directly by
+        # Override the birth date field and widget to not be required.
+        # Although the birth_date field is required on the model, it can be populated directly by
         # the user, or indirectly when the user provides an age. The form needs
         # to cater for this.
+        self.fields["birth_date"].required = False
         self.fields["birth_date"].widget = AdminDateWidget()
         self.fields["birth_date"].widget.is_required = False
 
@@ -151,9 +152,6 @@ class RegistrationForm(UserCreationForm):
         # use it, else we calculate the birth date from the age.
         birth_date = cleaned_data.get("birth_date")
         if not birth_date:
-            # If it was not set, then we need to remove it from the errors found by the clean() of
-            # the super.
-            del self.errors["birth_date"]
             age = cleaned_data.get("age")
             if age:
                 cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
