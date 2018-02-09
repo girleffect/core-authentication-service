@@ -1,3 +1,4 @@
+import datetime
 import random
 
 from defender.utils import unblock_username
@@ -21,7 +22,8 @@ class TestLogin(TestCase):
         cls.user = get_user_model().objects.create_user(
             username="inactiveuser1",
             email="inactive@email.com",
-            password="Qwer!234"
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 1, 1)
         )
         cls.user.is_active = False
         cls.user.save()
@@ -148,7 +150,43 @@ class TestRegistrationView(TestCase):
                 "username": "Username",
                 "password1": "password",
                 "password2": "password",
+                "birth_date": "2000-01-01",
                 "email": "email@email.com",
+                "form-TOTAL_FORMS": "2",
+                "form-INITIAL_FORMS": "0",
+                "form-MIN_NUM_FORMS": "0",
+                "form-MAX_NUM_FORMS": "1000",
+            }
+        )
+        self.assertIn(response.url, "/two-factor-auth/account/login/")
+
+        # Test most basic registration with age instead of birth_date
+        response = self.client.post(
+            reverse("registration"),
+            {
+                "username": "Username0",
+                "password1": "password",
+                "password2": "password",
+                "age": "16",
+                "email": "email1@email.com",
+                "form-TOTAL_FORMS": "2",
+                "form-INITIAL_FORMS": "0",
+                "form-MIN_NUM_FORMS": "0",
+                "form-MAX_NUM_FORMS": "1000",
+            }
+        )
+        self.assertIn(response.url, "/two-factor-auth/account/login/")
+
+        # Test most basic registration with age and birth_date. Birth_date takes precedence.
+        response = self.client.post(
+            reverse("registration"),
+            {
+                "username": "Username0a",
+                "password1": "password",
+                "password2": "password",
+                "birth_date": "1999-01-01",
+                "age": "16",
+                "email": "email1a@email.com",
                 "form-TOTAL_FORMS": "2",
                 "form-INITIAL_FORMS": "0",
                 "form-MIN_NUM_FORMS": "0",
@@ -164,6 +202,7 @@ class TestRegistrationView(TestCase):
                 "username": "Username1",
                 "password1": "password",
                 "password2": "password",
+                "birth_date": "2000-01-01",
                 "email": "email2@email.com",
                 "form-TOTAL_FORMS": "2",
                 "form-INITIAL_FORMS": "0",
@@ -182,6 +221,7 @@ class TestRegistrationView(TestCase):
                 "username": "Username2",
                 "password1": "password",
                 "password2": "password",
+                "birth_date": "2000-01-01",
                 "email": "email3@email.com",
                 "form-TOTAL_FORMS": "2",
                 "form-INITIAL_FORMS": "0",
@@ -201,6 +241,7 @@ class TestRegistrationView(TestCase):
                 "username": "Username3",
                 "password1": "awesom#saFe3",
                 "password2": "awesom#saFe3",
+                "birth_date": "2000-01-01",
                 "email": "email4@email.com",
                 "form-TOTAL_FORMS": "2",
                 "form-INITIAL_FORMS": "0",
@@ -218,8 +259,10 @@ class TestRegistrationView(TestCase):
                 "username": "Unique@User@Name",
                 "password1": "awesom#saFe3",
                 "password2": "awesom#saFe3",
+                "birth_date": "2000-01-01",
                 "email": "emailunique@email.com",
                 "msisdn": "0856545698",
+                "age": "16",
                 "form-TOTAL_FORMS": "2",
                 "form-INITIAL_FORMS": "0",
                 "form-MIN_NUM_FORMS": "0",
@@ -237,8 +280,10 @@ class TestRegistrationView(TestCase):
             reverse("registration") + "?security=high",
             {
                 "username": "Unique@User@Name",
+                "age": "16",
                 "password1": "awesom#saFe3",
                 "password2": "awesom#saFe3",
+                "birth_date": "2000-01-01",
                 "email": "emailunique@email.com",
                 "msisdn": "0856545698",
                 "form-TOTAL_FORMS": "2",
@@ -330,12 +375,14 @@ class EditProfileViewTestCase(TestCase):
         cls.user = get_user_model().objects.create_superuser(
             username="testuser",
             email="wrong@email.com",
-            password="Qwer!234"
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 1, 1)
         )
         cls.user.save()
 
         cls.twofa_user = get_user_model().objects.create_superuser(
-            username="2fa_user", password="1234", email="2fa_user@test.com"
+            username="2fa_user", password="1234", email="2fa_user@test.com",
+            birth_date=datetime.date(2001, 1, 1)
         )
         cls.twofa_user.save()
 
@@ -362,6 +409,7 @@ class EditProfileViewTestCase(TestCase):
             "%s?redirect_url=/admin/" % reverse("edit_profile"),
             {
                 "email": "test@user.com",
+                "birth_date": "2001-01-01"
             },
         )
         updated = get_user_model().objects.get(username="testuser")

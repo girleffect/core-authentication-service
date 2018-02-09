@@ -1,7 +1,10 @@
+import datetime
+
+from unittest import mock
+
 from django.contrib.auth import get_user_model
-from django.db.models.fields.files import ImageFieldFile
+from django.forms import model_to_dict
 from django.test import TestCase
-from django.http import QueryDict
 
 from authentication_service.forms import RegistrationForm, \
     SecurityQuestionForm, SecurityQuestionFormSet, EditProfileForm
@@ -15,17 +18,18 @@ class TestRegistrationForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "username": ["This field is required."],
+            "birth_date": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
     def test_default_password_validation(self):
-
         # Test both required
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "password",
         })
         self.assertFalse(form.is_valid())
@@ -37,6 +41,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "password",
             "password2": "password2"
         })
@@ -49,6 +54,7 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "123",
             "password2": "123"
         })
@@ -61,18 +67,20 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "1234",
             "password2": "1234"
         })
         self.assertTrue(form.is_valid())
+        form.clean()  # We need to clean the form to ensure birth_date is set appropriately
 
     def test_default_email_msisdn(self):
-
-        # Test either is requried
+        # Test either is required
         form = RegistrationForm(data={
             "username": "Username",
             "password1": "password",
             "password2": "password",
+            "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
@@ -85,6 +93,7 @@ class TestRegistrationForm(TestCase):
             "password1": "password",
             "password2": "password",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
 
@@ -94,6 +103,7 @@ class TestRegistrationForm(TestCase):
             "password1": "password",
             "password2": "password",
             "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
 
@@ -104,6 +114,7 @@ class TestRegistrationForm(TestCase):
             "password2": "password",
             "email": "email@email.com",
             "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
 
@@ -141,6 +152,7 @@ class TestRegistrationForm(TestCase):
             "first_name": ["This field is required."],
             "last_name": ["This field is required."],
             "nickname": ["This field is required."],
+            "birth_date": ["This field is required."],
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
@@ -153,20 +165,21 @@ class TestRegistrationForm(TestCase):
         self.assertEqual(form.errors, {
             "username": ["This field is required."],
             "email": ["This field is required."],
+            "birth_date": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
     def test_high_security_password_validation(self):
-
         # Test both required
         form = RegistrationForm(data={
             "username": "Username",
+            "birth_date": datetime.date(2000, 1, 1),
             "email": "email@email.com",
             "password1": "password",
         },
-        security="high")
+            security="high")
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "password2": ["This field is required."],
@@ -176,10 +189,11 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "password",
             "password2": "password2"
         },
-        security="high")
+            security="high")
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "password2": ["The two password fields didn't match."],
@@ -189,60 +203,86 @@ class TestRegistrationForm(TestCase):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2001, 1, 1),
             "password1": "123",
             "password2": "123"
         },
-        security="high")
+            security="high")
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-        "password2": [
-            "This password is too short. It must contain at least 8 characters.",
-            "This password is entirely numeric.",
-            "The password must contain at least one uppercase letter, "
-            "one lowercase one, a digit and special character."
-        ]})
-
+            "password2": [
+                "This password is too short. It must contain at least 8 characters.",
+                "This password is entirely numeric.",
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
 
         # Test unique validation
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "asdasdasd",
             "password2": "asdasdasd"
         },
-        security="high")
+            security="high")
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-        "password2": [
-            "The password must contain at least one uppercase letter, "
-            "one lowercase one, a digit and special character."
-        ]})
+            "password2": [
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
 
         # Test close to username
         form = RegistrationForm(data={
             "username": "asdasd",
             "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
             "password1": "asdasdasd",
             "password2": "asdasdasd"
         },
-        security="high")
+            security="high")
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-        "password2": [
-            "The password is too similar to the username.",
-            "The password must contain at least one uppercase letter, "
-            "one lowercase one, a digit and special character."
-        ]})
+            "password2": [
+                "The password is too similar to the username.",
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
 
         # Test success
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
+            "birth_date": datetime.date(2001, 1, 1),
             "password1": "asdasdasdA@1",
             "password2": "asdasdasdA@1"
         },
-        security="high")
+            security="high")
         self.assertTrue(form.is_valid())
+
+        # Test age specified instead of birth_date. Refer to the link below for an explanation of
+        # why the mocking is done the way it is:
+        # http://www.voidspace.org.uk/python/mock/examples.html#partial-mocking
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2000, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+
+            form = RegistrationForm(
+                data={
+                    "username": "Username",
+                    "email": "email@email.com",
+                    "age": "16",
+                    "password1": "asdasdasdA@1",
+                    "password2": "asdasdasdA@1"
+                },
+                security="high"
+            )
+            self.assertTrue(form.is_valid())
+            self.assertEqual(form.cleaned_data["birth_date"], datetime.date(1984, 1, 2))
 
     def test_high_security_required_toggle(self):
         required = [
@@ -297,7 +337,6 @@ class TestSecurityQuestionFormSet(TestCase):
             question_text="Some text for the other question"
         )
 
-
     def test_default_state(self):
         data = {
             "form-TOTAL_FORMS": "2",
@@ -312,8 +351,8 @@ class TestSecurityQuestionFormSet(TestCase):
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
         self.assertEqual(formset.non_form_errors(),
-            ["Please fill in all Security Question fields."]
-        )
+                         ["Please fill in all Security Question fields."]
+                         )
 
     def test_validation(self):
         # Ensure that all questions need to be answered when email is not
@@ -331,8 +370,8 @@ class TestSecurityQuestionFormSet(TestCase):
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
         self.assertEqual(formset.non_form_errors(),
-            ["Please fill in all Security Question fields."]
-        )
+                         ["Please fill in all Security Question fields."]
+                         )
 
         # Ensure its valid if email is present
         data = {
@@ -365,8 +404,8 @@ class TestSecurityQuestionFormSet(TestCase):
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
         self.assertEqual(formset.non_form_errors(),
-            ["Please fill in all Security Question fields."]
-        )
+                         ["Please fill in all Security Question fields."]
+                         )
         data = {
             "email": "email@email.com",
             "form-TOTAL_FORMS": "2",
@@ -381,8 +420,8 @@ class TestSecurityQuestionFormSet(TestCase):
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
         self.assertEqual(formset.non_form_errors(),
-            ["Please fill in all Security Question fields."]
-        )
+                         ["Please fill in all Security Question fields."]
+                         )
 
         # Test answer validation
         data = {
@@ -399,11 +438,11 @@ class TestSecurityQuestionFormSet(TestCase):
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
         self.assertEqual(formset.errors,
-            [
-                {"answer": ["This field is required."]},
-                {"answer": ["This field is required."]}
-            ]
-        )
+                         [
+                             {"answer": ["This field is required."]},
+                             {"answer": ["This field is required."]}
+                         ]
+                         )
 
         # Test same questions can't be selected more than once.
         data = {
@@ -420,8 +459,8 @@ class TestSecurityQuestionFormSet(TestCase):
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
         self.assertEqual(formset.non_form_errors(),
-            ["Each question can only be picked once."]
-        )
+                         ["Each question can only be picked once."]
+                         )
 
         # Test valid with email.
         data = {
@@ -460,6 +499,7 @@ class EditProfileFormTestCase(TestCase):
     def setUpTestData(cls):
         cls.user = get_user_model().objects.create_user(
             username="testuser",
+            birth_date=datetime.date(2000, 1, 1),
             email="wrong@email.com",
             email_verified=True
         )
@@ -479,20 +519,20 @@ class EditProfileFormTestCase(TestCase):
     def test_update_profile(self):
         data = {
             "email": "right@email.com",
-            "msisdn": "+27821234567"
+            "msisdn": "+27821234567",
+            "birth_date": datetime.date(2005, 1, 1)
         }
 
         form = EditProfileForm(instance=self.user, data=data)
-
+        self.assertTrue(form.has_changed())
         self.assertTrue(form.is_valid())
 
     def test_nothing_updated(self):
-        data = {}
+        data = model_to_dict(self.user)
 
-        form = EditProfileForm(instance=self.user, data=data)
-
+        form = EditProfileForm(data, instance=self.user)
+        self.assertFalse(form.has_changed())
         self.assertTrue(form.is_valid())
-        self.assertTrue(self.user.email_verified)
 
     def test_invalid_form(self):
         data = {
@@ -514,5 +554,7 @@ class EditProfileFormTestCase(TestCase):
                 "country":
                     ["Select a valid choice. That choice is not one of the "
                      "available choices."],
+                "birth_date":
+                    ["This field is required."]
             }
         )
