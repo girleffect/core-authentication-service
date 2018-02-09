@@ -116,6 +116,41 @@ class TestRegistrationView(TestCase):
         )
         self.assertIn(response.url, "/two-factor-auth/account/login/")
 
+        # Test most basic registration with age instead of birth_date
+        response = self.client.post(
+            reverse("registration"),
+            {
+                "username": "Username0",
+                "password1": "password",
+                "password2": "password",
+                "age": "16",
+                "email": "email1@email.com",
+                "form-TOTAL_FORMS": "2",
+                "form-INITIAL_FORMS": "0",
+                "form-MIN_NUM_FORMS": "0",
+                "form-MAX_NUM_FORMS": "1000",
+            }
+        )
+        self.assertIn(response.url, "/two-factor-auth/account/login/")
+
+        # Test most basic registration with age and birth_date. Birth_date takes precedence.
+        response = self.client.post(
+            reverse("registration"),
+            {
+                "username": "Username0a",
+                "password1": "password",
+                "password2": "password",
+                "birth_date": "1999-01-01",
+                "age": "16",
+                "email": "email1a@email.com",
+                "form-TOTAL_FORMS": "2",
+                "form-INITIAL_FORMS": "0",
+                "form-MIN_NUM_FORMS": "0",
+                "form-MAX_NUM_FORMS": "1000",
+            }
+        )
+        self.assertIn(response.url, "/two-factor-auth/account/login/")
+
         # Test redirect url, no 2fa
         response = self.client.post(
             reverse("registration") + "?redirect_url=/test-redirect-url/",

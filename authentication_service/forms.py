@@ -1,7 +1,7 @@
-import datetime
 import itertools
 import logging
 
+from datetime import date  # Required because we patch it in the tests (test_forms.py)
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
@@ -113,11 +113,7 @@ class RegistrationForm(UserCreationForm):
         # Although the birth_date field is required, it can be populated directly by
         # the user, or indirectly when the user provides an age. The form needs
         # to cater for this.
-        this_year = datetime.date.today().year
         self.fields["birth_date"].widget = AdminDateWidget()
-        #  forms.SelectDateWidget(
-        #      years=range(this_year-10, this_year-100, -1)
-        #  )
         self.fields["birth_date"].widget.is_required = False
 
     def clean_password2(self):
@@ -155,9 +151,12 @@ class RegistrationForm(UserCreationForm):
         # use it, else we calculate the birth date from the age.
         birth_date = cleaned_data.get("birth_date")
         if not birth_date:
+            # If it was not set, then we need to remove it from the errors found by the clean() of
+            # the super.
+            del self.errors["birth_date"]
             age = cleaned_data.get("age")
             if age:
-                cleaned_data["birth_date"] = datetime.date.today() - relativedelta(years=age)
+                cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
             else:
                 raise ValidationError(_("Enter either birth date or age"))
 
