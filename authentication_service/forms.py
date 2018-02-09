@@ -84,12 +84,7 @@ class RegistrationForm(UserCreationForm):
                     "attributes": {
                         "help_text": ""
                     }
-                },
-#                "birth_date": {
-#                    "attributes": {
-#                        "required": False
-#                    }
-#                }
+                }
             }
 
         form_fields = set(self.fields.keys())
