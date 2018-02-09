@@ -22,7 +22,7 @@ help:
 
 $(VENV):
 	@echo "$(CYAN)Initialise base ve...$(CLEAR)"
-	virtualenv $(VENV) -p python3.5
+	virtualenv $(VENV) -p python3
 	@echo "$(GREEN)DONE$(CLEAR)"
 
 # Creates the virtual environment.
