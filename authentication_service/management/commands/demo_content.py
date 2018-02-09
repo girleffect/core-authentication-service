@@ -65,7 +65,8 @@ class Command(BaseCommand):
         # System User
         system_user = get_user_model().objects.create(
             username="sysuser", first_name="System", last_name="User",
-            email="sysuser@here.com", nickname="5y5"
+            email="sysuser@here.com", nickname="5y5",
+            birth_date=datetime.date(2000, 1, 1)
         )
         system_user.set_password("sysuser")
         system_user.save()

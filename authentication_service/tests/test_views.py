@@ -22,7 +22,8 @@ class TestLogin(TestCase):
         cls.user = get_user_model().objects.create_user(
             username="inactiveuser1",
             email="inactive@email.com",
-            password="Qwer!234"
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 1, 1)
         )
         cls.user.is_active = False
         cls.user.save()
