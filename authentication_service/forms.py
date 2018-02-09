@@ -41,6 +41,7 @@ class RegistrationForm(UserCreationForm):
     required_css_class = "required"
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(min_value=1, max_value=100, required=False)
+    birth_date = forms.DateField(widget=AdminDateWidget(attrs={"required": False}))
 
     class Meta:
         model = get_user_model()
@@ -109,14 +110,6 @@ class RegistrationForm(UserCreationForm):
             hidden=hidden_fields
         )
 
-        # Override the birth date field and widget to not be required.
-        # Although the birth_date field is required on the model, it can be populated directly by
-        # the user, or indirectly when the user provides an age. The form needs
-        # to cater for this.
-        self.fields["birth_date"].required = False
-        self.fields["birth_date"].widget = AdminDateWidget()
-        self.fields["birth_date"].widget.is_required = False
-
     def clean_password2(self):
         # Short circuit normal validation if not high security.
         if self.security == "high":
@@ -152,6 +145,7 @@ class RegistrationForm(UserCreationForm):
         # use it, else we calculate the birth date from the age.
         birth_date = cleaned_data.get("birth_date")
         if not birth_date:
+            del self.errors["birth_date"]
             age = cleaned_data.get("age")
             if age:
                 cleaned_data["birth_date"] = date.today() - relativedelta(years=age)

@@ -20,6 +20,7 @@ class TestRegistrationForm(TestCase):
             "username": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -136,6 +137,7 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -153,6 +155,7 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -164,6 +167,7 @@ class TestRegistrationForm(TestCase):
             "email": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -299,6 +303,7 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
