@@ -82,13 +82,14 @@ class LockoutView(View):
     template_name = "authentication_service/lockout.html"
 
 
-class LoginView(core.LoginView):
+class LoginView(ThemeMixin, core.LoginView):
     """This view simply extends the LoginView from two_factor.views.core. We
     only override the template and the done step, which we use to login
     superusers.
     """
 
     template_name = "authentication_service/login.html"
+    TEMPLATE_PREFIX = "authentication_service/login"
 
     form_list = (
         ('auth', AuthenticationForm),
