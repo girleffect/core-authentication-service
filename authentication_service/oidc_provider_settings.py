@@ -48,8 +48,8 @@ def userinfo(claims: dict, user: USER_MODEL) -> dict:
     :param user: The user for which the information is claimed
     :return: The claims dictionary populated with values
     """
-    LOGGER.debug("Userinfo request for {}: Request: {}".format(user, claims))
-    for key in claims.keys():
+    LOGGER.debug("User info request for {}: Claims={}".format(user, claims))
+    for key in claims:
         if key in CLAIMS_MAP:
             mapfun = CLAIMS_MAP[key]
             if mapfun:
@@ -57,16 +57,50 @@ def userinfo(claims: dict, user: USER_MODEL) -> dict:
         else:
             LOGGER.error("Unsupported claim '{}' encountered.".format(key))
 
-    LOGGER.debug("Userinfo request for {}: Response: {}".format(user, claims))
     return claims
 
 
 class CustomScopeClaims(ScopeClaims):
-    info_roles = (
-        _(u"Roles"), _(u"User roles for the requesting site"),
+    """
+    A class facilitating custom scopes and claims. For more information, see
+    http://django-oidc-provider.readthedocs.io/en/latest/sections/scopesclaims.html#how-to-add-custom-scopes-and-claims
+    """
+
+    info_site = (
+        _(u"Site"), _(u"Data for the requesting site"),
     )
 
-    def scope_roles(self):
+    info_roles = (
+        _(u"Roles"), _(u"Roles for the requesting site"),
+    )
+
+    def scope_site(self) -> dict:
+        """
+        The following attributes are available when constructing custom scopes:
+        * self.user: The Django user instance.
+        * self.userinfo: The dict returned by the OIDC_USERINFO function.
+        * self.scopes: A list of scopes requested.
+        * self.client: The Client requesting this claim.
+        :return: A dictionary containing the claims for the custom Site scope
+        """
+        LOGGER.debug("Looking up site {} data for user {}".format(
+            self.client.client_id, self.user))
+        # TODO:
+        # 1. Use the client id to query the Access Control component for the site id linked to it
+        #  this client.
+        # 2. Use the site id and user id to query the User Data Store component for the
+        #  site-specific data for the user.
+        result = {
+            "site": {
+                "id": self.client.client_id,
+                "mocked": True,
+                "status": "This is demo data"
+            }
+        }
+
+        return result
+
+    def scope_roles(self) -> dict:
         """
         The following attributes are available when constructing custom scopes:
         * self.user: The Django user instance.
@@ -86,9 +120,6 @@ class CustomScopeClaims(ScopeClaims):
         else:
             roles = ["NotImplementedYet"]
 
-        LOGGER.debug("Got roles after possible blocking api call "
-            "to access-control for user: %s on site: %s" % (
-            self.user.username,  self.client))
         result = {"roles": roles}
 
         return result
