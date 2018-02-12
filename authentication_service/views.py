@@ -25,10 +25,9 @@ class ThemeMixin:
     sets the appropriate template.
     """
     TEMPLATE_PREFIX = ""
-    theme = None
 
     def dispatch(self, *args, **kwargs):
-        self.theme = self.request.GET.get("theme")
+        self.theme = self.request.GET.get("theme", None)
         return super(ThemeMixin, self).dispatch(*args, **kwargs)
 
     def get_template_names(self):
@@ -41,8 +40,8 @@ class ThemeMixin:
         template_names = [
             "%s%s%s.html" % (
                 self.TEMPLATE_PREFIX,
-                "_" if self.TEMPLATE_PREFIX else "",
-                self.theme
+                "_" if self.TEMPLATE_PREFIX and self.theme else "",
+                self.theme if self.theme else ""
             ),
         ] + template_names
         return template_names
@@ -82,13 +81,13 @@ class LockoutView(View):
     template_name = "authentication_service/lockout.html"
 
 
-class LoginView(core.LoginView):
+class LoginView(ThemeMixin, core.LoginView):
     """This view simply extends the LoginView from two_factor.views.core. We
     only override the template and the done step, which we use to login
     superusers.
     """
 
-    template_name = "authentication_service/login.html"
+    TEMPLATE_PREFIX = "authentication_service/login"
 
     form_list = (
         ('auth', AuthenticationForm),
