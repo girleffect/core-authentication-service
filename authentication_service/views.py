@@ -25,10 +25,9 @@ class ThemeMixin:
     sets the appropriate template.
     """
     TEMPLATE_PREFIX = ""
-    # theme = None
 
     def dispatch(self, *args, **kwargs):
-        self.theme = self.request.GET.get("theme")
+        self.theme = self.request.GET.get("theme", None)
         return super(ThemeMixin, self).dispatch(*args, **kwargs)
 
     def get_template_names(self):
