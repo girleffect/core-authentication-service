@@ -25,7 +25,7 @@ class ThemeMixin:
     sets the appropriate template.
     """
     TEMPLATE_PREFIX = ""
-    theme = None
+    # theme = None
 
     def dispatch(self, *args, **kwargs):
         self.theme = self.request.GET.get("theme")
@@ -41,8 +41,8 @@ class ThemeMixin:
         template_names = [
             "%s%s%s.html" % (
                 self.TEMPLATE_PREFIX,
-                "_" if self.TEMPLATE_PREFIX else "",
-                self.theme
+                "_" if self.TEMPLATE_PREFIX and self.theme else "",
+                self.theme if self.theme else ""
             ),
         ] + template_names
         return template_names
@@ -88,7 +88,6 @@ class LoginView(ThemeMixin, core.LoginView):
     superusers.
     """
 
-    template_name = "authentication_service/login.html"
     TEMPLATE_PREFIX = "authentication_service/login"
 
     form_list = (
