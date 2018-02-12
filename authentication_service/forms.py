@@ -252,10 +252,8 @@ class EditProfileForm(forms.ModelForm):
 class UpdateSecurityQuestionsForm(forms.ModelForm):
     class Meta:
         model = UserSecurityQuestion
-        fields = []
+        fields = ["question", "answer"]
 
-    # def __init__(self, *args, **kwargs):
-    #     user_answers = kwargs.pop("user_answers")
-    #     super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)
-    # TODO: Security Question Update
-    pass
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)

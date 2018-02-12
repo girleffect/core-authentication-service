@@ -5,6 +5,8 @@ from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
 from django.conf import settings
 from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
+from django.forms import formset_factory
+from django.forms.formsets import BaseFormSet
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
@@ -263,11 +265,6 @@ class UpdatePasswordView(ThemeMixin, RedirectMixin, UpdateView):
     template_name = "authentication_service/profile/update_password.html"
     form_class = PasswordChangeForm
 
-    def dispatch(self, request, *args, **kwargs):
-        self.success_url = self.request.GET.get("redirect_url")
-        return super(UpdatePasswordView, self).dispatch(
-            request, *args, **kwargs)
-
     def get_object(self, queryset=None):
         return self.request.user
 
@@ -282,16 +279,21 @@ class UpdatePasswordView(ThemeMixin, RedirectMixin, UpdateView):
         super(UpdatePasswordView, self).form_valid(form)
 
 
-class UpdateSecurityQuestionsView(FormView):
+class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, FormView):
+    TEMPLATE_PREFIX = "authentication_service/profile/update_security_questions"
     template_name = \
         "authentication_service/profile/update_security_questions.html"
     form_class = forms.UpdateSecurityQuestionsForm
+    QuestionFormSet = formset_factory(
+        forms.UpdateSecurityQuestionsForm(), BaseFormSet)
 
-    # def get_form_kwargs(self):
-    #     kwargs = super(UpdateSecurityQuestionsView, self).get_form_kwargs()
-    #     kwargs["user_answers"] = models.UserSecurityQuestion.objects.filter(
-    #         id=self.request.user.id)
-    #     return kwargs
+    def get_form_kwargs(self):
+        kwargs = super(UpdateSecurityQuestionsView, self).get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
-    # TODO: Security Question Update
-    pass
+    def get_context_data(self, **kwargs):
+        context = super(
+            UpdateSecurityQuestionsView, self).get_context_data(**kwargs)
+        context["question_formset"] = self.QuestionFormSet
+        return context

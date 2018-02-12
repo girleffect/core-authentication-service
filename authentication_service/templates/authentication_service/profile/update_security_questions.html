@@ -3,7 +3,9 @@
 {% block content %}
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        {% for form in question_formset %}
+            {{ form.as_div }}
+        {% endfor %}
         <button type="submit">Update</button>
     </form>
 {% endblock %}
