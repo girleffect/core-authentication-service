@@ -1,0 +1,16 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <body style="background-color:black;color:white;">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_div }}
+            <button type="submit">{% trans "Update" %}</button>
+            <a href="{% url "update_password" %}">{% trans "Password Update" %}</a>
+            <!--<a href="{% url "update_security_questions" %}">Security Questions Update</a>-->
+            {% if 2fa_enabled %}
+                <a href="{% url "update_2fa" %}">{% trans "2FA settings" %}</a>
+            {% endif %}
+        </form>
+    </body>
+</html>

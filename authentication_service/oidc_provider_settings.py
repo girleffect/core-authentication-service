@@ -78,8 +78,14 @@ class CustomScopeClaims(ScopeClaims):
         LOGGER.debug("Requesting roles for user: %s/%s, on site: %s" % (
             self.user.username, self.user.id, self.client))
 
-        # TODO: Roles need to actually get fetched.
-        roles = ["not", "implemented", "yet", "Role G", "Role C"]
+        # TODO: Roles need to actually get fetched. We fake it for now.
+        if self.client.client_id == "client_id_1":
+            roles = ["Admin", "Editor"]
+        elif self.client.client_id == "client_id_2":
+            roles = ["Trainee"]
+        else:
+            roles = ["NotImplementedYet"]
+
         LOGGER.debug("Got roles after possible blocking api call "
             "to access-control for user: %s on site: %s" % (
             self.user.username,  self.client))
