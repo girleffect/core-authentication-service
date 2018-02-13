@@ -10,7 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 from django.forms import BaseFormSet
-from django.forms import formset_factory
+from django.forms import formset_factory, modelformset_factory
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext as _
 
@@ -250,10 +250,18 @@ class EditProfileForm(forms.ModelForm):
 
 
 class UpdateSecurityQuestionsForm(forms.ModelForm):
+
     class Meta:
         model = UserSecurityQuestion
         fields = ["question", "answer"]
 
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)
+    question = forms.ModelChoiceField(
+        queryset=models.SecurityQuestion.objects.all()
+    )
+
+
+UpdateSecurityQuestionsFormSet = modelformset_factory(
+    models.UserSecurityQuestion,
+    UpdateSecurityQuestionsForm,
+    extra=0
+)

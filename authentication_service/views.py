@@ -7,10 +7,10 @@ from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.forms import formset_factory
 from django.forms.formsets import BaseFormSet
+from django.http.response import HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 from django.views.generic import View
 from django.views.generic.edit import CreateView, UpdateView, FormView
 from two_factor.forms import AuthenticationTokenForm
@@ -278,21 +278,28 @@ class UpdatePasswordView(ThemeMixin, RedirectMixin, UpdateView):
         super(UpdatePasswordView, self).form_valid(form)
 
 
-class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, FormView):
+class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/update_security_questions"
     template_name = \
         "authentication_service/profile/update_security_questions.html"
     form_class = forms.UpdateSecurityQuestionsForm
-    QuestionFormSet = formset_factory(
-        forms.UpdateSecurityQuestionsForm(), BaseFormSet)
 
-    def get_form_kwargs(self):
-        kwargs = super(UpdateSecurityQuestionsView, self).get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
+    def dispatch(self, *args, **kwargs):
+        # Grab language off of querystring first. Otherwise default to django
+        # middleware set one.
+        self.language = self.request.GET.get("language") \
+            if self.request.GET.get("language") else self.request.LANGUAGE_CODE
+        return super(
+            UpdateSecurityQuestionsView, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(
             UpdateSecurityQuestionsView, self).get_context_data(**kwargs)
-        context["question_formset"] = self.QuestionFormSet
+        user_answers = models.UserSecurityQuestion.objects.filter(
+            user=self.request.user)
+        context["question_formset"] = \
+            forms.UpdateSecurityQuestionsFormSet(queryset=user_answers)
         return context
+
+    def get_object(self):
+        return self.request.user
