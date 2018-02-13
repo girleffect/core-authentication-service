@@ -81,11 +81,12 @@ class Command(BaseCommand):
             confirmed=True
         )
         totp_device.save()
-        sys.stdout.write(get_otpauth_url(
-            accountname=system_user.username,
-            secret=b32encode(totp_device.bin_key),
-            issuer="Girl Effect Demo",
-            digits=totp_device.digits
-        ))
+        sys.stdout.write(self.style.SUCCESS(
+            "Created system user with OTP URL: {}".format(get_otpauth_url(
+                accountname=system_user.username,
+                secret=b32encode(totp_device.bin_key),
+                issuer="Girl Effect Demo",
+                digits=totp_device.digits)
+        )))
 
         call_command("load_security_questions")
