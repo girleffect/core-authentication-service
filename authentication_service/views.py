@@ -284,6 +284,7 @@ class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, UpdateView):
         "authentication_service/profile/update_security_questions.html"
     form_class = forms.UpdateSecurityQuestionsForm
 
+
     def dispatch(self, *args, **kwargs):
         # Grab language off of querystring first. Otherwise default to django
         # middleware set one.
@@ -298,7 +299,7 @@ class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, UpdateView):
         user_answers = models.UserSecurityQuestion.objects.filter(
             user=self.request.user)
         context["question_formset"] = \
-            forms.UpdateSecurityQuestionsFormSet(queryset=user_answers)
+            forms.UpdateSecurityQuestionsFormSet()
         return context
 
     def get_object(self):

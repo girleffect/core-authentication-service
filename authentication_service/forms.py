@@ -259,6 +259,12 @@ class UpdateSecurityQuestionsForm(forms.ModelForm):
         queryset=models.SecurityQuestion.objects.all()
     )
 
+    def __init__(self, *args, **kwargs):
+        initial = kwargs.get("initial", {})
+        initial["answer"] = None
+        kwargs["initial"] = initial
+        super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)
+
 
 UpdateSecurityQuestionsFormSet = modelformset_factory(
     models.UserSecurityQuestion,
