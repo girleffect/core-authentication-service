@@ -158,6 +158,7 @@ class RegistrationForm(UserCreationForm):
 
 class SecurityQuestionFormSetClass(BaseFormSet):
     def __init__(self, language, *args, **kwargs):
+        self.queryset = kwargs.pop("queryset", None)
         super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
         self.language = language
 
@@ -165,6 +166,8 @@ class SecurityQuestionFormSetClass(BaseFormSet):
         kwargs = super(SecurityQuestionFormSetClass, self).get_form_kwargs(index)
         kwargs["questions"] = self.get_questions
         kwargs["language"] = self.language
+        if self.queryset:
+            kwargs["queryset"] = self.queryset
         return kwargs
 
     @cached_property
@@ -256,18 +259,41 @@ class UpdateSecurityQuestionsForm(forms.ModelForm):
         fields = ["question", "answer"]
 
     question = forms.ModelChoiceField(
-        queryset=models.SecurityQuestion.objects.all()
+        queryset=QuerySet()
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, questions, language, *args, **kwargs):
         initial = kwargs.get("initial", {})
         initial["answer"] = None
         kwargs["initial"] = initial
         super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)
+        self.fields["question"].queryset = questions
+
+    @property
+    def get_questions(self):
+        return models.SecurityQuestion.objects.prefetch_related(
+            "questionlanguagetext_set").all()
+
+    def clean_question(self):
+        question = self.cleaned_data["question"]
+        if not question:
+            raise ValidationError(
+                _("Please select a question from the dropdown.")
+            )
+        return question
+
+    def clean_answer(self):
+        answer = self.cleaned_data["answer"]
+        if not answer:
+            raise ValidationError(
+                _("Please enter an answer.")
+            )
+        return answer
 
 
 UpdateSecurityQuestionsFormSet = modelformset_factory(
     models.UserSecurityQuestion,
     UpdateSecurityQuestionsForm,
-    extra=0
+    formset=SecurityQuestionFormSetClass,
+    extra=SECURITY_QUESTION_COUNT
 )

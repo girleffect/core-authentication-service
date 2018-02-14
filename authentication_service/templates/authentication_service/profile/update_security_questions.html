@@ -3,9 +3,11 @@
 {% block content %}
     <form method="post">
         {% csrf_token %}
+        {{ question_formset.management_form }}
         {% for form in question_formset %}
             {{ form.as_div }}
         {% endfor %}
         <button type="submit">Update</button>
     </form>
+    <a href="{% url "edit_profile" %}">Back</a>
 {% endblock %}

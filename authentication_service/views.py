@@ -282,8 +282,7 @@ class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/update_security_questions"
     template_name = \
         "authentication_service/profile/update_security_questions.html"
-    form_class = forms.UpdateSecurityQuestionsForm
-
+    form_class = forms.EditProfileForm
 
     def dispatch(self, *args, **kwargs):
         # Grab language off of querystring first. Otherwise default to django
@@ -293,14 +292,30 @@ class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, UpdateView):
         return super(
             UpdateSecurityQuestionsView, self).dispatch(*args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        context = super(
-            UpdateSecurityQuestionsView, self).get_context_data(**kwargs)
-        user_answers = models.UserSecurityQuestion.objects.filter(
-            user=self.request.user)
-        context["question_formset"] = \
-            forms.UpdateSecurityQuestionsFormSet()
-        return context
+    @property
+    def get_formset(self):
+        formset = forms.UpdateSecurityQuestionsFormSet(
+            language=self.language
+        )
+        if self.request.POST:
+            formset = forms.UpdateSecurityQuestionsFormSet(
+                data=self.request.POST, language=self.language
+            )
+        return formset
 
-    def get_object(self):
+    def get_context_data(self, *args, **kwargs):
+        ct = super(UpdateSecurityQuestionsView, self).get_context_data()
+
+        # Either a new formset instance or an existing one is passed to the
+        # formset class.
+        if kwargs.get("question_formset"):
+            ct["question_formset"] = kwargs["question_formset"]
+        else:
+            ct["question_formset"] = self.get_formset
+        return ct
+
+    def get_object(self, *args):
         return self.request.user
+
+    def form_valid(self, form):
+        formset = self.get_formset
