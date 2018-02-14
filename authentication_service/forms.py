@@ -259,3 +259,17 @@ class UpdateSecurityQuestionsForm(forms.ModelForm):
     #     super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)
     # TODO: Security Question Update
     pass
+
+
+class ResetPasswordForm(forms.Form):
+    error_css_class = "error"
+    required_css_class = "required"
+
+    username = forms.CharField(required=True)
+
+    def clean(self):
+        username = self.cleaned_data.get("username")
+        if not username:
+            raise ValidationError(
+                _("Please enter your username")
+            )

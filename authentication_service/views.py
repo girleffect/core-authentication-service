@@ -294,3 +294,10 @@ class UpdateSecurityQuestionsView(FormView):
 
     # TODO: Security Question Update
     pass
+
+
+class ResetPasswordView(FormView):
+    template_name = "authentication_service/reset_password.html"
+    form_class = forms.ResetPasswordForm
+
+    pass

@@ -25,12 +25,17 @@ from two_factor.views import ProfileView
 from authentication_service import views
 
 urlpatterns = [
+    # Login URLs
     url(r"^login/", views.LoginView.as_view(), name="login"),
     # Override the login URL implicitly defined by Django Admin to redirect
     # to our login view.
     url(r"^admin/login/",
         RedirectView.as_view(pattern_name="login", permanent=True,
                              query_string=True)
+    ),
+    url(r"^reset-password/$",
+        views.ResetPasswordView.as_view(),
+        name="reset_password"
     ),
     url(r"^admin/", admin.site.urls),
     url(r'^admin/defender/', include('defender.urls')),  # defender admin
