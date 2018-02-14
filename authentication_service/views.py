@@ -322,8 +322,10 @@ class ResetPasswordView(FormView):
         if user:
             # Check if user has email or security questions.
             if user.email:
+                # TODO: Handle case if user has an email address
                 print("User %s has email %s" % (identifier, user.email))
             elif user.has_security_questions:
+                # TODO: Handle case if user has security questions
                 print("User %s has security questions" % identifier)
             else:  # This should never be the case.
                 print("User %s cannot reset their password." % identifier)

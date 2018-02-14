@@ -10,6 +10,7 @@ from django.test.client import Client
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.util import random_hex
 
+from authentication_service import models
 from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 
@@ -427,3 +428,50 @@ class EditProfileViewTestCase(TestCase):
 
         # Check 2FA is enabled and present on edit page
         self.assertContains(response, "2fa")
+
+
+class ResetPasswordTestCase(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = models.CoreUser.objects.create(
+            username="identifiable_user", email="user@id.com",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.set_password("1234")
+        cls.user.save()
+
+    def test_username_as_identifier(self):
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "identifier": "identifiable_user"
+            }
+        )
+        self.assertNotIn("User not found", response)
+
+    def test_email_as_identifier(self):
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "identifier": "user@id.com"
+            }
+        )
+        self.assertNotIn("User not found", response)
+
+    def test_user_not_found(self):
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "identifier": "identifiable_user2"
+            }
+        )
+        self.assertContains(response, "User not found")
+
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "identifier": "user2@id.com"
+            }
+        )
+        self.assertContains(response, "User not found")
