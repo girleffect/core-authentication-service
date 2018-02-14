@@ -5,12 +5,15 @@ from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
 from django.conf import settings
 from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
+from django.core.exceptions import ValidationError
+from django.forms.utils import ErrorList
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import View
 from django.views.generic.edit import CreateView, UpdateView, FormView
+from django.utils.translation import ugettext as _
 from two_factor.forms import AuthenticationTokenForm
 from two_factor.forms import BackupTokenForm
 
@@ -300,4 +303,38 @@ class ResetPasswordView(FormView):
     template_name = "authentication_service/reset_password.html"
     form_class = forms.ResetPasswordForm
 
-    pass
+    def form_valid(self, form):
+        identifier = form.cleaned_data["identifier"]
+
+        # Identify user
+        if "@" in identifier:
+            # We first try to find the identifier in emails:
+            user = models.CoreUser.objects.filter(email=identifier).first()
+            if not user:
+                # Check if a username may have had an @ character:
+                user = models.CoreUser.objects.filter(
+                    username=identifier).first()
+        else:
+            user = models.CoreUser.objects.filter(
+                username=identifier).first()
+
+        # Check reset method
+        if user:
+            # Check if user has email or security questions.
+            if user.email:
+                print("User %s has email %s" % (identifier, user.email))
+            elif user.has_security_questions:
+                print("User %s has security questions" % identifier)
+            else:  # This should never be the case.
+                print("User %s cannot reset their password." % identifier)
+        else:
+            if not user:
+                form.add_error("identifier", ValidationError(
+                    _("User not found, try again."), code="not_found"
+                ))
+                return self.form_invalid(form)
+        return super(ResetPasswordView, self).form_valid(form)
+
+    def get_success_url(self):
+        url = reverse("login")
+        return url

@@ -265,11 +265,13 @@ class ResetPasswordForm(forms.Form):
     error_css_class = "error"
     required_css_class = "required"
 
-    username = forms.CharField(required=True)
+    identifier = forms.CharField(
+        label="Username/email"
+    )
 
     def clean(self):
-        username = self.cleaned_data.get("username")
-        if not username:
+        identifier = self.cleaned_data.get("identifier")
+        if not identifier:
             raise ValidationError(
-                _("Please enter your username")
+                _("Please enter your username or email address.")
             )

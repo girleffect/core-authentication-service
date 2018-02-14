@@ -46,6 +46,10 @@ class CoreUser(AbstractUser):
             self.msisdn_verified = False
         super(CoreUser, self).save(*args, **kwargs)
 
+    @property
+    def has_security_questions(self):
+        return self.usersecurityquestion_set.all() or None
+
 
 class Country(models.Model):
     code = models.CharField(blank=True, null=True, max_length=2)

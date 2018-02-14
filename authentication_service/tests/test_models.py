@@ -45,6 +45,8 @@ class TestRegistrationModels(TestCase):
         text = "Some spacious _text"
         self.assertTrue(hashers.check_password(text.lower(), answer.answer))
 
+        self.assertIsNotNone(self.user.has_security_questions)
+
 
 class UserModelTestCase(TestCase):
 
