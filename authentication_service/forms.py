@@ -5,7 +5,7 @@ from datetime import date  # Required because we patch it in the tests (test_for
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, hashers
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
@@ -278,4 +278,18 @@ class ResetPasswordForm(forms.Form):
 
 
 class ResetPasswordSecurityQuestionsForm(forms.Form):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        self.questions = kwargs.pop("questions")
+        super(
+            ResetPasswordSecurityQuestionsForm, self).__init__(*args, **kwargs)
+
+        for question in self.questions:
+            self.fields["%s"% question.id] = forms.CharField(
+                label=question.question
+            )
+
+    def clean(self):
+        for question in self.questions:
+            if not self.cleaned_data["%s" % question.id]:
+                raise ValidationError(_("Please enter your answer."))

@@ -1,15 +1,18 @@
+import json
+
 from defender.decorators import watch_login
 from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
     get_username_blocked_cache_key
 
 from django.conf import settings
-from django.contrib.auth import login, authenticate, update_session_auth_hash
+from django.contrib.auth import login, authenticate, update_session_auth_hash, \
+    hashers
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.forms.utils import ErrorList
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.views.generic import View
 from django.views.generic.edit import CreateView, UpdateView, FormView
@@ -328,6 +331,9 @@ class ResetPasswordView(FormView):
 
         # Check reset method
         if user:
+            # Store the id of the user that we found in our search
+            self.request.session["lookup_user_id"] = str(user.id)
+
             # Check if user has email or security questions.
             if user.email:
                 # TODO: Handle case if user has an email address
@@ -349,8 +355,25 @@ class ResetPasswordSecurityQuestionsView(FormView):
     template_name = \
         "authentication_service/reset_password/security_questions.html"
     form_class = forms.ResetPasswordSecurityQuestionsForm
+    success_url = reverse_lazy("login")
 
     def get_form_kwargs(self):
         kwargs = super(
             ResetPasswordSecurityQuestionsView, self).get_form_kwargs()
-        kwargs["user_questions"] = models.UserSecurityQuestion.objects.get
+        kwargs["questions"] = \
+            models.UserSecurityQuestion.objects.filter(
+                user__id=self.request.session["lookup_user_id"])
+        return kwargs
+
+    def form_valid(self, form):
+        for question in form.questions:
+            if not hashers.check_password(
+                    form.cleaned_data["%s" % question.id].strip().lower(),
+                    question.answer
+            ):
+                form.add_error(None, ValidationError(
+                    _("One or more answers are incorrect"),
+                    code="incorrect"
+                ))
+                return self.form_invalid(form)
+        return super(ResetPasswordSecurityQuestionsView, self).form_valid(form)
