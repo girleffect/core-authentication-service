@@ -314,18 +314,18 @@ class ResetPasswordView(FormView):
     form_class = forms.ResetPasswordForm
     success_url = None
 
+    def looks_like_email(self, identifier):
+        return "@" in identifier
+
     def form_valid(self, form):
         identifier = form.cleaned_data["identifier"]
 
         # Identify user
-        if "@" in identifier:
-            # We first try to find the identifier in emails:
+        user = None
+        if self.looks_like_email(identifier):
             user = models.CoreUser.objects.filter(email=identifier).first()
-            if not user:
-                # Check if a username may have had an @ character:
-                user = models.CoreUser.objects.filter(
-                    username=identifier).first()
-        else:
+
+        if not user:
             user = models.CoreUser.objects.filter(
                 username=identifier).first()
 
@@ -344,10 +344,7 @@ class ResetPasswordView(FormView):
                 print("User %s cannot reset their password." % identifier)
         else:
             if not user:
-                form.add_error("identifier", ValidationError(
-                    _("User not found, try again."), code="not_found"
-                ))
-                return self.form_invalid(form)
+                return HttpResponseRedirect(reverse("password_reset_done"))
         return super(ResetPasswordView, self).form_valid(form)
 
 

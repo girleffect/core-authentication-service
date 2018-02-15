@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import logout
+from django.contrib.auth.views import logout, PasswordResetDoneView
 from django.views.generic import RedirectView
 
 from two_factor.urls import urlpatterns as two_factor_patterns
@@ -44,6 +44,11 @@ urlpatterns = [
         r"^reset-password/security-questions/$",
         views.ResetPasswordSecurityQuestionsView.as_view(),
         name="reset_password_security_questions"
+    ),
+    url(
+        r"^reset-password/done/$",
+        PasswordResetDoneView.as_view(),
+        name="password_reset_done"
     ),
 
     url(r"^admin/", admin.site.urls),
