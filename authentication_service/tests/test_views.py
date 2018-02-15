@@ -466,7 +466,7 @@ class ResetPasswordTestCase(TestCase):
                 "identifier": "identifiable_user2"
             }
         )
-        self.assertContains(response, "User not found")
+        self.assertRedirects(response, reverse("password_reset_done"))
 
         response = self.client.post(
             reverse("reset_password"),
@@ -474,4 +474,4 @@ class ResetPasswordTestCase(TestCase):
                 "identifier": "user2@id.com"
             }
         )
-        self.assertContains(response, "User not found")
+        self.assertRedirects(response, reverse("password_reset_done"))
