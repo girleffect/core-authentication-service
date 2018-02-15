@@ -300,8 +300,16 @@ class UpdateSecurityQuestionsView(FormView):
 
 
 class ResetPasswordView(FormView):
-    template_name = "authentication_service/reset_password.html"
+    """This view allows the user to enter either their username or their email
+    address in order for us to identify them. After we have identified the user
+    we check what method to user to help them reset their password. If the user
+    has an email address, we send them a reset link. If they have security
+    questions, we take them to the ResetPasswordSecurityQuestionsView to enter
+    their answers.
+    """
+    template_name = "authentication_service/reset_password/reset_password.html"
     form_class = forms.ResetPasswordForm
+    success_url = None
 
     def form_valid(self, form):
         identifier = form.cleaned_data["identifier"]
@@ -325,8 +333,7 @@ class ResetPasswordView(FormView):
                 # TODO: Handle case if user has an email address
                 print("User %s has email %s" % (identifier, user.email))
             elif user.has_security_questions:
-                # TODO: Handle case if user has security questions
-                print("User %s has security questions" % identifier)
+                self.success_url = reverse("reset_password_security_questions")
             else:  # This should never be the case.
                 print("User %s cannot reset their password." % identifier)
         else:
@@ -337,6 +344,13 @@ class ResetPasswordView(FormView):
                 return self.form_invalid(form)
         return super(ResetPasswordView, self).form_valid(form)
 
-    def get_success_url(self):
-        url = reverse("login")
-        return url
+
+class ResetPasswordSecurityQuestionsView(FormView):
+    template_name = \
+        "authentication_service/reset_password/security_questions.html"
+    form_class = forms.ResetPasswordSecurityQuestionsForm
+
+    def get_form_kwargs(self):
+        kwargs = super(
+            ResetPasswordSecurityQuestionsView, self).get_form_kwargs()
+        kwargs["user_questions"] = models.UserSecurityQuestion.objects.get

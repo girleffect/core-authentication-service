@@ -29,14 +29,23 @@ urlpatterns = [
     url(r"^login/", views.LoginView.as_view(), name="login"),
     # Override the login URL implicitly defined by Django Admin to redirect
     # to our login view.
-    url(r"^admin/login/",
+    url(
+        r"^admin/login/",
         RedirectView.as_view(pattern_name="login", permanent=True,
                              query_string=True)
     ),
-    url(r"^reset-password/$",
+    # Reset password URLs
+    url(
+        r"^reset-password/$",
         views.ResetPasswordView.as_view(),
         name="reset_password"
     ),
+    url(
+        r"^reset-password/security-questions/$",
+        views.ResetPasswordSecurityQuestionsView.as_view(),
+        name="reset_password_security_questions"
+    ),
+
     url(r"^admin/", admin.site.urls),
     url(r'^admin/defender/', include('defender.urls')),  # defender admin
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),

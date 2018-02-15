@@ -275,3 +275,7 @@ class ResetPasswordForm(forms.Form):
             raise ValidationError(
                 _("Please enter your username or email address.")
             )
+
+
+class ResetPasswordSecurityQuestionsForm(forms.Form):
+    pass
