@@ -27,7 +27,7 @@ from two_factor.forms import BackupTokenForm
 from two_factor.utils import default_device
 from two_factor.views import core
 
-from authentication_service import forms, models
+from authentication_service import forms, models, tasks
 
 
 class ThemeMixin:

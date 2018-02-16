@@ -88,6 +88,10 @@ FORM_RENDERERS = {
     "enable-bem-classes": True
 }
 
+CELERY_USE_TZ = USE_TZ
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "amqp://myuser:mypassword@localhost:5672//")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "amqp://myuser:mypassword@localhost:5672//")
+
 # Attempt to import local settings if present.
 try:
     from project.settings_local import *
