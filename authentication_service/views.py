@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth import login, authenticate, update_session_auth_hash, \
     hashers
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
+from django.contrib.auth.views import PasswordResetView
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.forms.utils import ErrorList
@@ -305,7 +306,7 @@ class UpdateSecurityQuestionsView(FormView):
     pass
 
 
-class ResetPasswordView(FormView):
+class ResetPasswordView(PasswordResetView):
     """This view allows the user to enter either their username or their email
     address in order for us to identify them. After we have identified the user
     we check what method to user to help them reset their password. If the user
@@ -315,13 +316,14 @@ class ResetPasswordView(FormView):
     """
     template_name = "authentication_service/reset_password/reset_password.html"
     form_class = forms.ResetPasswordForm
-    success_url = None
+    success_url = reverse_lazy("password_reset_done")
+    #email_template_name = "reset_password/password_reset_email.html"
 
     def looks_like_email(self, identifier):
         return "@" in identifier
 
     def form_valid(self, form):
-        identifier = form.cleaned_data["identifier"]
+        identifier = form.cleaned_data["email"]
 
         # Identify user
         user = None
@@ -339,8 +341,17 @@ class ResetPasswordView(FormView):
 
             # Check if user has email or security questions.
             if user.email:
-                # TODO: Handle case if user has an email address
-                print("User %s has email %s" % (identifier, user.email))
+                opts = {
+                    'use_https': self.request.is_secure(),
+                    'token_generator': self.token_generator,
+                    'from_email': self.from_email,
+                    'email_template_name': self.email_template_name,
+                    'subject_template_name': self.subject_template_name,
+                    'request': self.request,
+                    'html_email_template_name': self.html_email_template_name,
+                    'extra_email_context': self.extra_email_context,
+                }
+                form.save(**opts)
             elif user.has_security_questions:
                 self.success_url = reverse("reset_password_security_questions")
             else:  # This should never be the case.

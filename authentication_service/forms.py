@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth import get_user_model, hashers
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 from django.forms import BaseFormSet
@@ -261,20 +261,21 @@ class UpdateSecurityQuestionsForm(forms.ModelForm):
     pass
 
 
-class ResetPasswordForm(forms.Form):
+class ResetPasswordForm(PasswordResetForm):
     error_css_class = "error"
     required_css_class = "required"
 
-    identifier = forms.CharField(
+    email = forms.CharField(
         label="Username/email"
     )
 
     def clean(self):
-        identifier = self.cleaned_data.get("identifier")
+        identifier = self.cleaned_data.get("email")
         if not identifier:
             raise ValidationError(
                 _("Please enter your username or email address.")
             )
+
 
 
 class ResetPasswordSecurityQuestionsForm(forms.Form):
