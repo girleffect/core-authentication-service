@@ -8,12 +8,15 @@ from django.conf import settings
 from django.contrib.auth import login, authenticate, update_session_auth_hash, \
     hashers
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.forms.utils import ErrorList
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.views.generic import View
 from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.utils.translation import ugettext as _
@@ -352,7 +355,6 @@ class ResetPasswordSecurityQuestionsView(FormView):
     template_name = \
         "authentication_service/reset_password/security_questions.html"
     form_class = forms.ResetPasswordSecurityQuestionsForm
-    success_url = reverse_lazy("login")
 
     def get_form_kwargs(self):
         kwargs = super(
@@ -374,3 +376,13 @@ class ResetPasswordSecurityQuestionsView(FormView):
                 ))
                 return self.form_invalid(form)
         return super(ResetPasswordSecurityQuestionsView, self).form_valid(form)
+
+    def get_success_url(self):
+        user = models.CoreUser.objects.get(
+            id=self.request.session["lookup_user_id"])
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        return reverse(
+            "password_reset_confirm",
+            kwargs={"uidb64": uidb64, "token": token}
+        )

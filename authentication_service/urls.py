@@ -16,7 +16,8 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import logout, PasswordResetDoneView
+from django.contrib.auth.views import logout, PasswordResetDoneView, \
+    PasswordResetConfirmView, PasswordResetCompleteView
 from django.views.generic import RedirectView
 
 from two_factor.urls import urlpatterns as two_factor_patterns
@@ -49,6 +50,16 @@ urlpatterns = [
         r"^reset-password/done/$",
         PasswordResetDoneView.as_view(),
         name="password_reset_done"
+    ),
+    url(
+        r"^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm"
+    ),
+    url(
+        r"^reset/complete/$",
+        PasswordResetCompleteView.as_view(),
+        name="password_reset_complete"
     ),
 
     url(r"^admin/", admin.site.urls),
