@@ -470,7 +470,7 @@ class ResetPasswordTestCase(TestCase):
         response = self.client.post(
             reverse("reset_password"),
             data={
-                "identifier": "user_no_email"
+                "email": "user_no_email"
             }
         )
         self.assertRedirects(response, reverse("reset_password_security_questions"))
@@ -479,7 +479,7 @@ class ResetPasswordTestCase(TestCase):
         response = self.client.post(
             reverse("reset_password"),
             data={
-                "identifier": "user@id.com"
+                "email": "user@id.com"
             }
         )
         self.assertNotIn("User not found", response)
@@ -488,7 +488,7 @@ class ResetPasswordTestCase(TestCase):
         response = self.client.post(
             reverse("reset_password"),
             data={
-                "identifier": "identifiable_user2"
+                "email": "identifiable_user2"
             }
         )
         self.assertRedirects(response, reverse("password_reset_done"))
@@ -496,7 +496,7 @@ class ResetPasswordTestCase(TestCase):
         response = self.client.post(
             reverse("reset_password"),
             data={
-                "identifier": "user2@id.com"
+                "email": "user2@id.com"
             }
         )
         self.assertRedirects(response, reverse("password_reset_done"))
