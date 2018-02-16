@@ -341,17 +341,7 @@ class ResetPasswordView(PasswordResetView):
 
             # Check if user has email or security questions.
             if user.email:
-                opts = {
-                    'use_https': self.request.is_secure(),
-                    'token_generator': self.token_generator,
-                    'from_email': self.from_email,
-                    'email_template_name': self.email_template_name,
-                    'subject_template_name': self.subject_template_name,
-                    'request': self.request,
-                    'html_email_template_name': self.html_email_template_name,
-                    'extra_email_context': self.extra_email_context,
-                }
-                form.save(**opts)
+                form.cleaned_data["email"] = user.email
             elif user.has_security_questions:
                 self.success_url = reverse("reset_password_security_questions")
             else:  # This should never be the case.
