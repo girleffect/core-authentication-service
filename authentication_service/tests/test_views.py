@@ -1,5 +1,6 @@
 import datetime
 import random
+from importlib import import_module
 
 from defender.utils import unblock_username
 from django.conf import settings
@@ -441,14 +442,38 @@ class ResetPasswordTestCase(TestCase):
         cls.user.set_password("1234")
         cls.user.save()
 
+        cls.user_no_email = models.CoreUser.objects.create(
+            username="user_no_email",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.set_password("1234")
+        cls.user.save()
+
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+        cls.user_answer_one = UserSecurityQuestion.objects.create(
+            user=cls.user_no_email, question=cls.question_one, language_code="en",
+            answer="one"
+        )
+
+        cls.user_answer_two = UserSecurityQuestion.objects.create(
+            user=cls.user_no_email, question=cls.question_two, language_code="en",
+            answer="two"
+        )
+
     def test_username_as_identifier(self):
         response = self.client.post(
             reverse("reset_password"),
             data={
-                "identifier": "identifiable_user"
+                "identifier": "user_no_email"
             }
         )
-        self.assertNotIn("User not found", response)
+        self.assertRedirects(response, reverse("reset_password_security_questions"))
 
     def test_email_as_identifier(self):
         response = self.client.post(
