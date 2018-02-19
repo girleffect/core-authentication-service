@@ -332,12 +332,7 @@ class UpdateSecurityQuestionsView(ThemeLanguageRedirectMixin, View):
     def post(self, request, *args, **kwargs):
         formset = self.get_formset
         if formset.is_valid():
+            formset.save()
             return HttpResponseRedirect(self.get_success_url())
         else:
             return render(request, "authentication_service/profile/update_security_questions.html", context=self.get_context_data(formset=formset))
-
-    def get_object(self, *args):
-        return self.request.user
-
-    #def form_valid(self, form):
-    #    formset = self.get_formset
