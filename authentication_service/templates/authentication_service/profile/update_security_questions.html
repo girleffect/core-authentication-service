@@ -4,6 +4,7 @@
     <form method="post">
         {% csrf_token %}
         {{ question_formset.management_form }}
+        {{ question_formset.non_form_errors }}
         {% for form in question_formset %}
             {{ form.as_div }}
         {% endfor %}

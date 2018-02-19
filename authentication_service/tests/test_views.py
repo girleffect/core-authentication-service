@@ -306,7 +306,7 @@ class TestRegistrationView(TestCase):
             language_code="en"
         )
         self.assertEquals(question_one.user, user)
-        question_two = UserSecurityQuestion.objects.get(
+        question_two = UserSecurityQuestion._base_manager.get(
             question=self.question_two,
             language_code="en"
         )

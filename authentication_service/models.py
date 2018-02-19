@@ -7,6 +7,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext as _
 
+from authentication_service.managers import PermittedManager
+
 
 GENDER_CHOICES = (
     ("female", _("Female")),

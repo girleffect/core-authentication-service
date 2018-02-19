@@ -2,6 +2,7 @@ from defender.decorators import watch_login
 from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
     get_username_blocked_cache_key
 
+from django.shortcuts import render
 from django.conf import settings
 from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
@@ -49,6 +50,17 @@ class ThemeMixin:
         return template_names
 
 
+class LanguageMixin:
+    """This mixin sets an instance variable called self.language, value is
+    passed in via url or determined by django language middleware
+    """
+
+    def dispatch(self, *args, **kwargs):
+        self.language = self.request.GET.get("language") \
+            if self.request.GET.get("language") else self.request.LANGUAGE_CODE
+        return super(LanguageMixin, self).dispatch(*args, **kwargs)
+
+
 class RedirectMixin:
     """This mixin gets the redirect URL parameter from the request URL. This URL
     is used as the success_url attribute. If no redirect_url is set, it will
@@ -73,6 +85,14 @@ class RedirectMixin:
         elif self.redirect_url:
             url = self.redirect_url
         return url
+
+
+class ThemeLanguageRedirectMixin(ThemeMixin, LanguageMixin, RedirectMixin):
+    """
+    Alias theme for Theme, Language and Redirect mixins, a frequently used
+    combo.
+    Language can safely be set on views that make no use of it.
+    """
 
 
 class LockoutView(View):
@@ -121,7 +141,7 @@ LoginView.dispatch = watch_login_method(LoginView.dispatch)
 REDIRECT_COOKIE_KEY = "register_redirect"
 
 
-class RegistrationView(ThemeMixin, RedirectMixin, CreateView):
+class RegistrationView(ThemeLanguageRedirectMixin, CreateView):
     TEMPLATE_PREFIX = "authentication_service/registration/registration"
     template_name = "authentication_service/registration/registration.html"
     form_class = forms.RegistrationForm
@@ -242,7 +262,7 @@ class CookieRedirectView(View):
         return response
 
 
-class EditProfileView(ThemeMixin, RedirectMixin, UpdateView):
+class EditProfileView(ThemeLanguageRedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/edit_profile"
     template_name = "authentication_service/profile/edit_profile.html"
     form_class = forms.EditProfileForm
@@ -259,7 +279,7 @@ class EditProfileView(ThemeMixin, RedirectMixin, UpdateView):
         return self.request.user
 
 
-class UpdatePasswordView(ThemeMixin, RedirectMixin, UpdateView):
+class UpdatePasswordView(ThemeLanguageRedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/update_password"
     template_name = "authentication_service/profile/update_password.html"
     form_class = PasswordChangeForm
@@ -278,33 +298,28 @@ class UpdatePasswordView(ThemeMixin, RedirectMixin, UpdateView):
         super(UpdatePasswordView, self).form_valid(form)
 
 
-class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, UpdateView):
+class UpdateSecurityQuestionsView(ThemeLanguageRedirectMixin, View):
     TEMPLATE_PREFIX = "authentication_service/profile/update_security_questions"
     template_name = \
         "authentication_service/profile/update_security_questions.html"
-    form_class = forms.EditProfileForm
-
-    def dispatch(self, *args, **kwargs):
-        # Grab language off of querystring first. Otherwise default to django
-        # middleware set one.
-        self.language = self.request.GET.get("language") \
-            if self.request.GET.get("language") else self.request.LANGUAGE_CODE
-        return super(
-            UpdateSecurityQuestionsView, self).dispatch(*args, **kwargs)
 
     @property
     def get_formset(self):
-        formset = forms.UpdateSecurityQuestionsFormSet(
-            language=self.language
-        )
+        queryset = models.UserSecurityQuestion.objects.filter(user=self.request.user)
+        formset = forms.UpdateSecurityQuestionFormSet(language=self.language, queryset=queryset)
         if self.request.POST:
-            formset = forms.UpdateSecurityQuestionsFormSet(
-                data=self.request.POST, language=self.language
+            formset = forms.UpdateSecurityQuestionFormSet(
+                data=self.request.POST, language=self.language, queryset=queryset
             )
         return formset
 
+    def get(self, request, *args, **kwargs):
+        formset = forms.SecurityQuestionFormSet(language=self.language)
+        return render(request, "authentication_service/profile/update_security_questions.html", context=self.get_context_data(formset=formset))
+
     def get_context_data(self, *args, **kwargs):
-        ct = super(UpdateSecurityQuestionsView, self).get_context_data()
+        #ct = super(UpdateSecurityQuestionsView, self).get_context_data()
+        ct = {}
 
         # Either a new formset instance or an existing one is passed to the
         # formset class.
@@ -314,8 +329,15 @@ class UpdateSecurityQuestionsView(ThemeMixin, RedirectMixin, UpdateView):
             ct["question_formset"] = self.get_formset
         return ct
 
+    def post(self, request, *args, **kwargs):
+        formset = self.get_formset
+        if formset.is_valid():
+            return HttpResponseRedirect(self.get_success_url())
+        else:
+            return render(request, "authentication_service/profile/update_security_questions.html", context=self.get_context_data(formset=formset))
+
     def get_object(self, *args):
         return self.request.user
 
-    def form_valid(self, form):
-        formset = self.get_formset
+    #def form_valid(self, form):
+    #    formset = self.get_formset
