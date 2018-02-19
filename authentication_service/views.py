@@ -11,7 +11,7 @@ from django.forms.formsets import BaseFormSet
 from django.http.response import HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.generic import View
 from django.views.generic.edit import CreateView, UpdateView, FormView
 from two_factor.forms import AuthenticationTokenForm
@@ -71,6 +71,8 @@ class RedirectMixin:
 
     TODO: Security should be moved out.
     """
+    success_url = None
+
     def dispatch(self, *args, **kwargs):
         self.redirect_url = self.request.GET.get("redirect_url")
         return super(RedirectMixin, self).dispatch(*args, **kwargs)
@@ -82,6 +84,8 @@ class RedirectMixin:
         ) and self.security == "high" or self.request.GET.get(
                 "show2fa") == "true":
             url = reverse("two_factor_auth:setup")
+        elif self.success_url:
+            url = self.success_url
         elif self.redirect_url:
             url = self.redirect_url
         return url
@@ -301,6 +305,7 @@ class UpdateSecurityQuestionsView(ThemeLanguageRedirectMixin, View):
     TEMPLATE_PREFIX = "authentication_service/profile/update_security_questions"
     template_name = \
         "authentication_service/profile/update_security_questions.html"
+    success_url = reverse_lazy("edit_profile")
 
     @property
     def get_formset(self):
