@@ -368,7 +368,7 @@ class ResetPasswordSecurityQuestionsView(FormView):
     def form_valid(self, form):
         for question in form.questions:
             if not hashers.check_password(
-                    form.cleaned_data["%s" % question.id].strip().lower(),
+                    form.cleaned_data["question_%s" % question.id].strip().lower(),
                     question.answer
             ):
                 form.add_error(None, ValidationError(

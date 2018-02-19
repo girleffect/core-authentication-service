@@ -315,7 +315,6 @@ class ResetPasswordForm(PasswordResetForm):
             )
 
 
-
 class ResetPasswordSecurityQuestionsForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
@@ -324,11 +323,11 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
             ResetPasswordSecurityQuestionsForm, self).__init__(*args, **kwargs)
 
         for question in self.questions:
-            self.fields["%s"% question.id] = forms.CharField(
+            self.fields["question_%s" % question.id] = forms.CharField(
                 label=question.question
             )
 
     def clean(self):
         for question in self.questions:
-            if not self.cleaned_data["%s" % question.id]:
+            if not self.cleaned_data["question_%s" % question.id]:
                 raise ValidationError(_("Please enter your answer."))

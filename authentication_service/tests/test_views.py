@@ -457,13 +457,13 @@ class ResetPasswordTestCase(TestCase):
         )
 
         cls.user_answer_one = UserSecurityQuestion.objects.create(
-            user=cls.user_no_email, question=cls.question_one, language_code="en",
-            answer="one"
+            user=cls.user_no_email, question=cls.question_one,
+            language_code="en", answer="one"
         )
 
         cls.user_answer_two = UserSecurityQuestion.objects.create(
-            user=cls.user_no_email, question=cls.question_two, language_code="en",
-            answer="two"
+            user=cls.user_no_email, question=cls.question_two,
+            language_code="en", answer="two"
         )
 
     def test_username_as_identifier(self):
@@ -473,7 +473,8 @@ class ResetPasswordTestCase(TestCase):
                 "email": "user_no_email"
             }
         )
-        self.assertRedirects(response, reverse("reset_password_security_questions"))
+        self.assertRedirects(
+            response, reverse("reset_password_security_questions"))
 
     def test_email_as_identifier(self):
         response = self.client.post(
@@ -500,3 +501,35 @@ class ResetPasswordTestCase(TestCase):
             }
         )
         self.assertRedirects(response, reverse("password_reset_done"))
+
+    def test_security_question_reset(self):
+        # Explicity set a session variable to access
+        session = self.client.session
+        session["lookup_user_id"] = str(self.user_no_email.id)
+        session.save()
+
+        response = self.client.get(
+            reverse("reset_password_security_questions")
+        )
+        self.assertContains(response, "question_%s" % self.user_answer_one.id)
+        self.assertContains(response, "question_%s" % self.user_answer_two.id)
+
+        response = self.client.post(
+            reverse("reset_password_security_questions"),
+            data={
+                "question_%s" % self.user_answer_one.id: "one",
+                "question_%s" % self.user_answer_two.id: "three"
+            }
+        )
+        self.assertContains(response, "One or more answers are incorrect")
+
+        response = self.client.post(
+            reverse("reset_password_security_questions"),
+            data={
+                "question_%s" % self.user_answer_one.id: "one",
+                "question_%s" % self.user_answer_two.id: "two"
+            }
+        )
+
+        # Redirects to password reset confirm view
+        self.assertEquals(response.status_code, 302)
