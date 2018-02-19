@@ -89,8 +89,7 @@ class RedirectMixin:
 
 class ThemeLanguageRedirectMixin(ThemeMixin, LanguageMixin, RedirectMixin):
     """
-    Alias theme for Theme, Language and Redirect mixins, a frequently used
-    combo.
+    Combined class for the frequently used Theme, Language and Redirect mixins.
     Language can safely be set on views that make no use of it.
     """
 
