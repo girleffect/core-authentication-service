@@ -25,4 +25,4 @@ dateutils>=0.6.6,<1.0.0
 testfixtures==5.3.1
 
 # Celery
-celery==4.0.0
+celery>=4.1.0,<5.0
