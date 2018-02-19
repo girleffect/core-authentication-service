@@ -1,23 +1,33 @@
+import json
+
 from defender.decorators import watch_login
 from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
     get_username_blocked_cache_key
 
 from django.conf import settings
-from django.contrib.auth import login, authenticate, update_session_auth_hash
+from django.contrib.auth import login, authenticate, update_session_auth_hash, \
+    hashers
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
+from django.contrib.auth.views import PasswordResetView
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
+from django.forms.utils import ErrorList
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.views.generic import View
 from django.views.generic.edit import CreateView, UpdateView, FormView
+from django.utils.translation import ugettext as _
 from two_factor.forms import AuthenticationTokenForm
 from two_factor.forms import BackupTokenForm
 
 from two_factor.utils import default_device
 from two_factor.views import core
 
-from authentication_service import forms, models
+from authentication_service import forms, models, tasks
 
 
 class ThemeMixin:
@@ -294,3 +304,86 @@ class UpdateSecurityQuestionsView(FormView):
 
     # TODO: Security Question Update
     pass
+
+
+class ResetPasswordView(PasswordResetView):
+    """This view allows the user to enter either their username or their email
+    address in order for us to identify them. After we have identified the user
+    we check what method to user to help them reset their password. If the user
+    has an email address, we send them a reset link. If they have security
+    questions, we take them to the ResetPasswordSecurityQuestionsView to enter
+    their answers.
+    """
+    template_name = "authentication_service/reset_password/reset_password.html"
+    form_class = forms.ResetPasswordForm
+    success_url = reverse_lazy("password_reset_done")
+    #email_template_name = "reset_password/password_reset_email.html"
+
+    def looks_like_email(self, identifier):
+        return "@" in identifier
+
+    def form_valid(self, form):
+        identifier = form.cleaned_data["email"]
+
+        # Identify user
+        user = None
+        if self.looks_like_email(identifier):
+            user = models.CoreUser.objects.filter(email=identifier).first()
+
+        if not user:
+            user = models.CoreUser.objects.filter(
+                username=identifier).first()
+
+        # Check reset method
+        if user:
+            # Store the id of the user that we found in our search
+            self.request.session["lookup_user_id"] = str(user.id)
+
+            # Check if user has email or security questions.
+            if user.email:
+                form.cleaned_data["email"] = user.email
+            elif user.has_security_questions:
+                self.success_url = reverse("reset_password_security_questions")
+            else:  # This should never be the case.
+                print("User %s cannot reset their password." % identifier)
+        else:
+            if not user:
+                return HttpResponseRedirect(reverse("password_reset_done"))
+        return super(ResetPasswordView, self).form_valid(form)
+
+
+class ResetPasswordSecurityQuestionsView(FormView):
+    template_name = \
+        "authentication_service/reset_password/security_questions.html"
+    form_class = forms.ResetPasswordSecurityQuestionsForm
+
+    def get_form_kwargs(self):
+        kwargs = super(
+            ResetPasswordSecurityQuestionsView, self).get_form_kwargs()
+        kwargs["questions"] = \
+            models.UserSecurityQuestion.objects.filter(
+                user__id=self.request.session["lookup_user_id"])
+        return kwargs
+
+    def form_valid(self, form):
+        for question in form.questions:
+            if not hashers.check_password(
+                    form.cleaned_data["question_%s" % question.id].strip().lower(),
+                    question.answer
+            ):
+                form.add_error(None, ValidationError(
+                    _("One or more answers are incorrect"),
+                    code="incorrect"
+                ))
+                return self.form_invalid(form)
+        return super(ResetPasswordSecurityQuestionsView, self).form_valid(form)
+
+    def get_success_url(self):
+        user = models.CoreUser.objects.get(
+            id=self.request.session["lookup_user_id"])
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        return reverse(
+            "password_reset_confirm",
+            kwargs={"uidb64": uidb64, "token": token}
+        )

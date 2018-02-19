@@ -5,16 +5,20 @@ from datetime import date  # Required because we patch it in the tests (test_for
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
-from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import get_user_model, hashers
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 from django.forms import BaseFormSet
 from django.forms import formset_factory
+from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
+from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext as _
 
-from authentication_service import models
+from authentication_service import models, tasks
 from authentication_service.models import UserSecurityQuestion
 from authentication_service.utils import update_form_fields
 from authentication_service.constants import SECURITY_QUESTION_COUNT, \
@@ -259,3 +263,71 @@ class UpdateSecurityQuestionsForm(forms.ModelForm):
     #     super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)
     # TODO: Security Question Update
     pass
+
+
+class ResetPasswordForm(PasswordResetForm):
+    error_css_class = "error"
+    required_css_class = "required"
+
+    email = forms.CharField(
+        label="Username/email"
+    )
+
+    def clean(self):
+        identifier = self.cleaned_data.get("email")
+        if not identifier:
+            raise ValidationError(
+                _("Please enter your username or email address.")
+            )
+
+    def save(self, domain_override=None,
+             subject_template_name='registration/password_reset_subject.txt',
+             email_template_name='registration/password_reset_email.html',
+             use_https=False, token_generator=default_token_generator,
+             from_email=None, request=None, html_email_template_name=None,
+             extra_email_context=None):
+        """
+        Generates a one-use only link for resetting password and sends to the
+        user.
+        """
+        email = self.cleaned_data["email"]
+        for user in self.get_users(email):
+            if not domain_override:
+                current_site = get_current_site(request)
+                site_name = current_site.name
+                domain = current_site.domain
+            else:
+                site_name = domain = domain_override
+            context = {
+                'email': email,
+                'domain': domain,
+                'site_name': site_name,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'user': user,
+                'token': token_generator.make_token(user),
+                'protocol': 'https' if use_https else 'http',
+            }
+            if extra_email_context is not None:
+                context.update(extra_email_context)
+            tasks.send_email_task(
+                subject_template_name, email_template_name, context, from_email,
+                email, html_email_template_name=html_email_template_name,
+            )
+
+
+class ResetPasswordSecurityQuestionsForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        self.questions = kwargs.pop("questions")
+        super(
+            ResetPasswordSecurityQuestionsForm, self).__init__(*args, **kwargs)
+
+        for question in self.questions:
+            self.fields["question_%s" % question.id] = forms.CharField(
+                label=question.question
+            )
+
+    def clean(self):
+        for question in self.questions:
+            if not self.cleaned_data["question_%s" % question.id]:
+                raise ValidationError(_("Please enter your answer."))
