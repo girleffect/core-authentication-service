@@ -305,21 +305,36 @@ class UpdateSecurityQuestionsView(ThemeLanguageRedirectMixin, View):
 
     @property
     def get_formset(self):
-        queryset = models.UserSecurityQuestion.objects.filter(user=self.request.user)
-        formset = forms.UpdateSecurityQuestionFormSet(language=self.language, queryset=queryset)
+        queryset = models.UserSecurityQuestion.objects.filter(
+            user=self.request.user
+        )
+        formset = forms.UpdateSecurityQuestionFormSet(
+            language=self.language, queryset=queryset
+        )
         if self.request.POST:
             formset = forms.UpdateSecurityQuestionFormSet(
-                data=self.request.POST, language=self.language, queryset=queryset
+                data=self.request.POST,
+                language=self.language,
+                queryset=queryset
             )
         return formset
 
+    def render(self, request, formset):
+        return render(
+            request,
+            self.get_template_names(),
+            context=self.get_context_data(formset=formset)
+        )
+
     def get(self, request, *args, **kwargs):
-        formset = forms.SecurityQuestionFormSet(language=self.language)
-        return render(request, "authentication_service/profile/update_security_questions.html", context=self.get_context_data(formset=formset))
+        formset = self.get_formset
+        return self.render(request, formset)
 
     def get_context_data(self, *args, **kwargs):
-        #ct = super(UpdateSecurityQuestionsView, self).get_context_data()
-        ct = {}
+        ct = {
+            "question_formset": kwargs["question_formset"]
+            if kwargs.get("question_formset") else self.get_formset
+        }
 
         # Either a new formset instance or an existing one is passed to the
         # formset class.
@@ -335,4 +350,4 @@ class UpdateSecurityQuestionsView(ThemeLanguageRedirectMixin, View):
             formset.save()
             return HttpResponseRedirect(self.get_success_url())
         else:
-            return render(request, "authentication_service/profile/update_security_questions.html", context=self.get_context_data(formset=formset))
+            return self.render(request, formset)

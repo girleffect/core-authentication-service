@@ -465,7 +465,7 @@ class EditProfileViewTestCase(TestCase):
                 "form-1-question": self.text_two.id,
                 "form-1-answer": "AnswerSecond",
                 "form-1-id": self.question_two.id,
-            }
+            },
         )
         question_one = UserSecurityQuestion.objects.get(
             id=self.question_one.id
@@ -473,6 +473,9 @@ class EditProfileViewTestCase(TestCase):
         question_two = UserSecurityQuestion.objects.get(
             id=self.question_two.id
         )
-        import pdb; pdb.set_trace()
-        self.assertTrue(hashers.check_password(question_one.answer, "AnswerFirst"))
-        self.assertTrue(hashers.check_password(question_two.answer, "AnswerSecond"))
+        self.assertTrue(hashers.check_password(
+            question_one.answer, "AnswerFirst")
+        )
+        self.assertTrue(hashers.check_password(
+            question_two.answer, "AnswerSecond")
+        )
