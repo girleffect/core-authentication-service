@@ -456,7 +456,7 @@ class EditProfileViewTestCase(TestCase):
             reverse("update_security_questions"),
             {
                 "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
+                "form-INITIAL_FORMS": "2",
                 "form-MIN_NUM_FORMS": "0",
                 "form-MAX_NUM_FORMS": "1000",
                 "form-0-question": self.text_one.id,
@@ -474,8 +474,10 @@ class EditProfileViewTestCase(TestCase):
             id=self.question_two.id
         )
         self.assertTrue(hashers.check_password(
-            question_one.answer, "AnswerFirst")
+            "AnswerFirst".lower(),
+            question_one.answer)
         )
         self.assertTrue(hashers.check_password(
-            question_two.answer, "AnswerSecond")
+            "AnswerSecond".lower(),
+            question_two.answer)
         )
