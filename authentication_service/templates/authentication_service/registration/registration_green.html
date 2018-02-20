@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+    .wrapper {
+        padding: 0;
+        margin-left: 10%;
+        margin-right:10%;
+    }
+    #content {
+        background: linear-gradient(to right, grey, #006f24);
+        color: black;
+        object-position: center;
+    }
+    </style>
+{% endblock %}
+
+{% block branding %}
+Girl Effect using green django theme
+{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content %}
+<div id="content-main">
+
+<form action="" method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_div }}
+
+    <div>
+        {{ question_formset.management_form }}
+        {{ question_formset.non_form_errors }}
+        {% for qform in question_formset %}
+            {{ qform.as_div }}
+        {% endfor %}
+    </div>
+    <input type="submit" value="Register" />
+</form>
+
+{% endblock %}
