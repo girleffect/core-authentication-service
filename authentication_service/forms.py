@@ -143,7 +143,7 @@ class RegistrationForm(UserCreationForm):
         # null is not taken into consideration as None values get converted to
         # an empty string value before reaching to model save level.
         exclude = super(RegistrationForm, self)._get_validation_exclusions()
-        if self.cleaned_data["email"] is None:
+        if self.cleaned_data.get("email", None) is None:
             exclude.append("email")
         return exclude
 
