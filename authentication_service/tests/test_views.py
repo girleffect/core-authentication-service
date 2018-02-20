@@ -1,5 +1,6 @@
 import datetime
 import random
+from importlib import import_module
 
 from defender.utils import unblock_username
 from django.conf import settings
@@ -11,6 +12,7 @@ from django.test.client import Client
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.util import random_hex
 
+from authentication_service import models
 from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 
@@ -481,3 +483,106 @@ class EditProfileViewTestCase(TestCase):
             "AnswerSecond".lower(),
             question_two.answer)
         )
+
+class ResetPasswordTestCase(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = models.CoreUser.objects.create(
+            username="identifiable_user", email="user@id.com",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.set_password("1234")
+        cls.user.save()
+
+        cls.user_no_email = models.CoreUser.objects.create(
+            username="user_no_email",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.set_password("1234")
+        cls.user.save()
+
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+        cls.user_answer_one = UserSecurityQuestion.objects.create(
+            user=cls.user_no_email, question=cls.question_one,
+            language_code="en", answer="one"
+        )
+
+        cls.user_answer_two = UserSecurityQuestion.objects.create(
+            user=cls.user_no_email, question=cls.question_two,
+            language_code="en", answer="two"
+        )
+
+    def test_username_as_identifier(self):
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "user_no_email"
+            }
+        )
+        self.assertRedirects(
+            response, reverse("reset_password_security_questions"))
+
+    def test_email_as_identifier(self):
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "user@id.com"
+            }
+        )
+        self.assertNotIn("User not found", response)
+
+    def test_user_not_found(self):
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "identifiable_user2"
+            }
+        )
+        self.assertRedirects(response, reverse("password_reset_done"))
+
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "user2@id.com"
+            }
+        )
+        self.assertRedirects(response, reverse("password_reset_done"))
+
+    def test_security_question_reset(self):
+        # Explicity set a session variable to access
+        session = self.client.session
+        session["lookup_user_id"] = str(self.user_no_email.id)
+        session.save()
+
+        response = self.client.get(
+            reverse("reset_password_security_questions")
+        )
+        self.assertContains(response, "question_%s" % self.user_answer_one.id)
+        self.assertContains(response, "question_%s" % self.user_answer_two.id)
+
+        response = self.client.post(
+            reverse("reset_password_security_questions"),
+            data={
+                "question_%s" % self.user_answer_one.id: "one",
+                "question_%s" % self.user_answer_two.id: "three"
+            }
+        )
+        self.assertContains(response, "One or more answers are incorrect")
+
+        response = self.client.post(
+            reverse("reset_password_security_questions"),
+            data={
+                "question_%s" % self.user_answer_one.id: "one",
+                "question_%s" % self.user_answer_two.id: "two"
+            }
+        )
+
+        # Redirects to password reset confirm view
+        self.assertEquals(response.status_code, 302)

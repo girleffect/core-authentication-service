@@ -5,7 +5,7 @@
     <form method="post">
         {% csrf_token %}
         {{ wizard.management_form }}
-        {{ form.as_p }}
+        {{ form.as_div }}
         <button type="submit">Login</button>
 
         {% if backup_tokens %}
@@ -13,4 +13,5 @@
             <button name="wizard_goto_step" type="submit" value="backup" class="btn btn-default btn-block">{% trans "Use Backup Token" %}</button>
         {% endif %}
     </form>
+    {% trans "Forgot password? Reset " %}<a href="{% url "reset_password" %}">{% trans "here" %}</a>
 {% endblock %}

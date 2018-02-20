@@ -67,7 +67,7 @@ prism:
 	chmod +x prism
 
 mock-authentication-service-api: prism
-	./prism run --mockDynamic --list -s swagger/authentication_service.yml -p 8010
+	./prism run --mockDynamic --list -s swagger/authentication_service.yml -p 8012
 
 validate-swagger: prism
 	@./prism validate -s swagger/authentication_service.yml && echo "The Swagger spec contains no errors"

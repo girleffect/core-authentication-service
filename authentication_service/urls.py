@@ -16,7 +16,8 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import logout
+from django.contrib.auth.views import logout, PasswordResetDoneView, \
+    PasswordResetConfirmView, PasswordResetCompleteView
 from django.views.generic import RedirectView
 
 from two_factor.urls import urlpatterns as two_factor_patterns
@@ -25,13 +26,42 @@ from two_factor.views import ProfileView
 from authentication_service import views
 
 urlpatterns = [
+    # Login URLs
     url(r"^login/", views.LoginView.as_view(), name="login"),
     # Override the login URL implicitly defined by Django Admin to redirect
     # to our login view.
-    url(r"^admin/login/",
+    url(
+        r"^admin/login/",
         RedirectView.as_view(pattern_name="login", permanent=True,
                              query_string=True)
     ),
+    # Reset password URLs
+    url(
+        r"^reset-password/$",
+        views.ResetPasswordView.as_view(),
+        name="reset_password"
+    ),
+    url(
+        r"^reset-password/security-questions/$",
+        views.ResetPasswordSecurityQuestionsView.as_view(),
+        name="reset_password_security_questions"
+    ),
+    url(
+        r"^reset-password/done/$",
+        PasswordResetDoneView.as_view(),
+        name="password_reset_done"
+    ),
+    url(
+        r"^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm"
+    ),
+    url(
+        r"^reset/complete/$",
+        PasswordResetCompleteView.as_view(),
+        name="password_reset_complete"
+    ),
+
     url(r"^admin/", admin.site.urls),
     url(r'^admin/defender/', include('defender.urls')),  # defender admin
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
