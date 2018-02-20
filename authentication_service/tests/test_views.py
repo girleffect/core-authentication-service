@@ -5,6 +5,7 @@ from importlib import import_module
 from defender.utils import unblock_username
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
+from django.contrib.auth import hashers
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
@@ -395,6 +396,27 @@ class EditProfileViewTestCase(TestCase):
             key=random_hex().decode()
         )
 
+        # Security questions
+        cls.text_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.text_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+        cls.question_one = UserSecurityQuestion.objects.create(
+            user=cls.user,
+            question=cls.text_one,
+            language_code="en",
+            answer="Answer1"
+        )
+        cls.question_two = UserSecurityQuestion.objects.create(
+            user=cls.user,
+            question=cls.text_two,
+            language_code="en",
+            answer="Answer2"
+        )
+
     def test_profile_edit(self):
         # Login user
         self.client.login(username="testuser", password="Qwer!234")
@@ -430,6 +452,37 @@ class EditProfileViewTestCase(TestCase):
         # Check 2FA is enabled and present on edit page
         self.assertContains(response, "2fa")
 
+    def test_security_questions_update(self):
+        self.client.login(username=self.user.username, password="Qwer!234")
+        response = self.client.post(
+            reverse("update_security_questions"),
+            {
+                "form-TOTAL_FORMS": "2",
+                "form-INITIAL_FORMS": "2",
+                "form-MIN_NUM_FORMS": "0",
+                "form-MAX_NUM_FORMS": "1000",
+                "form-0-question": self.text_one.id,
+                "form-0-answer": "AnswerFirst",
+                "form-0-id": self.question_one.id,
+                "form-1-question": self.text_two.id,
+                "form-1-answer": "AnswerSecond",
+                "form-1-id": self.question_two.id,
+            },
+        )
+        question_one = UserSecurityQuestion.objects.get(
+            id=self.question_one.id
+        )
+        question_two = UserSecurityQuestion.objects.get(
+            id=self.question_two.id
+        )
+        self.assertTrue(hashers.check_password(
+            "AnswerFirst".lower(),
+            question_one.answer)
+        )
+        self.assertTrue(hashers.check_password(
+            "AnswerSecond".lower(),
+            question_two.answer)
+        )
 
 class ResetPasswordTestCase(TestCase):
 

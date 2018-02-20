@@ -1,8 +1,8 @@
 import itertools
 import logging
-
 from datetime import date  # Required because we patch it in the tests (test_forms.py)
 from dateutil.relativedelta import relativedelta
+
 from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth import get_user_model, hashers
@@ -11,8 +11,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
-from django.forms import BaseFormSet
-from django.forms import formset_factory
+from django.forms import BaseFormSet, BaseModelFormSet
+from django.forms import modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
@@ -160,15 +160,29 @@ class RegistrationForm(UserCreationForm):
         return cleaned_data
 
 
-class SecurityQuestionFormSetClass(BaseFormSet):
+class SecurityQuestionFormSetClass(BaseModelFormSet):
     def __init__(self, language, *args, **kwargs):
-        super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
+        # Short circuit default code that causes entire model queryset to be
+        # pulled in for any user or anon.
+
+        # Formset model queryset.
+        self._queryset = kwargs.pop(
+            "queryset", self.model.objects.none()
+        )
+
+        # Question field, queryset.
+        self.question_queryset = kwargs.pop(
+            "querstion_queryset", None
+        )
         self.language = language
+        super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
 
     def get_form_kwargs(self, index):
         kwargs = super(SecurityQuestionFormSetClass, self).get_form_kwargs(index)
         kwargs["questions"] = self.get_questions
         kwargs["language"] = self.language
+        if self.question_queryset:
+            kwargs["question_queryset"] = self.question_queryset
         return kwargs
 
     @cached_property
@@ -205,16 +219,22 @@ class SecurityQuestionFormSetClass(BaseFormSet):
             )
 
 
-class SecurityQuestionForm(forms.Form):
+class SecurityQuestionForm(forms.ModelForm):
     question = forms.ModelChoiceField(
         queryset=QuerySet(),
         empty_label="Select a question"
     )
-    answer = forms.CharField()
+
+    class Meta:
+        model = models.UserSecurityQuestion
+        fields = ["question", "answer"]
 
     def __init__(self, questions, language, *args, **kwargs):
         super(SecurityQuestionForm, self).__init__(*args, **kwargs)
         self.fields["question"].queryset = questions
+
+        # Always clear out answer fields.
+        self.initial["answer"] = ""
 
         # Choice tuple can't be directly updated. Update only the widget choice
         # text, value is used for validation and saving.
@@ -234,10 +254,18 @@ class SecurityQuestionForm(forms.Form):
         self.fields["question"].widget.choices = updated_choices
 
 
-SecurityQuestionFormSet = formset_factory(
+SecurityQuestionFormSet = modelformset_factory(
+    models.UserSecurityQuestion,
     SecurityQuestionForm,
     formset=SecurityQuestionFormSetClass,
     extra=SECURITY_QUESTION_COUNT
+)
+
+UpdateSecurityQuestionFormSet = modelformset_factory(
+    models.UserSecurityQuestion,
+    SecurityQuestionForm,
+    formset=SecurityQuestionFormSetClass,
+    extra=0
 )
 
 
@@ -251,18 +279,6 @@ class EditProfileForm(forms.ModelForm):
             "first_name", "last_name", "nickname", "email", "msisdn", "gender",
             "birth_date", "country", "avatar"
         ]
-
-
-class UpdateSecurityQuestionsForm(forms.ModelForm):
-    class Meta:
-        model = UserSecurityQuestion
-        fields = []
-
-    # def __init__(self, *args, **kwargs):
-    #     user_answers = kwargs.pop("user_answers")
-    #     super(UpdateSecurityQuestionsForm, self).__init__(*args, **kwargs)
-    # TODO: Security Question Update
-    pass
 
 
 class ResetPasswordForm(PasswordResetForm):
