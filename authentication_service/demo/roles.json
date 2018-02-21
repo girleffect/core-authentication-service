@@ -1,0 +1,7 @@
+{
+    "client_id_1": {
+        "": ["Admin", "Editor", "Trainee", "Manager"]
+    },
+    "client_id_2": {
+    }
+}
