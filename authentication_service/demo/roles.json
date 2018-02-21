@@ -4,5 +4,6 @@
         "": ["Admin", "Editor", "Trainee", "Manager"]
     },
     "client_id_2": {
+        "dc521f32-170b-11e8-884d-0242ac120003": ["Admin", "Editor", "Trainee", "Manager"]
     }
 }

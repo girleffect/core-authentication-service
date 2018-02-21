@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+    .wrapper {
+        padding: 0;
+        margin-left: 10%;
+        margin-right:10%;
+    }
+    #content {
+        background: linear-gradient(to right, grey, #006f24);
+        color: black;
+        object-position: center;
+    }
+    </style>
+{% endblock %}
+{% block branding %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_div }}
+        <button class="button" type="submit">{% trans "Update" %}</button>
+        <a class="button" href="{% url "update_password" %}">{% trans "Password Update" %}</a>
+        <a class="button" href="{% url "update_security_questions" %}">Security Questions Update</a>
+        {% if 2fa_enabled %}
+            <a href="{% url "update_2fa" %}">{% trans "2FA settings" %}</a>
+        {% endif %}
+    </form>
+{% endblock %}
