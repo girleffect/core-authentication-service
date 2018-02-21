@@ -304,6 +304,50 @@ class TestRegistrationForm(TestCase):
             "__all__": ["Enter either email or msisdn"]
         })
 
+    def test_email_validation(self):
+        user = get_user_model().objects.create_user(
+            username="awesomeuser",
+            email="awesome@email.com",
+            password="Awesome!234",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        user.save()
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "awesome@email.com",
+            "birth_date": datetime.date(2000, 1, 1),
+            "password1": "password",
+            "password2": "password",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "email": ["User with this Email address already exists."],
+        })
+
+        # Test users without emails do not cause validation errors.
+        user = get_user_model().objects.create_user(
+            username="awesomeuser2",
+            password="Awesome!234",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        user.save()
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1)
+        })
+        self.assertTrue(form.is_valid())
+        form = RegistrationForm(data={
+            "username": "Username2",
+            "password1": "password",
+            "password2": "password",
+            "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1)
+        })
+        self.assertTrue(form.is_valid())
+
 
 class TestSecurityQuestionForm(TestCase):
 
