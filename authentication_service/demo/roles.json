@@ -1,5 +1,6 @@
 {
     "client_id_1": {
+        "ae3ec258-16de-11e8-a892-0242ac120003": ["Admin"],
         "": ["Admin", "Editor", "Trainee", "Manager"]
     },
     "client_id_2": {
