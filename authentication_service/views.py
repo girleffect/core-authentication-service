@@ -152,10 +152,6 @@ LoginView.dispatch = watch_login_method(LoginView.dispatch)
 REDIRECT_COOKIE_KEY = "register_redirect"
 
 
-class OopsView(TemplateView):
-    template_name = "authentication_service/demo/oops.html"
-
-
 class RegistrationView(ThemeLanguageRedirectMixin, CreateView):
     TEMPLATE_PREFIX = "authentication_service/registration/registration"
     template_name = "authentication_service/registration/registration.html"

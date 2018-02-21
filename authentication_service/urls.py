@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import logout, PasswordResetDoneView, \
     PasswordResetConfirmView, PasswordResetCompleteView
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 
 from two_factor.urls import urlpatterns as two_factor_patterns
 from two_factor.views import ProfileView
@@ -37,7 +37,10 @@ urlpatterns = [
     ),
     # DEMO OOPS URL
     url(
-        r"^oops/", views.OopsView.as_view(), name="oops"
+        r"^oops/",
+        TemplateView.as_view(
+            template_name="authentication_service/demo/oops.html"),
+        name="oops"
     ),
     # Reset password URLs
     url(
