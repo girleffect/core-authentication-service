@@ -76,8 +76,8 @@ MIDDLEWARE = MIDDLEWARE + [
 
 LOGIN_URL = reverse_lazy("login")
 
-# To avoid the login loop in the demo, we rather redirect to a page that shows
-# the message oops. NOT permanent. DEMO PURPOSES ONLY.
+# To avoid the login loop, we rather redirect to a page that shows
+# the message oops.
 LOGIN_REDIRECT_URL = "oops"
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"

@@ -35,7 +35,7 @@ urlpatterns = [
         RedirectView.as_view(pattern_name="login", permanent=True,
                              query_string=True)
     ),
-    # DEMO OOPS URL
+    # OOPS URL
     url(
         r"^oops/",
         TemplateView.as_view(
