@@ -294,6 +294,7 @@ class UpdatePasswordView(ThemeLanguageRedirectMixin, UpdateView):
     TEMPLATE_PREFIX = "authentication_service/profile/update_password"
     template_name = "authentication_service/profile/update_password.html"
     form_class = PasswordChangeForm
+    success_url = reverse_lazy("edit_profile")
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -306,7 +307,7 @@ class UpdatePasswordView(ThemeLanguageRedirectMixin, UpdateView):
     def form_valid(self, form):
         if form.is_valid():
             update_session_auth_hash(self.request, form.save())
-        super(UpdatePasswordView, self).form_valid(form)
+        return super(UpdatePasswordView, self).form_valid(form)
 
 
 class UpdateSecurityQuestionsView(ThemeLanguageRedirectMixin, View):
