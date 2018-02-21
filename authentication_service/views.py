@@ -20,7 +20,7 @@ from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext as _
-from django.views.generic import View
+from django.views.generic import View, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, FormView
 
 from two_factor.forms import AuthenticationTokenForm

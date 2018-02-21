@@ -76,7 +76,9 @@ MIDDLEWARE = MIDDLEWARE + [
 
 LOGIN_URL = reverse_lazy("login")
 
-LOGIN_REDIRECT_URL = "admin:index"
+# To avoid the login loop, we rather redirect to a page that shows
+# the message oops.
+LOGIN_REDIRECT_URL = "oops"
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
