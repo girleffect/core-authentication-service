@@ -35,6 +35,10 @@ urlpatterns = [
         RedirectView.as_view(pattern_name="login", permanent=True,
                              query_string=True)
     ),
+    # DEMO OOPS URL
+    url(
+        r"^oops/", views.OopsView.as_view(), name="oops"
+    ),
     # Reset password URLs
     url(
         r"^reset-password/$",
