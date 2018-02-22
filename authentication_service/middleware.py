@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 import logging
+import os
 
 from django.utils.deprecation import MiddlewareMixin
 
@@ -48,20 +49,18 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                 self.cookie_key, value=theme, httponly=True
             )
             templates = {"original": [], "new": []}
-            for path in response.template_name:
-                file_name = path[path.rindex("/")+1:]
-                dir_path = path[:path.rindex("/")+1]
-                extension = file_name[file_name.rindex("."):]
-                name = "%s_%s%s" % (
-                    file_name[:file_name.rindex(extension)], theme, extension)
-                templates["new"].append({"name": name, "path": dir_path})
-                templates["original"].append(file_name)
+            for full_path in response.template_name:
+                path, filename = os.path.split(full_path)
+                filename, extension = os.path.splitext(filename)
+                name = "%s_%s%s" % (filename, theme, extension)
+                templates["new"].append({"name": name, "path": path})
+                templates["original"].append(filename)
 
             joined_names = ",".join(templates["original"])
             for template in templates["new"]:
                 prepend_list = []
                 if template["name"] not in joined_names:
-                    prepend_list.append("%s%s" % (
-                        template["path"], template["name"]))
+                    prepend_list.append(
+                        os.path.join(template["path"], template["name"]))
                 response.template_name = prepend_list + response.template_name
         return response
