@@ -47,7 +47,6 @@ class ThemeManagementMiddleware(MiddlewareMixin):
             response.set_cookie(
                 self.cookie_key, value=theme, httponly=True
             )
-        if theme:
             templates = {"original": [], "new": []}
             for path in response.template_name:
                 file_name = path[path.rindex("/")+1:]
