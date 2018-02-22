@@ -31,33 +31,6 @@ from two_factor.views import core
 from authentication_service import forms, models, tasks
 
 
-class ThemeMixin:
-    """This mixin gets the theme parameter from a request URL, if it exists, and
-    sets the appropriate template.
-    """
-    TEMPLATE_PREFIX = ""
-
-    def dispatch(self, *args, **kwargs):
-        self.theme = self.request.GET.get("theme", None)
-        return super(ThemeMixin, self).dispatch(*args, **kwargs)
-
-    def get_template_names(self):
-        template_names = []
-
-        if self.template_name is not None:
-            template_names = [self.template_name]
-
-        # Any extra templates need to be before the base.
-        template_names = [
-            "%s%s%s.html" % (
-                self.TEMPLATE_PREFIX,
-                "_" if self.TEMPLATE_PREFIX and self.theme else "",
-                self.theme if self.theme else ""
-            ),
-        ] + template_names
-        return template_names
-
-
 class LanguageMixin:
     """This mixin sets an instance variable called self.language, value is
     passed in via url or determined by django language middleware
@@ -99,9 +72,9 @@ class RedirectMixin:
         return url
 
 
-class ThemeLanguageRedirectMixin(ThemeMixin, LanguageMixin, RedirectMixin):
+class LanguageRedirectMixin(LanguageMixin, RedirectMixin):
     """
-    Combined class for the frequently used Theme, Language and Redirect mixins.
+    Combined class for the frequently used Language and Redirect mixins.
     Language can safely be set on views that make no use of it.
     """
 
@@ -114,13 +87,12 @@ class LockoutView(View):
     template_name = "authentication_service/lockout.html"
 
 
-class LoginView(ThemeMixin, core.LoginView):
+class LoginView(core.LoginView):
     """This view simply extends the LoginView from two_factor.views.core. We
     only override the template and the done step, which we use to login
     superusers.
     """
-
-    TEMPLATE_PREFIX = "authentication_service/login"
+    template_name = "authentication_service/login.html"
 
     form_list = (
         ('auth', AuthenticationForm),
@@ -152,8 +124,7 @@ LoginView.dispatch = watch_login_method(LoginView.dispatch)
 REDIRECT_COOKIE_KEY = "register_redirect"
 
 
-class RegistrationView(ThemeLanguageRedirectMixin, CreateView):
-    TEMPLATE_PREFIX = "authentication_service/registration/registration"
+class RegistrationView(LanguageRedirectMixin, CreateView):
     template_name = "authentication_service/registration/registration.html"
     form_class = forms.RegistrationForm
     security = None
@@ -273,8 +244,7 @@ class CookieRedirectView(View):
         return response
 
 
-class EditProfileView(ThemeLanguageRedirectMixin, UpdateView):
-    TEMPLATE_PREFIX = "authentication_service/profile/edit_profile"
+class EditProfileView(LanguageRedirectMixin, UpdateView):
     template_name = "authentication_service/profile/edit_profile.html"
     form_class = forms.EditProfileForm
 
@@ -290,8 +260,7 @@ class EditProfileView(ThemeLanguageRedirectMixin, UpdateView):
         return self.request.user
 
 
-class UpdatePasswordView(ThemeLanguageRedirectMixin, UpdateView):
-    TEMPLATE_PREFIX = "authentication_service/profile/update_password"
+class UpdatePasswordView(LanguageRedirectMixin, UpdateView):
     template_name = "authentication_service/profile/update_password.html"
     form_class = PasswordChangeForm
     success_url = reverse_lazy("edit_profile")
@@ -310,8 +279,7 @@ class UpdatePasswordView(ThemeLanguageRedirectMixin, UpdateView):
         return super(UpdatePasswordView, self).form_valid(form)
 
 
-class UpdateSecurityQuestionsView(ThemeLanguageRedirectMixin, View):
-    TEMPLATE_PREFIX = "authentication_service/profile/update_security_questions"
+class UpdateSecurityQuestionsView(LanguageRedirectMixin, View):
     template_name = \
         "authentication_service/profile/update_security_questions.html"
     success_url = reverse_lazy("edit_profile")

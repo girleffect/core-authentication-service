@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 import logging
+import os
 
 from django.utils.deprecation import MiddlewareMixin
 
@@ -34,4 +35,32 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
                         current_host, parsed_url.netloc
                     )
                 )
+        return response
+
+
+class ThemeManagementMiddleware(MiddlewareMixin):
+    cookie_key = "ge_theme_middleware_cookie"
+
+    def process_template_response(self, request, response):
+        theme = request.GET.get("theme", None) or request.COOKIES.get(
+            self.cookie_key)
+        if theme:
+            response.set_cookie(
+                self.cookie_key, value=theme, httponly=True
+            )
+            templates = {"original": [], "new": []}
+            for full_path in response.template_name:
+                path, filename = os.path.split(full_path)
+                filename, extension = os.path.splitext(filename)
+                name = "%s_%s%s" % (filename, theme, extension)
+                templates["new"].append({"name": name, "path": path})
+                templates["original"].append(filename)
+
+            joined_names = ",".join(templates["original"])
+            for template in templates["new"]:
+                prepend_list = []
+                if template["name"] not in joined_names:
+                    prepend_list.append(
+                        os.path.join(template["path"], template["name"]))
+                response.template_name = prepend_list + response.template_name
         return response

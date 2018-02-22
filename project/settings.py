@@ -71,6 +71,7 @@ MIDDLEWARE = MIDDLEWARE + [
     "django.middleware.locale.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django_otp.middleware.OTPMiddleware",
+    "authentication_service.middleware.ThemeManagementMiddleware",
     "authentication_service.middleware.OIDCSessionManagementMiddleware",
 ]
 
