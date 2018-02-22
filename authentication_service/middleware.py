@@ -41,7 +41,8 @@ class ThemeManagementMiddleware(MiddlewareMixin):
     cookie_key = "ge_theme_middleware_cookie"
 
     def process_template_response(self, request, response):
-        theme = request.GET.get("theme", None) or request.COOKIES.get(self.cookie_key)
+        theme = request.GET.get("theme", None) or request.COOKIES.get(
+            self.cookie_key)
         if theme:
             response.set_cookie(
                 self.cookie_key, value=theme, httponly=True
@@ -52,7 +53,8 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                 file_name = path[path.rindex("/")+1:]
                 dir_path = path[:path.rindex("/")+1]
                 extension = file_name[file_name.rindex("."):]
-                name = "%s_%s%s" % (file_name[:file_name.rindex(extension)], theme, extension)
+                name = "%s_%s%s" % (
+                    file_name[:file_name.rindex(extension)], theme, extension)
                 templates["new"].append({"name": name, "path": dir_path})
                 templates["original"].append(file_name)
 
@@ -60,6 +62,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
             for template in templates["new"]:
                 prepend_list = []
                 if template["name"] not in joined_names:
-                    prepend_list.append("%s%s" % (template["path"], template["name"]))
+                    prepend_list.append("%s%s" % (
+                        template["path"], template["name"]))
                 response.template_name = prepend_list + response.template_name
         return response
