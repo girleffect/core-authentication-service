@@ -16,6 +16,9 @@ AUTH_PASSWORD_VALIDATORS += [
 AUTHENTICATION_BACKENDS = \
     ["authentication_service.backends.GirlEffectAuthBackend"]
 
+# https://docs.djangoproject.com/en/1.11/ref/settings/#password-reset-timeout-days
+PASSWORD_RESET_TIMEOUT_DAYS = 3
+
 # Defender options
 DEFENDER_LOGIN_FAILURE_LIMIT = 5
 DEFENDER_BEHIND_REVERSE_PROXY = False
