@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% comment %}
+    Default django admin styles added for now.
+{% endcomment %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/login.css" %}" />
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {{ wizard.management_form }}
+        {{ form.as_div }}
+
+        {% comment %}
+            Django admin classes and input. Remove once we have our own base style.
+        {% endcomment %}
+        <div class="submit-row">
+            <input type="submit" value="Login">{% trans "Login" %}</button>
+        </div>
+
+        {% if backup_tokens %}
+            <p>{% trans "As a last resort, you can use a backup token:" %}</p>
+            <button name="wizard_goto_step" type="submit" value="backup" class="btn btn-default btn-block">{% trans "Use Backup Token" %}</button>
+        {% endif %}
+    </form>
+    <a href="{% url "reset_password" %}">{% trans "Forgot password? Click here to reset it." %}</a>
+{% endblock %}

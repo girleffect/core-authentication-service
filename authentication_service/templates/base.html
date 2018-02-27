@@ -1,8 +1,77 @@
-<html lang="en">
+{% load i18n static %}
+
+<!DOCTYPE html>
+
+{% comment %}
+    TODO: Check what additions are needed for translation. There are already other tickets for this.
+{% endcomment %}
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+    <head>
+        {% block head %}
+            {% comment %}
+                Only override the head block if there is no other way around it.
+            {% endcomment %}
+            <title>{% block title %}{% endblock %}</title>
+
+            {% comment %}
+                Default to the django admin base stylesheet for now.
+            {% endcomment %}
+            <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}" />
+
+            {% block extrastyle %}{% endblock %}
+
+            {% comment %}
+                Generic block for extra header content that is not style related.
+            {% endcomment %}
+            {% block extrahead %}{% endblock %}
+        {% endblock %}
+    </head>
+
     <body>
-        <main class="ContentArea" role="main">
-            {% block content %}
-            {% endblock %}
-        </main>
+        <div id="container" class="body">
+
+            <!-- Header -->
+            <div id="header" class="header">
+                <div id="branding" class="branding">{% block branding %}{% endblock %}</div>
+
+                {% block links %}
+                    <a href="{% url "update_password" %}">{% trans "Change password" %}</a> /
+                    <a href="{% url "admin:logout" %}">{% trans "Log out" %}</a>
+                {% endblock %}
+
+                {% comment %}
+                    There might be a need for a nav bar later on.
+                {% endcomment %}
+                {% block header-nav %}{% endblock %}
+            </div>
+            <!-- END Header -->
+
+            {% comment %}
+                There might be a need for a nav bar later on.
+            {% endcomment %}
+            {% block breadcrumbs %}{% endblock %}
+
+            {% comment %}
+                This allows django messages from the messaging framework to be displayed.
+            {% endcomment %}
+            {% block messages %}
+                {% if messages %}
+                    <ul id="messagelist" class="messagelist">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endblock messages %}
+
+            {% comment %}
+                Generally only changing content will suffice for templates.
+            {% endcomment %}
+            <div id="content" class="content">
+                {% block content %}{% endblock %}
+            </div>
+
+            {% block footer %}<div id="footer" class="footer"></div>{% endblock %}
+        </div>
     </body>
 </html>

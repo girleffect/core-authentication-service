@@ -1,0 +1,12 @@
+{% extends "authentication_service/login/login.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        body {
+            background: black;
+            color: white;
+        }
+        </style>
+{% endblock %}
