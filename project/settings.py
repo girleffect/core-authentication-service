@@ -1,6 +1,7 @@
 import os
 from django.core.urlresolvers import reverse_lazy
 from project.settings_base import *
+from corsheaders.defaults import default_headers
 
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
@@ -54,6 +55,9 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(","
 # CORS settings
 CORS_ORIGIN_WHITELIST = ["localhost:8000", "127.0.0.1:8000"]
 CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
+CORS_ALLOW_HEADERS = default_headers + (
+    "Access-Control-Allow-Origin",
+)
 
 
 ADDITIONAL_APPS = [
