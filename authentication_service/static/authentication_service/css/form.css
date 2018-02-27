@@ -1,0 +1,17 @@
+label {
+    font-weight: normal;
+    color: #666;
+    font-size: 13px;
+}
+
+div.Field--required label {
+    font-weight: bold;
+}
+
+input[type=submit] {
+    height: 35px;
+    line-height: 15px;
+    background: #f4f4f3;
+    border-radius: 4px;
+    vertical-align: middle;
+}

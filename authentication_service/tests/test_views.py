@@ -87,7 +87,7 @@ class TestLockout(TestCase):
             self.client.get(login_url)
             response = self.client.post(login_url, login_data)
             self.assertEqual(response.status_code, 200)
-            self.assertIn("authentication_service/login.html",
+            self.assertIn("authentication_service/login/login.html",
                           response.template_name)
 
         # The next (failed) attempt needs to prevent further login attempts
@@ -103,7 +103,7 @@ class TestLockout(TestCase):
         self.client.get(login_url)
         response = self.client.post(login_url, login_data)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("authentication_service/login.html",
+        self.assertIn("authentication_service/login/login.html",
                       response.template_name)
 
 

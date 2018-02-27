@@ -1,17 +1,36 @@
-<html>
-    <body>
-        <form action="" method="post" novalidate>
-            {% csrf_token %}
-            {{ form.as_div }}
+{% extends "base.html" %}
+{% load i18n static %}
 
-            <div>
-                {{ question_formset.management_form }}
-                {{ question_formset.non_form_errors }}
-                {% for qform in question_formset %}
-                    {{ qform.as_div }}
-                {% endfor %}
-            </div>
-            <input type="submit" value="Register" />
-        </form>
-    </body>
-</html>
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% endblock %}
+
+{% block branding %}<h1>{% trans "Registration" %}</h1>{% endblock %}
+
+{% block links %}
+    <a href="{% url "login" %}">{% trans "Login" %}</a>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="">{% trans "App name" %}</a>
+        &rsaquo; {% trans "Registration" %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_div }}
+
+        <div>
+            {{ question_formset.management_form }}
+            {{ question_formset.non_form_errors }}
+            {% for qform in question_formset %}
+                {{ qform.as_div }}
+            {% endfor %}
+        </div>
+        <input type="submit" value={% trans "Register" %} />
+    </form>
+{% endblock %}

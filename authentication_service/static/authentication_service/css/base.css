@@ -1,0 +1,90 @@
+/* Body */
+body {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    font-family: sans-serif;
+    color: #2f6165;
+    background: #fff;
+}
+
+/* Links */
+a:link, a:visited {
+    color: #447e9b;
+    text-decoration: none;
+}
+
+a:focus, a:hover {
+    color: #036;
+    text-decoration: underline;
+}
+
+/* Globals */
+
+p, ul{
+    margin: .2em 0 .8em 0;
+}
+
+p {
+    padding: 0;
+    line-height: 140%;
+}
+
+h1, h2 {
+    font-weight: bold;
+}
+
+h1 {
+    margin: 0 0 20px;
+    font-weight: 700;
+    font-size: 20px;
+    color: #2f6165;
+}
+
+#container {
+    position: relative;
+    width: 100%;
+    min-width: 980px;
+}
+
+/* Header */
+
+#header {
+    width: auto;
+    height: 40px;
+    padding: 10px 40px;
+    background: #e5e5e5;
+    line-height: 40px;
+}
+
+#branding {
+    float: left;
+}
+
+#branding h1 {
+    padding: 0;
+    margin: 0 20px 0 0;
+    font-weight: 500;
+    font-size: 24px;
+    color: #ffc700;
+}
+
+#header a:link, #header a:visited {
+    color: #2f6165;
+}
+
+div.breadcrumbs {
+    background: #f4f4f3;
+    padding: 10px 40px;
+    color: #2f6165 ;
+}
+
+div.breadcrumbs a:link, div.breadcrumbs a:visited {
+    color: #2f6165;
+}
+
+/* Content */
+
+.content {
+    padding: 10px 40px;
+}
