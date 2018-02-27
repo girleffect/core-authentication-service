@@ -1,11 +1,23 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% endblock %}
+
+{% block branding %}<h1>{% trans "Edit profile" %}</h1>{% endblock %}
+
+{% block links %}
+    <a href="{% url "admin:logout" %}">{% trans "Logout" %}</a>
+{% endblock %}
 
 {% block content %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_div }}
-        <button type="submit">{% trans "Update" %}</button>
+
+        <input type="submit" value={% trans "Update" %} />
         <a href="{% url "update_password" %}">{% trans "Password Update" %}</a>
         <a href="{% url "update_security_questions" %}">Security Questions Update</a>
         {% if 2fa_enabled %}

@@ -279,7 +279,7 @@ class UpdatePasswordView(LanguageRedirectMixin, UpdateView):
         return super(UpdatePasswordView, self).form_valid(form)
 
 
-class UpdateSecurityQuestionsView(LanguageRedirectMixin, View):
+class UpdateSecurityQuestionsView(LanguageRedirectMixin, TemplateView):
     template_name = \
         "authentication_service/profile/update_security_questions.html"
     success_url = reverse_lazy("edit_profile")

@@ -1,5 +1,10 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% endblock %}
 
 {% block links %}
     <a href="{% url "login" %}">{% trans "Login" %}</a>

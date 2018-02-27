@@ -1,4 +1,23 @@
 {% extends "base.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% endblock %}
+
+{% block branding %}<h1>{% trans "Update security questions" %}</h1>{% endblock %}
+
+{% block links %}
+    <a href="{% url "admin:logout" %}">{% trans "Logout" %}</a>
+{% endblock %}
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="">{% trans "App name" %}</a>
+        &rsaquo; <a href={% url "edit_profile" %}>{% trans "Edit profile" %}</a>
+        &rsaquo; {% trans "Security question update" %}
+    </div>
+{% endblock %}
 
 {% block content %}
     <form method="post">
@@ -8,7 +27,7 @@
         {% for form in question_formset %}
             {{ form.as_div }}
         {% endfor %}
-        <button type="submit">Update</button>
+        <input type="submit" value={% trans "Update" %} />
     </form>
-    <a href="{% url "edit_profile" %}">Back</a>
+    <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
 {% endblock %}
