@@ -14,13 +14,7 @@
         {% csrf_token %}
         {{ wizard.management_form }}
         {{ form.as_div }}
-
-        {% comment %}
-            Django admin classes and input. Remove once we have our own base style.
-        {% endcomment %}
-        <div class="submit-row">
-            <input type="submit" value="Login">{% trans "Login" %}</button>
-        </div>
+        <input type="submit" value={% trans "Login" %}>{% trans "Login" %}</button>
 
         {% if backup_tokens %}
             <p>{% trans "As a last resort, you can use a backup token:" %}</p>

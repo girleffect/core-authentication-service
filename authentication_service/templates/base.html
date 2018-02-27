@@ -7,10 +7,10 @@
 {% endcomment %}
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
     <head>
+        {% comment %}
+            Only override the head block if there is no other way around it.
+        {% endcomment %}
         {% block head %}
-            {% comment %}
-                Only override the head block if there is no other way around it.
-            {% endcomment %}
             <title>{% block title %}{% endblock %}</title>
 
             {% comment %}
@@ -34,13 +34,15 @@
             <div id="header" class="header">
                 <div id="branding" class="branding">{% block branding %}{% endblock %}</div>
 
-                {% block links %}
-                    <a href="{% url "update_password" %}">{% trans "Change password" %}</a> /
-                    <a href="{% url "admin:logout" %}">{% trans "Log out" %}</a>
-                {% endblock %}
+                <div class="links">
+                    {% block links %}
+                        <a href="{% url "update_password" %}">{% trans "Change password" %}</a> /
+                        <a href="{% url "admin:logout" %}">{% trans "Log out" %}</a>
+                    {% endblock %}
+                </div>
 
                 {% comment %}
-                    There might be a need for a nav bar later on.
+                    There might be a need for a nav later on.
                 {% endcomment %}
                 {% block header-nav %}{% endblock %}
             </div>
@@ -48,8 +50,16 @@
 
             {% comment %}
                 There might be a need for a nav bar later on.
+
+                TODO: See into perhaps adding referer app into breadcrumbs.
             {% endcomment %}
-            {% block breadcrumbs %}{% endblock %}
+            {% block breadcrumbs %}
+                <div class="breadcrumbs">
+                    <a href="">{% trans "App name" %}</a>
+                    &rsaquo; {% trans "Current page" %}
+                </div>
+            {% endblock %}
+
 
             {% comment %}
                 This allows django messages from the messaging framework to be displayed.
