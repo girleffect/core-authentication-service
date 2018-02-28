@@ -107,7 +107,7 @@ FORM_RENDERERS = {
 }
 
 CELERY_USE_TZ = USE_TZ
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "amqp://myuser:mypassword@localhost:5672//")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 # Attempt to import local settings if present.
