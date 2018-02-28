@@ -334,6 +334,30 @@ class UpdateSecurityQuestionsView(LanguageRedirectMixin, TemplateView):
             return self.render(request, formset)
 
 
+class DeleteAccountView(FormView):
+    template_name = "authentication_service/profile/delete_account.html"
+    form_class = forms.DeleteAccountForm
+
+    def get_context_data(self, *args, **kwargs):
+        ct = super(DeleteAccountView, self).get_context_data(*args, **kwargs)
+
+        # Either a new formset instance or an existing one is passed to the
+        # formset class.
+        ct["confirm"] = False
+        if kwargs.get("confirm"):
+            ct["confirm"] = True
+        return ct
+
+    def form_valid(self, form):
+        if "confirmed_deletion" not in self.request.POST:
+            return self.render_to_response(self.get_context_data(
+                form=form, confirm=True
+            ))
+        else:
+            tasks.send_mail.apply_async()
+            return super(DeleteAccountView, self).form_valid(form)
+
+
 class ResetPasswordView(PasswordResetView):
     """This view allows the user to enter either their username or their email
     address in order for us to identify them. After we have identified the user
@@ -415,8 +439,3 @@ class ResetPasswordSecurityQuestionsView(FormView):
             "password_reset_confirm",
             kwargs={"uidb64": uidb64, "token": token}
         )
-
-
-class DeleteAccountView(FormView):
-    def form_valid(self, form):
-        tasks.send_mail.apply_async()

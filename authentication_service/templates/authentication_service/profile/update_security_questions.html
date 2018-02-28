@@ -27,7 +27,7 @@
         {% for form in question_formset %}
             {{ form.as_div }}
         {% endfor %}
-        <input type="submit" value={% trans "Update" %} />
+        <input type="submit" value="{% trans "Update" %}" />
     </form>
     <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
 {% endblock %}

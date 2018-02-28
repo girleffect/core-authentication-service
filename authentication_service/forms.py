@@ -368,3 +368,10 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
         for question in self.questions:
             if not self.cleaned_data["question_%s" % question.id]:
                 raise ValidationError(_("Please enter your answer."))
+
+
+class DeleteAccountForm(forms.Form):
+    reason = forms.CharField(
+        required=False,
+        label=_("Please tell use why you want your account deleted")
+    )
