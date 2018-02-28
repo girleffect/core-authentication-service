@@ -3,6 +3,12 @@ cache: pip
 language: python
 python:
   - "3.6"
+
+env:
+  - global:
+    - secure: "Vt8wKM1OY9HcvKFsC7f5VsH09Ui0gZ8W9TSssxGjNK5/oTa1WrSwBPE381ny/MzXLkVeen+Tcfmy5GZvG/42mvlBKx0bMVhtmsG9ZSt2QRv0oRRHxJLfTHttJUMsBHCVFekPQZXRinuiFT3OgzJZP+fONORDKeqdSWzCb79aAoDd6UjiTlDkzHMRWwZVe8cUBYRb0f64v36c2hBn5p200aHjS6oZMXJ8BnXSs7XeG9VHqqdAA0/Yxvo82LX5OprQkpAgctKJ8vsaX8efntGr7Bm4mWG6XOubgtdxrwsYDRWp1y/doQu2/4wZvRMAqJ3y0EAsfB4enqhy5xmuTFrTE5Vmaw4pMyFWfcAzCaMLjUqist9wDsPgsoaBeBOllEJKXkoxhzfjwHgiwPjIzn6+yBRv4/Py3qQhBSlJCBahPRDnC3v4gXn656EebULITyJcBF9J08LnOQ0Peywtgs8JNoVCSlO+V1PC/SI1hmuwLYM2KxWh0l35S4NliNEh6cHZm+auVJVA5ddbkOUKIV/nhqe11vLF/pRdPDRw1wtSRzXN6J+RlizltiO4hYmrBB1gYxF3rdVlyhr+8dI6Ag7o21HdrgEIJHFdPMt/zYlHU1F6M7M5q9ppwlEMOoM4d9wHSPaI37vcT1xrtt7csR1dNevT8GspZEV3/uxpHxZHdUk="
+    - secure: "jjEemoItRM9aLwP1/6JZqbD17vayN7Cg4b14HJaLP7aNRYMON2qT7CPJKnD9AZ3zVttRZlesumIH9gNZ6ovkTYprgZnqdiImVZbkVdyZhAr74cypd9WBEPtlnBAelI4xAZ1wo8QlcO8c7127P4+Uy1FLZp2E/J/iGeo6H74r7iAKvcYJndoY9WDaO6a0mhZt+D8/PteG8bRlleGepAbFjMEZGVRktllYcGZVN1fX3gN3XVdi/dn/k29G/Qysf/iKdqZg15N9Q6SXRd41TYfsTOw2GOIpnDMF1RVFs9JmXJpHV/cypxTL5HwjE1vS4dhZ8La+C/qhcP6+waH3CnvT9zTIbHLBApsRSgFN/BhYQ7Dplm/jwRB6what0UctpEG7kNNQerzNK21+av5BmjbglUnTYmVXQyI4i5/betz+imB8hl+bMBZcqvt0qEdHKOdoGghPcM3Gpz1npcfdKs5tpyA8CUFu1B6dxZO96BfjRz0v535fRG/ODVmXjbyAF16DU+V+j694tqtiIeb6wsmG9JsTQfgCemErOxyKhLyHXVwDUkoizt6svD0mEMfWrxlwB5KJO82biKb+uwGEfSA44aGWOP3cNZbuhmDtimvpQIqXECBpcdypsY3a8AfpCwDaWHYuUi9K8XfBFPySOYhaAOh+8xRDOnxPG+hQiJ+qWCM="
+
 services:
   - docker
   - redis-server
@@ -18,7 +24,18 @@ script: tox
 
 after_success:
   - coveralls
-  - export REPO=dockerhubowner/authentication-service
-  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH_CLEAN ; fi`
-  - export build -t $REPO:$TAG .
 
+deploy:
+  - provider: script
+    script: bash ./scripts/docker_push.sh
+    on:
+      branch: master
+  - provider: script
+    script: bash ./scripts/docker_push.sh
+    on:
+      branch: develop
+  - provider: script
+    script: bash ./scripts/docker_push.sh
+    on:
+      all_branches: true
+      condition: "${TRAVIS_BRANCH} =~ ^release.*$" # Only release branches
