@@ -113,6 +113,11 @@ urlpatterns = [
         login_required(ProfileView.as_view()),
         name="update_2fa"
     ),
+    url(
+        r"^profile/delete-account/",
+        login_required(views.DeleteAccountView.as_view()),
+        name="delete_account"
+    ),
 
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
     # Useful url to have, not currently used in any flows.

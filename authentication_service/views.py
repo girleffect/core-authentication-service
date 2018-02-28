@@ -415,3 +415,8 @@ class ResetPasswordSecurityQuestionsView(FormView):
             "password_reset_confirm",
             kwargs={"uidb64": uidb64, "token": token}
         )
+
+
+class DeleteAccountView(FormView):
+    def form_valid(self, form):
+        tasks.send_mail.apply_async()
