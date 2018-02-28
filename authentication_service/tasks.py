@@ -22,7 +22,7 @@ MAILS = {
     },
     "delete_profile": {
         "subject": "",
-        "template_name": "",
+        "template_name": "authentication_service/email/delete_account.html",
     },
 }
 
