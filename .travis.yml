@@ -2,42 +2,38 @@ sudo: required
 cache: pip
 language: python
 python:
-  - "3.6"
-
+- '3.6'
 env:
+  matrix:
   - TOXENV=django111
   - global:
-    - secure: Vt8wKM1OY9HcvKFsC7f5VsH09Ui0gZ8W9TSssxGjNK5/oTa1WrSwBPE381ny/MzXLkVeen+Tcfmy5GZvG/42mvlBKx0bMVhtmsG9ZSt2QRv0oRRHxJLfTHttJUMsBHCVFekPQZXRinuiFT3OgzJZP+fONORDKeqdSWzCb79aAoDd6UjiTlDkzHMRWwZVe8cUBYRb0f64v36c2hBn5p200aHjS6oZMXJ8BnXSs7XeG9VHqqdAA0/Yxvo82LX5OprQkpAgctKJ8vsaX8efntGr7Bm4mWG6XOubgtdxrwsYDRWp1y/doQu2/4wZvRMAqJ3y0EAsfB4enqhy5xmuTFrTE5Vmaw4pMyFWfcAzCaMLjUqist9wDsPgsoaBeBOllEJKXkoxhzfjwHgiwPjIzn6+yBRv4/Py3qQhBSlJCBahPRDnC3v4gXn656EebULITyJcBF9J08LnOQ0Peywtgs8JNoVCSlO+V1PC/SI1hmuwLYM2KxWh0l35S4NliNEh6cHZm+auVJVA5ddbkOUKIV/nhqe11vLF/pRdPDRw1wtSRzXN6J+RlizltiO4hYmrBB1gYxF3rdVlyhr+8dI6Ag7o21HdrgEIJHFdPMt/zYlHU1F6M7M5q9ppwlEMOoM4d9wHSPaI37vcT1xrtt7csR1dNevT8GspZEV3/uxpHxZHdUk=
-    - secure: jjEemoItRM9aLwP1/6JZqbD17vayN7Cg4b14HJaLP7aNRYMON2qT7CPJKnD9AZ3zVttRZlesumIH9gNZ6ovkTYprgZnqdiImVZbkVdyZhAr74cypd9WBEPtlnBAelI4xAZ1wo8QlcO8c7127P4+Uy1FLZp2E/J/iGeo6H74r7iAKvcYJndoY9WDaO6a0mhZt+D8/PteG8bRlleGepAbFjMEZGVRktllYcGZVN1fX3gN3XVdi/dn/k29G/Qysf/iKdqZg15N9Q6SXRd41TYfsTOw2GOIpnDMF1RVFs9JmXJpHV/cypxTL5HwjE1vS4dhZ8La+C/qhcP6+waH3CnvT9zTIbHLBApsRSgFN/BhYQ7Dplm/jwRB6what0UctpEG7kNNQerzNK21+av5BmjbglUnTYmVXQyI4i5/betz+imB8hl+bMBZcqvt0qEdHKOdoGghPcM3Gpz1npcfdKs5tpyA8CUFu1B6dxZO96BfjRz0v535fRG/ODVmXjbyAF16DU+V+j694tqtiIeb6wsmG9JsTQfgCemErOxyKhLyHXVwDUkoizt6svD0mEMfWrxlwB5KJO82biKb+uwGEfSA44aGWOP3cNZbuhmDtimvpQIqXECBpcdypsY3a8AfpCwDaWHYuUi9K8XfBFPySOYhaAOh+8xRDOnxPG+hQiJ+qWCM=
+    - secure: kcAJD0F3XWLdCYuab50X16ENAYNt3O9qcAmSAVQiYbrLFyOeW3sRlgkymYiwQpFYyIiThL2IATUM/eTImHHpQg44PRb7MGQO/e9Z7lo4gEGdNLHuLltWqm+q+z8snQHLsuNSN9EJanELPZUjtwub1SiJiPO8vMDCdg7/Zu6CdPBmwyS04nZ6F16VrQVjeb/cRjOv5cDlELD6CMmFW/CvQoOy+1JwlfFjLTWufhB+ZlisXQrsUt5tbUbmbu1rEWrfGo7sVzPZs6b7nGgC9pBNPZd9oZWglvfyoWwOkxQluFqCmXcjTphP61a/2jdAqrP1ABaGEk76gN2Vb48B46uoMTJhutBxzoezKyienNOm6dwT8BelFgoQzuYa8aoii3Pk1w/3nGS800pLGKJsd9wQ01LVPrYY6kXuTwc4iW5lLo9vFpb+LzfKAxEw4kWyWQElYl4E817K8JIqdj9RiMEEsjNBy4CbswvUCqsPIbK53yQ6uulJVXu8PTUhV3v3gbj/pYEVqLODetRkxS7rFb7hoG2isnP15yRsbi+ytNcwZfFeA/fcX8C0Mlc88nBATNFF7XbO+Irs4mEN63YqC3zZBesFzkH/DffwjPW+lcsXJg9kCsJeCFiZo/WR5+ayNQZjULjjHbERi1mz8o0KKXj7H/EggMr6kKIyd3amx/WGbGk=
+    - secure: r6rofPXWsB+7afzdwtJ6fjwWX+NMxD+xJliiWUwdRqnAPyWnzlFisl4SnNYzbFjpZoo13BnFOFYDPm3Tl7GzBie0RgEjLnufH40YFnzkby+2T23sMpF777KOslIeB+Q1UXL86gZDZ9YinenA675eugntdPW2CdGJh1QPJPNtNC+lP4HXOYkYI/ZBrenLJvDKts0Cq52tQC1QqnfRyIYFPmyAnQvXuVtj+Tvw0QaqnfxtBYzYwZBabeIIK4MkUjabnlxqQNhlEkkW2l3Ois8x4sginFQZqf1ORJ8K/Z2x5wB8MITuMn+Op+coEPbZJeLZaxz5D5rjYSDJ41wGJGwfP4vUgg4NjD93FHdJd+gTM4j62Wk9lJSVl8iK8jn9qqBSark4bp6ZmNRqG4sLdHBYqBUJW1LMXn85BsPOT4dBB7x4oYGk4DBlBXsHF4yp7yJN1nMxGI0s0YCsgavV/zsNr8jHO+b8TAFbZ5lciIKOtWtXc3CJNikRkaeLsPK3cTRSsAVnSoEde6Z4M7oAf2Y5uLocJW1FhHtfawpsVtdib2lUmdsff8auzUClLofjdmZqS3nBkco9BUfWBW4KShxZwuuyyGJ285eLkCs3wYOG75iXxzIhAmINdvtS7BUL+lxGZ3AseT2s82f8pMUxP0aP59dibmWxJ+LWapQYg7f89nY=
 
 services:
-  - docker
-  - redis-server
-  - postgresql
-
+- docker
+- redis-server
+- postgresql
 install:
-  - pip install tox coveralls
-
+- pip install tox coveralls
 script: tox
-
 after_success:
-  - coveralls
-
+- coveralls
 deploy:
-  - provider: script
-    script: bash ./scripts/docker_push.sh
-    on:
-      branch: feature/GE-850
-  - provider: script
-    script: bash ./scripts/docker_push.sh
-    on:
-      branch: master
-  - provider: script
-    script: bash ./scripts/docker_push.sh
-    on:
-      branch: develop
-  - provider: script
-    script: bash ./scripts/docker_push.sh
-    on:
-      all_branches: true
-      condition: "${TRAVIS_BRANCH} =~ ^release.*$" # Only release branches
+- provider: script
+  script: bash ./scripts/docker_push.sh
+  on:
+    branch: feature/GE-850
+- provider: script
+  script: bash ./scripts/docker_push.sh
+  on:
+    branch: master
+- provider: script
+  script: bash ./scripts/docker_push.sh
+  on:
+    branch: develop
+- provider: script
+  script: bash ./scripts/docker_push.sh
+  on:
+    all_branches: true
+    condition: "${TRAVIS_BRANCH} =~ ^release.*$"
