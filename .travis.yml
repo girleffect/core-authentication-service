@@ -22,10 +22,6 @@ deploy:
 - provider: script
   script: bash ./scripts/docker_push.sh
   on:
-    branch: feature/GE-850
-- provider: script
-  script: bash ./scripts/docker_push.sh
-  on:
     branch: master
 - provider: script
   script: bash ./scripts/docker_push.sh
