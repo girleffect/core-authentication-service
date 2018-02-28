@@ -337,6 +337,7 @@ class ResetPasswordForm(PasswordResetForm):
             if extra_email_context is not None:
                 context.update(extra_email_context)
             user = context.pop("user")
+            extra = {"recipients": [user.email]}
             user = {
                 "app_label": user._meta.app_label,
                 "model": user._meta.model_name,
@@ -346,9 +347,10 @@ class ResetPasswordForm(PasswordResetForm):
             context["uid"] = context["uid"].decode("utf-8")
             tasks.send_mail.apply_async(
                 kwargs={
-                    "context":context,
+                    "context": context,
                     "mail_type": "password_reset",
-                    "objects_to_fetch": [user]
+                    "objects_to_fetch": [user],
+                    "extra": extra
                 }
             )
 

@@ -1,5 +1,6 @@
 from celery.task import task
 import logging
+import typing
 import uuid
 
 from django.contrib.contenttypes.models import ContentType
@@ -21,7 +22,7 @@ MAILS = {
         "template_name": "registration/password_reset_email.html",
     },
     "delete_account": {
-        "subject": "",
+        "subject": "Account deletion",
         "template_name": "authentication_service/email/delete_account.html",
     },
 }
@@ -29,7 +30,30 @@ MAILS = {
 
 # TODO add doc string
 @task(name="email_task", default_retry_delay=300, max_retries=2)
-def send_mail(context, mail_type, extra=None, objects_to_fetch=None):
+def send_mail(
+        context: dict,
+        mail_type: str,
+        extra: dict = None,
+        objects_to_fetch: typing.List[dict] = None):
+    """
+    Task to construct and send emails.
+
+    context: context to be passed to the email template.
+    mail_type: key for a managed dict containing default settings for certain mail types.
+    extra: Overrides the default mail type setting if needed.
+    objects_to_fetch: Django model instances do not serialise well. This is a
+        list containing dicts to allow instances to be fetched from within this
+        task.
+        [
+            {
+                "app_label": instance._meta.app_label,
+                "model": instance._meta.model_name,
+                "id": instance.id,
+                "context_key": "key",
+            }
+        ]
+    """
+    # Assign instance variables.
     extra = extra or {}
     objects_to_fetch = objects_to_fetch or []
     default_data = MAILS["default"]
@@ -48,15 +72,17 @@ def send_mail(context, mail_type, extra=None, objects_to_fetch=None):
         "template_name"
     )
 
+    # If there is not a recipient present, log the attempt and return nothing.
+    # No use in attempting to mail without a recipient list.
     if not recipients:
         logger.error(
             "Attempt to send an email without recipients; %s-%s" %
             (mail_type, now)
         )
         return
-    if not isinstance(recipients, list):
-        recipients = [recipients]
 
+    # Fetches instance for each object from the db and puts it into
+    # context, that gets passed to the email template.
     for obj in objects_to_fetch:
         obj_type = ContentType.objects.get(
             app_label=obj["app_label"],
@@ -76,10 +102,13 @@ def send_mail(context, mail_type, extra=None, objects_to_fetch=None):
         headers={"Unique-ID": uuid.uuid1()},
         cc=cc
     )
+
+    # Alternate content is added if available.
     message.attach_alternative(extra.get("html_content", ""), "text/html")
+
+    # Add attachments to the mail if needed.
     for attachment in extra.get("files", []):
         message.attach(*attachment)
 
     logger.info("Sent mail of type %s on %s" % (mail_type, now))
-    logger.info(message)
     message.send()
