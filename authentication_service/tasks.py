@@ -20,7 +20,7 @@ MAILS = {
         "subject": _("Password reset for Girl Effect account"),
         "template_name": "registration/password_reset_email.html",
     },
-    "delete_profile": {
+    "delete_account": {
         "subject": "",
         "template_name": "authentication_service/email/delete_account.html",
     },

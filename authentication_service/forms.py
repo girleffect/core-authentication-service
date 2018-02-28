@@ -340,7 +340,8 @@ class ResetPasswordForm(PasswordResetForm):
             user = {
                 "app_label": user._meta.app_label,
                 "model": user._meta.model_name,
-                "id": user.id
+                "id": user.id,
+                "context_key": "user",
             }
             context["uid"] = context["uid"].decode("utf-8")
             tasks.send_mail.apply_async(
