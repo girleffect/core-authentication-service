@@ -29,7 +29,8 @@ class Command(BaseCommand):
             response_type="code",
             jwt_alg="HS256",
             redirect_uris=[
-                os.environ.get("WAGTAIL_1_IP",'http://example.com/')
+                os.environ.get("WAGTAIL_1_IP", 'http://example.com/'),
+                "http://core-management-layer:8000/ui/oauth2-redirect.html"  #TODO (cobusc) remove
             ]
         )
         c.save()
@@ -41,7 +42,21 @@ class Command(BaseCommand):
             response_type="code",
             jwt_alg="HS256",
             redirect_uris=[
-                os.environ.get("WAGTAIL_2_IP",'http://example.com/')
+                os.environ.get("WAGTAIL_2_IP", 'http://example.com/')
+            ]
+        )
+        c.save()
+
+        c = Client(
+            name="Management Layer UI Temporary Workaround",
+            client_id="management_layer_workaround",
+            client_secret="management_layer_workaround",
+            response_type="code",
+            jwt_alg="HS256",
+            redirect_uris=[
+                os.environ.get("MANAGEMENT_LAYER_WORKAROUND_REDIRECT",
+                               "http://localhost:8000/ui/oauth2-redirect.html"),
+                "http://core-management-layer:8000/ui/oauth2-redirect.html"
             ]
         )
         c.save()
