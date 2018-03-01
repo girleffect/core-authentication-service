@@ -422,9 +422,8 @@ class ResetPasswordView(PasswordResetView):
                 self.success_url = reverse("reset_password_security_questions")
             else:  # This should never be the case.
                 print("User %s cannot reset their password." % identifier)
-        else:
-            if not user:
-                return HttpResponseRedirect(reverse("password_reset_done"))
+        elif not user:
+            return HttpResponseRedirect(reverse("password_reset_done"))
         return super(ResetPasswordView, self).form_valid(form)
 
 

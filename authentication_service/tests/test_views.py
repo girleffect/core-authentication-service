@@ -2,7 +2,9 @@ import datetime
 import random
 from importlib import import_module
 
+from unittest.mock import patch
 from defender.utils import unblock_username
+
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth import hashers
@@ -529,14 +531,18 @@ class ResetPasswordTestCase(TestCase):
         self.assertRedirects(
             response, reverse("reset_password_security_questions"))
 
-    def test_email_as_identifier(self):
+    @patch("authentication_service.tasks.send_mail.apply_async")
+    def test_email_as_identifier(self, send_mail):
         response = self.client.post(
             reverse("reset_password"),
             data={
                 "email": "user@id.com"
             }
         )
+        send_mail.assert_called()
         self.assertNotIn("User not found", response)
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response.url, "/reset-password/done/")
 
     def test_user_not_found(self):
         response = self.client.post(
@@ -586,3 +592,51 @@ class ResetPasswordTestCase(TestCase):
 
         # Redirects to password reset confirm view
         self.assertEquals(response.status_code, 302)
+
+class DeleteAccountTestCase(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = models.CoreUser.objects.create(
+            username="leaving_user", email="awol@id.com",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.set_password("atleast_its_not_1234")
+        cls.user.save()
+
+    def test_view_html_toggle(self):
+        self.client.login(username=self.user.username, password="atleast_its_not_1234")
+        response = self.client.get(reverse("delete_account"))
+        self.assertNotContains(response, "confirmed_deletion")
+        response = self.client.post(
+            reverse("delete_account"),
+            data={
+                "reason": "The theme is ugly"
+            }
+        )
+        self.assertContains(response, "<input name=\"confirmed_deletion\" " \
+        "type=\"submit\" value=\"Are you sure?\" />")
+        self.assertContains(response, "<input type=\"text\" name=\"reason\" " \
+        "value=\"The theme is ugly\" id=\"id_reason\" class=\" TextInput \" />")
+
+    @patch("authentication_service.tasks.send_mail.apply_async")
+    def test_mail_task_fires(self, send_mail):
+        self.test_view_html_toggle()
+        response = self.client.post(
+            reverse("delete_account"),
+            data={
+                "reason": "The theme is ugly",
+                "confirmed_deletion": "Are you sure?"
+            }
+        )
+        send_mail.assert_called_with(
+            kwargs={
+                "context": {"reason": "The theme is ugly"},
+                "mail_type": "delete_account",
+                "objects_to_fetch": [{
+                    "app_label": "authentication_service",
+                    "model": "coreuser",
+                    "id": self.user.id,
+                    "context_key": "user"}]
+            }
+        )
