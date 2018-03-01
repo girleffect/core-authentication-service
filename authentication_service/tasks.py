@@ -15,7 +15,8 @@ MAILS = {
     "default": {
         "subject": _("Email from Girl Effect"),
         "from_email": "",
-        "recipients": [""]
+        # TODO GE mail address to be added.
+        "recipients": ["ge@ge.com"]
     },
     "password_reset": {
         "subject": _("Password reset for Girl Effect account"),
@@ -28,7 +29,6 @@ MAILS = {
 }
 
 
-# TODO add doc string
 @task(name="email_task", default_retry_delay=300, max_retries=2)
 def send_mail(
         context: dict,
@@ -60,7 +60,7 @@ def send_mail(
     type_data = MAILS.get(mail_type, {})
     now = timezone.now().strftime("%a %d-%b-%Y|%H:%M:%S")
     recipients = extra.get("recipients") or type_data.get(
-        "recipients", default_data["subject"]
+        "recipients", default_data["recipients"]
     )
     subject = extra.get("subject") or type_data.get(
         "subject", default_data["subject"]

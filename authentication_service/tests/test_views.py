@@ -490,14 +490,14 @@ class ResetPasswordTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = models.CoreUser.objects.create(
+        cls.user = get_user_model().objects.create(
             username="identifiable_user", email="user@id.com",
             birth_date=datetime.date(2001, 1, 1)
         )
         cls.user.set_password("1234")
         cls.user.save()
 
-        cls.user_no_email = models.CoreUser.objects.create(
+        cls.user_no_email = get_user_model().objects.create(
             username="user_no_email",
             birth_date=datetime.date(2001, 1, 1)
         )
@@ -597,7 +597,7 @@ class DeleteAccountTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = models.CoreUser.objects.create(
+        cls.user = get_user_model().objects.create(
             username="leaving_user", email="awol@id.com",
             birth_date=datetime.date(2001, 1, 1)
         )

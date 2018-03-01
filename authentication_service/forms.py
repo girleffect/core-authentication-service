@@ -307,6 +307,7 @@ class ResetPasswordForm(PasswordResetForm):
                 _("Please enter your username or email address.")
             )
 
+    # TODO Refactor. Seems like parts might not be needed.
     def save(self, domain_override=None,
              subject_template_name="registration/password_reset_subject.txt",
              email_template_name="registration/password_reset_email.html",
