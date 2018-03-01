@@ -22,68 +22,105 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Creating clients..."))
-        c = Client(
-            name="Wagtail client 1",
+        c, created = Client.objects.update_or_create(
             client_id="client_id_1",
-            client_secret="super_client_secret_1",
-            response_type="code",
-            jwt_alg="HS256",
-            redirect_uris=[
-                os.environ.get("WAGTAIL_1_IP", 'http://example.com/')
-            ]
+            defaults={
+                "name": "Wagtail client 1",
+                "client_secret": "super_client_secret_1",
+                "response_type": "code",
+                "jwt_alg": "HS256",
+                "redirect_uris": [
+                    os.environ.get("WAGTAIL_1_IP", 'http://example.com/')
+                ]
+            }
         )
-        c.save()
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", c.client_id
+        )))
 
-        c = Client(
-            name="Wagtail client 2",
+        c, created = Client.objects.update_or_create(
             client_id="client_id_2",
-            client_secret="super_client_secret_2",
-            response_type="code",
-            jwt_alg="HS256",
-            redirect_uris=[
-                os.environ.get("WAGTAIL_2_IP", 'http://example.com/')
-            ]
+            defaults={
+                "name": "Wagtail client 2",
+                "client_secret": "super_client_secret_2",
+                "response_type": "code",
+                "jwt_alg": "HS256",
+                "redirect_uris": [
+                    os.environ.get("WAGTAIL_2_IP", 'http://example.com/')
+                ]
+            }
         )
-        c.save()
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", c.client_id
+        )))
 
-        c = Client(
-            name="Management Layer UI Temporary Workaround",
+        c, created = Client.objects.update_or_create(
             client_id="management_layer_workaround",
-            client_secret="management_layer_workaround",
-            response_type="code",
-            jwt_alg="HS256",
-            redirect_uris=[
-                os.environ.get("MANAGEMENT_LAYER_WORKAROUND_REDIRECT",
-                               "http://localhost:8000/ui/oauth2-redirect.html"),
-                "http://core-management-layer:8000/ui/oauth2-redirect.html"
-            ]
+            defaults={
+                "name": "Management Layer UI Temporary Workaround",
+                "client_secret": "management_layer_workaround",
+                "response_type": "code",
+                "jwt_alg": "HS256",
+                "redirect_uris": [
+                    os.environ.get("MANAGEMENT_LAYER_WORKAROUND_REDIRECT",
+                                   "http://localhost:8000/ui/oauth2-redirect.html"),
+                    "http://core-management-layer:8000/ui/oauth2-redirect.html"
+                ]
+            }
         )
-        c.save()
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", c.client_id
+        )))
 
         # Super user
         self.stdout.write(self.style.SUCCESS("Creating superuser..."))
-        user = get_user_model().objects.create(username="admin", is_superuser=1, is_staff=1,
-                                               birth_date=datetime.date(2000, 1, 1))
+        user, created = get_user_model().objects.update_or_create(
+            username="admin",
+            defaults={
+                "is_superuser": 1,
+                "is_staff": 1,
+                "birth_date": datetime.date(2000, 1, 1)
+            }
+        )
         user.set_password("local")
         user.save()
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", user.username
+        )))
 
         # End User
-        end_user = get_user_model().objects.create(
-            username="enduser", first_name="End", last_name="User",
-            email="enduser@here.com", nickname="l33t",
-            birth_date=datetime.date(2000, 1, 1)
+        end_user, created = get_user_model().objects.update_or_create(
+            username="enduser",
+            defaults={
+                "first_name": "End",
+                "last_name": "User",
+                "email": "enduser@here.com",
+                "nickname": "l33t",
+                "birth_date": datetime.date(2000, 1, 1)
+            }
         )
         end_user.set_password("enduser")
         end_user.save()
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", end_user.username
+        )))
 
         # System User
-        system_user = get_user_model().objects.create(
-            username="sysuser", first_name="System", last_name="User",
-            email="sysuser@here.com", nickname="5y5",
-            birth_date=datetime.date(2000, 1, 1)
+        system_user, created = get_user_model().objects.update_or_create(
+            username="sysuser",
+            defaults={
+                "first_name": "System",
+                "last_name": "User",
+                "email": "sysuser@here.com",
+                "nickname": "5y5",
+                "birth_date": datetime.date(2000, 1, 1)
+            }
         )
         system_user.set_password("sysuser")
         system_user.save()
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", system_user.username
+        )))
 
         # System User 2FA Device. We set up a device that will always generate
         # the following URL that can be used to create a QR code:
