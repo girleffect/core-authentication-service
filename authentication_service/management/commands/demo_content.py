@@ -29,8 +29,7 @@ class Command(BaseCommand):
             response_type="code",
             jwt_alg="HS256",
             redirect_uris=[
-                os.environ.get("WAGTAIL_1_IP", 'http://example.com/'),
-                "http://core-management-layer:8000/ui/oauth2-redirect.html"  #TODO (cobusc) remove
+                os.environ.get("WAGTAIL_1_IP", 'http://example.com/')
             ]
         )
         c.save()
