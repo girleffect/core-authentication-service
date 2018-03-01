@@ -403,6 +403,12 @@ class ResetPasswordSecurityQuestionsView(FormView):
                 user__id=self.request.session["lookup_user_id"])
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super(ResetPasswordSecurityQuestionsView, self).get_context_data(**kwargs)
+        context["username"] = models.CoreUser.objects.get(
+            id=self.request.session["lookup_user_id"]).username
+        return context
+
     def form_valid(self, form):
         for question in form.questions:
             if not hashers.check_password(
