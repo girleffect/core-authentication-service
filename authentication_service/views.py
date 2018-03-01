@@ -350,9 +350,6 @@ class DeleteAccountView(FormView):
 
     def get_context_data(self, *args, **kwargs):
         ct = super(DeleteAccountView, self).get_context_data(*args, **kwargs)
-
-        # Either a new formset instance or an existing one is passed to the
-        # formset class.
         ct["confirm"] = False
         if kwargs.get("confirm"):
             ct["confirm"] = True
