@@ -34,11 +34,11 @@ class SendMailCase(TestCase):
             }]
         )
         self.assertEqual(
-            mail.outbox[0].to, tasks.MAILS["default"]["recipients"]
+            mail.outbox[0].to, tasks.MAIL_TYPE_DATA["default"]["recipients"]
         )
         self.assertEqual(
             mail.outbox[0].subject,
-            tasks.MAILS["delete_account"]["subject"]
+            tasks.MAIL_TYPE_DATA["delete_account"]["subject"]
         )
         self.assertEqual(mail.outbox[0].body,
             "The following user would "\
@@ -84,7 +84,7 @@ class SendMailCase(TestCase):
         )
         self.assertEqual(
             mail.outbox[0].subject,
-            tasks.MAILS["password_reset"]["subject"]
+            tasks.MAIL_TYPE_DATA["password_reset"]["subject"]
         )
         self.assertEqual(mail.outbox[0].body,
             "\nYou're receiving this email because you requested a password "\

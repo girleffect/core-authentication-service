@@ -1,4 +1,3 @@
-from celery.task import task
 import logging
 import typing
 import uuid
@@ -9,9 +8,11 @@ from django.template import loader
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
+from celery.task import task
+
 logger = logging.getLogger()
 
-MAILS = {
+MAIL_TYPE_DATA = {
     "default": {
         "subject": _("Email from Girl Effect"),
         "from_email": "",
@@ -56,8 +57,8 @@ def send_mail(
     # Assign instance variables.
     extra = extra or {}
     objects_to_fetch = objects_to_fetch or []
-    default_data = MAILS["default"]
-    type_data = MAILS.get(mail_type, {})
+    default_data = MAIL_TYPE_DATA["default"]
+    type_data = MAIL_TYPE_DATA.get(mail_type, {})
     now = timezone.now().strftime("%a %d-%b-%Y|%H:%M:%S")
     recipients = extra.get("recipients") or type_data.get(
         "recipients", default_data["recipients"]
