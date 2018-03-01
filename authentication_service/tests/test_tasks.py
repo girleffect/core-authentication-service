@@ -10,7 +10,7 @@ from django.utils.http import urlsafe_base64_encode
 from authentication_service import tasks
 
 
-# TODO we need more tests function tests, for now the two use cases are covered.
+# TODO we need more test functions, for now only actual use cases are covered.
 class SendMailCase(TestCase):
 
     @classmethod
