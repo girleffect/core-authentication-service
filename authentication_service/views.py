@@ -385,6 +385,16 @@ class ResetPasswordSecurityQuestionsView(FormView):
         "authentication_service/reset_password/security_questions.html"
     form_class = forms.ResetPasswordSecurityQuestionsForm
 
+    def __init__(self, **kwargs):
+        super(ResetPasswordSecurityQuestionsView, self).__init__(**kwargs)
+        # This is a workaround for the following issue:
+        # https://github.com/kencochrane/django-defender/issues/110
+        # We should be able to remove this when the issue is fixed.
+        pipe = REDIS_SERVER.pipeline()
+        pipe.delete(get_username_attempt_cache_key(None))
+        pipe.delete(get_username_blocked_cache_key(None))
+        pipe.execute()
+
     def get_form_kwargs(self):
         kwargs = super(
             ResetPasswordSecurityQuestionsView, self).get_form_kwargs()
@@ -415,3 +425,8 @@ class ResetPasswordSecurityQuestionsView(FormView):
             "password_reset_confirm",
             kwargs={"uidb64": uidb64, "token": token}
         )
+
+
+defender_decorator = watch_login()
+watch_login_method = method_decorator(defender_decorator)
+ResetPasswordSecurityQuestionsView.dispatch = watch_login_method(ResetPasswordSecurityQuestionsView.dispatch)
