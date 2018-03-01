@@ -16,8 +16,6 @@ MAIL_TYPE_DATA = {
     "default": {
         "subject": _("Email from Girl Effect"),
         "from_email": "",
-        # TODO GE mail address to be added.
-        "recipients": ["ge@ge.com"]
     },
     "password_reset": {
         "subject": _("Password reset for Girl Effect account"),
@@ -26,6 +24,8 @@ MAIL_TYPE_DATA = {
     "delete_account": {
         "subject": "Account deletion",
         "template_name": "authentication_service/email/delete_account.html",
+        # TODO GE mail address to be added.
+        "recipients": ["ge@ge.com"]
     },
 }
 
@@ -60,9 +60,7 @@ def send_mail(
     default_data = MAIL_TYPE_DATA["default"]
     type_data = MAIL_TYPE_DATA.get(mail_type, {})
     now = timezone.now().strftime("%a %d-%b-%Y|%H:%M:%S")
-    recipients = extra.get("recipients") or type_data.get(
-        "recipients", default_data["recipients"]
-    )
+    recipients = extra.get("recipients") or type_data.get("recipients")
     subject = extra.get("subject") or type_data.get(
         "subject", default_data["subject"]
     )

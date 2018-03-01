@@ -22,6 +22,17 @@ class SendMailCase(TestCase):
         cls.user.set_password("atleast_its_not_1234")
         cls.user.save()
 
+    def test_no_recipient(self):
+        test_output = "ERROR:root:Attempt to send an email without recipients; unknown-"
+        with self.assertLogs(level="ERROR") as cm:
+            tasks.send_mail(
+                {"a": "b"},
+                "unknown"
+            )
+        output = cm.output
+        self.assertIn(test_output, output[0])
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_account_deletion_mail(self):
         tasks.send_mail(
             {"reason": "The theme is ugly"},
@@ -34,7 +45,7 @@ class SendMailCase(TestCase):
             }]
         )
         self.assertEqual(
-            mail.outbox[0].to, tasks.MAIL_TYPE_DATA["default"]["recipients"]
+            mail.outbox[0].to, tasks.MAIL_TYPE_DATA["delete_account"]["recipients"]
         )
         self.assertEqual(
             mail.outbox[0].subject,
