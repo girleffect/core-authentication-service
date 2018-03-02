@@ -6,9 +6,16 @@
 {% endblock %}
 
 {% block content %}
-    {% blocktrans %}
-    You have exceeded the maximum number of allowed incorrect login attempts ({{ failure_limit }}).
-    Please wait {{ cooloff_time_minutes }} minutes before trying again.
-    {% endblocktrans %}
+    {% if "security-questions" in request.path %}
+        {% blocktrans %}
+        You have exceeded the maximum number of allowed incorrect reset attempts ({{ failure_limit }}).
+        Please wait {{ cooloff_time_minutes }} minutes before trying again.
+        {% endblocktrans %}
+    {% else %}
+        {% blocktrans %}
+        You have exceeded the maximum number of allowed incorrect login attempts ({{ failure_limit }}).
+        Please wait {{ cooloff_time_minutes }} minutes before trying again.
+        {% endblocktrans %}
+    {% endif %}
     </ul>
 {% endblock %}

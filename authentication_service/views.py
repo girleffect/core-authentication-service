@@ -100,16 +100,6 @@ class LoginView(core.LoginView):
         ('backup', BackupTokenForm),
     )
 
-    def __init__(self, **kwargs):
-        super(LoginView, self).__init__(**kwargs)
-        # This is a workaround for the following issue:
-        # https://github.com/kencochrane/django-defender/issues/110
-        # We should be able to remove this when the issue is fixed.
-        pipe = REDIS_SERVER.pipeline()
-        pipe.delete(get_username_attempt_cache_key(None))
-        pipe.delete(get_username_blocked_cache_key(None))
-        pipe.execute()
-
 
 # Protect the login view using Defender. Defender provides a method decorator
 # which we have to tweak to apply to the dispatch method of a view.
@@ -437,6 +427,12 @@ class ResetPasswordSecurityQuestionsView(FormView):
                 user__id=self.request.session["lookup_user_id"])
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super(ResetPasswordSecurityQuestionsView, self).get_context_data(**kwargs)
+        context["username"] = models.CoreUser.objects.get(
+            id=self.request.session["lookup_user_id"]).username
+        return context
+
     def form_valid(self, form):
         for question in form.questions:
             if not hashers.check_password(
@@ -459,3 +455,9 @@ class ResetPasswordSecurityQuestionsView(FormView):
             "password_reset_confirm",
             kwargs={"uidb64": uidb64, "token": token}
         )
+
+
+defender_decorator = watch_login()
+watch_login_method = method_decorator(defender_decorator)
+ResetPasswordSecurityQuestionsView.dispatch = watch_login_method(
+    ResetPasswordSecurityQuestionsView.dispatch)
