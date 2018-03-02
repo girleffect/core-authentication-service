@@ -54,10 +54,12 @@ class SendMailCase(TestCase):
         self.assertEqual(mail.outbox[0].body,
             "The following user would "\
             "like to delete their Girl Effect account."\
+            "\nid: %s"
             "\nusername: %s"
             "\nemail: %s"\
             "\nmsisdn: %s"\
-            "\nreason :The theme is ugly\n" %(
+            "\nreason :The theme is ugly\n" % (
+                self.user.id,
                 self.user.username,
                 self.user.email,
                 self.user.msisdn
