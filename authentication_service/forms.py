@@ -307,9 +307,10 @@ class ResetPasswordForm(PasswordResetForm):
                 _("Please enter your username or email address.")
             )
 
+    # TODO Refactor. Seems like parts might not be needed.
     def save(self, domain_override=None,
-             subject_template_name='registration/password_reset_subject.txt',
-             email_template_name='registration/password_reset_email.html',
+             subject_template_name="registration/password_reset_subject.txt",
+             email_template_name="registration/password_reset_email.html",
              use_https=False, token_generator=default_token_generator,
              from_email=None, request=None, html_email_template_name=None,
              extra_email_context=None):
@@ -326,19 +327,32 @@ class ResetPasswordForm(PasswordResetForm):
             else:
                 site_name = domain = domain_override
             context = {
-                'email': email,
-                'domain': domain,
-                'site_name': site_name,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'user': user,
-                'token': token_generator.make_token(user),
-                'protocol': 'https' if use_https else 'http',
+                "email": email,
+                "domain": domain,
+                "site_name": site_name,
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "user": user,
+                "token": token_generator.make_token(user),
+                "protocol": "https" if use_https else "http",
             }
             if extra_email_context is not None:
                 context.update(extra_email_context)
-            tasks.send_email_task(
-                subject_template_name, email_template_name, context, from_email,
-                email, html_email_template_name=html_email_template_name,
+            user = context.pop("user")
+            extra = {"recipients": [user.email]}
+            user = {
+                "app_label": user._meta.app_label,
+                "model": user._meta.model_name,
+                "id": user.id,
+                "context_key": "user",
+            }
+            context["uid"] = context["uid"].decode("utf-8")
+            tasks.send_mail.apply_async(
+                kwargs={
+                    "context": context,
+                    "mail_type": "password_reset",
+                    "objects_to_fetch": [user],
+                    "extra": extra
+                }
             )
 
 
@@ -358,3 +372,10 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
         for question in self.questions:
             if not self.cleaned_data["question_%s" % question.id]:
                 raise ValidationError(_("Please enter your answer."))
+
+
+class DeleteAccountForm(forms.Form):
+    reason = forms.CharField(
+        required=False,
+        label=_("Please tell use why you want your account deleted")
+    )
