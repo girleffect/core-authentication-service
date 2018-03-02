@@ -435,4 +435,5 @@ class ResetPasswordSecurityQuestionsView(FormView):
 
 defender_decorator = watch_login()
 watch_login_method = method_decorator(defender_decorator)
-ResetPasswordSecurityQuestionsView.dispatch = watch_login_method(ResetPasswordSecurityQuestionsView.dispatch)
+ResetPasswordSecurityQuestionsView.dispatch = watch_login_method(
+    ResetPasswordSecurityQuestionsView.dispatch)

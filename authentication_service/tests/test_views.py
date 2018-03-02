@@ -175,8 +175,10 @@ class TestSecurityQuestionLockout(TestCase):
         self.client.get(reset_url)
         response = self.client.post(reset_url, reset_data)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("authentication_service/reset_password/security_questions.html",
-                      response.template_name)
+        self.assertIn(
+            "authentication_service/reset_password/security_questions.html",
+            response.template_name
+        )
 
 
 class TestRegistrationView(TestCase):
