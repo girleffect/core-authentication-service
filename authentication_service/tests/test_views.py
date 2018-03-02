@@ -1,5 +1,6 @@
 import datetime
 import random
+import uuid
 from importlib import import_module
 
 from defender.utils import unblock_username
@@ -104,6 +105,77 @@ class TestLockout(TestCase):
         response = self.client.post(login_url, login_data)
         self.assertEqual(response.status_code, 200)
         self.assertIn("authentication_service/login/login.html",
+                      response.template_name)
+
+
+class TestSecurityQuestionLockout(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestSecurityQuestionLockout, cls).setUpTestData()
+        cls.user = get_user_model().objects.create_user(
+            username="user_who_forgot_creds",
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.save()
+
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+        cls.user_answer_one = UserSecurityQuestion.objects.create(
+            question=cls.question_one,
+            user=cls.user,
+            answer="right"
+        )
+        cls.user_answer_two = UserSecurityQuestion.objects.create(
+            question=cls.question_two,
+            user=cls.user,
+            answer="right"
+        )
+
+    def test_lockout_on_reset(self):
+        session = self.client.session
+        session["lookup_user_id"] = str(self.user.id)
+        session.save()
+
+        username = "unknown_user_{}".format(random.randint(0, 10000))
+        reset_url = reverse("reset_password_security_questions")
+        reset_data = {
+            "login_view-current_step": "auth",
+            "auth-username": username,
+            "question_%s" % self.user_answer_one.id: "test",
+            "question_%s" % self.user_answer_two.id: "answer"
+        }
+        allowed_attempts = settings.DEFENDER_LOGIN_FAILURE_LIMIT
+        attempt = 0
+
+        while attempt < allowed_attempts:
+            attempt += 1
+            self.client.get(reset_url)
+            response = self.client.post(reset_url, reset_data)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(
+                "authentication_service/reset_password/security_questions.html",
+                response.template_name
+            )
+
+        self.client.get(reset_url)
+        response = self.client.post(reset_url, reset_data, follow=True)
+        self.assertEqual([template.name for template in response.templates],
+                         ["authentication_service/lockout.html",
+                          "base.html"])
+
+        unblock_username(username)
+
+        self.client.get(reset_url)
+        response = self.client.post(reset_url, reset_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("authentication_service/reset_password/security_questions.html",
                       response.template_name)
 
 
@@ -483,6 +555,7 @@ class EditProfileViewTestCase(TestCase):
             "AnswerSecond".lower(),
             question_two.answer)
         )
+
 
 class ResetPasswordTestCase(TestCase):
 
