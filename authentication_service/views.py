@@ -4,11 +4,10 @@ from defender.decorators import watch_login
 from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
     get_username_blocked_cache_key
 
-from django.shortcuts import render
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import login, authenticate, update_session_auth_hash, \
-    hashers
-from django.contrib.auth import logout
+    hashers, logout
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
@@ -16,6 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -324,6 +324,51 @@ class UpdateSecurityQuestionsView(LanguageRedirectMixin, TemplateView):
             return self.render(request, formset)
 
 
+class DeleteAccountView(FormView):
+    template_name = "authentication_service/profile/delete_account.html"
+    form_class = forms.DeleteAccountForm
+    success_url = reverse_lazy("edit_profile")
+
+    def dispatch(self, *args, **kwargs):
+        if self.request.user.email is None and self.request.user.msisdn is None:
+            messages.error(self.request,
+                _("You require either an email or msisdn "
+                "to request an account deletion")
+            )
+            return HttpResponseRedirect(self.get_success_url())
+        return super(DeleteAccountView, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        ct = super(DeleteAccountView, self).get_context_data(*args, **kwargs)
+        ct["confirm"] = False
+        if kwargs.get("confirm"):
+            ct["confirm"] = True
+        return ct
+
+    def form_valid(self, form):
+        if "confirmed_deletion" not in self.request.POST:
+            return self.render_to_response(self.get_context_data(
+                form=form, confirm=True
+            ))
+        else:
+            user = self.request.user
+            user = {
+                "app_label": user._meta.app_label,
+                "model": user._meta.model_name,
+                "id": user.id,
+                "context_key": "user",
+            }
+            tasks.send_mail.apply_async(
+                kwargs={
+                    "context":{"reason": form.cleaned_data["reason"]},
+                    "mail_type": "delete_account",
+                    "objects_to_fetch": [user]
+                }
+            )
+            messages.success(self.request, _("Successfully requested account deletion."))
+            return super(DeleteAccountView, self).form_valid(form)
+
+
 class ResetPasswordView(PasswordResetView):
     """This view allows the user to enter either their username or their email
     address in order for us to identify them. After we have identified the user
@@ -364,9 +409,8 @@ class ResetPasswordView(PasswordResetView):
                 self.success_url = reverse("reset_password_security_questions")
             else:  # This should never be the case.
                 print("User %s cannot reset their password." % identifier)
-        else:
-            if not user:
-                return HttpResponseRedirect(reverse("password_reset_done"))
+        elif not user:
+            return HttpResponseRedirect(reverse("password_reset_done"))
         return super(ResetPasswordView, self).form_valid(form)
 
 

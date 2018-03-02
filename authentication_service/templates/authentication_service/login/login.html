@@ -16,7 +16,7 @@
         {% csrf_token %}
         {{ wizard.management_form }}
         {{ form.as_div }}
-        <input type="submit" value={% trans "Login" %}>
+        <input type="submit" value="{% trans "Login" %}">
 
         {% if backup_tokens %}
             <p>{% trans "As a last resort, you can use a backup token:" %}</p>

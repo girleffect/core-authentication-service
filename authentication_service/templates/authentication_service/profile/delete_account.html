@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% endblock %}
+
+{% block branding %}<h1>{% trans "Delete account" %}</h1>{% endblock %}
+
+{% block links %}
+    <a href="{% url "admin:logout" %}">{% trans "Logout" %}</a>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="">{% trans "App name" %}</a>
+        &rsaquo; <a href={% url "edit_profile" %}>{% trans "Edit profile" %}</a>
+        &rsaquo; {% trans "Account deletion" %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% if confirm %}
+        <p>{% trans "Are you sure you want to delete your account?" %}
+        <form method="post">
+            <div style="display: none;">
+            {% csrf_token %}
+            {{ form.as_div }}
+            </div>
+            {% comment %}
+                Do not alter this name without updating the view.
+            {% endcomment %}
+            <input name="confirmed_deletion" type="submit" value="{% trans "Are you sure?" %}" />
+        </form>
+        <a href="{% url "edit_profile" %}">{% trans "No" %}</a>
+    {% else %}
+        <form method="post" {% if confirm %}style="display: none;"{% endif %}>
+            {% csrf_token %}
+            {{ form.as_div }}
+            <input type="submit" value="{% trans "Delete account?" %}" />
+        </form>
+        <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
+    {% endif %}
+{% endblock %}
