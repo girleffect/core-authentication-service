@@ -9,13 +9,10 @@ from django.views.static import serve
 import authentication_service.api.views as views
 
 urlpatterns = [
-    url(r"^users/(?P<user_id>.+)/$", views.UsersUserId.as_view()),
-    url(r"^users/$", views.Users.as_view()),
-    url(r"^openid/userinfo$", views.OpenidUserinfo.as_view()),
-    url(r"^openid/token$", views.OpenidToken.as_view()),
-    url(r"^openid/authorize$", views.OpenidAuthorize.as_view()),
-    url(r"^clients/(?P<client_id>.+)/$", views.ClientsClientId.as_view()),
-    url(r"^clients/$", views.Clients.as_view()),
+    url(r"^users/(?P<user_id>.+)$", views.UsersUserId.as_view()),
+    url(r"^users$", views.Users.as_view()),
+    url(r"^clients/(?P<client_id>.+)$", views.ClientsClientId.as_view()),
+    url(r"^clients$", views.Clients.as_view()),
 ]
 
 if settings.DEBUG:
