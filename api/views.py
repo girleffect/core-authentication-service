@@ -98,7 +98,7 @@ class Clients(View):
                 "type": "string"
             }, 
             "reuse_consent": {
-                "description": "If enabled, the Server will save the user consent given to a specific client, so that user wont be prompted for the same authorization multiple times.", 
+                "description": "If enabled, the Server will save the user consent given to a specific client, so that user won't be prompted for the same authorization multiple times.", 
                 "type": "boolean"
             }, 
             "terms_url": {
@@ -778,7 +778,7 @@ class __SWAGGER_SPEC__(View):
                     "type": "string"
                 }, 
                 "reuse_consent": {
-                    "description": "If enabled, the Server will save the user consent given to a specific client, so that user wont be prompted for the same authorization multiple times.", 
+                    "description": "If enabled, the Server will save the user consent given to a specific client, so that user won't be prompted for the same authorization multiple times.", 
                     "type": "boolean"
                 }, 
                 "terms_url": {
@@ -1144,7 +1144,7 @@ class __SWAGGER_SPEC__(View):
         }, 
         "/openid/token": {
             "post": {
-                "description": "Exchange an authorization code for an ID Token or Access Token.\\nThis endpoint supports both `client_secret_post` and `client_secret_basic` authentication methods, as specified by the clients `token_endpoint_auth_method`.\\nSee also:\\n  - [OIDC Token Endpoint](http://openid.net/specs/openid-connect-core-1_0.html#TokenRequest)\\n  - [OIDC Successful Token response](http://openid.net/specs/openid-connect-core-1_0.html#TokenResponse)\\n  - [OIDC Token Error response](http://openid.net/specs/openid-connect-core-1_0.html#TokenError)\\n", 
+                "description": "Exchange an authorization code for an ID Token or Access Token.\\nThis endpoint supports both `client_secret_post` and `client_secret_basic` authentication methods, as specified by the client's `token_endpoint_auth_method`.\\nSee also:\\n  - [OIDC Token Endpoint](http://openid.net/specs/openid-connect-core-1_0.html#TokenRequest)\\n  - [OIDC Successful Token response](http://openid.net/specs/openid-connect-core-1_0.html#TokenResponse)\\n  - [OIDC Token Error response](http://openid.net/specs/openid-connect-core-1_0.html#TokenError)\\n", 
                 "externalDocs": {
                     "description": "OpenID Token Endpoint", 
                     "url": "http://openid.net/specs/openid-connect-core-1_0.html#TokenEndpoint"
@@ -1224,7 +1224,7 @@ class __SWAGGER_SPEC__(View):
         }, 
         "/openid/userinfo": {
             "get": {
-                "description": "Use this endpoint to retrieve a users profile in case youve not already obtained enough details from the ID Token via the Token Endpoint.\\n See also:\\n - [OIDC UserInfo endpoint](http://openid.net/specs/openid-connect-core-1_0.html#UserInfo)\\n", 
+                "description": "Use this endpoint to retrieve a user's profile in case you've not already obtained enough details from the ID Token via the Token Endpoint.\\n See also:\\n - [OIDC UserInfo endpoint](http://openid.net/specs/openid-connect-core-1_0.html#UserInfo)\\n", 
                 "operationId": "userInfo", 
                 "produces": [
                     "application/json"
@@ -1482,12 +1482,12 @@ class __SWAGGER_SPEC__(View):
             "description": "End-user authentication.", 
             "flow": "accessCode", 
             "scopes": {
-                "address": "The users postal address", 
-                "email": "The users email address", 
-                "ge:roles": "The users roles", 
-                "ge:site": "The users site-specific data", 
+                "address": "The user's postal address", 
+                "email": "The user's email address", 
+                "ge:roles": "The user's roles", 
+                "ge:site": "The user's site-specific data", 
                 "oidc": "Enable OIDC flow", 
-                "phone": "The users phone number"
+                "phone": "The user's phone number"
             }, 
             "tokenUrl": "http://locahost:8000/token", 
             "type": "oauth2"
@@ -1497,12 +1497,12 @@ class __SWAGGER_SPEC__(View):
             "description": "End-user authentication.", 
             "flow": "implicit", 
             "scopes": {
-                "address": "The users postal address", 
-                "email": "The users email address", 
-                "ge:roles": "The users roles", 
-                "ge:site": "The users site-specific data", 
+                "address": "The user's postal address", 
+                "email": "The user's email address", 
+                "ge:roles": "The user's roles", 
+                "ge:site": "The user's site-specific data", 
                 "oidc": "Enable OIDC flow", 
-                "phone": "The users phone number"
+                "phone": "The user's phone number"
             }, 
             "type": "oauth2"
         }, 
