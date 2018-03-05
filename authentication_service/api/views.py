@@ -14,8 +14,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 
-import authentication-service.api.schemas as schemas
-import authentication-service.api.utils as utils
+import authentication_service.api.schemas as schemas
+import authentication_service.api.utils as utils
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -34,7 +34,7 @@ LOGGER.info("Swagger API response validation is {}".format(
 try:
     stub_class_path = settings.STUBS_CLASS
 except AttributeError:
-    stub_class_path = "authentication-service.api.stubs.MockedStubClass"
+    stub_class_path = "authentication_service.api.stubs.MockedStubClass"
 
 module_name, class_name = stub_class_path.rsplit(".", 1)
 Module = importlib.import_module(module_name)

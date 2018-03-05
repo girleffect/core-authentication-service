@@ -6,7 +6,7 @@ Routing module.
 from django.conf.urls import url
 from django.conf import settings
 from django.views.static import serve
-import authentication-service.api.views as views
+import authentication_service.api.views as views
 
 urlpatterns = [
     url(r"^users/(?P<user_id>.+)/$", views.UsersUserId.as_view()),

@@ -4,7 +4,7 @@ Do not modify this file. It is generated from the Swagger specification.
 import json
 from apitools.datagenerator import DataGenerator
 
-import authentication-service.api.schemas as schemas
+import authentication_service.api.schemas as schemas
 
 
 class AbstractStubClass(object):
