@@ -1,4 +1,15 @@
+from django.core.serializers import json, serialize
+from django.core.serializers.json import DjangoJSONEncoder
+from oidc_provider.models import Client
+
 from authentication_service.api.stubs import AbstractStubClass
+
+
+CLIENT_VALUES = [
+    "id", "_post_logout_redirect_uris", "_redirect_uris", "client_id",
+    "contact_email", "logo", "name", "require_consent", "response_type",
+    "reuse_consent", "terms_url", "website_url"
+]
 
 
 class Implementation(AbstractStubClass):
@@ -8,8 +19,25 @@ class Implementation(AbstractStubClass):
                     client_id=None, *args, **kwargs):
         """
         :param request: An HttpRequest
+        :param offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
+        :param limit (optional): integer An optional query parameter to limit the number of results returned.
+        :param client_ids (optional): string An optional query parameter to filter by a list of client_ids.
+        :param clent_id (optional): string An optional query parameter to filter by a single client_id.
         """
-        raise NotImplementedError()
+        if client_ids:
+            result = [
+                client for client in Client.objects.filter(id__in=client_ids).values(*CLIENT_VALUES)
+            ]
+        elif client_id:
+            result = [
+                client for client in Client.objects.filter(client_id=client_id).values(*CLIENT_VALUES)
+            ]
+        else:
+            result = [
+                client for client in Client.objects.all().values(*CLIENT_VALUES)
+            ]
+        return result
+
 
     @staticmethod
     def client_read(request, client_id, *args, **kwargs):
