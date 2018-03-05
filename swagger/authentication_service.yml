@@ -556,6 +556,17 @@ paths:
           in: query
           required: false
           type: string
+        - name: user_ids
+          description: An optional list of user ids
+          in: query
+          type: array
+          items:
+            type: string
+            format: uuid
+          required: false
+          minItems: 0
+          collectionFormat: multi
+          uniqueItems: true
       produces:
         - application/json
       responses:
