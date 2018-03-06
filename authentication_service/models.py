@@ -31,6 +31,9 @@ class CoreUser(AbstractUser):
     country = models.ForeignKey(_("Country"), blank=True, null=True)
     avatar = models.ImageField(blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
+    organisational_unit = models.ForeignKey(
+        "OrganisationalUnit", blank=True, null=True
+    )
 
     def __init__(self, *args, **kwargs):
         super(CoreUser, self).__init__(*args, **kwargs)
@@ -111,3 +114,10 @@ class QuestionLanguageText(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.language_code, self.question.id)
+
+
+class OrganisationalUnit(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

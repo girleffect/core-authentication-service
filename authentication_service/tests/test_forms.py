@@ -6,9 +6,11 @@ from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
 from django.test import TestCase
 
-from authentication_service.forms import RegistrationForm, \
-    SecurityQuestionForm, SecurityQuestionFormSet, EditProfileForm
-from authentication_service.models import SecurityQuestion
+from authentication_service.forms import (
+    RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
+    EditProfileForm, SetPasswordForm, PasswordChangeForm
+)
+from authentication_service.models import SecurityQuestion, OrganisationalUnit
 
 
 class TestRegistrationForm(TestCase):
@@ -599,3 +601,298 @@ class EditProfileFormTestCase(TestCase):
                     ["This field is required."]
             }
         )
+
+
+class TestPasswordResetForm(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="forgotmypassword",
+            birth_date=datetime.date(2000, 1, 1),
+            email="atleastihavethis@email.com",
+            email_verified=True
+        )
+        cls.user.save()
+        org = OrganisationalUnit.objects.create(
+            name="uniquename",
+            description="some text"
+        )
+        cls.org_user = get_user_model().objects.create_user(
+            username="org_forgotmypassword",
+            birth_date=datetime.date(2000, 1, 1),
+            email="org_atleastihavethis@email.com",
+            email_verified=True,
+            organisational_unit=org
+        )
+        cls.org_user.save()
+
+    def test_none_org_html_state(self):
+        form = SetPasswordForm(self.user)
+        html = form.as_div()
+        self.assertNotIn(
+            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+            html
+        )
+
+    def test_org_html_state(self):
+        form = SetPasswordForm(self.org_user)
+        html = form.as_div()
+        self.assertIn(
+            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+            html
+        )
+
+    def test_user_password_validation(self):
+        # Test both required
+        form = SetPasswordForm(self.user, data={
+            "new_password1": "password",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": ["This field is required."],
+        })
+
+        # Test both must match
+        form = SetPasswordForm(self.user, data={
+            "new_password1": "password",
+            "new_password2": "password2"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": ["The two password fields didn't match."],
+        })
+
+        # Test min length
+        form = SetPasswordForm(self.user, data={
+            "new_password1": "123",
+            "new_password2": "123"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": [
+                "Password not long enough."
+            ]
+        })
+
+    def test_org_user_password_validation(self):
+        # Test both required
+        form = SetPasswordForm(self.org_user, data={
+            "new_password1": "password",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": ["This field is required."],
+        })
+
+        # Test both must match
+        form = SetPasswordForm(self.org_user, data={
+            "new_password1": "password",
+            "new_password2": "password2"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": ["The two password fields didn't match."],
+        })
+
+        # Test min length, unique validation and contains more than numeric
+        form = SetPasswordForm(self.org_user, data={
+            "new_password1": "123",
+            "new_password2": "123"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": [
+                "This password is too short. It must contain at least 8 characters.",
+                "This password is entirely numeric.",
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
+
+        # Test unique validation
+        form = SetPasswordForm(self.org_user, data={
+            "new_password1": "asdasdasd",
+            "new_password2": "asdasdasd"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": [
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
+
+        # Test close to username
+        form = SetPasswordForm(self.org_user, data={
+            "new_password1": "forgotmypass",
+            "new_password2": "forgotmypass"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": [
+                "The password is too similar to the username.",
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
+
+        # Test success
+        form = SetPasswordForm(self.org_user, data={
+            "new_password1": "asdasdasdA@1",
+            "new_password2": "asdasdasdA@1"
+        })
+        self.assertTrue(form.is_valid())
+
+
+class TestPasswordChangeForm(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="forgotmypassword",
+            birth_date=datetime.date(2000, 1, 1),
+            email="atleastihavethis@email.com",
+            email_verified=True
+        )
+        cls.user.set_password("atleast_its_not_1234")
+        cls.user.save()
+        org = OrganisationalUnit.objects.create(
+            name="uniquename",
+            description="some text"
+        )
+        cls.org_user = get_user_model().objects.create_user(
+            username="org_forgotmypassword",
+            birth_date=datetime.date(2000, 1, 1),
+            email="org_atleastihavethis@email.com",
+            email_verified=True,
+            organisational_unit=org
+        )
+        cls.org_user.set_password("atleast_its_not_1234")
+        cls.org_user.save()
+
+    def test_none_org_html_state(self):
+        form = PasswordChangeForm(self.user)
+        html = form.as_div()
+        self.assertNotIn(
+            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+            html
+        )
+
+    def test_org_html_state(self):
+        form = PasswordChangeForm(self.org_user)
+        html = form.as_div()
+        self.assertIn(
+            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+            html
+        )
+
+    def test_user_password_validation(self):
+        # Test both required
+        form = PasswordChangeForm(self.user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "password",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": ["This field is required."],
+        })
+
+        # Test both must match
+        form = PasswordChangeForm(self.user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "password",
+            "new_password2": "password2"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": ["The two password fields didn't match."],
+        })
+
+        # Test min length
+        form = PasswordChangeForm(self.user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "123",
+            "new_password2": "123"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": [
+                "Password not long enough."
+            ]
+        })
+
+    def test_org_user_password_validation(self):
+        # Test both required
+        form = PasswordChangeForm(self.org_user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "password",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": ["This field is required."],
+        })
+
+        # Test both must match
+        form = PasswordChangeForm(self.org_user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "password",
+            "new_password2": "password2"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": ["The two password fields didn't match."],
+        })
+
+        # Test min length, unique validation and contains more than numeric
+        form = PasswordChangeForm(self.org_user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "123",
+            "new_password2": "123"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": [
+                "This password is too short. It must contain at least 8 characters.",
+                "This password is entirely numeric.",
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
+
+        # Test unique validation
+        form = PasswordChangeForm(self.org_user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "asdasdasd",
+            "new_password2": "asdasdasd"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": [
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
+
+        # Test close to username
+        form = PasswordChangeForm(self.org_user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "forgotmypass",
+            "new_password2": "forgotmypass"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "new_password2": [
+                "The password is too similar to the username.",
+                "The password must contain at least one uppercase letter, "
+                "one lowercase one, a digit and special character."
+            ]
+        })
+
+        # Test success
+        form = PasswordChangeForm(self.org_user, data={
+            "old_password": "atleast_its_not_1234",
+            "new_password1": "asdasdasdA@1",
+            "new_password2": "asdasdasdA@1"
+        })
+        self.assertTrue(form.is_valid())
