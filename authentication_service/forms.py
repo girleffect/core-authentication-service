@@ -404,7 +404,7 @@ class SetPasswordForm(SetPasswordForm):
             )
 
     def clean_new_password2(self):
-        # Short circuit normal validation if not high security.
+        # If user has an organisation, let original validation kick in.
         if self.user.organisational_unit:
             return super(SetPasswordForm, self).clean_new_password2()
 
