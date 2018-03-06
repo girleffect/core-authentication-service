@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.serializers import json, serialize
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
@@ -42,7 +43,7 @@ class Implementation(AbstractStubClass):
             result = [
                 client for client in Client.objects.all().values(*CLIENT_VALUES)
             ]
-        return result
+        return result[int(offset if offset else 0):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)]
 
 
     @staticmethod
