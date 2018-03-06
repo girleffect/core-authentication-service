@@ -123,11 +123,15 @@ class Clients(View):
         :param self: A Clients instance
         :param request: An HttpRequest
         """
+        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
         offset = request.GET.get("offset", None)
+        # limit (optional): integer An optional query parameter to limit the number of results returned.
         limit = request.GET.get("limit", None)
-        client_ids = request.GET.get("client_ids", None)
-        client_id = request.GET.get("client_id", None)
-        result = Stubs.client_list(request, offset, limit, client_ids, client_id, )
+        # client_ids (optional): array An optional list of client ids
+        client_ids = request.GET.getlist("client_ids", None)
+        # client_token_id (optional): string An optional client id to filter on. This is not the primary key.
+        client_token_id = request.GET.get("client_token_id", None)
+        result = Stubs.client_list(request, offset, limit, client_ids, client_token_id, )
         maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
         return JsonResponse(result, safe=False)
@@ -242,11 +246,16 @@ class Users(View):
         :param self: A Users instance
         :param request: An HttpRequest
         """
+        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
         offset = request.GET.get("offset", None)
+        # limit (optional): integer An optional query parameter to limit the number of results returned.
         limit = request.GET.get("limit", None)
+        # email (optional): string An optional email filter
         email = request.GET.get("email", None)
+        # username_prefix (optional): string An optional username prefix filter
         username_prefix = request.GET.get("username_prefix", None)
-        user_ids = request.GET.get("user_ids", None)
+        # user_ids (optional): array An optional list of user ids
+        user_ids = request.GET.getlist("user_ids", None)
         result = Stubs.user_list(request, offset, limit, email, username_prefix, user_ids, )
         maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
@@ -570,7 +579,7 @@ class __SWAGGER_SPEC__(View):
                     {
                         "description": "An optional client id to filter on. This is not the primary key.",
                         "in": "query",
-                        "name": "client_id",
+                        "name": "client_token_id",
                         "required": false,
                         "type": "string"
                     }

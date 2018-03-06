@@ -508,7 +508,7 @@ paths:
           uniqueItems: true
         - description: An optional client id to filter on. This is not the primary key.
           in: query
-          name: client_id
+          name: client_token_id
           required: false
           type: string
       produces:

@@ -16,21 +16,23 @@ class Implementation(AbstractStubClass):
 
     @staticmethod
     def client_list(request, offset=None, limit=None, client_ids=None,
-                    client_id=None, *args, **kwargs):
+                    client_token_id=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         :param offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
         :param limit (optional): integer An optional query parameter to limit the number of results returned.
         :param client_ids (optional): string An optional query parameter to filter by a list of client_ids.
-        :param clent_id (optional): string An optional query parameter to filter by a single client_id.
+        :param clent_token_id (optional): string An optional query parameter to filter by a single client_id.
         """
         if client_ids:
             result = [
-                client for client in Client.objects.filter(id__in=client_ids).values(*CLIENT_VALUES)
+                client for client in Client.objects.filter(
+                    pk__in=client_ids).values(*CLIENT_VALUES)
             ]
-        elif client_id:
+        elif client_token_id:
             result = [
-                client for client in Client.objects.filter(client_id=client_id).values(*CLIENT_VALUES)
+                client for client in Client.objects.filter(
+                    client_id=client_token_id).values(*CLIENT_VALUES)
             ]
         else:
             result = [

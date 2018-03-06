@@ -13,7 +13,7 @@ class AbstractStubClass(object):
     """
 
     @staticmethod
-    def client_list(request, offset=None, limit=None, client_ids=None, client_id=None, *args, **kwargs):
+    def client_list(request, offset=None, limit=None, client_ids=None, client_token_id=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         """
@@ -67,7 +67,7 @@ class MockedStubClass(AbstractStubClass):
     GENERATOR = DataGenerator()
 
     @staticmethod
-    def client_list(request, offset=None, limit=None, client_ids=None, client_id=None, *args, **kwargs):
+    def client_list(request, offset=None, limit=None, client_ids=None, client_token_id=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         """
