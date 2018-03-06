@@ -6,9 +6,11 @@ from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
 from django.test import TestCase
 
-from authentication_service.forms import RegistrationForm, \
-    SecurityQuestionForm, SecurityQuestionFormSet, EditProfileForm
-from authentication_service.models import SecurityQuestion
+from authentication_service.forms import (
+    RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
+    EditProfileForm, SetPasswordForm
+)
+from authentication_service.models import SecurityQuestion, OrganisationalUnit
 
 
 class TestRegistrationForm(TestCase):
@@ -598,4 +600,45 @@ class EditProfileFormTestCase(TestCase):
                 "birth_date":
                     ["This field is required."]
             }
+        )
+
+
+class TestPasswordResetForm(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="forgotmypassword",
+            birth_date=datetime.date(2000, 1, 1),
+            email="atleastihavethis@email.com",
+            email_verified=True
+        )
+        cls.user.save()
+        org = OrganisationalUnit.objects.create(
+            name="uniquename",
+            description="some text"
+        )
+        cls.org_user = get_user_model().objects.create_user(
+            username="org_forgotmypassword",
+            birth_date=datetime.date(2000, 1, 1),
+            email="org_atleastihavethis@email.com",
+            email_verified=True,
+            organisational_unit=org
+        )
+        cls.org_user.save()
+
+    def test_none_org_html_state(self):
+        form = SetPasswordForm(self.user)
+        html = form.as_div()
+        self.assertNotIn(
+            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+            html
+        )
+
+    def test_org_html_state(self):
+        form = SetPasswordForm(self.org_user)
+        html = form.as_div()
+        self.assertIn(
+            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+            html
         )

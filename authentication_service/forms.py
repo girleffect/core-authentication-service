@@ -386,9 +386,9 @@ class DeleteAccountForm(forms.Form):
 class SetPasswordForm(SetPasswordForm):
     def __init__(self, user, *args, **kwargs):
         # Super needed before we can actually update the form.
-        super(SetPasswordForm, self).__init__(*args, **kwargs)
-        self.user_has_org = user.has_org
-        if not self.user_has_org:
+        super(SetPasswordForm, self).__init__(user, *args, **kwargs)
+        self.user_org = user.organisational_unit
+        if not self.user_org:
             # Remove default help text, added by password validation,
             # middleware.
             fields_data = {
@@ -398,10 +398,15 @@ class SetPasswordForm(SetPasswordForm):
                     }
                 }
             }
+            # Update the actual fields and widgets.
+            update_form_fields(
+                self,
+                fields_data=fields_data,
+            )
 
     def clean_new_password2(self):
         # Short circuit normal validation if not high security.
-        if self.user_has_org:
+        if self.user_org:
             return super(SetPasswordForm, self).clean_new_password2()
 
         password1 = self.cleaned_data.get("new_password1")
@@ -412,8 +417,6 @@ class SetPasswordForm(SetPasswordForm):
                 code='password_mismatch',
             )
 
-        # NOTE: Min length might need to be defined somewhere easier to change.
-        # Setting doesn't feel 100% right though.
         if not len(password2) >= MIN_NON_HIGH_PASSWORD_LENGTH:
             raise forms.ValidationError(
                 _("Password not long enough.")
