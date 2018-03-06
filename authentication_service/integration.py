@@ -43,7 +43,11 @@ class Implementation(AbstractStubClass):
             result = [
                 client for client in Client.objects.all().values(*CLIENT_VALUES)
             ]
-        return result[int(offset if offset else 0):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)]
+        return result[
+            int(
+                offset if offset else settings.DEFAULT_LISTING_OFFSET
+            ):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)
+        ]
 
 
     @staticmethod
@@ -81,7 +85,11 @@ class Implementation(AbstractStubClass):
             result = [
                 user for user in CoreUser.objects.all().values(*USER_VALUES)
             ]
-        return result
+        return result[
+            int(
+                offset if offset else settings.DEFAULT_LISTING_OFFSET
+            ):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)
+        ]
 
     @staticmethod
     def user_delete(request, user_id, *args, **kwargs):
