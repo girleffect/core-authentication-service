@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, update_session_auth_hash, \
     hashers, logout
-from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from django.core.exceptions import ValidationError
@@ -252,7 +252,7 @@ class EditProfileView(LanguageRedirectMixin, UpdateView):
 
 class UpdatePasswordView(LanguageRedirectMixin, UpdateView):
     template_name = "authentication_service/profile/update_password.html"
-    form_class = PasswordChangeForm
+    form_class = forms.PasswordChangeForm
     success_url = reverse_lazy("edit_profile")
 
     def get_object(self, queryset=None):

@@ -7,7 +7,7 @@ from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth import get_user_model, hashers
 from django.contrib.auth.forms import (
-    UserCreationForm, PasswordResetForm, SetPasswordForm
+    UserCreationForm, PasswordResetForm, SetPasswordForm, PasswordChangeForm
 )
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
@@ -387,8 +387,7 @@ class SetPasswordForm(SetPasswordForm):
     def __init__(self, user, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(SetPasswordForm, self).__init__(user, *args, **kwargs)
-        self.user_org = user.organisational_unit
-        if not self.user_org:
+        if not self.user.organisational_unit:
             # Remove default help text, added by password validation,
             # middleware.
             fields_data = {
@@ -406,7 +405,7 @@ class SetPasswordForm(SetPasswordForm):
 
     def clean_new_password2(self):
         # Short circuit normal validation if not high security.
-        if self.user_org:
+        if self.user.organisational_unit:
             return super(SetPasswordForm, self).clean_new_password2()
 
         password1 = self.cleaned_data.get("new_password1")
@@ -422,3 +421,11 @@ class SetPasswordForm(SetPasswordForm):
                 _("Password not long enough.")
             )
         return password2
+
+
+# NOTE: SetPasswordForm, is the auth service one. Not django auth as imported
+# at top.
+# django.contrib.auth.forms.PasswordChangeForm, subclasses
+# django.contrib.auth.forms.SetPasswordForm.
+class PasswordChangeForm(SetPasswordForm, PasswordChangeForm):
+    pass
