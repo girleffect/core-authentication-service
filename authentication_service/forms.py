@@ -384,6 +384,17 @@ class DeleteAccountForm(forms.Form):
 
 
 class SetPasswordForm(SetPasswordForm):
+    """
+    Change password validation requirements based on current user.
+
+    Users with an organisational unit assigned to them have a high likelihood
+    of also obtaining roles. As such they require the default password
+    validation middleware functionality.
+
+    Users without an organisational unit assigned will not have roles assigned
+    to them. They also do not need to adhere to the full validation suite, only
+    a limited subset.
+    """
     def __init__(self, user, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(SetPasswordForm, self).__init__(user, *args, **kwargs)
