@@ -1,14 +1,20 @@
 from django.core.serializers import json, serialize
 from django.core.serializers.json import DjangoJSONEncoder
+from django.forms import model_to_dict
 from oidc_provider.models import Client
 
 from authentication_service.api.stubs import AbstractStubClass
-
+from authentication_service.models import CoreUser
 
 CLIENT_VALUES = [
     "id", "_post_logout_redirect_uris", "_redirect_uris", "client_id",
     "contact_email", "logo", "name", "require_consent", "response_type",
     "reuse_consent", "terms_url", "website_url"
+]
+USER_VALUES = [
+    "id", "username", "first_name", "last_name", "email", "is_active",
+    "date_joined", "last_login", "email_verified", "msisdn_verified", "msisdn",
+    "gender", "birth_date", "avatar", "country"
 ]
 
 
@@ -30,10 +36,8 @@ class Implementation(AbstractStubClass):
                     pk__in=client_ids).values(*CLIENT_VALUES)
             ]
         elif client_token_id:
-            result = [
-                client for client in Client.objects.filter(
-                    client_id=client_token_id).values(*CLIENT_VALUES)
-            ]
+            result = Client.objects.filter(
+                client_id=client_token_id).values(*CLIENT_VALUES).get()
         else:
             result = [
                 client for client in Client.objects.all().values(*CLIENT_VALUES)
@@ -47,7 +51,9 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param client_id: string A string value identifying the client
         """
-        raise NotImplementedError()
+        result = Client.objects.filter(
+            client_id=client_id).values(*CLIENT_VALUES).get()
+        return result
 
     @staticmethod
     def user_list(request, offset=None, limit=None, email=None,
@@ -55,7 +61,26 @@ class Implementation(AbstractStubClass):
         """
         :param request: An HttpRequest
         """
-        raise NotImplementedError()
+        if email:
+            result = [
+                user for user in CoreUser.objects.filter(
+                    email=email).values(*USER_VALUES)
+            ]
+        elif username_prefix:
+            result = [
+                user for user in CoreUser.objects.filter(
+                    username__contains=username_prefix).values(*USER_VALUES)
+            ]
+        elif user_ids:
+            result = [
+                user for user in CoreUser.objects.filter(
+                    id__in=user_ids).values(*USER_VALUES)
+            ]
+        else:
+            result = [
+                user for user in CoreUser.objects.all().values(*USER_VALUES)
+            ]
+        return result
 
     @staticmethod
     def user_delete(request, user_id, *args, **kwargs):
