@@ -6,7 +6,9 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth import get_user_model, hashers
-from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
+from django.contrib.auth.forms import (
+    UserCreationForm, PasswordResetForm, SetPasswordForm
+)
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
@@ -379,3 +381,41 @@ class DeleteAccountForm(forms.Form):
         required=False,
         label=_("Please tell use why you want your account deleted")
     )
+
+
+class SetPasswordForm(SetPasswordForm):
+    def __init__(self, user, *args, **kwargs):
+        # Super needed before we can actually update the form.
+        super(SetPasswordForm, self).__init__(*args, **kwargs)
+        self.user_has_org = user.has_org
+        if not self.user_has_org:
+            # Remove default help text, added by password validation,
+            # middleware.
+            fields_data = {
+                "new_password1": {
+                    "attributes": {
+                        "help_text": ""
+                    }
+                }
+            }
+
+    def clean_new_password2(self):
+        # Short circuit normal validation if not high security.
+        if self.user_has_org:
+            return super(SetPasswordForm, self).clean_new_password2()
+
+        password1 = self.cleaned_data.get("new_password1")
+        password2 = self.cleaned_data.get("new_password2")
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+
+        # NOTE: Min length might need to be defined somewhere easier to change.
+        # Setting doesn't feel 100% right though.
+        if not len(password2) >= MIN_NON_HIGH_PASSWORD_LENGTH:
+            raise forms.ValidationError(
+                _("Password not long enough.")
+            )
+        return password2
