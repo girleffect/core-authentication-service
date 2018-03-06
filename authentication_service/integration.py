@@ -88,7 +88,8 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param user_id: string A UUID value identifying the user.
         """
-        raise NotImplementedError()
+        return CoreUser.objects.get(id=user_id).delete()
+
 
     @staticmethod
     def user_read(request, user_id, *args, **kwargs):
@@ -96,7 +97,7 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param user_id: string A UUID value identifying the user.
         """
-        raise NotImplementedError()
+        return CoreUser.objects.filter(id=user_id).values(*USER_VALUES).get()
 
     @staticmethod
     def user_update(request, body, user_id, *args, **kwargs):
@@ -105,4 +106,9 @@ class Implementation(AbstractStubClass):
         :param body: dict A dictionary containing the parsed and validated body
         :param user_id: string A UUID value identifying the user.
         """
-        raise NotImplementedError()
+        instance, created = CoreUser.objects.get_or_create(id=user_id)
+        if not created:
+            for attr, value in body.items():
+                setattr(instance, attr, value)
+            instance.save()
+        return CoreUser.objects.filter(id=user_id).values(*USER_VALUES).get()
