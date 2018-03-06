@@ -789,7 +789,7 @@ class TestPasswordChangeForm(TestCase):
 
     def test_user_password_validation(self):
         # Test both required
-        form = SetPasswordForm(self.user, data={
+        form = PasswordChangeForm(self.user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "password",
         })
@@ -799,7 +799,7 @@ class TestPasswordChangeForm(TestCase):
         })
 
         # Test both must match
-        form = SetPasswordForm(self.user, data={
+        form = PasswordChangeForm(self.user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "password",
             "new_password2": "password2"
@@ -810,7 +810,7 @@ class TestPasswordChangeForm(TestCase):
         })
 
         # Test min length
-        form = SetPasswordForm(self.user, data={
+        form = PasswordChangeForm(self.user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "123",
             "new_password2": "123"
@@ -824,7 +824,7 @@ class TestPasswordChangeForm(TestCase):
 
     def test_org_user_password_validation(self):
         # Test both required
-        form = SetPasswordForm(self.org_user, data={
+        form = PasswordChangeForm(self.org_user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "password",
         })
@@ -834,7 +834,7 @@ class TestPasswordChangeForm(TestCase):
         })
 
         # Test both must match
-        form = SetPasswordForm(self.org_user, data={
+        form = PasswordChangeForm(self.org_user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "password",
             "new_password2": "password2"
@@ -845,7 +845,7 @@ class TestPasswordChangeForm(TestCase):
         })
 
         # Test min length, unique validation and contains more than numeric
-        form = SetPasswordForm(self.org_user, data={
+        form = PasswordChangeForm(self.org_user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "123",
             "new_password2": "123"
@@ -861,7 +861,7 @@ class TestPasswordChangeForm(TestCase):
         })
 
         # Test unique validation
-        form = SetPasswordForm(self.org_user, data={
+        form = PasswordChangeForm(self.org_user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "asdasdasd",
             "new_password2": "asdasdasd"
@@ -875,7 +875,7 @@ class TestPasswordChangeForm(TestCase):
         })
 
         # Test close to username
-        form = SetPasswordForm(self.org_user, data={
+        form = PasswordChangeForm(self.org_user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "forgotmypass",
             "new_password2": "forgotmypass"
@@ -890,7 +890,7 @@ class TestPasswordChangeForm(TestCase):
         })
 
         # Test success
-        form = SetPasswordForm(self.org_user, data={
+        form = PasswordChangeForm(self.org_user, data={
             "old_password": "atleast_its_not_1234",
             "new_password1": "asdasdasdA@1",
             "new_password2": "asdasdasdA@1"
