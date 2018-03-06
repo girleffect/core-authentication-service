@@ -28,8 +28,8 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
         :param limit (optional): integer An optional query parameter to limit the number of results returned.
-        :param client_ids (optional): string An optional query parameter to filter by a list of client_ids.
-        :param clent_token_id (optional): string An optional query parameter to filter by a single client_id.
+        :param client_ids (optional): string An optional query parameter to filter by a list of client.id.
+        :param clent_token_id (optional): string An optional query parameter to filter by a single client.client_id.
         """
         if client_ids:
             result = [
@@ -37,17 +37,19 @@ class Implementation(AbstractStubClass):
                     pk__in=client_ids).values(*CLIENT_VALUES)
             ]
         elif client_token_id:
-            result = Client.objects.filter(
-                client_id=client_token_id).values(*CLIENT_VALUES).get()
+            result = [
+                client for client in Client.objects.filter(
+                    client_id=client_token_id).values(*CLIENT_VALUES)
+            ]
         else:
             result = [
                 client for client in Client.objects.all().values(*CLIENT_VALUES)
+            ][
+                int(
+                    offset if offset else settings.DEFAULT_LISTING_OFFSET
+                ):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)
             ]
-        return result[
-            int(
-                offset if offset else settings.DEFAULT_LISTING_OFFSET
-            ):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)
-        ]
+        return result
 
 
     @staticmethod
@@ -84,12 +86,12 @@ class Implementation(AbstractStubClass):
         else:
             result = [
                 user for user in CoreUser.objects.all().values(*USER_VALUES)
+            ][
+                int(
+                    offset if offset else settings.DEFAULT_LISTING_OFFSET
+                ):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)
             ]
-        return result[
-            int(
-                offset if offset else settings.DEFAULT_LISTING_OFFSET
-            ):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)
-        ]
+        return result
 
     @staticmethod
     def user_delete(request, user_id, *args, **kwargs):
