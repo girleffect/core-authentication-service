@@ -13,7 +13,9 @@
     src: url('/static/authentication_service/fonts/lineto-circular-bold.0f01eae4be59.woff');
 }
 
-body {
+body, 
+textarea,
+select {
     font-family: $font;
     font-size: 1em;
     color: $primary;

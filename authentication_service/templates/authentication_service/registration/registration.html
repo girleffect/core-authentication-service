@@ -1,26 +1,16 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% block metatitle %}
+    {% trans "Registration" %}
 {% endblock %}
 
-{% block branding %}<h1>{% trans "Registration" %}</h1>{% endblock %}
-
-{% block links %}
-    <a href="{% url "login" %}">{% trans "Login" %}</a>
-{% endblock %}
-
-{% block breadcrumbs %}
-    <div class="breadcrumbs">
-        <a href="">{% trans "App name" %}</a>
-        &rsaquo; {% trans "Registration" %}
-    </div>
+{% block title %}
+    <h1>{% trans "Registration" %}</h1>
 {% endblock %}
 
 {% block content %}
-    <form action="" method="post">
+    <form action="" method="post" class="Form">
         {% csrf_token %}
         {{ form.as_div }}
 
@@ -31,6 +21,8 @@
                 {{ qform.as_div }}
             {% endfor %}
         </div>
-        <input type="submit" value="{% trans "Register" %}" />
+        <div class="Form-buttons">
+            <input type="submit" value="{% trans "Register" %}" class="Button" />
+        </div>
     </form>
 {% endblock %}

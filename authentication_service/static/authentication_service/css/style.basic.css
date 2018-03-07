@@ -8,7 +8,7 @@ html, body {
 body {
   margin: 10px; }
 
-body {
+body, textarea {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: #4D7779; }
@@ -31,12 +31,22 @@ p, ul {
     margin-top: 5px; }
   .Form .Field-label {
     font-weight: bold; }
+  .Form .Field-message {
+    margin-top: 5px;
+    font-size: 0.8em; }
   .Form .Field .TextInput,
-  .Form .Field .PasswordInput {
+  .Form .Field .PasswordInput,
+  .Form .Field .EmailInput,
+  .Form .Field .DateInput,
+  .Form .Field .vDateField,
+  .Form .Field .NumberInput,
+  .Form .Field .Textarea {
     width: 100%;
     border: 1px solid #dad9d6;
     padding: 5px;
     font-size: 1em; }
+  .Form .Field .Textarea {
+    height: 60px; }
   .Form .Field--required input {
     border-color: #ff674d; }
 .Form .Field-message--error.Field--required .Field-item input {

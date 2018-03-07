@@ -38,7 +38,9 @@ body {
 @font-face {
   font-family: LinetoBold;
   src: url("/static/authentication_service/fonts/lineto-circular-bold.0f01eae4be59.woff"); }
-body {
+body,
+textarea,
+select {
   font-family: Lineto, Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: #4D7779; }
@@ -64,14 +66,60 @@ p, ul {
   .Form .Field-label {
     font-size: 0.8em;
     text-transform: uppercase; }
+  .Form .Field-message {
+    margin-top: 10px; }
   .Form .Field .TextInput,
-  .Form .Field .PasswordInput {
+  .Form .Field .PasswordInput,
+  .Form .Field .EmailInput,
+  .Form .Field .DateInput,
+  .Form .Field .vDateField,
+  .Form .Field .NumberInput,
+  .Form .Field .Textarea {
     border-width: 3px;
     padding: 10px;
     font-weight: bold;
     color: #4D7779; }
     .Form .Field .TextInput:focus,
-    .Form .Field .PasswordInput:focus {
+    .Form .Field .PasswordInput:focus,
+    .Form .Field .EmailInput:focus,
+    .Form .Field .DateInput:focus,
+    .Form .Field .vDateField:focus,
+    .Form .Field .NumberInput:focus,
+    .Form .Field .Textarea:focus {
+      border-color: #4D7779; }
+  .Form .Field .Textarea {
+    height: 100px; }
+.Form .TypedChoiceField,
+.Form .ModelChoiceField {
+  display: block;
+  position: relative;
+  width: 100%; }
+  .Form .TypedChoiceField::after,
+  .Form .ModelChoiceField::after {
+    display: inline-block;
+    position: absolute;
+    right: 15px;
+    top: 40px;
+    width: .65em;
+    height: .65em;
+    border-style: solid;
+    border-width: .15em .15em 0 0;
+    content: "";
+    transform: rotate(135deg);
+    color: #4D7779; }
+  .Form .TypedChoiceField .Select,
+  .Form .ModelChoiceField .Select {
+    width: 100%;
+    min-height: 41px;
+    padding: 9px;
+    background-color: transparent;
+    border: 3px solid #dad9d6;
+    color: #4D7779;
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none; }
+    .Form .TypedChoiceField .Select:focus,
+    .Form .ModelChoiceField .Select:focus {
       border-color: #4D7779; }
 .Form .Field-message--error.Field--required .Field-item input {
   border-color: #ff674d; }

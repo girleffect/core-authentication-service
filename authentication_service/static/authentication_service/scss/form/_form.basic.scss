@@ -11,12 +11,26 @@
             font-weight: bold;
         }
 
+        &-message {
+            margin-top: $spacer-half;
+            font-size: 0.8em;
+        }
+
         .TextInput,
-        .PasswordInput {
+        .PasswordInput,
+        .EmailInput,
+        .DateInput,
+        .vDateField,
+        .NumberInput,
+        .Textarea {
             width: 100%;
             border: 1px solid $border;
             padding: $spacer-half;
             font-size: 1em;
+        }
+
+        .Textarea {
+            height: 60px;
         }
 
         &--required {
