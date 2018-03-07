@@ -129,6 +129,7 @@ definitions:
         description: ''
         type: string
     required:
+      - id
       - client_id
       - response_type
 
@@ -169,6 +170,7 @@ definitions:
       last_login:
         description: ''
         type: string
+        format: 'date-time'
         readOnly: true
       email_verified:
         type: boolean
@@ -187,12 +189,23 @@ definitions:
         format: uri
       country_code:
         type: string
+        minLength: 2
         maxLength: 2
+      created_at:
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        readOnly: true
     required:
       - id
       - username
       - is_active
       - date_joined
+      - created_at
+      - updated_at
 
   user_update:
     type: object
@@ -229,6 +242,7 @@ definitions:
         format: uri
       country_code:
         type: string
+        minLength: 2
         maxLength: 2
     minProperties: 1
 
@@ -615,6 +629,8 @@ paths:
       responses:
         '200':
           description: ''
+          schema:
+            $ref: '#/definitions/user'
       tags:
         - authentication
 
