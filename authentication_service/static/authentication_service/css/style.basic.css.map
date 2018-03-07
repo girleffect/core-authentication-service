@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAIA,UAAW;EACP,MAAM,EAAE,CAAC;EACT,OAAO,EAAE,CAAC;EACV,KAAK,ECPD,OAAO",
+"sources": ["../scss/base/_base.basic.scss","../scss/global/_variables.scss"],
+"names": [],
+"file": "style.basic.css"
+}
