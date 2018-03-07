@@ -25,3 +25,15 @@
         }
     }
 }
+
+// Adjustments for desktops and larger devices
+
+@media (min-width: 40em) {
+    body {
+        margin-top: $spacer-multiple * 2;
+    }
+    .Container {
+        max-width: 35em;
+        margin: 0 auto;
+    }
+}

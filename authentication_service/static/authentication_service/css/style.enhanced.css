@@ -29,6 +29,13 @@ body {
       font-size: 1em;
       color: #ffffff; }
 
+@media (min-width: 40em) {
+  body {
+    margin-top: 40px; }
+
+  .Container {
+    max-width: 35em;
+    margin: 0 auto; } }
 @font-face {
   font-family: Lineto;
   src: url("/static/authentication_service/fonts/lineto-circular-book.12d486e1e384.woff"); }
