@@ -21,6 +21,12 @@
         }
     }
 
+    .Field-message--error.Field--required {
+        .Field-item input {
+            border-color: $warning;
+        }
+    }
+
     &-buttons {
         margin-top: $spacer-multiple;
         margin-bottom: $spacer-multiple;

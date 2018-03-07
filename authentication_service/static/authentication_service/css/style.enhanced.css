@@ -29,19 +29,32 @@ body {
       font-size: 1em;
       color: #ffffff; }
 
+@font-face {
+  font-family: Lineto;
+  src: url("/static/authentication_service/fonts/lineto-circular-book.12d486e1e384.woff"); }
+@font-face {
+  font-family: LinetoMedium;
+  src: url("/static/authentication_service/fonts/lineto-circular-medium.83ad4cf8ef02.woff"); }
+@font-face {
+  font-family: LinetoBold;
+  src: url("/static/authentication_service/fonts/lineto-circular-bold.0f01eae4be59.woff"); }
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Lineto, Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: #4D7779; }
 
 a {
-  color: #5268c2; }
+  color: #5268c2;
+  text-decoration: none;
+  border-bottom: 1px solid #5268c2; }
   a:hover {
-    color: #5268c2; }
+    color: #5268c2;
+    border: 0; }
 
 h1 {
   margin: 10px 0;
-  font-size: 1.6em; }
+  font-size: 1.6em;
+  font-family: LinetoBold, Arial, Helvetica, sans-serif; }
 
 p, ul {
   margin: 10px 0; }
@@ -60,6 +73,8 @@ p, ul {
     .Form .Field .TextInput:focus,
     .Form .Field .PasswordInput:focus {
       border-color: #4D7779; }
+.Form .Field-message--error.Field--required .Field-item input {
+  border-color: #ff674d; }
 .Form-buttons {
   margin-top: 20px;
   margin-bottom: 20px; }

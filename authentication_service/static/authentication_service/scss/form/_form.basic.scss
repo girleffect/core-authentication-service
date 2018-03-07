@@ -18,6 +18,18 @@
             padding: $spacer-half;
             font-size: 1em;
         }
+
+        &--required {
+            input {
+                border-color: $warning;
+            }
+        }
+    }
+
+    .Field-message--error.Field--required {
+        .Field-item input {
+            border-color: $warning;
+        }
     }
 
     &-buttons {
