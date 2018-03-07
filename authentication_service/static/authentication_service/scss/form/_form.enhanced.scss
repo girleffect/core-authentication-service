@@ -2,7 +2,7 @@
 
     .Field {
         margin-top: $spacer-multiple;
-    
+
         &-label {
             font-size: 0.8em;
             text-transform: uppercase;
@@ -30,13 +30,13 @@
     &-buttons {
         margin-top: $spacer-multiple;
         margin-bottom: $spacer-multiple;
+    }
 
-        .Button {
-            padding: $spacer-mid;
-            text-transform: uppercase;
-            font-weight: bold;
-            font-size: 0.8em;
-        }
+    .Button {
+        padding: $spacer-mid;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 0.8em;
     }
 
 }
