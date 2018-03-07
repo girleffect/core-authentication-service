@@ -1,11 +1,12 @@
 body {
     font-family: $font;
+    font-size: 1em;
     color: $primary;
-    padding: $spacer;
+    margin: $spacer;
 }
 
 a {
-    color: $primary;
+    color: $secondary;
 
     &:hover {
         color: $secondary;
@@ -13,5 +14,10 @@ a {
 }
 
 h1 {
+    margin: $spacer 0;
     font-size: 1.6em;
+}
+
+p, ul {
+    margin: $spacer 0;
 }
