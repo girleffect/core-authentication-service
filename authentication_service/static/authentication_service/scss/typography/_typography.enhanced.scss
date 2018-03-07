@@ -1,0 +1,22 @@
+body {
+    font-family: $font;
+    font-size: 1em;
+    color: $primary;
+}
+
+a {
+    color: $secondary;
+
+    &:hover {
+        color: $secondary;
+    }
+}
+
+h1 {
+    margin: $spacer 0;
+    font-size: 1.6em;
+}
+
+p, ul {
+    margin: $spacer 0;
+}

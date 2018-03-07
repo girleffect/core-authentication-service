@@ -1,0 +1,75 @@
+* {
+  box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #dad9d6; }
+
+body {
+  margin: 20px; }
+
+.Container {
+  padding: 20px;
+  background: #ffffff; }
+
+.Header {
+  text-align: center;
+  margin-bottom: 20px; }
+  .Header-branding {
+    margin-bottom: 10px; }
+  .Header-title {
+    background: #4D7779;
+    text-transform: uppercase;
+    border-top: 1px solid #dad9d6;
+    border-bottom: 1px solid #dad9d6;
+    margin-left: -20px;
+    margin-right: -20px; }
+    .Header-title h1 {
+      font-size: 1em;
+      color: #ffffff; }
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1em;
+  color: #4D7779; }
+
+a {
+  color: #5268c2; }
+  a:hover {
+    color: #5268c2; }
+
+h1 {
+  margin: 10px 0;
+  font-size: 1.6em; }
+
+p, ul {
+  margin: 10px 0; }
+
+.Form .Field {
+  margin-top: 20px; }
+  .Form .Field-label {
+    font-size: 0.8em;
+    text-transform: uppercase; }
+  .Form .Field .TextInput,
+  .Form .Field .PasswordInput {
+    border-width: 3px;
+    padding: 10px;
+    font-weight: bold;
+    color: #4D7779; }
+    .Form .Field .TextInput:focus,
+    .Form .Field .PasswordInput:focus {
+      border-color: #4D7779; }
+.Form-buttons {
+  margin-top: 20px;
+  margin-bottom: 20px; }
+  .Form-buttons .Button {
+    padding: 15px;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.8em; }
+
+.Additional-text {
+  font-size: 0.8em; }
+
+/*# sourceMappingURL=style.enhanced.css.map */

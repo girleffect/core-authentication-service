@@ -23,7 +23,7 @@
             <button name="wizard_goto_step" type="submit" value="backup" class="btn btn-default btn-block">{% trans "Use Backup Token" %}</button>
         {% endif %}
     </form>
-    <p>
+    <p class="Additional-text">
         {% trans "Forgot password?" %} <a href="{% url "reset_password" %}">{% trans "Click here to reset it." %}</a>
     </p>
 {% endblock %}

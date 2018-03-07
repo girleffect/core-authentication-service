@@ -1,2 +1,5 @@
-@import "global/_variables.scss";
-@import "base/*.scss";
+@import "global/variables";
+@import "base/base.enhanced";
+@import "structure/structure.enhanced";
+@import "typography/typography.enhanced";
+@import "form/form.enhanced";

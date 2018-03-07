@@ -1,0 +1,27 @@
+.Container {
+    padding: $spacer-multiple;
+    background: $white;
+}
+
+.Header {
+    text-align: center;
+    margin-bottom: $spacer-multiple;
+
+    &-branding {
+        margin-bottom: $spacer;
+    }
+
+    &-title {
+        background: $primary;
+        text-transform: uppercase;
+        border-top: 1px solid $background;
+        border-bottom: 1px solid $background;
+        margin-left: -$spacer-multiple;
+        margin-right: -$spacer-multiple;
+
+        h1 {
+            font-size: 1em;
+            color: $white;
+        }
+    }
+}
