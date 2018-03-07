@@ -50,7 +50,7 @@ def login_required_no_redirect(view_func):
             if len(auth) == 2:
                 # NOTE: We are only support basic authentication for now.
                 if auth[0].lower() == "basic":
-                    uname, passwd = base64.b64decode(auth[1]).split(":")
+                    uname, passwd = base64.b64decode(auth[1]).split(b":")
                     user = authenticate(username=uname, password=passwd)
                     if user and user.is_active:
                         login(request, user)
