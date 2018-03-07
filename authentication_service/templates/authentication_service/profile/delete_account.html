@@ -1,29 +1,18 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% block metatitle %}
+    {% trans "Delete Your Account" %}
 {% endblock %}
 
-{% block branding %}<h1>{% trans "Delete account" %}</h1>{% endblock %}
-
-{% block links %}
-    <a href="{% url "admin:logout" %}">{% trans "Logout" %}</a>
-{% endblock %}
-
-{% block breadcrumbs %}
-    <div class="breadcrumbs">
-        <a href="">{% trans "App name" %}</a>
-        &rsaquo; <a href={% url "edit_profile" %}>{% trans "Edit profile" %}</a>
-        &rsaquo; {% trans "Account deletion" %}
-    </div>
+{% block title %}
+    <h1>{% trans "Delete Your Account" %}</h1>
 {% endblock %}
 
 {% block content %}
     {% if confirm %}
-        <p>{% trans "Are you sure you want to delete your account?" %}
-        <form method="post">
+        <p class="Intro">{% trans "We're sad to see you go. Are you sure you want to delete your account?" %}
+        <form method="post" class="Form">
             <div style="display: none;">
             {% csrf_token %}
             {{ form.as_div }}
@@ -31,15 +20,23 @@
             {% comment %}
                 Do not alter this name without updating the view.
             {% endcomment %}
-            <input name="confirmed_deletion" type="submit" value="{% trans "Are you sure?" %}" />
+            <div class="Form-buttons">
+                <input name="confirmed_deletion" type="submit" value="{% trans "Yes, I'm sure" %}" class="Button" />
+            </div>
         </form>
-        <a href="{% url "edit_profile" %}">{% trans "No" %}</a>
+        <p>
+            <a href="{% url "edit_profile" %}" class="Button">{% trans "No, I've changed my mind" %}</a>
+        </p>
     {% else %}
-        <form method="post" {% if confirm %}style="display: none;"{% endif %}>
+        <form method="post" class="Form" {% if confirm %}style="display: none;"{% endif %}>
             {% csrf_token %}
             {{ form.as_div }}
-            <input type="submit" value="{% trans "Delete account?" %}" />
+            <div class="Form-buttons">
+                <input type="submit" value="{% trans "Delete account?" %}" class="Button" />
+            </div>
         </form>
-        <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
+        <p class="Additional-text">
+            <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
+        </p>
     {% endif %}
 {% endblock %}

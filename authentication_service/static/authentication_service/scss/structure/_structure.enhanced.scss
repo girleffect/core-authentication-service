@@ -18,12 +18,17 @@
         border-bottom: 1px solid $background;
         margin-left: -$spacer-multiple;
         margin-right: -$spacer-multiple;
+        text-align: center;
 
         h1 {
             font-size: 1em;
             color: $white;
         }
     }
+}
+
+.Intro {
+
 }
 
 // Adjustments for desktops and larger devices

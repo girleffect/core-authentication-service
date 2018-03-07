@@ -77,7 +77,7 @@
                 {% if messages %}
                     <div id="messagelist" class="Messages">
                         {% for message in messages %}
-                            <div {% if message.tags %}class="Message {{ message.tags }}"{% endif %}>{{ message|capfirst }}</div>
+                            <div {% if message.tags %}class="Message Message--{{ message.tags }}"{% endif %}>{{ message|capfirst }}</div>
                         {% endfor %}
                     </div>
                 {% endif %}

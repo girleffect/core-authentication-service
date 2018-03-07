@@ -1,33 +1,27 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% block metatitle %}
+    {% trans "Update Security Questions" %}
 {% endblock %}
 
-{% block branding %}<h1>{% trans "Update security questions" %}</h1>{% endblock %}
-
-{% block links %}
-    <a href="{% url "admin:logout" %}">{% trans "Logout" %}</a>
-{% endblock %}
-{% block breadcrumbs %}
-    <div class="breadcrumbs">
-        <a href="">{% trans "App name" %}</a>
-        &rsaquo; <a href={% url "edit_profile" %}>{% trans "Edit profile" %}</a>
-        &rsaquo; {% trans "Security question update" %}
-    </div>
+{% block title %}
+    <h1>{% trans "Update Security Questions" %}</h1>
 {% endblock %}
 
 {% block content %}
-    <form method="post">
+    <form method="post" class="Form">
         {% csrf_token %}
         {{ question_formset.management_form }}
         {{ question_formset.non_form_errors }}
         {% for form in question_formset %}
             {{ form.as_div }}
         {% endfor %}
-        <input type="submit" value="{% trans "Update" %}" />
+        <div class="Form-buttons">
+            <input type="submit" value="{% trans "Update" %}" class="Button" />
+        </div>
     </form>
-    <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
+    <p class="Additional-text">
+        <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
+    </p>
 {% endblock %}

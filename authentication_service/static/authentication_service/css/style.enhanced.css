@@ -24,7 +24,8 @@ body {
     border-top: 1px solid #dad9d6;
     border-bottom: 1px solid #dad9d6;
     margin-left: -20px;
-    margin-right: -20px; }
+    margin-right: -20px;
+    text-align: center; }
     .Header-title h1 {
       font-size: 1em;
       color: #ffffff; }
@@ -139,10 +140,30 @@ p, ul {
   font-weight: bold;
   font-size: 0.8em; }
 
-.Additional-text {
-  font-size: 0.8em; }
+.Messages .Message {
+  font-family: LinetoBold, Arial, Helvetica, sans-serif; }
 
 .errorlist {
   margin-top: 20px; }
+
+.Menu-title {
+  background: #4D7779;
+  text-transform: uppercase;
+  border-top: 1px solid #dad9d6;
+  border-bottom: 1px solid #dad9d6;
+  margin-left: -20px;
+  margin-right: -20px;
+  text-align: center; }
+  .Menu-title h1 {
+    font-size: 1em;
+    color: #ffffff; }
+.Menu-list {
+  padding-top: 5px; }
+.Menu-item {
+  margin: 15px 0; }
+  .Menu-item a {
+    display: inline-block; }
+    .Menu-item a:hover {
+      border-bottom: 1px solid #ffffff; }
 
 /*# sourceMappingURL=style.enhanced.css.map */

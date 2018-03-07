@@ -8,7 +8,9 @@ html, body {
 body {
   margin: 10px; }
 
-body, textarea {
+body,
+textarea,
+select {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: #4D7779; }
@@ -20,7 +22,7 @@ a {
 
 h1 {
   margin: 10px 0;
-  font-size: 1.6em; }
+  font-size: 1.4em; }
 
 p, ul {
   margin: 10px 0; }
@@ -64,6 +66,16 @@ p, ul {
     cursor: pointer;
     background: #4D7779; }
 
+.Messages {
+  margin: 10px 0; }
+  .Messages .Message {
+    padding: 10px;
+    color: #ffffff; }
+    .Messages .Message--success {
+      background: #dbe200; }
+    .Messages .Message--error, .Messages .Message--warning {
+      background: #ff674d; }
+
 .errorlist {
   margin: 5px 0;
   padding: 0;
@@ -71,5 +83,10 @@ p, ul {
   list-style: none; }
   .errorlist li {
     margin: 5px 0; }
+
+.Menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none; }
 
 /*# sourceMappingURL=style.basic.css.map */

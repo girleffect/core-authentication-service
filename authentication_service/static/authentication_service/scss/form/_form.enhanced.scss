@@ -93,8 +93,10 @@
 
 }
 
-.Additional-text {
-    font-size: 0.8em;
+.Messages {
+    .Message {
+        font-family: $font-bold;
+    }
 }
 
 .errorlist {

@@ -66,6 +66,24 @@
 
 }
 
+.Messages {
+    margin: $spacer 0;
+
+    .Message {
+        padding: $spacer;
+        color: $white;
+
+        &--success {
+            background: $success;
+        }
+
+        &--error,
+        &--warning {
+            background: $warning;
+        }
+    }
+}
+
 .errorlist {
     margin: $spacer-half 0;
     padding: 0;
