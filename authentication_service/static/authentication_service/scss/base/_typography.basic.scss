@@ -1,0 +1,17 @@
+body {
+    font-family: $font;
+    color: $primary;
+    padding: $spacer;
+}
+
+a {
+    color: $primary;
+
+    &:hover {
+        color: $secondary;
+    }
+}
+
+h1 {
+    font-size: 1.6em;
+}

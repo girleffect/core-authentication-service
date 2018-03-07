@@ -9,10 +9,16 @@
     <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
 {% endblock %}
 
-{% block branding %}<h1>{% trans "Login" %}</h1>{% endblock %}
+{% block metatitle %}
+    {% trans "Login" %}
+{% endblock %}
+
+{% block title %}
+    <h1>{% trans "Login" %}</h1>
+{% endblock %}
 
 {% block content %}
-    <form method="post">
+    <form method="post" class="Form">
         {% csrf_token %}
         {{ wizard.management_form }}
         {{ form.as_div }}
@@ -23,5 +29,7 @@
             <button name="wizard_goto_step" type="submit" value="backup" class="btn btn-default btn-block">{% trans "Use Backup Token" %}</button>
         {% endif %}
     </form>
-    <a href="{% url "reset_password" %}">{% trans "Forgot password? Click here to reset it." %}</a>
+    <p>
+        <a href="{% url "reset_password" %}">{% trans "Forgot password? Click here to reset it." %}</a>
+    </p>
 {% endblock %}

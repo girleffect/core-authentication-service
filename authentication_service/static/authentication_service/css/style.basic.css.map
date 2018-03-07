@@ -1,7 +1,7 @@
 {
 "version": 3,
-"mappings": "AAIA,UAAW;EACP,MAAM,EAAE,CAAC;EACT,OAAO,EAAE,CAAC;EACV,KAAK,ECPD,OAAO",
-"sources": ["../scss/base/_base.basic.scss","../scss/global/_variables.scss"],
+"mappings": "AAAA,UAAW;EACP,MAAM,EAAE,CAAC;EACT,OAAO,EAAE,CAAC;;ACFd,IAAK;EACD,WAAW,ECDR,4BAA4B;EDE/B,KAAK,ECEC,OAAO;EDDb,OAAO,ECOF,IAAI;;ADJb,CAAE;EACE,KAAK,ECHC,OAAO;EDKb,OAAQ;IACJ,KAAK,ECLD,OAAO;;ADSnB,EAAG;EACC,SAAS,EAAE,KAAK",
+"sources": ["../scss/base/_base.basic.scss","../scss/base/_typography.basic.scss","../scss/global/_variables.scss"],
 "names": [],
 "file": "style.basic.css"
 }

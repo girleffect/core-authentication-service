@@ -11,7 +11,7 @@
             Only override the head block if there is no other way around it.
         {% endcomment %}
         {% block head %}
-            <title>{% block title %}{% endblock %}</title>
+            <title>{% block metatitle %}{% endblock %}</title>
 
             {% comment %}
                 Default to the django admin base stylesheet for now.
@@ -37,19 +37,20 @@
     </head>
 
     <body>
-        <div id="container" class="body">
+        <div id="container" class="Container">
 
             <!-- Header -->
             <div id="header" class="header">
-                <div id="branding" class="branding">{% block branding %}{% endblock %}</div>
-
-                <div class="links">
+                <div id="branding" class="Header-branding">
+                    {% block branding %}<img width="70px" src="{% static "authentication_service/images/logo.basic.png" %}" class="Header-logo-image">{% endblock %}
+                </div>
+                <div id="title" class="Header-title">
+                    {% block title %}{% endblock %}
+                </div>
+                <div class="Header-links">
                     {% block links %}
-                        <a href="{% url "update_password" %}">{% trans "Change password" %}</a> /
-                        <a href="{% url "admin:logout" %}">{% trans "Log out" %}</a>
                     {% endblock %}
                 </div>
-
                 {% comment %}
                     There might be a need for a nav later on.
                 {% endcomment %}
@@ -59,38 +60,37 @@
 
             {% comment %}
                 There might be a need for a nav bar later on.
-
-                TODO: See into perhaps adding referer app into breadcrumbs.
+                See into perhaps showing referrer app visually.
+            
+                {% block breadcrumbs %}
+                    <div class="breadcrumbs">
+                        <a href="">{% trans "App name" %}</a>
+                        &rsaquo; {% trans "Current page" %}
+                    </div>
+                {% endblock %}
             {% endcomment %}
-            {% block breadcrumbs %}
-                <div class="breadcrumbs">
-                    <a href="">{% trans "App name" %}</a>
-                    &rsaquo; {% trans "Current page" %}
-                </div>
-            {% endblock %}
-
 
             {% comment %}
                 This allows django messages from the messaging framework to be displayed.
             {% endcomment %}
             {% block messages %}
                 {% if messages %}
-                    <ul id="messagelist" class="messagelist">
+                    <div id="messagelist" class="Messages">
                         {% for message in messages %}
-                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+                            <div {% if message.tags %}class="Message {{ message.tags }}"{% endif %}>{{ message|capfirst }}</div>
                         {% endfor %}
-                    </ul>
+                    </div>
                 {% endif %}
             {% endblock messages %}
 
             {% comment %}
                 Generally only changing content will suffice for templates.
             {% endcomment %}
-            <div id="content" class="content">
+            <div id="content" class="Content">
                 {% block content %}{% endblock %}
             </div>
 
-            {% block footer %}<div id="footer" class="footer"></div>{% endblock %}
+            {% block footer %}<div id="footer" class="Footer"></div>{% endblock %}
         </div>
     </body>
 </html>
