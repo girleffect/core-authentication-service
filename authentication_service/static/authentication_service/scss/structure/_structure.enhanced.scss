@@ -36,6 +36,7 @@
     margin-top: $spacer-multiple;
     margin-left: -$spacer-multiple;
     margin-right: -$spacer-multiple;
+    text-align: center;
 
     p {
         margin: 0;
@@ -51,5 +52,26 @@
     .Container {
         max-width: 35em;
         margin: 0 auto;
+        padding: $spacer-max;
+    }
+    .Header {
+        &-branding {
+            margin-bottom: $spacer-multiple;
+            
+            &-image {
+                width: 100px;
+            }
+        }
+        &-title {
+            margin: 0;
+
+            h1 {
+                font-size: 1.2em;
+                margin: $spacer-multiple;
+            }
+        }
+    }
+    .Footer {
+        margin: $spacer-multiple 0 0 0;
     }
 }

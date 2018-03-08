@@ -34,7 +34,8 @@ body {
   padding: 20px 20px 0 20px;
   margin-top: 20px;
   margin-left: -20px;
-  margin-right: -20px; }
+  margin-right: -20px;
+  text-align: center; }
   .Footer p {
     margin: 0; }
 
@@ -44,7 +45,21 @@ body {
 
   .Container {
     max-width: 35em;
-    margin: 0 auto; } }
+    margin: 0 auto;
+    padding: 40px; }
+
+  .Header-branding {
+    margin-bottom: 20px; }
+    .Header-branding-image {
+      width: 100px; }
+  .Header-title {
+    margin: 0; }
+    .Header-title h1 {
+      font-size: 1.2em;
+      margin: 20px; }
+
+  .Footer {
+    margin: 20px 0 0 0; } }
 @font-face {
   font-family: Lineto;
   src: url("/static/authentication_service/fonts/lineto-circular-book.12d486e1e384.woff"); }
