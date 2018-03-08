@@ -1,7 +1,9 @@
+import json as simple_json
+
 from django.conf import settings
-from django.core.serializers import json, serialize
-from django.core.serializers.json import DjangoJSONEncoder
+from django.core.serializers import json
 from django.forms import model_to_dict
+from django.shortcuts import get_object_or_404
 from oidc_provider.models import Client
 
 from authentication_service.api.stubs import AbstractStubClass
@@ -117,9 +119,19 @@ class Implementation(AbstractStubClass):
         :param body: dict A dictionary containing the parsed and validated body
         :param user_id: string A UUID value identifying the user.
         """
-        instance, created = CoreUser.objects.get_or_create(id=user_id)
-        if not created:
-            for attr, value in body.items():
+        instance = get_object_or_404(CoreUser, id=user_id)
+        for attr, value in body.items():
+            try:
                 setattr(instance, attr, value)
-            instance.save()
-        return CoreUser.objects.filter(id=user_id).values(*USER_VALUES).get()
+            except Exception as e:
+                print(e)
+
+        instance.save()
+        obj = {}
+        for field in instance._meta.fields:
+            if field.name in USER_VALUES:
+                if field.name == "avatar":  # Prevent serialization issue
+                    obj[field.name] = instance.avatar.path
+                else:
+                    obj[field.name] = getattr(instance, field.name)
+        return obj

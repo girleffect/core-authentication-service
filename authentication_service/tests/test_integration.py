@@ -167,7 +167,7 @@ class IntegrationTestCase(TestCase):
                 "msisdn": "",
                 "gender": "",
                 "birth_date": "2000-01-01",
-                "avatar": ""
+                "avatar": "http://example.com"
             }
 
         # Test read
