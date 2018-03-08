@@ -18,17 +18,19 @@ body {
   margin-bottom: 20px; }
   .Header-branding {
     margin-bottom: 10px; }
+    .Header-branding-image {
+      width: 90px; }
   .Header-title {
     background: #4D7779;
-    text-transform: uppercase;
     border-top: 1px solid #dad9d6;
     border-bottom: 1px solid #dad9d6;
     margin-left: -20px;
     margin-right: -20px;
     text-align: center; }
     .Header-title h1 {
-      font-size: 1em;
-      color: #ffffff; }
+      font-size: 1.2em;
+      color: #ffffff;
+      margin: 15px; }
 
 .Footer {
   padding: 20px 20px 0 20px;
@@ -55,7 +57,6 @@ body {
   .Header-title {
     margin: 0; }
     .Header-title h1 {
-      font-size: 1.2em;
       margin: 20px; }
 
   .Footer {
@@ -94,9 +95,6 @@ p, ul {
 
 .Form .Field {
   margin-top: 20px; }
-  .Form .Field-label {
-    font-size: 0.8em;
-    text-transform: uppercase; }
   .Form .Field-message {
     margin-top: 10px; }
   .Form .Field .TextInput,
@@ -159,9 +157,7 @@ p, ul {
   margin-bottom: 20px; }
 .Form .Button {
   padding: 15px;
-  text-transform: uppercase;
-  font-weight: bold;
-  font-size: 0.8em; }
+  font-weight: bold; }
 
 .Messages .Message {
   font-family: LinetoBold, Arial, Helvetica, sans-serif; }
@@ -171,14 +167,13 @@ p, ul {
 
 .Menu-title {
   background: #4D7779;
-  text-transform: uppercase;
   border-top: 1px solid #dad9d6;
   border-bottom: 1px solid #dad9d6;
   margin-left: -20px;
   margin-right: -20px;
   text-align: center; }
   .Menu-title h1 {
-    font-size: 1em;
+    font-size: 1.2em;
     color: #ffffff; }
 .Menu-list {
   padding-top: 5px; }
@@ -188,5 +183,15 @@ p, ul {
     display: inline-block; }
     .Menu-item a:hover {
       border-bottom: 1px solid #ffffff; }
+
+@media (min-width: 40em) {
+  .Menu {
+    margin-top: 40px;
+    padding-bottom: 10px; }
+    .Menu-title {
+      margin-right: 0;
+      margin-left: 0; }
+      .Menu-title h1 {
+        margin: 20px; } }
 
 /*# sourceMappingURL=style.enhanced.css.map */
