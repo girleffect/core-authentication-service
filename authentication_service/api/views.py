@@ -107,6 +107,7 @@ class Clients(View):
             }
         },
         "required": [
+            "id",
             "client_id",
             "response_type"
         ],
@@ -172,6 +173,12 @@ class Users(View):
             },
             "country_code": {
                 "maxLength": 2,
+                "minLength": 2,
+                "type": "string"
+            },
+            "created_at": {
+                "format": "date-time",
+                "readOnly": true,
                 "type": "string"
             },
             "date_joined": {
@@ -207,6 +214,7 @@ class Users(View):
             },
             "last_login": {
                 "description": "",
+                "format": "date-time",
                 "readOnly": true,
                 "type": "string"
             },
@@ -221,6 +229,11 @@ class Users(View):
             "msisdn_verified": {
                 "type": "boolean"
             },
+            "updated_at": {
+                "format": "date-time",
+                "readOnly": true,
+                "type": "string"
+            },
             "username": {
                 "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
                 "readOnly": true,
@@ -231,7 +244,9 @@ class Users(View):
             "id",
             "username",
             "is_active",
-            "date_joined"
+            "date_joined",
+            "created_at",
+            "updated_at"
         ],
         "type": "object",
         "x-scope": [
@@ -270,7 +285,7 @@ class UsersUserId(View):
 
     DELETE_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
     GET_RESPONSE_SCHEMA = schemas.user
-    PUT_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
+    PUT_RESPONSE_SCHEMA = schemas.user
     PUT_BODY_SCHEMA = schemas.user_update
 
     def delete(self, request, user_id, *args, **kwargs):
@@ -370,6 +385,7 @@ class __SWAGGER_SPEC__(View):
                 }
             },
             "required": [
+                "id",
                 "client_id",
                 "response_type"
             ],
@@ -387,6 +403,12 @@ class __SWAGGER_SPEC__(View):
                 },
                 "country_code": {
                     "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string"
+                },
+                "created_at": {
+                    "format": "date-time",
+                    "readOnly": true,
                     "type": "string"
                 },
                 "date_joined": {
@@ -422,6 +444,7 @@ class __SWAGGER_SPEC__(View):
                 },
                 "last_login": {
                     "description": "",
+                    "format": "date-time",
                     "readOnly": true,
                     "type": "string"
                 },
@@ -436,6 +459,11 @@ class __SWAGGER_SPEC__(View):
                 "msisdn_verified": {
                     "type": "boolean"
                 },
+                "updated_at": {
+                    "format": "date-time",
+                    "readOnly": true,
+                    "type": "string"
+                },
                 "username": {
                     "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
                     "readOnly": true,
@@ -446,7 +474,9 @@ class __SWAGGER_SPEC__(View):
                 "id",
                 "username",
                 "is_active",
-                "date_joined"
+                "date_joined",
+                "created_at",
+                "updated_at"
             ],
             "type": "object"
         },
@@ -463,6 +493,7 @@ class __SWAGGER_SPEC__(View):
                 },
                 "country_code": {
                     "maxLength": 2,
+                    "minLength": 2,
                     "type": "string"
                 },
                 "email": {
@@ -766,7 +797,13 @@ class __SWAGGER_SPEC__(View):
                 ],
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/user",
+                            "x-scope": [
+                                ""
+                            ]
+                        }
                     }
                 },
                 "tags": [

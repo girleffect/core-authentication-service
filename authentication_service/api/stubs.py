@@ -125,6 +125,7 @@ class MockedStubClass(AbstractStubClass):
             }
         },
         "required": [
+            "id",
             "client_id",
             "response_type"
         ],
@@ -176,6 +177,12 @@ class MockedStubClass(AbstractStubClass):
             },
             "country_code": {
                 "maxLength": 2,
+                "minLength": 2,
+                "type": "string"
+            },
+            "created_at": {
+                "format": "date-time",
+                "readOnly": true,
                 "type": "string"
             },
             "date_joined": {
@@ -211,6 +218,7 @@ class MockedStubClass(AbstractStubClass):
             },
             "last_login": {
                 "description": "",
+                "format": "date-time",
                 "readOnly": true,
                 "type": "string"
             },
@@ -225,6 +233,11 @@ class MockedStubClass(AbstractStubClass):
             "msisdn_verified": {
                 "type": "boolean"
             },
+            "updated_at": {
+                "format": "date-time",
+                "readOnly": true,
+                "type": "string"
+            },
             "username": {
                 "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
                 "readOnly": true,
@@ -235,7 +248,9 @@ class MockedStubClass(AbstractStubClass):
             "id",
             "username",
             "is_active",
-            "date_joined"
+            "date_joined",
+            "created_at",
+            "updated_at"
         ],
         "type": "object",
         "x-scope": [
@@ -289,7 +304,7 @@ class MockedStubClass(AbstractStubClass):
         :param body: dict A dictionary containing the parsed and validated body
         :param user_id: string A UUID value identifying the user.
         """
-        response_schema = schemas.__UNSPECIFIED__
+        response_schema = schemas.user
         if "type" not in response_schema:
             response_schema["type"] = "object"
 

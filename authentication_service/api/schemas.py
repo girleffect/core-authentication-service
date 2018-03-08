@@ -66,6 +66,7 @@ client = json.loads("""
         }
     },
     "required": [
+        "id",
         "client_id",
         "response_type"
     ],
@@ -86,6 +87,12 @@ user = json.loads("""
         },
         "country_code": {
             "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+        },
+        "created_at": {
+            "format": "date-time",
+            "readOnly": true,
             "type": "string"
         },
         "date_joined": {
@@ -121,6 +128,7 @@ user = json.loads("""
         },
         "last_login": {
             "description": "",
+            "format": "date-time",
             "readOnly": true,
             "type": "string"
         },
@@ -135,6 +143,11 @@ user = json.loads("""
         "msisdn_verified": {
             "type": "boolean"
         },
+        "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+        },
         "username": {
             "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
             "readOnly": true,
@@ -145,7 +158,9 @@ user = json.loads("""
         "id",
         "username",
         "is_active",
-        "date_joined"
+        "date_joined",
+        "created_at",
+        "updated_at"
     ],
     "type": "object"
 }
@@ -165,6 +180,7 @@ user_update = json.loads("""
         },
         "country_code": {
             "maxLength": 2,
+            "minLength": 2,
             "type": "string"
         },
         "email": {

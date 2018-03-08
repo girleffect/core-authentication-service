@@ -157,37 +157,44 @@ class IntegrationTestCase(TestCase):
         # Authorize user
         self.client.login(username="test_user_3", password="password")
 
-        # Test read
-        response = self.client.put(
-            "/api/v1/users/%s" % self.user_3.id,
-            data={
+        data = {
                 "first_name": "Test",
                 "last_name": "User",
-                "email": "test_user_3@tests.com",
+                "email": "testuser2@tests.com",
                 "is_active": True,
-                "date_joined": "2018-02-07T10:33:21Z",
-                "last_login": "2018-02-21T09:40:05Z",
                 "email_verified": False,
                 "msisdn_verified": False,
                 "msisdn": "",
                 "gender": "",
                 "birth_date": "2000-01-01",
                 "avatar": ""
-            },
-            content_type="application/json"
+            }
+
+        # Test read
+        response = self.client.put(
+            "/api/v1/users/%s" % self.user_3.id,
+            data=json.dumps(data)
         )
-        import pdb; pdb.set_trace()
         self.assertContains(response, self.user_3.id)
 
+        # Get user data
+        response = self.client.get("/api/v1/users/%s" % self.user_3.id)
+        user = response.json()
+
+        # Ensure object returned is for the correct user
+        self.assertEqual(user["id"], str(self.user_3.id))
+
         # Check data was updated
-        self.assertEqual(self.user_3.first_name, "Test")
+        self.assertEqual(user["first_name"], "Test")
+        self.assertEqual(user["last_name"], "User")
+        self.assertEqual(user["email"], "testuser2@tests.com")
 
     def test_user_delete(self):
         # Authorize user
         self.client.login(username="test_user_1", password="password")
 
         # Test delete
-        response = self.client.delete("/api/v1/users/%s" % self.user_1.id)
+        response = self.client.delete("/api/v1/users/%s" % self.user_2.id)
 
         response = self.client.get("/api/v1/users")
         self.assertEqual(len(response.json()), 2)
