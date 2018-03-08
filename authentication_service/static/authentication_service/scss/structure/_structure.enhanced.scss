@@ -31,6 +31,17 @@
 
 }
 
+.Footer {
+    padding: $spacer-multiple $spacer-multiple 0 $spacer-multiple;
+    margin-top: $spacer-multiple;
+    margin-left: -$spacer-multiple;
+    margin-right: -$spacer-multiple;
+
+    p {
+        margin: 0;
+    }
+}
+
 // Adjustments for desktops and larger devices
 
 @media (min-width: 40em) {

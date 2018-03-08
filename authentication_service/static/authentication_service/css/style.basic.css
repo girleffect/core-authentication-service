@@ -8,6 +8,12 @@ html, body {
 body {
   margin: 10px; }
 
+.Footer {
+  padding: 5px 0;
+  background: #ffffff;
+  font-size: 0.7em;
+  border-top: 1px solid #dad9d6; }
+
 body,
 textarea,
 select {
