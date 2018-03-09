@@ -2,12 +2,15 @@ import json
 import os
 
 import datetime
+
+import jsonschema
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from oidc_provider.models import Client
 
 from authentication_service.integration import CLIENT_VALUES, USER_VALUES
 from authentication_service.models import CoreUser
+from authentication_service.api import schemas
 
 
 class IntegrationTestCase(TestCase):
@@ -17,6 +20,7 @@ class IntegrationTestCase(TestCase):
         # Create users
         cls.user_1 = get_user_model().objects.create(
             username="test_user_1",
+            email="",
             is_superuser=1,
             is_staff=1,
             birth_date=datetime.date(2000, 1, 1)
@@ -96,6 +100,13 @@ class IntegrationTestCase(TestCase):
         )
         self.assertContains(response, "test_client_id_1")
 
+        # Test list using combination
+        response = self.client.get(
+            "/api/v1/clients?client_ids=%s&client_token_id=%s" % (
+                self.client_1.id, self.client_2.client_id)
+        )
+        self.assertEqual(len(response.json()), 2)
+
     def test_client_read(self):
         # Authorize user
         self.client.login(username="test_user_2", password="password")
@@ -105,10 +116,8 @@ class IntegrationTestCase(TestCase):
             "/api/v1/clients/%s" % self.client_1.client_id)
         self.assertContains(response, "test_client_id_1")
 
-        # Check that data contains all the client fields per the swagger schema
-        fields = response.json()
-        for field in CLIENT_VALUES:
-            self.assertIn(field, fields)
+        # Validate returned data
+        jsonschema.validate(response.json(), schema=schemas.client)
 
     def test_user_list(self):
         # Authorize user
@@ -140,18 +149,22 @@ class IntegrationTestCase(TestCase):
                 self.user_1.id, self.user_3.id))
         self.assertEqual(len(response.json()), 2)
 
+        # Test combination
+        response = self.client.get(
+            "/api/v1/users?email=%s&username_prefix=test&user_ids=%s" % (
+                self.user_3.email, self.user_2.id))
+        self.assertEqual(len(response.json()), 3)
+
     def test_user_read(self):
         # Authorize user
         self.client.login(username="test_user_2", password="password")
 
         # Test read
-        response = self.client.get("/api/v1/users/%s" % self.user_1.id)
-        self.assertContains(response, "test_user_1")
+        response = self.client.get("/api/v1/users/%s" % self.user_3.id)
+        self.assertContains(response, "test_user_3")
 
-        # Check that data contains all the user fields per the swagger schema
-        fields = response.json()
-        for field in USER_VALUES:
-            self.assertIn(field, fields)
+        # Validate returned data
+        jsonschema.validate(response.json(), schema=schemas.user)
 
     def test_user_update(self):
         # Authorize user

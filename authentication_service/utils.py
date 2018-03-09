@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.forms import HiddenInput
 
 
@@ -61,3 +62,22 @@ def update_form_fields(form, required=None, hidden=None, validators=None, fields
             # different approach.
             for attr, val in data["attributes"].items():
                 setattr(field, attr, val)
+
+
+def set_listing_limit(limit):
+    if limit:
+        limit = int(limit)
+        limit = limit if limit <= settings.MAX_LISTING_LIMIT else \
+            settings.MAX_LISTING_LIMIT
+        limit = limit if limit >= settings.MIN_LISTING_LIMIT else \
+            settings.MIN_LISTING_LIMIT
+        return limit
+    return settings.DEFAULT_LISTING_LIMIT
+
+
+def strip_empty_optional_fields(object):
+    result = {}
+    for field in object:
+        if object[field] is not None:
+            result[field] = object[field]
+    return result

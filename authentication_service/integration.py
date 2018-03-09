@@ -1,13 +1,16 @@
-import json as simple_json
+import logging
 
 from django.conf import settings
-from django.core.serializers import json
-from django.forms import model_to_dict
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from oidc_provider.models import Client
 
 from authentication_service.api.stubs import AbstractStubClass
 from authentication_service.models import CoreUser
+from authentication_service.utils import set_listing_limit, \
+    strip_empty_optional_fields
+
+LOGGER = logging.getLogger(__name__)
 
 CLIENT_VALUES = [
     "id", "_post_logout_redirect_uris", "_redirect_uris", "client_id",
@@ -17,7 +20,7 @@ CLIENT_VALUES = [
 USER_VALUES = [
     "id", "username", "first_name", "last_name", "email", "is_active",
     "date_joined", "last_login", "email_verified", "msisdn_verified", "msisdn",
-    "gender", "birth_date", "avatar", "country"
+    "gender", "birth_date", "avatar", "country", "created_at", "updated_at"
 ]
 
 
@@ -33,25 +36,22 @@ class Implementation(AbstractStubClass):
         :param client_ids (optional): string An optional query parameter to filter by a list of client.id.
         :param clent_token_id (optional): string An optional query parameter to filter by a single client.client_id.
         """
+        offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
+        limit = set_listing_limit(limit)
+
+        clients = Client.objects.values(*CLIENT_VALUES)
+
+        q_objects = Q()
+
         if client_ids:
-            result = [
-                client for client in Client.objects.filter(
-                    pk__in=client_ids).values(*CLIENT_VALUES)
-            ]
-        elif client_token_id:
-            result = [
-                client for client in Client.objects.filter(
-                    client_id=client_token_id).values(*CLIENT_VALUES)
-            ]
-        else:
-            result = [
-                client for client in Client.objects.all().values(*CLIENT_VALUES)
-            ][
-                int(
-                    offset if offset else settings.DEFAULT_LISTING_OFFSET
-                ):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)
-            ]
-        return result
+            q_objects |= Q(id__in=client_ids)
+        if client_token_id:
+            q_objects |= Q(client_id=client_token_id)
+
+        clients = clients.filter(q_objects)
+
+        clients = clients[offset:limit]
+        return list(clients)
 
 
     @staticmethod
@@ -70,29 +70,25 @@ class Implementation(AbstractStubClass):
         """
         :param request: An HttpRequest
         """
+        offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
+        limit = set_listing_limit(limit)
+
+        users = CoreUser.objects.values(*USER_VALUES)
+
+        q_objects = Q()
         if email:
-            result = [
-                user for user in CoreUser.objects.filter(
-                    email=email).values(*USER_VALUES)
-            ]
-        elif username_prefix:
-            result = [
-                user for user in CoreUser.objects.filter(
-                    username__contains=username_prefix).values(*USER_VALUES)
-            ]
-        elif user_ids:
-            result = [
-                user for user in CoreUser.objects.filter(
-                    id__in=user_ids).values(*USER_VALUES)
-            ]
-        else:
-            result = [
-                user for user in CoreUser.objects.all().values(*USER_VALUES)
-            ][
-                int(
-                    offset if offset else settings.DEFAULT_LISTING_OFFSET
-                ):int(limit if limit else settings.DEFAULT_LISTING_LIMIT)
-            ]
+            q_objects |= Q(email=email)
+        if username_prefix:
+            q_objects |= Q(username__startswith=username_prefix)
+        if user_ids:
+            q_objects |= Q(id__in=user_ids)
+
+        users = users.filter(q_objects)
+
+        users = users[offset:limit]
+        result = []
+        for user in list(users):
+            result.append(strip_empty_optional_fields(user))
         return result
 
     @staticmethod
@@ -101,7 +97,10 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param user_id: string A UUID value identifying the user.
         """
-        return CoreUser.objects.get(id=user_id).delete()
+        user = CoreUser.objects.filter(id=user_id)
+        result = strip_empty_optional_fields(user.values(*USER_VALUES).get())
+        user.delete()  # Delete user after stripping fields
+        return result
 
 
     @staticmethod
@@ -110,7 +109,9 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param user_id: string A UUID value identifying the user.
         """
-        return CoreUser.objects.filter(id=user_id).values(*USER_VALUES).get()
+        result = strip_empty_optional_fields(
+            CoreUser.objects.filter(id=user_id).values(*USER_VALUES).get())
+        return result
 
     @staticmethod
     def user_update(request, body, user_id, *args, **kwargs):
@@ -124,14 +125,14 @@ class Implementation(AbstractStubClass):
             try:
                 setattr(instance, attr, value)
             except Exception as e:
-                print(e)
+                LOGGER.error("Failed to set user attribute %s: %s" % (attr, e))
 
         instance.save()
-        obj = {}
+        result = {}
         for field in instance._meta.fields:
             if field.name in USER_VALUES:
                 if field.name == "avatar":  # Prevent serialization issue
-                    obj[field.name] = instance.avatar.path
+                    result[field.name] = instance.avatar.path
                 else:
-                    obj[field.name] = getattr(instance, field.name)
-        return obj
+                    result[field.name] = getattr(instance, field.name)
+        return strip_empty_optional_fields(result)
