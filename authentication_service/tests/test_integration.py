@@ -8,8 +8,6 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from oidc_provider.models import Client
 
-from authentication_service.integration import CLIENT_VALUES, USER_VALUES
-from authentication_service.models import CoreUser
 from authentication_service.api import schemas
 
 
