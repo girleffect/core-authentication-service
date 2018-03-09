@@ -22,15 +22,37 @@ body {
       width: 90px; }
   .Header-title {
     background: #4D7779;
-    border-top: 1px solid #dad9d6;
-    border-bottom: 1px solid #dad9d6;
     margin-left: -20px;
     margin-right: -20px;
     text-align: center; }
     .Header-title h1 {
       font-size: 1.2em;
       color: #ffffff;
-      margin: 15px; }
+      margin: 15px;
+      padding: 15px; }
+
+.List {
+  padding: 0;
+  list-style: none; }
+  .List li {
+    margin: 15px 0 0 0; }
+
+.QR {
+  text-align: center; }
+  .QR-image {
+    border: 3px solid #4D7779; }
+
+.Tokens {
+  margin: 10px 0;
+  border: 1px solid #dad9d6;
+  padding: 0 15px 15px 15px; }
+  .Tokens li {
+    width: 50%;
+    float: left; }
+  .Tokens:after {
+    content: "";
+    display: block;
+    clear: both; }
 
 .Footer {
   padding: 20px 20px 0 20px;
@@ -77,6 +99,9 @@ select {
   font-size: 1em;
   color: #4D7779; }
 
+strong {
+  font-family: LinetoBold, Arial, Helvetica, sans-serif; }
+
 a {
   color: #5268c2;
   text-decoration: none;
@@ -90,8 +115,15 @@ h1 {
   font-size: 1.6em;
   font-family: LinetoBold, Arial, Helvetica, sans-serif; }
 
+h2 {
+  font-size: 1.4em;
+  font-family: LinetoMedium, Arial, Helvetica, sans-serif; }
+
 p, ul {
   margin: 10px 0; }
+
+hr {
+  margin: 20px 0; }
 
 .Form .Field {
   margin-top: 20px; }
@@ -153,11 +185,15 @@ p, ul {
 .Form .Field-message--error.Field--required .Field-item input {
   border-color: #ff674d; }
 .Form-buttons {
-  margin-top: 20px;
   margin-bottom: 20px; }
-.Form .Button {
+
+.Button {
+  margin-top: 20px;
   padding: 15px;
-  font-weight: bold; }
+  font-weight: bold;
+  text-align: center; }
+  .Button--warning {
+    background: #ff674d; }
 
 .Messages .Message {
   font-family: LinetoBold, Arial, Helvetica, sans-serif; }

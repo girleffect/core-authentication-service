@@ -19,6 +19,18 @@ h1 {
     font-size: 1.4em;
 }
 
+h2 {
+    margin: $spacer 0;
+    font-size: 1.2em;
+}
+
 p, ul {
+    margin: $spacer 0;
+}
+
+hr {
+    height: 0;
+    border: 0;
+    border-top: 1px solid $border;
     margin: $spacer 0;
 }

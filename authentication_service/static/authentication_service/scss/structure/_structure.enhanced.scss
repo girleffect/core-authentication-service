@@ -17,8 +17,6 @@
 
     &-title {
         background: $primary;
-        border-top: 1px solid $background;
-        border-bottom: 1px solid $background;
         margin-left: -$spacer-multiple;
         margin-right: -$spacer-multiple;
         text-align: center;
@@ -27,12 +25,47 @@
             font-size: 1.2em;
             color: $white;
             margin: $spacer-mid;
+            padding: $spacer-mid;
         }
     }
 }
 
 .Intro {
 
+}
+
+.List {
+    padding: 0;
+    list-style: none;
+
+    li {
+        margin: $spacer-mid 0 0 0;
+    }
+}
+
+.QR {
+    text-align: center;
+
+    &-image {
+        border: 3px solid $primary;
+    }
+}
+
+.Tokens {
+    margin: $spacer 0;
+    border: 1px solid $border;
+    padding: 0 $spacer-mid $spacer-mid $spacer-mid;
+
+    li {
+        width: 50%;
+        float: left;
+    }
+
+    &:after {
+        content: "";
+        display: block;
+        clear: both;
+    }
 }
 
 .Footer {

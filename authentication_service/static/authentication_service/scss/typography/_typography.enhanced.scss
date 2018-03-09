@@ -21,6 +21,10 @@ select {
     color: $primary;
 }
 
+strong {
+    font-family: $font-bold;
+}
+
 a {
     color: $secondary;
     text-decoration: none;
@@ -38,6 +42,15 @@ h1 {
     font-family: $font-bold;
 }
 
+h2 {
+    font-size: 1.4em;
+    font-family: $font-medium;
+}
+
 p, ul {
     margin: $spacer 0;
+}
+
+hr {
+    margin: $spacer-multiple 0;
 }

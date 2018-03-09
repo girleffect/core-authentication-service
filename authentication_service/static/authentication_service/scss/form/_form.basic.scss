@@ -50,20 +50,24 @@
         margin-top: $spacer;
     }
 
-    .Button {
-        width: 100%;
-        background: $secondary;
+}
+
+.Button {
+    width: 100%;
+    background: $secondary;
+    color: $white;
+    font-size: 1em;
+    border: 0;
+    padding: $spacer $spacer-half;
+    display: block;
+    border: 0;
+    text-decoration: none;
+
+    &:hover {
+        cursor: pointer;
+        background: $primary;
         color: $white;
-        font-size: 1em;
-        border: 0;
-        padding: $spacer $spacer-half;
-
-        &:hover {
-            cursor: pointer;
-            background: $primary;
-        }
     }
-
 }
 
 .Messages {

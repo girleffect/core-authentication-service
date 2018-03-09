@@ -78,15 +78,20 @@
     }
 
     &-buttons {
-        margin-top: $spacer-multiple;
         margin-bottom: $spacer-multiple;
     }
 
-    .Button {
-        padding: $spacer-mid;
-        font-weight: bold;
-    }
+}
 
+.Button {
+    margin-top: $spacer-multiple;
+    padding: $spacer-mid;
+    font-weight: bold;
+    text-align: center;
+
+    &--warning {
+        background: $warning;
+    }
 }
 
 .Messages {
