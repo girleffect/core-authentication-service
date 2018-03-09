@@ -112,12 +112,7 @@ class CustomScopeClaims(ScopeClaims):
         LOGGER.debug("Requesting roles for user: %s/%s, on site: %s" % (
             self.user.username, self.user.id, self.client))
 
-        # TODO: Roles need to actually get fetched. We fake it for now.
-        # Keep imports here as well, nuke everything when it gets replaced.
-        import json
-        with open("authentication_service/demo/roles.json") as f:
-            data = json.load(f)
-        roles = data[self.client.client_id].get(str(self.user.id), ["NoRoles"])
+        roles = ["Not", "Implemented", "Yet"]
         result = {"roles": roles}
 
         return result
