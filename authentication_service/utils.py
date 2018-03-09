@@ -65,6 +65,11 @@ def update_form_fields(form, required=None, hidden=None, validators=None, fields
 
 
 def set_listing_limit(limit):
+    """ Ensures the limit is within bounds or sets the default limit if no limit
+    was specified.
+    :param limit: Amount of objects to return.
+    :return: Either the minimum, maximum or the default limit.
+    """
     if limit:
         limit = int(limit)
         limit = limit if limit <= settings.MAX_LISTING_LIMIT else \
@@ -75,9 +80,17 @@ def set_listing_limit(limit):
     return settings.DEFAULT_LISTING_LIMIT
 
 
-def strip_empty_optional_fields(object):
+def strip_empty_optional_fields(object_dict):
+    """ We do not need to add fields that contain None or "" to the response,
+    so we strip those fields out of the response. To do this, we iterate over
+    the fields in the input dictionary and check that the value isn't, what we
+    consider, empty. If a field has a value, add that field and value to the
+    output dictionary.
+    :param object_dict: Input dictionary containing possible empty fields.
+    :return: Output dictionary containing only fields that have values.
+    """
     result = {}
-    for field in object:
-        if object[field] is not None:
-            result[field] = object[field]
+    for field in object_dict:
+        if object_dict[field] is not None and object_dict[field] is not "":
+            result[field] = object_dict[field]
     return result
