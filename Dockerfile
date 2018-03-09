@@ -15,7 +15,3 @@ RUN pip install -r requirements/requirements.txt
 COPY . /app/
 
 EXPOSE 8000
-
-ENTRYPOINT ["scripts/waitFor.sh"]
-
-CMD ["scripts/startDjango.sh"]
