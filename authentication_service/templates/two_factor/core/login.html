@@ -1,9 +1,15 @@
-{% extends "two_factor/_base_focus.html" %}
+{% extends "base.html" %}
 {% load i18n two_factor %}
 
-{% block content %}
-  <h1>{% block title %}{% trans "Login" %}{% endblock %}</h1>
+{% block metatitle %}
+    {% trans "Login" %}
+{% endblock %}
 
+{% block title %}
+    <h1>{% trans "Login" %}</h1>
+{% endblock %}
+
+{% block content %}
   {% if wizard.steps.current == 'auth' %}
     <p>{% blocktrans %}Enter your credentials.{% endblocktrans %}</p>
   {% elif wizard.steps.current == 'token' %}
@@ -23,7 +29,7 @@
       enter one of these backup tokens to login to your account.{% endblocktrans %}</p>
   {% endif %}
 
-  <form action="" method="post">{% csrf_token %}
+  <form action="" method="post" class="Form">{% csrf_token %}
     {% include "two_factor/_wizard_forms.html" %}
 
     {# hidden submit button to enable [enter] key #}
@@ -34,7 +40,7 @@
       <p>
         {% for other in other_devices %}
         <button name="challenge_device" value="{{ other.persistent_id }}"
-                class="btn btn-default btn-block" type="submit">
+                class="Button" type="submit">
           {{ other|device_action }}
         </button>
       {% endfor %}</p>
@@ -43,7 +49,7 @@
       <p>{% trans "As a last resort, you can use a backup token:" %}</p>
       <p>
         <button name="wizard_goto_step" type="submit" value="backup"
-                class="btn btn-default btn-block">{% trans "Use Backup Token" %}</button>
+                class="Button">{% trans "Use Backup Token" %}</button>
       </p>
     {% endif %}
 
