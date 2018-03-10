@@ -3,12 +3,12 @@ textarea,
 select {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1em;
-  color: #4e5358; }
+  color: #000000; }
 
 a {
-  color: #7300ff; }
+  color: #00b8ae; }
   a:hover {
-    color: #7300ff; }
+    color: #00b8ae; }
 
 h1 {
   margin: 10px 0;
@@ -38,8 +38,13 @@ html, body {
 .Header {
   text-align: center; }
   .Header-branding {
-    background: #7300ff;
+    background: #00b8ae;
     padding: 15px; }
+  .Header-title {
+    background: transparent; }
+    .Header-title h1 {
+      color: #000000;
+      padding-bottom: 0; }
 
 .Content {
   padding: 10px; }
@@ -70,17 +75,9 @@ html, body {
   .Form .Field .NumberInput,
   .Form .Field .Textarea {
     width: 100%;
-    border: 2px solid #4e5358;
+    border: 2px solid #dad9d6;
     padding: 10px;
     font-size: 1em; }
-    .Form .Field .TextInput:focus,
-    .Form .Field .PasswordInput:focus,
-    .Form .Field .EmailInput:focus,
-    .Form .Field .DateInput:focus,
-    .Form .Field .vDateField:focus,
-    .Form .Field .NumberInput:focus,
-    .Form .Field .Textarea:focus {
-      border-color: #7300ff; }
   .Form .Field .Textarea {
     height: 60px; }
   .Form .Field--required input {
@@ -95,7 +92,7 @@ html, body {
 
 .Button {
   width: 100%;
-  background: #7300ff;
+  background: #ed008c;
   color: #ffffff;
   font-size: 1em;
   border: 0;
@@ -107,7 +104,7 @@ html, body {
   margin-top: 10px; }
   .Button:hover {
     cursor: pointer;
-    background: #4e5358;
+    background: #ed008c;
     color: #ffffff; }
 
 .Messages {
@@ -133,4 +130,4 @@ html, body {
   padding: 0;
   list-style: none; }
 
-/*# sourceMappingURL=springster.basic.css.map */
+/*# sourceMappingURL=ninyampinga.basic.css.map */

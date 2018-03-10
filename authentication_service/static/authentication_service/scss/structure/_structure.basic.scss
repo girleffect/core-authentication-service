@@ -1,3 +1,23 @@
+.Header {
+    &-branding {
+        text-align: center;
+
+        &-image {
+            display: block;
+            margin: 0 auto;
+        }
+    }
+    &-title {
+        text-align: center;
+        background: $primary;
+
+        h1 {
+            color: $white;
+            padding: $spacer;
+        }
+    }
+}
+
 .Footer {
     padding: $spacer-half 0;
     background: $white;

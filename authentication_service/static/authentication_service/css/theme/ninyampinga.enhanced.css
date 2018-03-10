@@ -1,35 +1,38 @@
 @font-face {
-  font-family: Baton;
-  src: url("/static/authentication_service/fonts/Baton-Regular-Web.woff"); }
+  font-family: Avenir;
+  src: url("/static/authentication_service/fonts/AvenirNextCondensed-Regular.woff"); }
 @font-face {
-  font-family: BatonMedium;
-  src: url("/static/authentication_service/fonts/Baton-Medium-Web.woff"); }
+  font-family: AvenirMedium;
+  src: url("/static/authentication_service/fonts/AvenirNextCondensed-DemiBold.woff"); }
+@font-face {
+  font-family: AvenirBold;
+  src: url("/static/authentication_service/fonts/AvenirNextCondensed-Bold.woff"); }
 body,
 textarea,
 select {
-  font-family: Baton, Arial, Helvetica, sans-serif;
+  font-family: Avenir, Arial, Helvetica, sans-serif;
   font-size: 1em;
-  color: #4e5358; }
+  color: #000000; }
 
 strong {
-  font-family: BatonMedium, Arial, Helvetica, sans-serif; }
+  font-family: AvenirBold, Arial, Helvetica, sans-serif; }
 
 a {
-  color: #7300ff;
+  color: #00b8ae;
   text-decoration: none;
-  border-bottom: 1px solid #7300ff; }
+  border-bottom: 1px solid #00b8ae; }
   a:hover {
-    color: #7300ff;
+    color: #00b8ae;
     border: 0; }
 
 h1 {
   margin: 10px 0;
   font-size: 1.6em;
-  font-family: BatonMedium, Arial, Helvetica, sans-serif; }
+  font-family: AvenirBold, Arial, Helvetica, sans-serif; }
 
 h2 {
   font-size: 1.4em;
-  font-family: BatonMedium, Arial, Helvetica, sans-serif; }
+  font-family: AvenirMedium, Arial, Helvetica, sans-serif; }
 
 p, ul {
   margin: 10px 0; }
@@ -42,15 +45,17 @@ hr {
   padding: 0; }
 
 .Content {
-  padding: 0 20px; }
+  padding: 20px;
+  background: #ececec;
+  margin: 0 20px; }
 
 .Header {
   text-align: center;
-  margin-bottom: 20px; }
+  margin-bottom: 0; }
   .Header-branding {
     margin-bottom: 0; }
     .Header-branding-image {
-      width: 90px; }
+      width: 100px; }
   .Header-title {
     background: transparent;
     margin-left: 0;
@@ -58,13 +63,10 @@ hr {
     text-align: center; }
     .Header-title h1 {
       font-size: 1.2em;
-      color: #4e5358;
+      color: #000000;
       margin: 0;
       margin-top: 10px;
-      padding: 15px;
-      padding-bottom: 20px;
-      background: url("http://za.heyspringster.com/static/img/lines/zig-zag-underline.png") bottom no-repeat;
-      background-size: 145px; }
+      padding: 15px; }
 
 .List {
   padding: 0;
@@ -75,11 +77,11 @@ hr {
 .QR {
   text-align: center; }
   .QR-image {
-    border: 3px solid #4e5358; }
+    border: 3px solid #ed008c; }
 
 .Tokens {
   margin: 10px 0;
-  border: 1px solid #dad9d6;
+  border: 1px solid #d6d6d6;
   padding: 0 15px 15px 15px; }
   .Tokens li {
     width: 50%;
@@ -91,9 +93,10 @@ hr {
 
 .Footer {
   padding: 20px;
-  margin-top: 20px;
+  margin-top: 0;
   margin-left: 0;
   margin-right: 0;
+  border: 0;
   text-align: center; }
   .Footer p {
     margin: 0; }
@@ -120,6 +123,8 @@ hr {
     margin: 20px 0 0 0; } }
 .Form .Field {
   margin-top: 20px; }
+  .Form .Field-label {
+    text-align: left; }
   .Form .Field-message {
     margin-top: 10px; }
   .Form .Field .TextInput,
@@ -132,7 +137,7 @@ hr {
     border-width: 2px;
     padding: 10px;
     font-weight: bold;
-    color: #4e5358; }
+    color: #000000; }
     .Form .Field .TextInput:focus,
     .Form .Field .PasswordInput:focus,
     .Form .Field .EmailInput:focus,
@@ -140,7 +145,7 @@ hr {
     .Form .Field .vDateField:focus,
     .Form .Field .NumberInput:focus,
     .Form .Field .Textarea:focus {
-      border-color: #7300ff; }
+      border-color: #ed008c; }
   .Form .Field .Textarea {
     height: 100px; }
 .Form .TypedChoiceField,
@@ -160,21 +165,21 @@ hr {
     border-width: .15em .15em 0 0;
     content: "";
     transform: rotate(135deg);
-    color: #4e5358; }
+    color: #ed008c; }
   .Form .TypedChoiceField .Select,
   .Form .ModelChoiceField .Select {
     width: 100%;
     min-height: 41px;
     padding: 9px;
     background-color: transparent;
-    border: 2px solid #dad9d6;
-    color: #4e5358;
+    border: 2px solid #d6d6d6;
+    color: #ed008c;
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none; }
     .Form .TypedChoiceField .Select:focus,
     .Form .ModelChoiceField .Select:focus {
-      border-color: #4e5358; }
+      border-color: #ed008c; }
 .Form .BooleanField {
   width: 100%;
   display: table;
@@ -193,11 +198,11 @@ hr {
       appearance: none;
       width: 20px;
       height: 20px;
-      border: 2px solid #dad9d6;
+      border: 2px solid #d6d6d6;
       padding: 15px; }
       .Form .BooleanField .Field-item .CheckboxInput:checked {
-        border-color: #4e5358;
-        background-color: #4e5358; }
+        border-color: #ed008c;
+        background-color: #ed008c; }
 .Form .Field-message--error.Field--required .Field-item input {
   border-color: #ff674d; }
 .Form-buttons {
@@ -209,19 +214,21 @@ hr {
   font-weight: bold;
   text-align: center;
   border-radius: 5px; }
+  .Button:hover {
+    background: #ed008c; }
   .Button--warning {
     background: #ff674d; }
 
 .Messages .Message {
-  font-family: BatonMedium, Arial, Helvetica, sans-serif; }
+  font-family: AvenirBold, Arial, Helvetica, sans-serif; }
 
 .errorlist {
   margin-top: 20px; }
 
 .Menu-title {
-  background: #4e5358;
-  border-top: 1px solid #dad9d6;
-  border-bottom: 1px solid #dad9d6;
+  background: #ed008c;
+  border-top: 1px solid #ececec;
+  border-bottom: 1px solid #ececec;
   margin-left: 0;
   margin-right: 0;
   text-align: center; }
@@ -247,4 +254,4 @@ hr {
       .Menu-title h1 {
         margin: 20px; } }
 
-/*# sourceMappingURL=springster.enhanced.css.map */
+/*# sourceMappingURL=ninyampinga.enhanced.css.map */

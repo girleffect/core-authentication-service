@@ -2,18 +2,19 @@
 
 // Fonts
 $font-basic: Arial, Helvetica, sans-serif;
-$font: Baton, Arial, Helvetica, sans-serif;
-$font-medium: BatonMedium, Arial, Helvetica, sans-serif;
-$font-bold: BatonMedium, Arial, Helvetica, sans-serif;
+$font: Avenir, Arial, Helvetica, sans-serif;
+$font-medium: AvenirMedium, Arial, Helvetica, sans-serif;
+$font-bold: AvenirBold, Arial, Helvetica, sans-serif;
 
 // Colours
-$primary: #4e5358;
-$secondary: #7300ff;
-$background: #dad9d6;
-$border: #dad9d6;
+$primary: #ed008c;
+$secondary: #00b8ae;
+$background: #ececec;
+$border: #d6d6d6;
 $warning: #ff674d;
 $success: #dbe200;
 $white: #ffffff;
+$black: #000000;
 
 // Spacing
 $spacer-max: 40px;
@@ -25,13 +26,18 @@ $spacer-half: 5px;
 // TYPOGRAPHY
 
 @font-face {
-    font-family: Baton;
-    src: url('/static/authentication_service/fonts/Baton-Regular-Web.woff');
+    font-family: Avenir;
+    src: url('/static/authentication_service/fonts/AvenirNextCondensed-Regular.woff');
 }
 
 @font-face {
-    font-family: BatonMedium;
-    src: url('/static/authentication_service/fonts/Baton-Medium-Web.woff');
+    font-family: AvenirMedium;
+    src: url('/static/authentication_service/fonts/AvenirNextCondensed-DemiBold.woff');
+}
+
+@font-face {
+    font-family: AvenirBold;
+    src: url('/static/authentication_service/fonts/AvenirNextCondensed-Bold.woff');
 }
 
 body, 
@@ -39,7 +45,7 @@ textarea,
 select {
     font-family: $font;
     font-size: 1em;
-    color: $primary;
+    color: $black;
 }
 
 strong {
@@ -84,18 +90,20 @@ hr {
 }
 
 .Content {
-    padding: 0 $spacer-multiple;
+    padding: $spacer-multiple;
+    background: $background;
+    margin: 0 $spacer-multiple;
 }
 
 .Header {
     text-align: center;
-    margin-bottom: $spacer-multiple;
+    margin-bottom: 0;
 
     &-branding {
         margin-bottom: 0;
 
         &-image {
-            width: 90px;
+            width: 100px;
         }
     }
 
@@ -107,13 +115,10 @@ hr {
 
         h1 {
             font-size: 1.2em;
-            color: $primary;
+            color: $black;
             margin: 0;
             margin-top: $spacer;
             padding: $spacer-mid;
-            padding-bottom: $spacer-multiple;
-            background: url('http://za.heyspringster.com/static/img/lines/zig-zag-underline.png') bottom no-repeat;
-            background-size: 145px;
         }
     }
 }
@@ -154,9 +159,10 @@ hr {
 
 .Footer {
     padding: $spacer-multiple;
-    margin-top: $spacer-multiple;
+    margin-top: 0;
     margin-left: 0;
     margin-right: 0;
+    border: 0;
     text-align: center;
 
     p {
@@ -205,6 +211,7 @@ hr {
         margin-top: $spacer-multiple;
 
         &-label {
+            text-align: left;
         }
 
         &-message {
@@ -222,10 +229,10 @@ hr {
             border-width: 2px;
             padding: $spacer;
             font-weight: bold;
-            color: $primary;
+            color: $black;
 
             &:focus {
-                border-color: $secondary;
+                border-color: $primary;
             }
         }
 
@@ -330,6 +337,10 @@ hr {
     font-weight: bold;
     text-align: center;
     border-radius: 5px;
+
+    &:hover {
+        background: $primary;
+    }
 
     &--warning {
         background: $warning;

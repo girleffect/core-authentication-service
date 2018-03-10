@@ -7,13 +7,14 @@ $font-medium: LinetoMedium, Arial, Helvetica, sans-serif;
 $font-bold: LinetoBold, Arial, Helvetica, sans-serif;
 
 // Colours
-$primary: #4e5358;
-$secondary: #7300ff;
+$primary: #ed008c;
+$secondary: #00b8ae;
 $background: #dad9d6;
 $border: #dad9d6;
 $warning: #ff674d;
 $success: #dbe200;
 $white: #ffffff;
+$black: #000000;
 
 // Spacing (also used for widths)
 $spacer-max: 40px;
@@ -29,7 +30,7 @@ textarea,
 select {
     font-family: $font-basic;
     font-size: 1em;
-    color: $primary;
+    color: $black;
 }
 
 a {
@@ -86,6 +87,15 @@ body {
         background: $secondary;
         padding: $spacer-mid;        
     }
+
+    &-title {
+        background: transparent;
+
+        h1 {
+            color: $black;
+            padding-bottom: 0;
+        } 
+    }
 }
 
 .Content {
@@ -132,13 +142,9 @@ body {
         .NumberInput,
         .Textarea {
             width: 100%;
-            border: 2px solid $primary;
+            border: 2px solid $border;
             padding: $spacer;
             font-size: 1em;
-
-            &:focus {
-                border-color: $secondary;
-            }
         }
 
         .Textarea {
@@ -172,7 +178,7 @@ body {
 
 .Button {
     width: 100%;
-    background: $secondary;
+    background: $primary;
     color: $white;
     font-size: 1em;
     border: 0;
