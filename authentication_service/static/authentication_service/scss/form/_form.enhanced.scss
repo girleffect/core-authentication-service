@@ -122,6 +122,8 @@
 
 }
 
+// Buttons
+
 .Button {
     margin-top: $spacer-multiple;
     padding: $spacer-mid;
@@ -133,12 +135,15 @@
     }
 }
 
+// Messages (Form feedback)
+
 .Messages {
     .Message {
         font-family: $font-bold;
     }
 }
 
+// Errors
 .errorlist {
     margin-top: $spacer-multiple;
 }

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block extrastyle-basic %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/springster.basic.css" %}" />{% endblock %}
+
+{% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/springster.enhanced.css" %}" />{% endblock %}
+
+{% block metatitle %}
+    {% trans "Login" %}
+{% endblock %}
+
+{% block branding %}<img width="70px" src="http://za.heyspringster.com/static/img/sp-logo.3e443cd8bfae.png" class="Header-branding-image">{% endblock %}
+
+{% block title %}
+    <h1>{% trans "Login" %}</h1>
+{% endblock %}
+
+{% block content %}
+    <form method="post" class="Form" novalidate>
+        {% csrf_token %}
+        {{ wizard.management_form }}
+        {{ form.as_div }}
+        <div class="Form-buttons">
+            <input type="submit" value="{% trans "Login" %}" class="Button">
+        </div>
+
+        {% if backup_tokens %}
+            <p>{% trans "As a last resort, you can use a backup token:" %}</p>
+            <button name="wizard_goto_step" type="submit" value="backup" class="Button">{% trans "Use Backup Token" %}</button>
+        {% endif %}
+    </form>
+    <p class="Additional-text">
+        {% trans "Forgot password?" %} <a href="{% url "reset_password" %}">{% trans "Click here to reset it." %}</a>
+    </p>
+{% endblock %}
