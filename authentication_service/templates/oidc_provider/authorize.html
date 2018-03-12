@@ -11,7 +11,9 @@
 {% endblock %}
 
 {% block content %}
-    <p class="Intro">Client <strong>{{ client.name }}</strong> would like to access this information of you ...</p>
+    {% blocktrans with client_name=client.name %}
+        <p class="Intro">Client <strong>{{ client_name }}</strong> would like to access this information of you ...</p>
+    {% endblocktrans %}
     <form method="post" action="{% url 'oidc_provider:authorize' %}" class="Form">
         {% csrf_token %}
         {{ hidden_inputs }}
