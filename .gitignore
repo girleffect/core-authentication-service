@@ -111,3 +111,7 @@ ve/
 # Prism mocking tool
 prism
 
+# Sass cache
+.sass-cache/
+
+.DS_Store

@@ -19,6 +19,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import logout, PasswordResetDoneView, \
     PasswordResetConfirmView, PasswordResetCompleteView
 from django.views.generic import RedirectView, TemplateView
+from django.views.static import serve
+from django.conf import settings
 
 from two_factor.urls import urlpatterns as two_factor_patterns
 from two_factor.views import ProfileView
@@ -26,6 +28,11 @@ from two_factor.views import ProfileView
 from authentication_service import views
 
 urlpatterns = [
+    url(
+        r"^static/(?P<path>.*)$",
+        serve,
+        {"document_root": settings.STATIC_ROOT}
+    ),
     # Login URLs
     url(r"^login/", views.LoginView.as_view(), name="login"),
     # Override the login URL implicitly defined by Django Admin to redirect

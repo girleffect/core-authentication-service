@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y git
 
 RUN apt-get update && apt-get install -y gcc netcat $EXTRA_DEPS
 
+RUN mkdir /static
+
 WORKDIR /app/
 
 COPY ./requirements /app/requirements
@@ -18,7 +20,3 @@ RUN pip3 install --no-cache-dir -r /app/requirements/requirements.txt --src /usr
 COPY . /app/
 
 EXPOSE 8000
-
-ENTRYPOINT ["scripts/waitFor.sh"]
-
-CMD ["scripts/startDjango.sh"]

@@ -1,20 +1,21 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% block metatitle %}
+    {% trans "Security Questions" %}
 {% endblock %}
 
-{% block links %}
-    <a href="{% url "login" %}">{% trans "Login" %}</a>
+{% block title %}
+    <h1>{% trans "Security Questions" %}</h1>
 {% endblock %}
 
 {% block content %}
-    <form method="post">
+    <form method="post" class="Form">
         {% csrf_token %}
         {{ form.as_div }}
-        <input type="hidden" value="{{ username }}" name="auth-username">
-        <input type="submit" value="{% trans "Submit" %}" />
+        <div class="Form-buttons">
+            <input type="hidden" value="{{ username }}" name="auth-username">
+            <input type="submit" value="{% trans "Submit" %}" class="Button" />
+        </div>
     </form>
 {% endblock %}

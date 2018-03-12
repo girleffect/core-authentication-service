@@ -8,6 +8,9 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m
 
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
+STATIC_URL = "/static/"
+STATIC_ROOT = "/static/"
+
 AUTH_PASSWORD_VALIDATORS += [
     {
         "NAME": "authentication_service.password_validation.DiversityValidator",
