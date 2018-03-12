@@ -39,7 +39,7 @@ class Implementation(AbstractStubClass):
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
         limit = set_listing_limit(limit)
 
-        clients = Client.objects.values(*CLIENT_VALUES)
+        clients = Client.objects.values(*CLIENT_VALUES).order_by("id")
 
         if client_ids:
             clients = clients.filter(id__in=client_ids)
@@ -70,7 +70,7 @@ class Implementation(AbstractStubClass):
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
         limit = set_listing_limit(limit)
 
-        users = CoreUser.objects.values(*USER_VALUES)
+        users = CoreUser.objects.values(*USER_VALUES).order_by("id")
 
         if user_ids:
             users = users.filter(id__in=user_ids)
