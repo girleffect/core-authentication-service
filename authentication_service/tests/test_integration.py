@@ -105,6 +105,10 @@ class IntegrationTestCase(TestCase):
         )
         self.assertEqual(len(response.json()), 1)
 
+        # Test bad request
+        response = self.client.get("/api/v1/clients?limit=500")
+        self.assertEqual(response.status_code, 400)
+
     def test_client_read(self):
         # Authorize user
         self.client.login(username="test_user_2", password="password")
@@ -152,6 +156,10 @@ class IntegrationTestCase(TestCase):
             "/api/v1/users?email=%s&username_prefix=test&user_ids=%s" % (
                 self.user_3.email, self.user_3.id))
         self.assertEqual(len(response.json()), 1)
+
+        # Test bad request
+        response = self.client.get("/api/v1/users?limit=500")
+        self.assertEqual(response.status_code, 400)
 
     def test_user_read(self):
         # Authorize user

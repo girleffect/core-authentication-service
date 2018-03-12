@@ -7,8 +7,8 @@ from oidc_provider.models import Client
 
 from authentication_service.api.stubs import AbstractStubClass
 from authentication_service.models import CoreUser
-from authentication_service.utils import set_listing_limit, \
-    strip_empty_optional_fields
+from authentication_service.utils import strip_empty_optional_fields, \
+    check_limit
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class Implementation(AbstractStubClass):
         :param clent_token_id (optional): string An optional query parameter to filter by a single client.client_id.
         """
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
-        limit = set_listing_limit(limit)
+        limit = check_limit(limit)
 
         clients = Client.objects.values(*CLIENT_VALUES).order_by("id")
 
@@ -68,7 +68,7 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         """
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
-        limit = set_listing_limit(limit)
+        limit = check_limit(limit)
 
         users = CoreUser.objects.values(*USER_VALUES).order_by("id")
 

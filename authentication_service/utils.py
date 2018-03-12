@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError, SuspiciousOperation
 from django.forms import HiddenInput
+from django.http import HttpResponseBadRequest
 
 
 def update_form_fields(form, required=None, hidden=None, validators=None, fields_data=None):
@@ -64,7 +66,7 @@ def update_form_fields(form, required=None, hidden=None, validators=None, fields
                 setattr(field, attr, val)
 
 
-def set_listing_limit(limit):
+def check_limit(limit):
     """ Ensures the limit is within bounds or sets the default limit if no limit
     was specified.
     :param limit: Amount of objects to return.
@@ -72,10 +74,11 @@ def set_listing_limit(limit):
     """
     if limit:
         limit = int(limit)
-        limit = limit if limit <= settings.MAX_LISTING_LIMIT else \
-            settings.MAX_LISTING_LIMIT
-        limit = limit if limit >= settings.MIN_LISTING_LIMIT else \
-            settings.MIN_LISTING_LIMIT
+        if limit > settings.MAX_LISTING_LIMIT or \
+                limit < settings.MIN_LISTING_LIMIT:
+            # SuspiciousOperation raises 400 bad request in Django 1.11.
+            # https://docs.djangoproject.com/en/1.11/ref/views/#the-400-bad-request-view
+            raise SuspiciousOperation()
         return limit
     return settings.DEFAULT_LISTING_LIMIT
 
