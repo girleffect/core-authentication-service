@@ -110,10 +110,6 @@ class IntegrationTestCase(TestCase):
         response = self.client.get("/api/v1/clients?limit=500")
         self.assertEqual(response.status_code, 400)
 
-        # Test non-existent client
-        response = self.client.get("/api/v1/clients?client_ids=1234")
-        self.assertEqual(response.status_code, 404)
-
     def test_client_read(self):
         # Authorize user
         self.client.login(username="test_user_2", password="password")
@@ -169,10 +165,6 @@ class IntegrationTestCase(TestCase):
         # Test bad request
         response = self.client.get("/api/v1/users?limit=500")
         self.assertEqual(response.status_code, 400)
-
-        # Test non-existent user
-        response = self.client.get("/api/v1/users?email=not@here.com")
-        self.assertEqual(response.status_code, 404)
 
     def test_user_read(self):
         # Authorize user

@@ -48,9 +48,6 @@ class Implementation(AbstractStubClass):
         if client_token_id:
             clients = clients.filter(client_id=client_token_id)
 
-        if not clients:
-            raise Http404()
-
         clients = clients[offset:offset + limit]
         return [strip_empty_optional_fields(client) for client in clients]
 
@@ -83,8 +80,6 @@ class Implementation(AbstractStubClass):
         if username_prefix:
             users = users.filter(username__startswith=username_prefix)
 
-        if not users:
-            raise Http404()
         users = users[offset:offset + limit]
         return [strip_empty_optional_fields(user) for user in users]
 
