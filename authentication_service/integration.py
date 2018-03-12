@@ -48,6 +48,9 @@ class Implementation(AbstractStubClass):
         if client_token_id:
             clients = clients.filter(client_id=client_token_id)
 
+        if not clients:
+            raise Http404()
+
         clients = clients[offset:offset + limit]
         return [strip_empty_optional_fields(client) for client in clients]
 
@@ -58,9 +61,9 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param client_id: string A string value identifying the client
         """
-        result = Client.objects.filter(
-            client_id=client_id).values(*CLIENT_VALUES).get()
-        return result
+        client = get_object_or_404(Client, client_id=client_id)
+        result = to_dict_with_custom_fields(client, CLIENT_VALUES)
+        return strip_empty_optional_fields(result)
 
     @staticmethod
     def user_list(request, offset=None, limit=None, email=None,
@@ -80,6 +83,8 @@ class Implementation(AbstractStubClass):
         if username_prefix:
             users = users.filter(username__startswith=username_prefix)
 
+        if not users:
+            raise Http404()
         users = users[offset:offset + limit]
         return [strip_empty_optional_fields(user) for user in users]
 

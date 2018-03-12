@@ -2,6 +2,7 @@ import json
 import os
 
 import datetime
+import uuid
 
 import jsonschema
 from django.contrib.auth import get_user_model
@@ -109,6 +110,10 @@ class IntegrationTestCase(TestCase):
         response = self.client.get("/api/v1/clients?limit=500")
         self.assertEqual(response.status_code, 400)
 
+        # Test non-existent client
+        response = self.client.get("/api/v1/clients?client_ids=1234")
+        self.assertEqual(response.status_code, 404)
+
     def test_client_read(self):
         # Authorize user
         self.client.login(username="test_user_2", password="password")
@@ -120,6 +125,10 @@ class IntegrationTestCase(TestCase):
 
         # Validate returned data
         jsonschema.validate(response.json(), schema=schemas.client)
+
+        # Test non-existent client
+        response = self.client.get("/api/v1/clients/1234")
+        self.assertEqual(response.status_code, 404)
 
     def test_user_list(self):
         # Authorize user
@@ -161,6 +170,10 @@ class IntegrationTestCase(TestCase):
         response = self.client.get("/api/v1/users?limit=500")
         self.assertEqual(response.status_code, 400)
 
+        # Test non-existent user
+        response = self.client.get("/api/v1/users?email=not@here.com")
+        self.assertEqual(response.status_code, 404)
+
     def test_user_read(self):
         # Authorize user
         self.client.login(username="test_user_2", password="password")
@@ -171,6 +184,10 @@ class IntegrationTestCase(TestCase):
 
         # Validate returned data
         jsonschema.validate(response.json(), schema=schemas.user)
+
+        # Test non-existent user
+        response = self.client.get("/api/v1/users/%s" % uuid.uuid1())
+        self.assertEqual(response.status_code, 404)
 
     def test_user_update(self):
         # Authorize user
@@ -207,6 +224,13 @@ class IntegrationTestCase(TestCase):
         self.assertEqual(user["last_name"], "User")
         self.assertEqual(user["email"], "testuser2@tests.com")
 
+        # Check non-existent user
+        response = self.client.put(
+            "/api/v1/users/%s" % uuid.uuid1(),
+            data=json.dumps(data)
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_user_delete(self):
         # Authorize user
         self.client.login(username="test_user_1", password="password")
@@ -217,5 +241,6 @@ class IntegrationTestCase(TestCase):
         response = self.client.get("/api/v1/users")
         self.assertEqual(len(response.json()), 2)
 
+        # Test non-existent user
         response = self.client.delete("/api/v1/users/%s" % self.user_2.id)
         self.assertEqual(response.status_code, 404)
