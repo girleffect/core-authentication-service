@@ -81,7 +81,7 @@ def set_listing_limit(limit):
 
 
 def strip_empty_optional_fields(object_dict):
-    """ We do not need to add fields that contain None or "" to the response,
+    """ We do not need to add fields that contain None to the response,
     so we strip those fields out of the response. To do this, we iterate over
     the fields in the input dictionary and check that the value isn't, what we
     consider, empty. If a field has a value, add that field and value to the
@@ -89,8 +89,4 @@ def strip_empty_optional_fields(object_dict):
     :param object_dict: Input dictionary containing possible empty fields.
     :return: Output dictionary containing only fields that have values.
     """
-    result = {}
-    for field in object_dict:
-        if object_dict[field] is not None and object_dict[field] is not "":
-            result[field] = object_dict[field]
-    return result
+    return {k: v for k, v in object_dict.items() if v is not None}

@@ -101,9 +101,9 @@ class IntegrationTestCase(TestCase):
         # Test list using combination
         response = self.client.get(
             "/api/v1/clients?client_ids=%s&client_token_id=%s" % (
-                self.client_1.id, self.client_2.client_id)
+                self.client_1.id, self.client_1.client_id)
         )
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(response.json()), 1)
 
     def test_client_read(self):
         # Authorize user
@@ -150,8 +150,8 @@ class IntegrationTestCase(TestCase):
         # Test combination
         response = self.client.get(
             "/api/v1/users?email=%s&username_prefix=test&user_ids=%s" % (
-                self.user_3.email, self.user_2.id))
-        self.assertEqual(len(response.json()), 3)
+                self.user_3.email, self.user_3.id))
+        self.assertEqual(len(response.json()), 1)
 
     def test_user_read(self):
         # Authorize user

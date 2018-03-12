@@ -41,14 +41,11 @@ class Implementation(AbstractStubClass):
 
         clients = Client.objects.values(*CLIENT_VALUES)
 
-        q_objects = Q()
-
         if client_ids:
-            q_objects |= Q(id__in=client_ids)
-        if client_token_id:
-            q_objects |= Q(client_id=client_token_id)
+            clients = clients.filter(id__in=client_ids)
 
-        clients = clients.filter(q_objects)
+        if client_token_id:
+            clients = clients.filter(client_id=client_token_id)
 
         clients = clients[offset:limit]
         return list(clients)
@@ -75,15 +72,12 @@ class Implementation(AbstractStubClass):
 
         users = CoreUser.objects.values(*USER_VALUES)
 
-        q_objects = Q()
-        if email:
-            q_objects |= Q(email=email)
-        if username_prefix:
-            q_objects |= Q(username__startswith=username_prefix)
         if user_ids:
-            q_objects |= Q(id__in=user_ids)
-
-        users = users.filter(q_objects)
+            users = users.filter(id__in=user_ids)
+        if email:
+            users = users.filter(email=email)
+        if username_prefix:
+            users = users.filter(username__startswith=username_prefix)
 
         users = users[offset:limit]
         result = []
