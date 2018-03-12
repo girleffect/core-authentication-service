@@ -1,28 +1,36 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/form.css" %}" />
+{% block metatitle %}
+    {% trans "Edit Your Profile" %}
 {% endblock %}
 
-{% block branding %}<h1>{% trans "Edit profile" %}</h1>{% endblock %}
-
-{% block links %}
-    <a href="{% url "admin:logout" %}">{% trans "Logout" %}</a>
+{% block title %}
+    <h1>{% trans "Edit Your Profile" %}</h1>
 {% endblock %}
 
 {% block content %}
-    <form method="post">
+    <form method="post" class="Form">
         {% csrf_token %}
         {{ form.as_div }}
 
-        <input type="submit" value="{% trans "Update" %}" />
-        <a href="{% url "update_password" %}">{% trans "Password update" %}</a>
-        <a href="{% url "update_security_questions" %}">{% trans "Security questions update" %}</a>
-        <a href="{% url "delete_account" %}">{% trans "Delete account" %}</a>
-        {% if 2fa_enabled %}
-            <a href="{% url "update_2fa" %}">{% trans "2FA settings" %}</a>
-        {% endif %}
+        <div class="Form-buttons">
+            <input type="submit" value="{% trans "Update" %}" class="Button" />
+        </div>
+
+        <div class="Menu">
+            <div class="Menu-title">
+                <h1>{% trans "Menu" %}</h1>
+            </div>
+            <ul class="Menu-list">
+                <li class="Menu-item"><a href="{% url "update_password" %}">{% trans "Password update" %}</a></li>
+                <li class="Menu-item"><a href="{% url "update_security_questions" %}">{% trans "Security questions update" %}</a></li>
+                <li class="Menu-item"><a href="{% url "delete_account" %}">{% trans "Delete account" %}</a></li>
+                {% if 2fa_enabled %}
+                    <li class="Menu-item"><a href="{% url "update_2fa" %}">{% trans "2FA settings" %}</a></li>
+                {% endif %}
+                <li class="Menu-item"><a href="{% url "admin:logout" %}">{% trans "Logout" %}</a></li>
+            </ul>
+        </div>
     </form>
 {% endblock %}

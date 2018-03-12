@@ -1,13 +1,14 @@
-{% extends "admin/base_site.html" %}
+{% extends "base.html" %}
 {% load i18n static %}
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />{% endblock %}
 
-{% block branding %}
-    Girl Effect using django admin theme
+{% block metatitle %}
+    {% trans "Oops" %}
 {% endblock %}
-{% block breadcrumbs %}{% endblock %}
+
+{% block title %}
+    <h1>{% trans "Oops" %}</h1>
+{% endblock %}
+
 {% block content %}
-    <div id="content-main">
-        {% trans "Oops! We don't seem to know what to do with you." %}
-    </div>
+        <p>{% trans "Oops! We don't seem to know what to do with you." %}</p>
 {% endblock %}
