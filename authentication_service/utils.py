@@ -93,3 +93,20 @@ def strip_empty_optional_fields(object_dict):
     :return: Output dictionary containing only fields that have values.
     """
     return {k: v for k, v in object_dict.items() if v is not None}
+
+
+def to_dict_with_custom_fields(instance, custom_fields):
+    """ Convert an object to a dictionary with only some of the fields that
+    exist on the object. Some fields also require some manual handling.
+    :param instance: Object to be converted.
+    :param custom_fields: List of fields to include in dict.
+    :return: Dictionary with custom fields.
+    """
+    result = {}
+    for field in instance._meta.fields:
+        if field.name in custom_fields:
+            if field.name == "avatar":  # CoreUser field
+                result[field.name] = instance.avatar.path if instance.avatar else None
+            else:
+                result[field.name] = getattr(instance, field.name)
+    return result

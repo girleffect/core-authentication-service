@@ -185,8 +185,7 @@ class IntegrationTestCase(TestCase):
                 "msisdn_verified": False,
                 "msisdn": "",
                 "gender": "",
-                "birth_date": "2000-01-01",
-                "avatar": "http://example.com"
+                "birth_date": "2000-01-01"
             }
 
         # Test read
@@ -217,3 +216,6 @@ class IntegrationTestCase(TestCase):
 
         response = self.client.get("/api/v1/users")
         self.assertEqual(len(response.json()), 2)
+
+        response = self.client.delete("/api/v1/users/%s" % self.user_2.id)
+        self.assertEqual(response.status_code, 404)

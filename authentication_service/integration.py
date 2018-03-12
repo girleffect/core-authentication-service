@@ -1,14 +1,15 @@
 import logging
 
 from django.conf import settings
-from django.db.models import Q
+from django.forms import model_to_dict
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from oidc_provider.models import Client
 
 from authentication_service.api.stubs import AbstractStubClass
 from authentication_service.models import CoreUser
 from authentication_service.utils import strip_empty_optional_fields, \
-    check_limit
+    check_limit, to_dict_with_custom_fields
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,8 +48,8 @@ class Implementation(AbstractStubClass):
         if client_token_id:
             clients = clients.filter(client_id=client_token_id)
 
-        clients = clients[offset:limit]
-        return list(clients)
+        clients = clients[offset:offset + limit]
+        return [strip_empty_optional_fields(client) for client in clients]
 
 
     @staticmethod
@@ -79,11 +80,8 @@ class Implementation(AbstractStubClass):
         if username_prefix:
             users = users.filter(username__startswith=username_prefix)
 
-        users = users[offset:limit]
-        result = []
-        for user in list(users):
-            result.append(strip_empty_optional_fields(user))
-        return result
+        users = users[offset:offset + limit]
+        return [strip_empty_optional_fields(user) for user in users]
 
     @staticmethod
     def user_delete(request, user_id, *args, **kwargs):
@@ -91,11 +89,10 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param user_id: string A UUID value identifying the user.
         """
-        user = CoreUser.objects.filter(id=user_id)
-        result = strip_empty_optional_fields(user.values(*USER_VALUES).get())
-        user.delete()  # Delete user after stripping fields
-        return result
-
+        user = get_object_or_404(CoreUser, id=user_id)
+        result = to_dict_with_custom_fields(user, USER_VALUES)
+        user.delete()
+        return strip_empty_optional_fields(result)
 
     @staticmethod
     def user_read(request, user_id, *args, **kwargs):
@@ -103,9 +100,9 @@ class Implementation(AbstractStubClass):
         :param request: An HttpRequest
         :param user_id: string A UUID value identifying the user.
         """
-        result = strip_empty_optional_fields(
-            CoreUser.objects.filter(id=user_id).values(*USER_VALUES).get())
-        return result
+        user = get_object_or_404(CoreUser, id=user_id)
+        result = to_dict_with_custom_fields(user, USER_VALUES)
+        return strip_empty_optional_fields(result)
 
     @staticmethod
     def user_update(request, body, user_id, *args, **kwargs):
@@ -122,11 +119,5 @@ class Implementation(AbstractStubClass):
                 LOGGER.error("Failed to set user attribute %s: %s" % (attr, e))
 
         instance.save()
-        result = {}
-        for field in instance._meta.fields:
-            if field.name in USER_VALUES:
-                if field.name == "avatar":  # Prevent serialization issue
-                    result[field.name] = instance.avatar.path
-                else:
-                    result[field.name] = getattr(instance, field.name)
+        result = to_dict_with_custom_fields(instance, USER_VALUES)
         return strip_empty_optional_fields(result)
