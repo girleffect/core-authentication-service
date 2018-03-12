@@ -203,23 +203,31 @@ class TestRegistrationView(TestCase):
         )
 
     def test_view_themes(self):
-        response = self.client.get(reverse("registration") + "?theme=django")
+        response = self.client.get(reverse("registration") + "?theme=springster")
         self.assertListEqual(
             response.template_name,
             [
-                "authentication_service/registration/registration_django"
+                "authentication_service/registration/registration_springster"
                 ".html",
                 "authentication_service/registration/registration.html"]
         )
-        self.assertContains(response, "Girl Effect using django admin theme")
+        self.assertContains(
+            response,
+            "http://za.heyspringster.com/static/img/sp-logo.3e443cd8bfae.png"
+        )
 
-        response = self.client.get(reverse("registration") + "?theme=ge")
+        response = self.client.get(
+            reverse("registration") + "?theme=ninyampinga")
         self.assertListEqual(
             response.template_name,
-            ["authentication_service/registration/registration_ge.html",
+            ["authentication_service/registration/registration_ninyampinga"
+            ".html",
              "authentication_service/registration/registration.html"]
         )
-        self.assertContains(response, "Girl Effect themed form")
+        self.assertContains(
+            response,
+            "http://ninyampinga.com/static/img/logos/logo_rwanda.a61da5b16fba.png"
+        )
 
     def test_view_success_redirects(self):
         # Test most basic iteration
@@ -689,8 +697,10 @@ class DeleteAccountTestCase(TestCase):
                 "reason": "The theme is ugly"
             }
         )
-        self.assertContains(response, "<input name=\"confirmed_deletion\" " \
-        "type=\"submit\" value=\"Are you sure?\" />")
+        self.assertContains(
+            response,
+            "<input name=\"confirmed_deletion\" type=\"submit\" value=\"Yes\" class=\"Button\" />"
+        )
         self.assertContains(response, "<input type=\"text\" name=\"reason\" " \
         "value=\"The theme is ugly\" id=\"id_reason\" class=\" TextInput \" />")
 
