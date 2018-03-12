@@ -114,6 +114,14 @@ CELERY_USE_TZ = USE_TZ
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
+# API Settings
+STUBS_CLASS = "authentication_service.integration.Implementation"
+SWAGGER_API_VALIDATE_RESPONSES = True
+DEFAULT_LISTING_LIMIT = 20
+MAX_LISTING_LIMIT = 100
+MIN_LISTING_LIMIT = 1
+DEFAULT_LISTING_OFFSET = 0
+
 # Attempt to import local settings if present.
 try:
     from project.settings_local import *

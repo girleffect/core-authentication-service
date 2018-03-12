@@ -85,3 +85,11 @@ FORM_RENDERERS = {
     "enable-bem-classes": True
 }
 
+# API Settings
+STUBS_CLASS = "authentication_service.integration.Implementation"
+SWAGGER_API_VALIDATE_RESPONSES = True
+DEFAULT_LISTING_LIMIT = 20
+MAX_LISTING_LIMIT = 100
+MIN_LISTING_LIMIT = 1
+DEFAULT_LISTING_OFFSET = 0
+

@@ -131,4 +131,9 @@ urlpatterns = [
     url(r"^logout/$",
         logout
     ),
+
+    # API URL's
+    url(
+        r"api/v1/", include("authentication_service.api.urls"), name="api"
+    )
 ]

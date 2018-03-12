@@ -30,6 +30,7 @@ class CoreUser(AbstractUser):
     birth_date = models.DateField()
     country = models.ForeignKey(_("Country"), blank=True, null=True)
     avatar = models.ImageField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     organisational_unit = models.ForeignKey(
         "OrganisationalUnit", blank=True, null=True
@@ -61,7 +62,7 @@ class CoreUser(AbstractUser):
 
 
 class Country(models.Model):
-    code = models.CharField(blank=True, null=True, max_length=2)
+    code = models.CharField(max_length=2, primary_key=True)
     name = models.CharField(blank=True, null=True, max_length=100)
 
     class Meta:
