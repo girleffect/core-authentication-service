@@ -1,0 +1,27 @@
+body, textarea, select, strong, input {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+}
+
+.Header-branding {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.Header-title {
+    background: #000;
+    color: #fff;
+}
+
+.Button {
+    background: #46ba46;
+}
+.Button:hover {
+    background: #46ba46;
+}
+.Button--warning {
+    background: #ec5605;
+}
+.Button--warning:hover {
+    background: #ec5605;
+}

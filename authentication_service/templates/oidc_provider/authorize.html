@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load i18n static %}
+
+{% block extrastyle-basic %}{% endblock %}
+
+{% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "oidc_provider/css/oidc.css" %}" />{% endblock %}
+
+{% block branding %}
+    {% with client_name=client.name %}
+        {{ client_name }}
+    {% endwith %}
+{% endblock %}
 
 {% block metatitle %}
     {% trans "Request for Permission" %}
@@ -12,7 +22,7 @@
 
 {% block content %}
     {% blocktrans with client_name=client.name %}
-        <p class="Intro">Client <strong>{{ client_name }}</strong> would like to access this information of you ...</p>
+        <p class="Intro">You've recently logged in to <strong>{{ client_name }}</strong> and they would like to access this information of you:</p>
     {% endblocktrans %}
     <form method="post" action="{% url 'oidc_provider:authorize' %}" class="Form">
         {% csrf_token %}
@@ -28,3 +38,5 @@
         </div>
     </form>
 {% endblock %}
+
+{% block footer %}{% endblock %}
