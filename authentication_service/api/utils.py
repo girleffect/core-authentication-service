@@ -9,6 +9,7 @@ import json
 from functools import wraps
 
 import jsonschema
+import os
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse
@@ -56,6 +57,13 @@ def login_required_no_redirect(view_func):
                         login(request, user)
                         request.user = user
                         return view_func(request, *args, **kwargs)
+
+        if "HTTP_X_API_KEY" in request.META:
+            key = request.META["HTTP_X_API_KEY"]
+            if key in os.environ.get("ALLOWED_API_KEYS", ""):
+                return view_func(request, *args, **kwargs)
+            else:
+                return HttpResponse("Forbidden", status=403)
 
         return HttpResponse("Unauthorized", status=401)
 
