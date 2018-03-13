@@ -30,8 +30,10 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
     as near the end as possible. As other Middleware may also trigger
     redirects.
     """
+    # TODO Refactor cookie code, keys need to be constants or setting. Clear
+    # all cookies in the flush logic.
     def process_response(self, request, response):
-        if response and response.status_code == 302:
+        if response.status_code == 302:
             current_host = request.get_host()
             location = response.get("Location", "")
             parsed_url = urlparse(location)
@@ -57,6 +59,10 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                 self.cookie_key, value=theme, httponly=True
             )
             templates = {"original": [], "new": []}
+
+            # Views can have a singular template_name.
+            if isinstance(response.template_name, str):
+                response.template_name = [response.template_name]
             for full_path in response.template_name:
                 path, filename = os.path.split(full_path)
                 filename, extension = os.path.splitext(filename)
