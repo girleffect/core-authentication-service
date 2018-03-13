@@ -4,6 +4,7 @@ import os
 
 from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
 from oidc_provider.lib.errors import (
+    AuthorizeError,
     ClientIdError,
     RedirectUriError
 )
@@ -101,6 +102,13 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                     {"error": e.error, "message": e.description},
                     status=500
                 )
+            except AuthorizeError as e:
+                # Suppress one of the errors oidc raises. It is not required
+                # for pages beyond login.
+                if e.error == "unsupported_response_type":
+                    pass
+                else:
+                    raise e
             response.set_cookie(
                 self.cookie_key, value=authorize.params["redirect_uri"], httponly=True
             )
