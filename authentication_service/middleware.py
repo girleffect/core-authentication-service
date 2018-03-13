@@ -2,6 +2,14 @@ from urllib.parse import urlparse
 import logging
 import os
 
+from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
+from oidc_provider.lib.errors import (
+    ClientIdError,
+    RedirectUriError
+)
+
+
+from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
 
 
@@ -23,7 +31,7 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
     redirects.
     """
     def process_response(self, request, response):
-        if response.status_code == 302:
+        if response and response.status_code == 302:
             current_host = request.get_host()
             location = response.get("Location", "")
             parsed_url = urlparse(location)
@@ -63,4 +71,31 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                     prepend_list.append(
                         os.path.join(template["path"], template["name"]))
                 response.template_name = prepend_list + response.template_name
+        return response
+
+
+class RedirectManagementMiddleware(MiddlewareMixin):
+    cookie_key = "ge_redirect_middleware_cookie"
+
+    # TODO refactor the redirect cookie view as well as other views that set the cookie.
+    def process_response(self, request, response):
+        # Before storing the redirect_uri, ensure it comes from a valid client.
+        # This is to prevent urls on other parts of the site being misused to
+        # redirect users to none client apps.
+        uri = request.GET.get("redirect_uri", None)
+        if uri:
+            authorize = AuthorizeEndpoint(request)
+            try:
+                authorize.validate_params()
+            except (ClientIdError, RedirectUriError) as e:
+                # TODO User friendly error message
+                return render(
+                    request,
+                    "authentication_service/redirect_middleware_error.html",
+                    {"error": e.error, "message": e.description},
+                    status=500
+                )
+            response.set_cookie(
+                self.cookie_key, value=authorize.params["redirect_uri"], httponly=True
+            )
         return response
