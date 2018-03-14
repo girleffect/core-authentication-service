@@ -38,8 +38,8 @@ def body_to_dict(body, schema):
 def login_required_no_redirect(view_func):
     """
     Helper function that returns an HTTP 401 response if the user making the
-    request is not logged in, or did not provide basic HTTP authentication in
-    the request.
+    request is not logged in, or did not provide basic HTTP authentication or an
+    API key in the request.
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
