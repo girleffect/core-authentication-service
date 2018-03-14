@@ -62,6 +62,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Easiest to add context processors to base settings. Cuts dev
+                # effort.
+                'authentication_service.context_processors.redirect_uri',
             ],
         },
     },

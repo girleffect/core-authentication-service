@@ -13,6 +13,8 @@ from oidc_provider.lib.errors import (
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
 
+from authentication_service.constants import COOKIES
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -82,7 +84,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
 
 
 class RedirectManagementMiddleware(MiddlewareMixin):
-    cookie_key = "ge_redirect_middleware_cookie"
+    cookie_key = COOKIES["redirect_cookie"]
 
     # TODO refactor the redirect cookie view as well as other views that set the cookie.
     def process_response(self, request, response):
@@ -90,12 +92,13 @@ class RedirectManagementMiddleware(MiddlewareMixin):
         # This is to prevent urls on other parts of the site being misused to
         # redirect users to none client apps.
         uri = request.GET.get("redirect_uri", None)
-        if uri:
+        if uri and not request.method == "POST":
             authorize = AuthorizeEndpoint(request)
             try:
                 authorize.validate_params()
             except (ClientIdError, RedirectUriError) as e:
                 # TODO User friendly error message
+                import pdb; pdb.set_trace()
                 return render(
                     request,
                     "authentication_service/redirect_middleware_error.html",

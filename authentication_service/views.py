@@ -28,7 +28,7 @@ from two_factor.forms import BackupTokenForm
 from two_factor.utils import default_device
 from two_factor.views import core
 
-from authentication_service import forms, models, tasks
+from authentication_service import forms, models, tasks, constants
 
 
 class LanguageMixin:
@@ -56,7 +56,7 @@ class RedirectMixin:
 
     def dispatch(self, *args, **kwargs):
         # TODO grab cookie value
-        self.redirect_url = self.request.GET.get("redirect_url")
+        self.redirect_url = self.request.GET.get("redirect_uri")
         return super(RedirectMixin, self).dispatch(*args, **kwargs)
 
     def get_success_url(self):
@@ -112,7 +112,7 @@ LoginView.dispatch = watch_login_method(LoginView.dispatch)
 # TODO: Do something similar to the password reset view when it is implemented.
 
 
-REDIRECT_COOKIE_KEY = "register_redirect"
+REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
 
 
 class RegistrationView(LanguageRedirectMixin, CreateView):
@@ -221,8 +221,6 @@ class CookieRedirectView(View):
     def dispatch(self, request, *args, **kwargs):
         # No need for super, this view should at this stage not need any of its
         # http method functions.
-        # TODO at later stage, check if this needs to be validated against oidc
-        # clients as well.
         url = request.COOKIES.get(REDIRECT_COOKIE_KEY)
 
         # Default fallback if cookie was deleted or no url was set.
