@@ -49,7 +49,9 @@
                 </div>
                 <div class="Header-links">
                     {% block links %}
-                        <a href="{{ ge_global_redirect_uri }}">{% trans "Back to app" %}</a>
+                        {% if ge_global_client_name %}
+                            {% trans "Back to " %}<a href="{% url "redirect_view" %}">{{ ge_global_client_name }}</a>
+                        {% endif %}
                     {% endblock %}
                 </div>
                 {% comment %}
@@ -62,7 +64,6 @@
             {% comment %}
                 There might be a need for a nav bar later on.
                 See into perhaps showing referrer app visually.
-            
                 {% block breadcrumbs %}
                     <div class="breadcrumbs">
                         <a href="">{% trans "App name" %}</a>

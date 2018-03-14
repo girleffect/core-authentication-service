@@ -221,6 +221,7 @@ class CookieRedirectView(View):
     def dispatch(self, request, *args, **kwargs):
         # No need for super, this view should at this stage not need any of its
         # http method functions.
+        logout(request)
         url = request.COOKIES.get(REDIRECT_COOKIE_KEY)
 
         # Default fallback if cookie was deleted or no url was set.
@@ -229,7 +230,6 @@ class CookieRedirectView(View):
             response = HttpResponseRedirect(url)
 
         response.delete_cookie(REDIRECT_COOKIE_KEY)
-        logout(request)
         return response
 
 
