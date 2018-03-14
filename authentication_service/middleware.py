@@ -99,7 +99,7 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                 return render(
                     request,
                     "authentication_service/redirect_middleware_error.html",
-                    {"error": e.error, "message": e.description},
+                    {"error": e.error, "message": e.description, "uri": uri},
                     status=500
                 )
             except AuthorizeError as e:
