@@ -60,7 +60,8 @@ def login_required_no_redirect(view_func):
 
         if "HTTP_X_API_KEY" in request.META:
             key = request.META["HTTP_X_API_KEY"]
-            if key in os.environ.get("ALLOWED_API_KEYS", ""):
+            keys = set(os.getenv("ALLOWED_API_KEYS").split(","))
+            if key in keys:
                 return view_func(request, *args, **kwargs)
             else:
                 return HttpResponse("Forbidden", status=403)
