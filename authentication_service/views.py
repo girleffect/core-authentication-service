@@ -31,6 +31,8 @@ from two_factor.views import core
 from authentication_service import forms, models, tasks, constants
 
 
+REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
+
 class LanguageMixin:
     """This mixin sets an instance variable called self.language, value is
     passed in via url or determined by django language middleware
@@ -56,7 +58,7 @@ class RedirectMixin:
 
     def dispatch(self, *args, **kwargs):
         # TODO grab cookie value
-        self.redirect_url = self.request.GET.get("redirect_uri")
+        self.redirect_url = self.request.COOKIES.get(REDIRECT_COOKIE_KEY)
         return super(RedirectMixin, self).dispatch(*args, **kwargs)
 
     def get_success_url(self):
@@ -110,9 +112,6 @@ defender_decorator = watch_login()
 watch_login_method = method_decorator(defender_decorator)
 LoginView.dispatch = watch_login_method(LoginView.dispatch)
 # TODO: Do something similar to the password reset view when it is implemented.
-
-
-REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
 
 
 class RegistrationView(LanguageRedirectMixin, CreateView):

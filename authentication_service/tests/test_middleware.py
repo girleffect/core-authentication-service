@@ -75,7 +75,7 @@ class TestOIDCSessionMiddleware(TestCase):
     def test_session_flush_logger(self):
         with self.assertLogs(level="WARNING") as cm:
             self.client.cookies.load(
-                {"register_redirect": "http://nuked-session.com/logging/test-redirect/"})
+                {"ge_redirect_cookie": "http://nuked-session.com/logging/test-redirect/"})
             self.client.get(reverse("redirect_view"))
             test_output = [
                 "WARNING:authentication_service.middleware:" \
