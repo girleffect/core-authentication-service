@@ -10,7 +10,11 @@ from django.contrib.auth import login, authenticate, update_session_auth_hash, \
     hashers, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetConfirmView,
+    PasswordChangeView
+)
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.forms.utils import ErrorList
@@ -248,22 +252,17 @@ class EditProfileView(LanguageRedirectMixin, UpdateView):
         return self.request.user
 
 
-class UpdatePasswordView(LanguageRedirectMixin, UpdateView):
+class UpdatePasswordView(LanguageRedirectMixin, PasswordChangeView):
     template_name = "authentication_service/profile/update_password.html"
     form_class = forms.PasswordChangeForm
     success_url = reverse_lazy("edit_profile")
 
-    def get_object(self, queryset=None):
-        return self.request.user
-
-    def get_form_kwargs(self):
-        kwargs = super(UpdatePasswordView, self).get_form_kwargs()
-        kwargs["user"] = kwargs.pop("instance")
-        return kwargs
-
     def form_valid(self, form):
-        if form.is_valid():
-            update_session_auth_hash(self.request, form.save())
+        if form.is_valid:
+            messages.success(
+                self.request,
+                _("Successfully updated password.")
+            )
         return super(UpdatePasswordView, self).form_valid(form)
 
 
