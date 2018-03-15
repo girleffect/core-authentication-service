@@ -61,7 +61,6 @@ class RedirectMixin:
     success_url = None
 
     def dispatch(self, *args, **kwargs):
-        # TODO grab cookie value
         self.redirect_url = self.request.COOKIES.get(REDIRECT_COOKIE_KEY)
         return super(RedirectMixin, self).dispatch(*args, **kwargs)
 
