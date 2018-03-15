@@ -283,8 +283,10 @@ class TestRegistrationView(TestCase):
         self.assertIn(response.url, "/two-factor-auth/account/login/")
 
         # Test redirect url, no 2fa
+        self.client.cookies.load(
+            {"ge_redirect_cookie": "/test-redirect-url/"})
         response = self.client.post(
-            reverse("registration") + "?redirect_url=/test-redirect-url/",
+            reverse("registration") + "?redirect_uri=/test-redirect-url/",
             {
                 "username": "Username1",
                 "password1": "password",
@@ -303,7 +305,7 @@ class TestRegistrationView(TestCase):
         response = self.client.post(
             reverse(
                 "registration") +
-            "?show2fa=true&redirect_url=/test-redirect-url/",
+            "?show2fa=true&redirect_uri=/test-redirect-url/",
             {
                 "username": "Username2",
                 "password1": "password",
@@ -323,7 +325,7 @@ class TestRegistrationView(TestCase):
         response = self.client.post(
             reverse(
                 "registration") +
-            "?security=high&redirect_url=/test-redirect-url/",
+            "?security=high&redirect_uri=/test-redirect-url/",
             {
                 "username": "Username3",
                 "password1": "awesom#saFe3",
@@ -406,7 +408,7 @@ class TestRegistrationView(TestCase):
 
         # Test with redirect cookie set.
         self.client.cookies.load(
-            {"register_redirect": "/test-redirect-after2fa/"})
+            {"ge_redirect_cookie": "/test-redirect-after2fa/"})
         response = self.client.get(reverse("redirect_view"))
         self.assertIn(response.url, "/test-redirect-after2fa/")
 
@@ -507,14 +509,16 @@ class EditProfileViewTestCase(TestCase):
 
         # Get form
         response = self.client.get(
-            "%s?redirect_url=/admin/" % reverse("edit_profile"))
+            reverse("edit_profile"))
 
         # Check 2FA isn't enabled
         self.assertNotContains(response, "2fa")
 
         # Post form
+        self.client.cookies.load(
+            {"ge_redirect_cookie": "/admin/"})
         response = self.client.post(
-            "%s?redirect_url=/admin/" % reverse("edit_profile"),
+            "%s?redirect_uri=/admin/" % reverse("edit_profile"),
             {
                 "email": "test@user.com",
                 "birth_date": "2001-01-01"
@@ -531,7 +535,8 @@ class EditProfileViewTestCase(TestCase):
 
         # Get form
         response = self.client.get(
-            "%s?redirect_url=/admin/" % reverse("edit_profile"))
+            reverse("edit_profile")
+        )
 
         # Check 2FA is enabled and present on edit page
         self.assertContains(response, "2fa")

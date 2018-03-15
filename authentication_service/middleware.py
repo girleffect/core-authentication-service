@@ -2,7 +2,18 @@ from urllib.parse import urlparse
 import logging
 import os
 
+from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
+from oidc_provider.lib.errors import (
+    AuthorizeError,
+    ClientIdError,
+    RedirectUriError
+)
+
+
+from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
+
+from authentication_service.constants import COOKIES, EXTRA_SESSION_KEY
 
 
 LOGGER = logging.getLogger(__name__)
@@ -22,6 +33,8 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
     as near the end as possible. As other Middleware may also trigger
     redirects.
     """
+    # TODO Refactor cookie code, keys need to be constants or setting. Clear
+    # all cookies in the flush logic.
     def process_response(self, request, response):
         if response.status_code == 302:
             current_host = request.get_host()
@@ -49,6 +62,10 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                 self.cookie_key, value=theme, httponly=True
             )
             templates = {"original": [], "new": []}
+
+            # Views can have a singular template_name.
+            if isinstance(response.template_name, str):
+                response.template_name = [response.template_name]
             for full_path in response.template_name:
                 path, filename = os.path.split(full_path)
                 filename, extension = os.path.splitext(filename)
@@ -63,4 +80,53 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                     prepend_list.append(
                         os.path.join(template["path"], template["name"]))
                 response.template_name = prepend_list + response.template_name
+        return response
+
+
+class RedirectManagementMiddleware(MiddlewareMixin):
+    cookie_key = COOKIES["redirect_cookie"]
+    client_name_key = COOKIES["redirect_client_name"]
+    oidc_values = None
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        # Before storing the redirect_uri, ensure it comes from a valid client.
+        # This is to prevent urls on other parts of the site being misused to
+        # redirect users to none client apps.
+        uri = request.GET.get("redirect_uri", None)
+        if uri and request.method != "POST":
+            authorize = AuthorizeEndpoint(request)
+            try:
+                authorize.validate_params()
+            except (ClientIdError, RedirectUriError) as e:
+                return render(
+                    request,
+                    "authentication_service/redirect_middleware_error.html",
+                    {"error": e.error, "message": e.description, "uri": uri},
+                    status=500
+                )
+            except AuthorizeError as e:
+                # Suppress one of the errors oidc raises. It is not required
+                # for pages beyond login.
+                if e.error == "unsupported_response_type":
+                    pass
+                else:
+                    raise e
+            self.oidc_values = authorize
+            request.session[EXTRA_SESSION_KEY] = {
+                self.client_name_key: authorize.client.name
+            }
+
+    def process_response(self, request, response):
+        if self.oidc_values:
+            response.set_cookie(
+                self.cookie_key, value=self.oidc_values.params["redirect_uri"],
+                httponly=True
+            )
+
+            # Explicitly set a second cookie, less refactoring needed in other
+            # parts of auth service.
+            response.set_cookie(
+                self.client_name_key, value=self.oidc_values.client.name,
+                httponly=True
+            )
         return response

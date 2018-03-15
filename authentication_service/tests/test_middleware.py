@@ -6,6 +6,8 @@ from django.test import TestCase
 
 from oidc_provider.models import Client
 
+from authentication_service import constants
+
 
 class TestOIDCSessionMiddleware(TestCase):
 
@@ -75,7 +77,7 @@ class TestOIDCSessionMiddleware(TestCase):
     def test_session_flush_logger(self):
         with self.assertLogs(level="WARNING") as cm:
             self.client.cookies.load(
-                {"register_redirect": "http://nuked-session.com/logging/test-redirect/"})
+                {"ge_redirect_cookie": "http://nuked-session.com/logging/test-redirect/"})
             self.client.get(reverse("redirect_view"))
             test_output = [
                 "WARNING:authentication_service.middleware:" \
@@ -84,3 +86,88 @@ class TestOIDCSessionMiddleware(TestCase):
             ]
             output = cm.output
             self.assertListEqual(output, test_output)
+
+
+class TestRedirectManagementMiddleware(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestRedirectManagementMiddleware, cls).setUpTestData()
+        cls.client_obj = Client(
+            name="test_client",
+            client_id="client_id_1",
+            client_secret="super_client_secret_1",
+            response_type="code",
+            jwt_alg="HS256",
+            redirect_uris=["http://example.com/"]
+        )
+        cls.client_obj.save()
+
+    def test_cookie_and_session_values(self):
+        response = self.client.get(
+            reverse(
+                "login"
+            ) + "?client_id=client_id_1&" \
+            "redirect_uri=http%3A%2F%2Fexample.com%2F&response_type=code",
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.COOKIES["redirect_client_name"]],
+            self.client_obj.name
+        )
+        self.assertEquals(
+            response.client.cookies[constants.COOKIES["redirect_cookie"]].value,
+            "http://example.com/"
+        )
+        self.assertEquals(
+            response.client.cookies[
+                constants.COOKIES["redirect_client_name"]].value,
+            self.client_obj.name
+        )
+
+    def test_context_values(self):
+        response = self.client.get(
+            reverse(
+                "login"
+            ) + "?client_id=client_id_1&" \
+            "redirect_uri=http%3A%2F%2Fexample.com%2F"
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], None
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
+        self.client.cookies.load(
+            {"ge_redirect_cookie": "http://example.com/",
+            "ge_oidc_client_name": self.client_obj.name}
+        )
+        response = self.client.get(
+            reverse(
+                "login"
+            )
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], "http://example.com/"
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
+
+    def test_client_id_and_redirect_uri_validation(self):
+        response = self.client.get(
+            reverse(
+                "login"
+            ) + "?redirect_uri=http%3A%2F%2Fexample.com%2F"
+        )
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.context["error"], "Client ID Error")
+        self.assertEqual(
+            response.context["message"],
+            "The client identifier (client_id) is missing or invalid."
+        )
+        self.assertEqual(
+            response.templates[0].name,
+            "authentication_service/redirect_middleware_error.html"
+        )

@@ -127,11 +127,6 @@ urlpatterns = [
     ),
 
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
-    # Useful url to have, not currently used in any flows.
-    url(r"^logout/$",
-        logout
-    ),
-
     # API URL's
     url(
         r"api/v1/", include("authentication_service.api.urls"), name="api"
