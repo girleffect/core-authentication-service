@@ -7,8 +7,11 @@ from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth import get_user_model, hashers
 from django.contrib.auth.forms import (
-    UserCreationForm, PasswordResetForm, SetPasswordForm, PasswordChangeForm
+    UserCreationForm,
+    PasswordResetForm,
 )
+from django.contrib.auth.forms import SetPasswordForm as DjangoSetPasswordForm
+from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
@@ -383,7 +386,7 @@ class DeleteAccountForm(forms.Form):
     )
 
 
-class SetPasswordForm(SetPasswordForm):
+class SetPasswordForm(DjangoSetPasswordForm):
     """
     Change password validation requirements based on current user.
 
@@ -434,9 +437,5 @@ class SetPasswordForm(SetPasswordForm):
         return password2
 
 
-# NOTE: SetPasswordForm, is the auth service one. Not django auth as imported
-# at top.
-# django.contrib.auth.forms.PasswordChangeForm, subclasses
-# django.contrib.auth.forms.SetPasswordForm.
-class PasswordChangeForm(SetPasswordForm, PasswordChangeForm):
+class PasswordChangeForm(SetPasswordForm, DjangoPasswordChangeForm):
     pass
