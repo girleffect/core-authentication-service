@@ -509,7 +509,7 @@ class EditProfileViewTestCase(TestCase):
 
         # Get form
         response = self.client.get(
-            "%s?redirect_uri=/admin/" % reverse("edit_profile"))
+            reverse("edit_profile"))
 
         # Check 2FA isn't enabled
         self.assertNotContains(response, "2fa")
@@ -535,7 +535,8 @@ class EditProfileViewTestCase(TestCase):
 
         # Get form
         response = self.client.get(
-            "%s?redirect_uri=/admin/" % reverse("edit_profile"))
+            reverse("edit_profile")
+        )
 
         # Check 2FA is enabled and present on edit page
         self.assertContains(response, "2fa")
