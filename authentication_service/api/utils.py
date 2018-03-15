@@ -13,6 +13,7 @@ import os
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse
+from django.conf import settings
 
 ALLOWED_API_KEYS = set(os.getenv("ALLOWED_API_KEYS").split(","))
 
@@ -65,6 +66,7 @@ def login_required_no_redirect(view_func):
             if key in ALLOWED_API_KEYS:
                 return view_func(request, *args, **kwargs)
 
+        print(request.META)
         return HttpResponse("Unauthorized", status=401)
 
     return wrapper
