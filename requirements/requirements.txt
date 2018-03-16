@@ -26,6 +26,7 @@ celery>=4.1.0,<5.0
 
 django-cors-headers>=2.1.0,<3.0
 
+environs>=2.1.0,<3.0
 jsonschema==2.6.0
 -e git+https://github.com/praekelt/apitools@master#egg=apitools
 rstr==2.2.6 # For mock class in generated server code.
