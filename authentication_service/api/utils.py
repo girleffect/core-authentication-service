@@ -66,7 +66,6 @@ def login_required_no_redirect(view_func):
             if key in ALLOWED_API_KEYS:
                 return view_func(request, *args, **kwargs)
 
-        print(request.META)
         return HttpResponse("Unauthorized", status=401)
 
     return wrapper
