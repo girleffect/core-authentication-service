@@ -29,7 +29,7 @@
                 {% if 2fa_enabled %}
                     <li class="Menu-item"><a href="{% url "update_2fa" %}">{% trans "2FA settings" %}</a></li>
                 {% endif %}
-                <li class="Menu-item"><a href="{% url "admin:logout" %}">{% trans "Logout" %}</a></li>
+                <li class="Menu-item"><a href="{% url "redirect_view" %}">{% trans "Logout" %}</a></li>
             </ul>
         </div>
     </form>

@@ -1,10 +1,16 @@
 import os
-from django.core.urlresolvers import reverse_lazy
-from project.settings_base import *
+
+from environs import Env
 from corsheaders.defaults import default_headers
 
+from django.core.urlresolvers import reverse_lazy
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
+from project.settings_base import *
+
+env = Env()
+
+
+SECRET_KEY = env.str("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
 
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
@@ -34,26 +40,23 @@ DEFENDER_LOCKOUT_TEMPLATE = "authentication_service/lockout.html"
 DEFENDER_REVERSE_PROXY_HEADER = "HTTP_X_FORWARDED_FOR"
 DEFENDER_CACHE_PREFIX = "defender"
 DEFENDER_LOCKOUT_URL = "/lockout"
-DEFENDER_REDIS_URL = os.environ.get("REDIS_URI", "redis://localhost:6379/0")
+DEFENDER_REDIS_URL = env.str("REDIS_URI", "redis://localhost:6379/0")
 DEFENDER_STORE_ACCESS_ATTEMPTS = True
 DEFENDER_ACCESS_ATTEMPT_EXPIRATION = 24  # hours
 DEFENDER_USERNAME_FORM_FIELD = "auth-username"
 
 DATABASES = {
-    "default": {
-        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
-        "NAME": os.environ.get("DB_NAME", "authentication_service"),
-        "USER": os.environ.get("DB_USER", "authentication_service"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "password"),
-        "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
-        "CONN_MAX_AGE": 600
-    }
+    "default": env.dict("DB_DEFAULT", "ENGINE=django.db.backends.postgresql," \
+        "NAME=authentication_service," \
+        "USER=authentication_service," \
+        "PASSWORD=password," \
+        "HOST=127.0.0.1," \
+        "PORT=5432")
 }
 
 INSTALLED_APPS = list(INSTALLED_APPS)
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
 
 # CORS settings
 CORS_ORIGIN_WHITELIST = ["localhost:8000", "127.0.0.1:8000"]
@@ -91,6 +94,7 @@ MIDDLEWARE = MIDDLEWARE + [
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ThemeManagementMiddleware",
     "authentication_service.middleware.OIDCSessionManagementMiddleware",
+    "authentication_service.middleware.RedirectManagementMiddleware"
 ]
 
 LOGIN_URL = reverse_lazy("login")
@@ -111,7 +115,7 @@ FORM_RENDERERS = {
 }
 
 CELERY_USE_TZ = USE_TZ
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
+CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", "redis://localhost:6379")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 # API Settings

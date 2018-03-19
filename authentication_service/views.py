@@ -10,7 +10,11 @@ from django.contrib.auth import login, authenticate, update_session_auth_hash, \
     hashers, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetConfirmView,
+    PasswordChangeView
+)
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.forms.utils import ErrorList
@@ -28,8 +32,10 @@ from two_factor.forms import BackupTokenForm
 from two_factor.utils import default_device
 from two_factor.views import core
 
-from authentication_service import forms, models, tasks
+from authentication_service import forms, models, tasks, constants
 
+
+REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
 
 class LanguageMixin:
     """This mixin sets an instance variable called self.language, value is
@@ -55,7 +61,7 @@ class RedirectMixin:
     success_url = None
 
     def dispatch(self, *args, **kwargs):
-        self.redirect_url = self.request.GET.get("redirect_url")
+        self.redirect_url = self.request.COOKIES.get(REDIRECT_COOKIE_KEY)
         return super(RedirectMixin, self).dispatch(*args, **kwargs)
 
     def get_success_url(self):
@@ -109,9 +115,6 @@ defender_decorator = watch_login()
 watch_login_method = method_decorator(defender_decorator)
 LoginView.dispatch = watch_login_method(LoginView.dispatch)
 # TODO: Do something similar to the password reset view when it is implemented.
-
-
-REDIRECT_COOKIE_KEY = "register_redirect"
 
 
 class RegistrationView(LanguageRedirectMixin, CreateView):
@@ -220,8 +223,7 @@ class CookieRedirectView(View):
     def dispatch(self, request, *args, **kwargs):
         # No need for super, this view should at this stage not need any of its
         # http method functions.
-        # TODO at later stage, check if this needs to be validated against oidc
-        # clients as well.
+        logout(request)
         url = request.COOKIES.get(REDIRECT_COOKIE_KEY)
 
         # Default fallback if cookie was deleted or no url was set.
@@ -230,7 +232,6 @@ class CookieRedirectView(View):
             response = HttpResponseRedirect(url)
 
         response.delete_cookie(REDIRECT_COOKIE_KEY)
-        logout(request)
         return response
 
 
@@ -250,22 +251,17 @@ class EditProfileView(LanguageRedirectMixin, UpdateView):
         return self.request.user
 
 
-class UpdatePasswordView(LanguageRedirectMixin, UpdateView):
+class UpdatePasswordView(LanguageRedirectMixin, PasswordChangeView):
     template_name = "authentication_service/profile/update_password.html"
     form_class = forms.PasswordChangeForm
     success_url = reverse_lazy("edit_profile")
 
-    def get_object(self, queryset=None):
-        return self.request.user
-
-    def get_form_kwargs(self):
-        kwargs = super(UpdatePasswordView, self).get_form_kwargs()
-        kwargs["user"] = kwargs.pop("instance")
-        return kwargs
-
     def form_valid(self, form):
-        if form.is_valid():
-            update_session_auth_hash(self.request, form.save())
+        if form.is_valid:
+            messages.success(
+                self.request,
+                _("Successfully updated password.")
+            )
         return super(UpdatePasswordView, self).form_valid(form)
 
 
