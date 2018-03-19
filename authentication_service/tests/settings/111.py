@@ -92,3 +92,5 @@ DEFAULT_LISTING_LIMIT = 20
 MAX_LISTING_LIMIT = 100
 MIN_LISTING_LIMIT = 1
 DEFAULT_LISTING_OFFSET = 0
+
+ALLOWED_API_KEYS = set("test_api_key,some_other_api_key".split(","))

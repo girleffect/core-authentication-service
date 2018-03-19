@@ -122,6 +122,8 @@ MAX_LISTING_LIMIT = 100
 MIN_LISTING_LIMIT = 1
 DEFAULT_LISTING_OFFSET = 0
 
+ALLOWED_API_KEYS = set(os.getenv("ALLOWED_API_KEYS").split(","))
+
 # Attempt to import local settings if present.
 try:
     from project.settings_local import *
