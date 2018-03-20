@@ -5,9 +5,7 @@ ARG EXTRA_DEPS
 ENV DJANGO_SETTINGS_MODULE=project.settings
 
 # Git is required because one of the pip requirements is pulled from github.
-RUN apt-get update && apt-get install -y git
-
-RUN apt-get update && apt-get install -y gcc netcat $EXTRA_DEPS
+RUN apt-get update && apt-get install -y git gcc netcat $EXTRA_DEPS
 
 RUN mkdir /static
 
