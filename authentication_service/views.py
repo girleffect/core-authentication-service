@@ -85,12 +85,19 @@ class LanguageRedirectMixin(LanguageMixin, RedirectMixin):
     """
 
 
-class LockoutView(View):
+class LockoutView(TemplateView):
     """
     A view used by Defender to inform the user that they have exceeded the
     threshold for allowed login failures or password reset attempts.
     """
     template_name = "authentication_service/lockout.html"
+
+    def get_context_data(self, *args, **kwargs):
+        ct = super(LockoutView, self).get_context_data(*args, **kwargs)
+        ct["referrer"] = self.request.META["HTTP_REFERER"]
+        ct["failure_limit"] = settings.DEFENDER_LOGIN_FAILURE_LIMIT
+        ct["cooloff_time_minutes"] = int(settings.DEFENDER_COOLOFF_TIME / 60)
+        return ct
 
 
 class LoginView(core.LoginView):

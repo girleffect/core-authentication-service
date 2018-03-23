@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
-    {% if "security-questions" in request.path %}
+    {% if "security-questions" in referrer %}
         {% blocktrans %}
         <p>You have exceeded the maximum number of allowed incorrect reset attempts ({{ failure_limit }}).
         Please wait {{ cooloff_time_minutes }} minutes before trying again.</p>
