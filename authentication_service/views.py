@@ -94,7 +94,7 @@ class LockoutView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         ct = super(LockoutView, self).get_context_data(*args, **kwargs)
-        ct["referrer"] = self.request.META["HTTP_REFERER"]
+        ct["referrer"] = self.request.META.get("HTTP_REFERER")
         ct["failure_limit"] = settings.DEFENDER_LOGIN_FAILURE_LIMIT
         ct["cooloff_time_minutes"] = int(settings.DEFENDER_COOLOFF_TIME / 60)
         return ct
