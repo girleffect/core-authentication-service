@@ -52,7 +52,7 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
-    cookie_key = "ge_theme_middleware_cookie"
+    cookie_key = COOKIES["ge_theme_middleware_cookie"]
 
     def process_template_response(self, request, response):
         theme = request.GET.get("theme", None) or request.COOKIES.get(
@@ -69,7 +69,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
             for full_path in response.template_name:
                 path, filename = os.path.split(full_path)
                 filename, extension = os.path.splitext(filename)
-                name = "%s_%s%s" % (filename, theme, extension)
+                name = f"{filename}_{theme}{extension}"
                 templates["new"].append({"name": name, "path": path})
                 templates["original"].append(filename)
 
