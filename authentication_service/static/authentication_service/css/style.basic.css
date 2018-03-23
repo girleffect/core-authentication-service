@@ -51,6 +51,8 @@ hr {
   .Header-title h1 {
     color: #ffffff;
     padding: 10px; }
+.Header-links {
+  margin: 10px 0; }
 
 .Footer {
   padding: 5px 0;
