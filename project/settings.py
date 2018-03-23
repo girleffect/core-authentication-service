@@ -1,5 +1,3 @@
-import os
-
 from environs import Env
 from corsheaders.defaults import default_headers
 
@@ -36,7 +34,6 @@ DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
 DEFENDER_DISABLE_IP_LOCKOUT = True
 DEFENDER_DISABLE_USERNAME_LOCKOUT = False
 DEFENDER_COOLOFF_TIME = 600  # seconds
-DEFENDER_LOCKOUT_TEMPLATE = "authentication_service/lockout.html"
 DEFENDER_REVERSE_PROXY_HEADER = "HTTP_X_FORWARDED_FOR"
 DEFENDER_CACHE_PREFIX = "defender"
 DEFENDER_LOCKOUT_URL = "/lockout"
@@ -57,6 +54,7 @@ DATABASES = {
 INSTALLED_APPS = list(INSTALLED_APPS)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
+ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
 
 # CORS settings
 CORS_ORIGIN_WHITELIST = ["localhost:8000", "127.0.0.1:8000"]
@@ -126,7 +124,6 @@ MAX_LISTING_LIMIT = 100
 MIN_LISTING_LIMIT = 1
 DEFAULT_LISTING_OFFSET = 0
 
-ALLOWED_API_KEYS = set(os.getenv("ALLOWED_API_KEYS").split(","))
 
 # Attempt to import local settings if present.
 try:
