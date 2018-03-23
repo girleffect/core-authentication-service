@@ -1,5 +1,3 @@
-import os
-
 from environs import Env
 from corsheaders.defaults import default_headers
 
@@ -57,6 +55,7 @@ DATABASES = {
 INSTALLED_APPS = list(INSTALLED_APPS)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
+ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
 
 # CORS settings
 CORS_ORIGIN_WHITELIST = ["localhost:8000", "127.0.0.1:8000"]
@@ -126,7 +125,6 @@ MAX_LISTING_LIMIT = 100
 MIN_LISTING_LIMIT = 1
 DEFAULT_LISTING_OFFSET = 0
 
-ALLOWED_API_KEYS = set(os.getenv("ALLOWED_API_KEYS").split(","))
 
 # Attempt to import local settings if present.
 try:
