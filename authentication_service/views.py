@@ -125,7 +125,7 @@ LoginView.dispatch = watch_login_method(LoginView.dispatch)
 
 
 class RegistrationView(LanguageRedirectMixin, CreateView):
-    template_name = "authentication_service/registration/registration.html"
+    template_name = "authentication_service/registration.html"
     form_class = forms.RegistrationForm
     security = None
 

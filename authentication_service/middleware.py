@@ -53,9 +53,9 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
 
 class ThemeManagementMiddleware(MiddlewareMixin):
     cookie_key = COOKIES["ge_theme_middleware_cookie"]
-    #X-Django-Layer
+
     def process_request(self, request):
-        temp_client = "springster"
+        temp_client = "ninyampinga"#ninyampinga
         print (f"Currently serving templates for: {temp_client}")
         request.META["X-Django-Layer"] = temp_client
 
