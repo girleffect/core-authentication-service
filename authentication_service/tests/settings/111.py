@@ -68,14 +68,17 @@ MIDDLEWARE = MIDDLEWARE + [
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ThemeManagementMiddleware",
     "authentication_service.middleware.OIDCSessionManagementMiddleware",
-    "authentication_service.middleware.RedirectManagementMiddleware"
+    "authentication_service.middleware.RedirectManagementMiddleware",
+    "crum.CurrentRequestUserMiddleware",
 ]
+
+LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
 
 # Only change this once custom login flow has been decided on and the need
 # arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("login")
 
-LOGIN_REDIRECT_URL = "admin:index"
+LOGIN_REDIRECT_URL = "redirect_issue"
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
