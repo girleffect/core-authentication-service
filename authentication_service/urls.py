@@ -42,12 +42,12 @@ urlpatterns = [
         RedirectView.as_view(pattern_name="login", permanent=True,
                              query_string=True)
     ),
-    # OOPS URL
+    # Generic redirect issue
     url(
-        r"^oops/",
+        r"^redirect-issue/",
         TemplateView.as_view(
-            template_name="authentication_service/demo/oops.html"),
-        name="oops"
+            template_name="authentication_service/redirect_issue.html"),
+        name="redirect_issue"
     ),
     # Reset password URLs
     url(
