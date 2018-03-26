@@ -78,7 +78,7 @@ LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
 # arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("login")
 
-LOGIN_REDIRECT_URL = "redirect_issue"
+LOGIN_REDIRECT_URL = "admin:index"
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \

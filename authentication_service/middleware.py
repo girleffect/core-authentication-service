@@ -55,9 +55,9 @@ class ThemeManagementMiddleware(MiddlewareMixin):
     cookie_key = COOKIES["ge_theme_middleware_cookie"]
 
     def process_request(self, request):
-        temp_client = "ninyampinga"#ninyampinga
-        print (f"Currently serving templates for: {temp_client}")
-        request.META["X-Django-Layer"] = temp_client
+        theme = request.GET.get("theme", None) or request.COOKIES.get(
+            self.cookie_key)
+        request.META["X-Django-Layer"] = theme
 
     def process_template_response(self, request, response):
         theme = request.GET.get("theme", None) or request.COOKIES.get(
