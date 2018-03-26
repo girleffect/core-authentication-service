@@ -55,7 +55,6 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
-        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -66,6 +65,12 @@ TEMPLATES = [
                 # effort.
                 'authentication_service.context_processors.global_context',
             ],
+            'loaders':[
+                'layers.loaders.filesystem.Loader',
+                'django.template.loaders.filesystem.Loader',
+                'layers.loaders.app_directories.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ]
         },
     },
 ]

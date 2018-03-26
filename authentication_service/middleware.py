@@ -53,6 +53,11 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
 
 class ThemeManagementMiddleware(MiddlewareMixin):
     cookie_key = COOKIES["ge_theme_middleware_cookie"]
+    #X-Django-Layer
+    def process_request(self, request):
+        temp_client = "springster"
+        print (f"Currently serving templates for: {temp_client}")
+        request.META["X-Django-Layer"] = temp_client
 
     def process_template_response(self, request, response):
         theme = request.GET.get("theme", None) or request.COOKIES.get(

@@ -105,7 +105,7 @@ class LoginView(core.LoginView):
     only override the template and the done step, which we use to login
     superusers.
     """
-    template_name = "authentication_service/login/login.html"
+    template_name = "authentication_service/login.html"
 
     form_list = (
         ('auth', AuthenticationForm),
