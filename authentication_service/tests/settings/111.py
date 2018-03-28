@@ -68,8 +68,11 @@ MIDDLEWARE = MIDDLEWARE + [
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ThemeManagementMiddleware",
     "authentication_service.middleware.OIDCSessionManagementMiddleware",
-    "authentication_service.middleware.RedirectManagementMiddleware"
+    "authentication_service.middleware.RedirectManagementMiddleware",
+    "crum.CurrentRequestUserMiddleware",
 ]
+
+LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
 
 # Only change this once custom login flow has been decided on and the need
 # arises to bypass two factor for certain users.

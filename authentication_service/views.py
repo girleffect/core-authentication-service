@@ -105,7 +105,7 @@ class LoginView(core.LoginView):
     only override the template and the done step, which we use to login
     superusers.
     """
-    template_name = "authentication_service/login/login.html"
+    template_name = "authentication_service/login.html"
 
     form_list = (
         ('auth', AuthenticationForm),
@@ -125,7 +125,7 @@ LoginView.dispatch = watch_login_method(LoginView.dispatch)
 
 
 class RegistrationView(LanguageRedirectMixin, CreateView):
-    template_name = "authentication_service/registration/registration.html"
+    template_name = "authentication_service/registration.html"
     form_class = forms.RegistrationForm
     security = None
 

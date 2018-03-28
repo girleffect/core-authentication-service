@@ -1,6 +1,8 @@
+from django.conf import settings
+
 from authentication_service.constants import COOKIES, EXTRA_SESSION_KEY
 
-def redirect_uri(request):
+def global_context(request):
     session_client_name = request.session.get(
         EXTRA_SESSION_KEY,
         {}
