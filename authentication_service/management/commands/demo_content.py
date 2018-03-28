@@ -72,6 +72,38 @@ class Command(BaseCommand):
             "Created" if created else "Updated", c.client_id
         )))
 
+        c, created = Client.objects.update_or_create(
+            client_id="springster_integration",
+            defaults={
+                "name": "Management Layer UI Temporary Workaround",
+                "client_secret": "springster_integration",
+                "response_type": "code",
+                "jwt_alg": "HS256",
+                "redirect_uris": [
+                    "http://localhost:8000/oidc/callback/",
+                ]
+            }
+        )
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", c.client_id
+        )))
+
+        c, created = Client.objects.update_or_create(
+            client_id="management_portal",
+            defaults={
+                "name": "Management Portal",
+                "response_type": "id_token token",
+                "jwt_alg": "RS256",
+                "redirect_uris": [
+                    "http://localhost:3000/oidc/callback/",
+                    "http://core-management-portal:3000/oidc/callback/"
+                ]
+            }
+        )
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", c.client_id
+        )))
+
         # Super user
         self.stdout.write(self.style.SUCCESS("Creating superuser..."))
         user, created = get_user_model().objects.update_or_create(

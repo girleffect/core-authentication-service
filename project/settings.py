@@ -35,6 +35,7 @@ DATABASES = {
 
 INSTALLED_APPS = list(INSTALLED_APPS)
 
+
 ADDITIONAL_APPS = [
     "layers",
     # Open ID prodiver.
@@ -57,11 +58,12 @@ ADDITIONAL_APPS = [
 # Project app has to be first in the list.
 INSTALLED_APPS = ["authentication_service"] + INSTALLED_APPS + ADDITIONAL_APPS
 
-MIDDLEWARE = ["authentication_service.middleware.ThemeManagementMiddleware",] + MIDDLEWARE + [
+MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django_otp.middleware.OTPMiddleware",
+    "authentication_service.middleware.ThemeManagementMiddleware",
     "authentication_service.middleware.OIDCSessionManagementMiddleware",
     "authentication_service.middleware.RedirectManagementMiddleware",
     "crum.CurrentRequestUserMiddleware",
@@ -102,11 +104,15 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
 ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
 
 # CORS settings
-CORS_ORIGIN_WHITELIST = ["localhost:8000", "127.0.0.1:8000"]
+CORS_ORIGIN_WHITELIST = [
+    "localhost:8000", "127.0.0.1:8000",  # Development
+    "core-management-layer:8000", "core-management-portal:3000",  # Demo environment
+]
 CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
 CORS_ALLOW_HEADERS = default_headers + (
     "Access-Control-Allow-Origin",
 )
+
 
 LOGIN_URL = reverse_lazy("login")
 
@@ -118,6 +124,7 @@ OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "authentication_service.oidc_provider_settings.CustomScopeClaims"
 OIDC_GRANT_TYPE_PASSWORD_ENABLE = True  # https://tools.ietf.org/html/rfc6749#section-4.3
+OIDC_IDTOKEN_EXPIRE = 60 * 60  # An hour
 
 FORM_RENDERERS = {
     "replace-as-p": True,
