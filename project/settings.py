@@ -108,6 +108,7 @@ OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "authentication_service.oidc_provider_settings.CustomScopeClaims"
 OIDC_GRANT_TYPE_PASSWORD_ENABLE = True  # https://tools.ietf.org/html/rfc6749#section-4.3
+OIDC_IDTOKEN_EXPIRE = 60 * 60  # An hour
 
 FORM_RENDERERS = {
     "replace-as-p": True,
