@@ -75,7 +75,7 @@ class Command(BaseCommand):
         c, created = Client.objects.update_or_create(
             client_id="springster_integration",
             defaults={
-                "name": "Management Layer UI Temporary Workaround",
+                "name": "Springster Integration",
                 "client_secret": "springster_integration",
                 "response_type": "code",
                 "jwt_alg": "HS256",
