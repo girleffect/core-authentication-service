@@ -1,0 +1,209 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>authentication_service.middleware &#8212; authentication_service  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for authentication_service.middleware</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">urlparse</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">oidc_provider.lib.endpoints.authorize</span> <span class="k">import</span> <span class="n">AuthorizeEndpoint</span>
+<span class="kn">from</span> <span class="nn">oidc_provider.lib.errors</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">AuthorizeError</span><span class="p">,</span>
+    <span class="n">ClientIdError</span><span class="p">,</span>
+    <span class="n">RedirectUriError</span>
+<span class="p">)</span>
+
+
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="k">import</span> <span class="n">render</span>
+<span class="kn">from</span> <span class="nn">django.utils.deprecation</span> <span class="k">import</span> <span class="n">MiddlewareMixin</span>
+
+<span class="kn">from</span> <span class="nn">authentication_service.constants</span> <span class="k">import</span> <span class="n">COOKIES</span><span class="p">,</span> <span class="n">EXTRA_SESSION_KEY</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="OIDCSessionManagementMiddleware"><a class="viewcode-back" href="../../authentication_service.middleware.html#authentication_service.middleware.OIDCSessionManagementMiddleware">[docs]</a><span class="k">class</span> <span class="nc">OIDCSessionManagementMiddleware</span><span class="p">(</span><span class="n">MiddlewareMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Middleware to ensure the user session is flushed when the user is</span>
+<span class="sd">    directed off domain. At this stage only OIDC redirects off domain.</span>
+
+<span class="sd">    This is to guard against users logging out of a client site, but their</span>
+<span class="sd">    session still being retained on the auth service. This leads to the</span>
+<span class="sd">    previous user being immediately logged in without a login prompt.</span>
+
+<span class="sd">    NOTE: This Middleware should always be as near the end of the Middleware</span>
+<span class="sd">    list in settings. Middleware is evaluated in order and this needs to happen</span>
+<span class="sd">    as near the end as possible. As other Middleware may also trigger</span>
+<span class="sd">    redirects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO Refactor cookie code, keys need to be constants or setting. Clear</span>
+    <span class="c1"># all cookies in the flush logic.</span>
+<div class="viewcode-block" id="OIDCSessionManagementMiddleware.process_response"><a class="viewcode-back" href="../../authentication_service.middleware.html#authentication_service.middleware.OIDCSessionManagementMiddleware.process_response">[docs]</a>    <span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">302</span><span class="p">:</span>
+            <span class="n">current_host</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_host</span><span class="p">()</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Location&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">parsed_url</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">parsed_url</span><span class="o">.</span><span class="n">netloc</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">current_host</span> <span class="o">!=</span> <span class="n">parsed_url</span><span class="o">.</span><span class="n">netloc</span><span class="p">:</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;User redirected off domain; &quot;</span> \
+                    <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">) -&gt; (</span><span class="si">%s</span><span class="s2">). Session flushed.&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="n">current_host</span><span class="p">,</span> <span class="n">parsed_url</span><span class="o">.</span><span class="n">netloc</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div></div>
+
+
+<div class="viewcode-block" id="ThemeManagementMiddleware"><a class="viewcode-back" href="../../authentication_service.middleware.html#authentication_service.middleware.ThemeManagementMiddleware">[docs]</a><span class="k">class</span> <span class="nc">ThemeManagementMiddleware</span><span class="p">(</span><span class="n">MiddlewareMixin</span><span class="p">):</span>
+    <span class="n">cookie_key</span> <span class="o">=</span> <span class="s2">&quot;ge_theme_middleware_cookie&quot;</span>
+
+<div class="viewcode-block" id="ThemeManagementMiddleware.process_template_response"><a class="viewcode-back" href="../../authentication_service.middleware.html#authentication_service.middleware.ThemeManagementMiddleware.process_template_response">[docs]</a>    <span class="k">def</span> <span class="nf">process_template_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="n">theme</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;theme&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">request</span><span class="o">.</span><span class="n">COOKIES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cookie_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">theme</span><span class="p">:</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cookie_key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">theme</span><span class="p">,</span> <span class="n">httponly</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">templates</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;original&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;new&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+            <span class="c1"># Views can have a singular template_name.</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">template_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">template_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">response</span><span class="o">.</span><span class="n">template_name</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">full_path</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">template_name</span><span class="p">:</span>
+                <span class="n">path</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+                <span class="n">filename</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">theme</span><span class="p">,</span> <span class="n">extension</span><span class="p">)</span>
+                <span class="n">templates</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span>
+                <span class="n">templates</span><span class="p">[</span><span class="s2">&quot;original&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+            <span class="n">joined_names</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">templates</span><span class="p">[</span><span class="s2">&quot;original&quot;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">]:</span>
+                <span class="n">prepend_list</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="n">template</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">joined_names</span><span class="p">:</span>
+                    <span class="n">prepend_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">template</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">],</span> <span class="n">template</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]))</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">template_name</span> <span class="o">=</span> <span class="n">prepend_list</span> <span class="o">+</span> <span class="n">response</span><span class="o">.</span><span class="n">template_name</span>
+        <span class="k">return</span> <span class="n">response</span></div></div>
+
+
+<div class="viewcode-block" id="RedirectManagementMiddleware"><a class="viewcode-back" href="../../authentication_service.middleware.html#authentication_service.middleware.RedirectManagementMiddleware">[docs]</a><span class="k">class</span> <span class="nc">RedirectManagementMiddleware</span><span class="p">(</span><span class="n">MiddlewareMixin</span><span class="p">):</span>
+    <span class="n">cookie_key</span> <span class="o">=</span> <span class="n">COOKIES</span><span class="p">[</span><span class="s2">&quot;redirect_cookie&quot;</span><span class="p">]</span>
+    <span class="n">client_name_key</span> <span class="o">=</span> <span class="n">COOKIES</span><span class="p">[</span><span class="s2">&quot;redirect_client_name&quot;</span><span class="p">]</span>
+    <span class="n">oidc_values</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RedirectManagementMiddleware.process_view"><a class="viewcode-back" href="../../authentication_service.middleware.html#authentication_service.middleware.RedirectManagementMiddleware.process_view">[docs]</a>    <span class="k">def</span> <span class="nf">process_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view_func</span><span class="p">,</span> <span class="n">view_args</span><span class="p">,</span> <span class="n">view_kwargs</span><span class="p">):</span>
+        <span class="c1"># Before storing the redirect_uri, ensure it comes from a valid client.</span>
+        <span class="c1"># This is to prevent urls on other parts of the site being misused to</span>
+        <span class="c1"># redirect users to none client apps.</span>
+        <span class="n">uri</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;redirect_uri&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uri</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">!=</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+            <span class="n">authorize</span> <span class="o">=</span> <span class="n">AuthorizeEndpoint</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">authorize</span><span class="o">.</span><span class="n">validate_params</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">ClientIdError</span><span class="p">,</span> <span class="n">RedirectUriError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">render</span><span class="p">(</span>
+                    <span class="n">request</span><span class="p">,</span>
+                    <span class="s2">&quot;authentication_service/redirect_middleware_error.html&quot;</span><span class="p">,</span>
+                    <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="n">uri</span><span class="p">},</span>
+                    <span class="n">status</span><span class="o">=</span><span class="mi">500</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">AuthorizeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Suppress one of the errors oidc raises. It is not required</span>
+                <span class="c1"># for pages beyond login.</span>
+                <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="s2">&quot;unsupported_response_type&quot;</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oidc_values</span> <span class="o">=</span> <span class="n">authorize</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="n">EXTRA_SESSION_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client_name_key</span><span class="p">:</span> <span class="n">authorize</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">name</span>
+            <span class="p">}</span></div>
+
+<div class="viewcode-block" id="RedirectManagementMiddleware.process_response"><a class="viewcode-back" href="../../authentication_service.middleware.html#authentication_service.middleware.RedirectManagementMiddleware.process_response">[docs]</a>    <span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">oidc_values</span><span class="p">:</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cookie_key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">oidc_values</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;redirect_uri&quot;</span><span class="p">],</span>
+                <span class="n">httponly</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Explicitly set a second cookie, less refactoring needed in other</span>
+            <span class="c1"># parts of auth service.</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client_name_key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">oidc_values</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">httponly</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Author.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
