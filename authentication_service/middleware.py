@@ -57,8 +57,8 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
 def fetch_theme(request, key=None):
     theme = request.GET.get("theme", None) or request.COOKIES.get(key)
 
-    # Next querystring contain the entire url and querystrings. Django is
-    # not aware of the inner querystrings.
+    # Next querystring contain an entire url including querystrings. Django
+    # request GET is not aware of the inner querystrings.
     next_query = request.GET.get("next")
     if next_query and "theme" in next_query:
         theme = theme or parse_qs(
