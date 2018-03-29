@@ -105,7 +105,8 @@ ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
 
 # CORS settings
 CORS_ORIGIN_WHITELIST = [
-    "localhost:8000", "127.0.0.1:8000",  # Development
+    "localhost:8000", "127.0.0.1:8000",  # Development: Management Layer UI
+    "localhost:3000", "127.0.0.1:3000",  # Development: Management Portal
     "core-management-layer:8000", "core-management-portal:3000",  # Demo environment
 ]
 CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
