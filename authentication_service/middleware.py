@@ -1,4 +1,4 @@
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 import logging
 import os
 
@@ -48,20 +48,33 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
                         current_host, parsed_url.netloc
                     )
                 )
+
+                # Clear theme cookie
+                response.delete_cookie(COOKIES["ge_theme_middleware_cookie"])
+
         return response
+
+def fetch_theme(request, key=None):
+    theme = request.GET.get("theme", None) or request.COOKIES.get(key)
+    # Next querystring contain the entire url and querystrings. Django is
+    # not aware of the inner querystrings.
+    next_query = request.GET.get("next")
+    if next_query and "theme" in next_query:
+        theme = theme or parse_qs(
+            urlparse(next_query).query
+        ).get("theme", [None])[0]
+    return theme
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
     cookie_key = COOKIES["ge_theme_middleware_cookie"]
 
     def process_request(self, request):
-        theme = request.GET.get("theme", None) or request.COOKIES.get(
-            self.cookie_key)
+        theme = fetch_theme(request, self.cookie_key)
         request.META["X-Django-Layer"] = theme
 
     def process_template_response(self, request, response):
-        theme = request.GET.get("theme", None) or request.COOKIES.get(
-            self.cookie_key)
+        theme = fetch_theme(request, self.cookie_key)
         if theme:
             response.set_cookie(
                 self.cookie_key, value=theme, httponly=True
