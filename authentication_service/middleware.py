@@ -55,17 +55,39 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
         return response
 
 
+def fetch_theme(request, key=None):
+    # Set get theme from either request or cookie. Request always wins to
+    # ensure stale theme is not used.
+    theme = request.GET.get("theme") or request.COOKIES.get(key)
+
+    # In the event no theme has been found, try to check if theme is present in
+    # a next query. This is to cater for the event where Django auth middleware
+    # needed to redirect to login. Auth middleware redirects on the request
+    # already.
+    if theme is None:
+        next_query = request.GET.get("next")
+
+        # Only attempt to get the theme if there is a next query present, this
+        # is the only known edge case we have to cater for.
+        if next_query:
+            next_query_args = parse_qs(urlparse(next_query).query)
+
+            # Query values are in list form. Only grab the first value from the
+            # list.
+            theme = next_query_args.get("theme", [None])[0]
+
+    return theme
+
+
 class ThemeManagementMiddleware(MiddlewareMixin):
     cookie_key = COOKIES["ge_theme_middleware_cookie"]
 
     def process_request(self, request):
-        theme = request.GET.get("theme", None) or request.COOKIES.get(
-            self.cookie_key)
+        theme = fetch_theme(request, self.cookie_key)
         request.META["X-Django-Layer"] = theme
 
     def process_template_response(self, request, response):
-        theme = request.GET.get("theme", None) or request.COOKIES.get(
-            self.cookie_key)
+        theme = fetch_theme(request, self.cookie_key)
         if theme:
             response.set_cookie(
                 self.cookie_key, value=theme, httponly=True
