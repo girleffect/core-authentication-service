@@ -54,12 +54,15 @@ docs-build:  $(VENV)
 	# Remove the tar file.
 	rm backup.tar
 	# Actually make html from index.rst
-	@echo "$(CYAN)Running sphinx command...$(CLEAR)"
-	$(MAKE) -C docs/ clean html SPHINXBUILD=../$(VENV)/bin/sphinx-build
+	@echo "$(CYAN)Generating sphinx sources...$(CLEAR)"
+	$(VENV)/bin/sphinx-apidoc --separate --private --force -o docs/source authentication_service authentication_service/management authentication_service/migrations authentication_service/tests authentication_service/admin.py authentication_service/celery.py  authentication_service/constants.py
+	@echo "$(GREEN)DONE$(CLEAR)"
+	@echo "$(CYAN)Generating sphinx docs...$(CLEAR)"
+	$(MAKE) -C docs/source clean html SPHINXBUILD=../../$(VENV)/bin/sphinx-build
 	@echo "$(GREEN)DONE$(CLEAR)"
 	@echo "$(CYAN)Moving build files to docs/ root...$(CLEAR)"
-	cp -r docs/build/html/. docs/
-	rm -rf docs/build/
+	cp -r docs/_build/html/. docs/
+	rm -rf docs/_build/
 	@echo "$(GREEN)DONE$(CLEAR)"
 
 prism:
