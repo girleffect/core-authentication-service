@@ -90,7 +90,7 @@ class TestLockout(TestCase):
             self.client.get(login_url)
             response = self.client.post(login_url, login_data)
             self.assertEqual(response.status_code, 200)
-            self.assertIn("authentication_service/login/login.html",
+            self.assertIn("authentication_service/login.html",
                           response.template_name)
 
         # The next (failed) attempt needs to prevent further login attempts
@@ -106,7 +106,7 @@ class TestLockout(TestCase):
         self.client.get(login_url)
         response = self.client.post(login_url, login_data)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("authentication_service/login/login.html",
+        self.assertIn("authentication_service/login.html",
                       response.template_name)
 
 
@@ -200,33 +200,6 @@ class TestRegistrationView(TestCase):
         )
         cls.question_two = SecurityQuestion.objects.create(
             question_text="Some text for the other question"
-        )
-
-    def test_view_themes(self):
-        response = self.client.get(reverse("registration") + "?theme=springster")
-        self.assertListEqual(
-            response.template_name,
-            [
-                "authentication_service/registration/registration_springster"
-                ".html",
-                "authentication_service/registration/registration.html"]
-        )
-        self.assertContains(
-            response,
-            "http://za.heyspringster.com/static/img/sp-logo.3e443cd8bfae.png"
-        )
-
-        response = self.client.get(
-            reverse("registration") + "?theme=ninyampinga")
-        self.assertListEqual(
-            response.template_name,
-            ["authentication_service/registration/registration_ninyampinga"
-            ".html",
-             "authentication_service/registration/registration.html"]
-        )
-        self.assertContains(
-            response,
-            "http://ninyampinga.com/static/img/logos/logo_rwanda.a61da5b16fba.png"
         )
 
     def test_view_success_redirects(self):

@@ -113,6 +113,11 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
+        fields_data["birth_date"] = {
+            "attributes": {
+                "help_text": _("Please use dd/mm/yyyy format")
+            }
+        }
         # Update the actual fields and widgets.
         update_form_fields(
             self,
@@ -289,6 +294,20 @@ class EditProfileForm(forms.ModelForm):
     error_css_class = "error"
     required_css_class = "required"
 
+    def __init__(self, *args, **kwargs):
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+        fields_data= {"birth_date": {
+                "attributes": {
+                    "help_text": _("Please use dd/mm/yyyy format")
+                }
+            },
+        }
+
+        # Update the actual fields and widgets.
+        update_form_fields(
+            self,
+            fields_data=fields_data,
+        )
     class Meta:
         model = get_user_model()
         fields = [

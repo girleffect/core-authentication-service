@@ -24,24 +24,6 @@ AUTH_PASSWORD_VALIDATORS += [
 AUTHENTICATION_BACKENDS = \
     ["authentication_service.backends.GirlEffectAuthBackend"]
 
-# https://docs.djangoproject.com/en/1.11/ref/settings/#password-reset-timeout-days
-PASSWORD_RESET_TIMEOUT_DAYS = 3
-
-# Defender options
-DEFENDER_LOGIN_FAILURE_LIMIT = 5
-DEFENDER_BEHIND_REVERSE_PROXY = False
-DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
-DEFENDER_DISABLE_IP_LOCKOUT = True
-DEFENDER_DISABLE_USERNAME_LOCKOUT = False
-DEFENDER_COOLOFF_TIME = 600  # seconds
-DEFENDER_REVERSE_PROXY_HEADER = "HTTP_X_FORWARDED_FOR"
-DEFENDER_CACHE_PREFIX = "defender"
-DEFENDER_LOCKOUT_URL = "/lockout"
-DEFENDER_REDIS_URL = env.str("REDIS_URI", "redis://localhost:6379/0")
-DEFENDER_STORE_ACCESS_ATTEMPTS = True
-DEFENDER_ACCESS_ATTEMPT_EXPIRATION = 24  # hours
-DEFENDER_USERNAME_FORM_FIELD = "auth-username"
-
 DATABASES = {
     "default": env.dict("DB_DEFAULT", "ENGINE=django.db.backends.postgresql," \
         "NAME=authentication_service," \
@@ -53,18 +35,9 @@ DATABASES = {
 
 INSTALLED_APPS = list(INSTALLED_APPS)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
-ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
-
-# CORS settings
-CORS_ORIGIN_WHITELIST = ["localhost:8000", "127.0.0.1:8000"]
-CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
-CORS_ALLOW_HEADERS = default_headers + (
-    "Access-Control-Allow-Origin",
-)
-
 
 ADDITIONAL_APPS = [
+    "layers",
     # Open ID prodiver.
     "oidc_provider",
 
@@ -92,19 +65,67 @@ MIDDLEWARE = MIDDLEWARE + [
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ThemeManagementMiddleware",
     "authentication_service.middleware.OIDCSessionManagementMiddleware",
-    "authentication_service.middleware.RedirectManagementMiddleware"
+    "authentication_service.middleware.RedirectManagementMiddleware",
+    "crum.CurrentRequestUserMiddleware",
 ]
+
+# TODO: django-layers-hr needs looking into
+# Request based layering has an issue due to the crum package setting current
+# request to None before static is requested.
+#STATICFILES_FINDERS = (
+#    "layers.finders.FileSystemFinder",
+#    "django.contrib.staticfiles.finders.FileSystemFinder",
+#    "layers.finders.AppDirectoriesFinder",
+#    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+#)
+
+# django-layers-hr
+LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
+
+# https://docs.djangoproject.com/en/1.11/ref/settings/#password-reset-timeout-days
+PASSWORD_RESET_TIMEOUT_DAYS = 3
+
+# Defender options
+DEFENDER_LOGIN_FAILURE_LIMIT = 5
+DEFENDER_BEHIND_REVERSE_PROXY = False
+DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
+DEFENDER_DISABLE_IP_LOCKOUT = True
+DEFENDER_DISABLE_USERNAME_LOCKOUT = False
+DEFENDER_COOLOFF_TIME = 600  # seconds
+DEFENDER_REVERSE_PROXY_HEADER = "HTTP_X_FORWARDED_FOR"
+DEFENDER_CACHE_PREFIX = "defender"
+DEFENDER_LOCKOUT_URL = "/lockout"
+DEFENDER_REDIS_URL = env.str("REDIS_URI", "redis://localhost:6379/0")
+DEFENDER_STORE_ACCESS_ATTEMPTS = True
+DEFENDER_ACCESS_ATTEMPT_EXPIRATION = 24  # hours
+DEFENDER_USERNAME_FORM_FIELD = "auth-username"
+
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
+ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
+
+# CORS settings
+CORS_ORIGIN_WHITELIST = [
+    "localhost:8000", "127.0.0.1:8000",  # Development: Management Layer UI
+    "localhost:3000", "127.0.0.1:3000",  # Development: Management Portal
+    "core-management-layer:8000", "core-management-portal:3000",  # Demo environment
+]
+CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
+CORS_ALLOW_HEADERS = default_headers + (
+    "Access-Control-Allow-Origin",
+)
+
 
 LOGIN_URL = reverse_lazy("login")
 
 # To avoid the login loop, we rather redirect to a page that shows
 # the message oops.
-LOGIN_REDIRECT_URL = "oops"
+LOGIN_REDIRECT_URL = "redirect_issue"
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "authentication_service.oidc_provider_settings.CustomScopeClaims"
 OIDC_GRANT_TYPE_PASSWORD_ENABLE = True  # https://tools.ietf.org/html/rfc6749#section-4.3
+OIDC_IDTOKEN_EXPIRE = 60 * 60  # An hour
 
 FORM_RENDERERS = {
     "replace-as-p": True,
