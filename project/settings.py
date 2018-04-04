@@ -7,7 +7,14 @@ from project.settings_base import *
 
 env = Env()
 
+# Project Settings
+HIDE_FIELDS = {
+    "global_enable": True,
+    "global_fields": ["email", "msisdn"]
 
+}
+
+# Django Settings
 SECRET_KEY = env.str("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
 
 AUTH_USER_MODEL = "authentication_service.CoreUser"
@@ -34,7 +41,6 @@ DATABASES = {
 }
 
 INSTALLED_APPS = list(INSTALLED_APPS)
-
 
 ADDITIONAL_APPS = [
     "layers",
@@ -132,6 +138,7 @@ FORM_RENDERERS = {
     "enable-bem-classes": True
 }
 
+# Celery Settings
 CELERY_USE_TZ = USE_TZ
 CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", "redis://localhost:6379")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL

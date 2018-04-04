@@ -4,6 +4,7 @@ from datetime import date  # Required because we patch it in the tests (test_for
 from dateutil.relativedelta import relativedelta
 
 from django import forms
+from django.conf import settings
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth import get_user_model, hashers
 from django.contrib.auth.forms import (
@@ -118,6 +119,14 @@ class RegistrationForm(UserCreationForm):
                 "help_text": _("Please use dd/mm/yyyy format")
             }
         }
+
+        # Final overrides from settings
+        if settings.HIDE_FIELDS["global_enable"]:
+            for field in settings.HIDE_FIELDS["global_fields"]:
+                self.fields[field].required = False
+                self.fields[field].widget.is_required = False
+                hidden_fields.update([field])
+
         # Update the actual fields and widgets.
         update_form_fields(
             self,
@@ -165,7 +174,8 @@ class RegistrationForm(UserCreationForm):
         email = cleaned_data.get("email")
         msisdn = cleaned_data.get("msisdn")
 
-        if not email and not msisdn:
+        if not email and not msisdn and not \
+                settings.HIDE_FIELDS["global_enable"]:
             raise ValidationError(_("Enter either email or msisdn"))
 
         # Check that either the birth date or age is provided. If the birth date is provided, we
@@ -303,10 +313,19 @@ class EditProfileForm(forms.ModelForm):
             },
         }
 
+        hidden_fields = []
+        # Final overrides from settings
+        if settings.HIDE_FIELDS["global_enable"]:
+            for field in settings.HIDE_FIELDS["global_fields"]:
+                self.fields[field].required = False
+                self.fields[field].widget.is_required = False
+                hidden_fields.append(field)
+
         # Update the actual fields and widgets.
         update_form_fields(
             self,
             fields_data=fields_data,
+            hidden=hidden_fields,
         )
     class Meta:
         model = get_user_model()
