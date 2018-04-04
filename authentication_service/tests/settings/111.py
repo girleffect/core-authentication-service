@@ -3,8 +3,7 @@ from project.settings_base import *
 
 HIDE_FIELDS = {
     "global_enable": True,
-    "global_fields": ["email", "msisdn"]
-
+    "global_fields": ["email", "msisdn", "birth_date"]
 }
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")

@@ -371,16 +371,15 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "username": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
-            "__all__": ["Enter either birth date or age"]
+            "age": ["This field is required."]
         })
 
-    def test_default_email_msisdn(self):
-        # Test neither is required
+    def test_default_settings(self):
         form = RegistrationForm(data={
             "username": "Username",
             "password1": "password",
             "password2": "password",
-            "birth_date": datetime.date(2000, 1, 1)
+            "age": "16",
         })
         self.assertTrue(form.is_valid())
 
@@ -390,7 +389,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "password1": "password",
             "password2": "password",
             "email": "email@email.com",
-            "birth_date": datetime.date(2000, 1, 1)
+            "age": "16",
         })
         self.assertTrue(form.is_valid())
 
@@ -400,7 +399,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "password1": "password",
             "password2": "password",
             "msisdn": "0856545698",
-            "birth_date": datetime.date(2000, 1, 1)
+            "age": "16",
         })
         self.assertTrue(form.is_valid())
 
@@ -411,7 +410,8 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "password2": "password",
             "email": "email@email.com",
             "msisdn": "0856545698",
-            "birth_date": datetime.date(2000, 1, 1)
+            "birth_date": datetime.date(2000, 1, 1),
+            "age": "16",
         })
         self.assertTrue(form.is_valid())
 

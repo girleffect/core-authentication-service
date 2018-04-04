@@ -50,7 +50,11 @@ class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
     # Helper field that user's who don't know their birth date can use instead.
-    age = forms.IntegerField(min_value=1, max_value=100, required=False)
+    age = forms.IntegerField(
+        min_value=1,
+        max_value=100,
+        required=True if settings.HIDE_FIELDS["global_enable"] else False
+    )
     # The birth_date is required on the model, but not on the form since it can be indirectly
     # populated if the age is provided.
     birth_date = forms.DateField(widget=AdminDateWidget(attrs={"required": False}), required=False)
@@ -185,7 +189,7 @@ class RegistrationForm(UserCreationForm):
             age = cleaned_data.get("age")
             if age:
                 cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
-            else:
+            elif not settings.HIDE_FIELDS["global_enable"]:
                 raise ValidationError(_("Enter either birth date or age"))
 
         return cleaned_data
