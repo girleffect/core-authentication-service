@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "404.html" %}
 {% load i18n static %}
 
 {% block extrastyle-basic %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/springster.basic.css" %}" />{% endblock %}
@@ -6,7 +6,3 @@
 {% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/springster.enhanced.css" %}" />{% endblock %}
 
 {% block branding %}<img width="70px" src="http://za.heyspringster.com/static/img/sp-logo.3e443cd8bfae.png" class="Header-branding-image">{% endblock %}
-
-{% block content %}
-    The page you were looking for can not be found.
-{% endblock %}
