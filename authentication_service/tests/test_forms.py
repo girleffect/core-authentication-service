@@ -1,10 +1,11 @@
 import datetime
+import copy
 
 from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from authentication_service.forms import (
     RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
@@ -13,6 +14,10 @@ from authentication_service.forms import (
 from authentication_service.models import SecurityQuestion, OrganisationalUnit
 
 
+@override_settings(
+    HIDE_FIELDS={"global_enable": False,
+    "global_fields": ["email", "msisdn", "birth_date"]}
+)
 class TestRegistrationForm(TestCase):
 
     def test_default_state(self):
@@ -138,7 +143,6 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
-            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -302,7 +306,6 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
-            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -351,19 +354,58 @@ class TestRegistrationForm(TestCase):
         self.assertTrue(form.is_valid())
 
 
-class TestSecurityQuestionForm(TestCase):
+class TestRegistrationFormWithHideSetting(TestCase):
 
     def test_default_state(self):
-        form = SecurityQuestionForm(
-            data={},
-            questions=SecurityQuestion.objects.all(),
-            language="en"
-        )
+        form = RegistrationForm(data={})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "question": ["This field is required."],
-            "answer": ["This field is required."],
+            "username": ["This field is required."],
+            "password1": ["This field is required."],
+            "password2": ["This field is required."],
+            "age": ["This field is required."]
         })
+
+    def test_default_settings(self):
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "age": "16",
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with email
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "email": "email@email.com",
+            "age": "16",
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with msisdn
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "msisdn": "0856545698",
+            "age": "16",
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with both
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "email": "email@email.com",
+            "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1),
+            "age": "16",
+        })
+        self.assertTrue(form.is_valid())
 
 
 class TestSecurityQuestionFormSet(TestCase):
@@ -597,8 +639,6 @@ class EditProfileFormTestCase(TestCase):
                 "country":
                     ["Select a valid choice. That choice is not one of the "
                      "available choices."],
-                "birth_date":
-                    ["This field is required."]
             }
         )
 
