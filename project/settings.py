@@ -11,7 +11,6 @@ env = Env()
 HIDE_FIELDS = {
     "global_enable": True,
     "global_fields": ["email", "msisdn"]
-
 }
 
 # Django Settings
