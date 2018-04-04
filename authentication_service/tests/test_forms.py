@@ -1,10 +1,12 @@
 import datetime
+import copy
 
 from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
 from django.test import TestCase
+from django.conf import settings
 
 from authentication_service.forms import (
     RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
@@ -14,6 +16,16 @@ from authentication_service.models import SecurityQuestion, OrganisationalUnit
 
 
 class TestRegistrationForm(TestCase):
+
+    def setUp(self):
+        # Disable setting field hiding, to tests original form behaviour.
+        self.orig_settings = copy.deepcopy(settings.HIDE_FIELDS)
+        settings.HIDE_FIELDS["global_enable"] = False
+        super(TestRegistrationForm, self).setUp()
+
+    def tearDown(self):
+        settings.HIDE_FIELDS = self.orig_settings
+        super(TestRegistrationForm, self).tearDown()
 
     def test_default_state(self):
         form = RegistrationForm(data={})
@@ -350,20 +362,58 @@ class TestRegistrationForm(TestCase):
         })
         self.assertTrue(form.is_valid())
 
-
-class TestSecurityQuestionForm(TestCase):
+class TestRegistrationFormWithHideSetting(TestCase):
 
     def test_default_state(self):
-        form = SecurityQuestionForm(
-            data={},
-            questions=SecurityQuestion.objects.all(),
-            language="en"
-        )
+        form = RegistrationForm(data={})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "question": ["This field is required."],
-            "answer": ["This field is required."],
+            "username": ["This field is required."],
+            "password1": ["This field is required."],
+            "password2": ["This field is required."],
+            "__all__": ["Enter either birth date or age"]
         })
+
+    def test_default_email_msisdn(self):
+        # Test neither is required
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "birth_date": datetime.date(2000, 1, 1)
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with email
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "email": "email@email.com",
+            "birth_date": datetime.date(2000, 1, 1)
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with msisdn
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1)
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with both
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "email": "email@email.com",
+            "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1)
+        })
+        self.assertTrue(form.is_valid())
 
 
 class TestSecurityQuestionFormSet(TestCase):
