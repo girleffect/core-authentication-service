@@ -5,8 +5,7 @@ from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
-from django.test import TestCase
-from django.conf import settings
+from django.test import TestCase, override_settings
 
 from authentication_service.forms import (
     RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
@@ -15,17 +14,11 @@ from authentication_service.forms import (
 from authentication_service.models import SecurityQuestion, OrganisationalUnit
 
 
+@override_settings(
+    HIDE_FIELDS={"global_enable": False,
+    "global_fields": ["email", "msisdn", "birth_date"]}
+)
 class TestRegistrationForm(TestCase):
-
-    def setUp(self):
-        # Disable setting field hiding, to tests original form behaviour.
-        self.orig_settings = copy.deepcopy(settings.HIDE_FIELDS)
-        settings.HIDE_FIELDS["global_enable"] = False
-        super(TestRegistrationForm, self).setUp()
-
-    def tearDown(self):
-        settings.HIDE_FIELDS = self.orig_settings
-        super(TestRegistrationForm, self).tearDown()
 
     def test_default_state(self):
         form = RegistrationForm(data={})
@@ -150,7 +143,6 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
-            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -314,7 +306,6 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
-            "birth_date": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -361,6 +352,7 @@ class TestRegistrationForm(TestCase):
             "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
+
 
 class TestRegistrationFormWithHideSetting(TestCase):
 
@@ -647,8 +639,6 @@ class EditProfileFormTestCase(TestCase):
                 "country":
                     ["Select a valid choice. That choice is not one of the "
                      "available choices."],
-                "birth_date":
-                    ["This field is required."]
             }
         )
 

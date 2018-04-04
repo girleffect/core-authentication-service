@@ -53,11 +53,8 @@ class RegistrationForm(UserCreationForm):
     age = forms.IntegerField(
         min_value=1,
         max_value=100,
-        required=True if settings.HIDE_FIELDS["global_enable"] else False
+        required=False
     )
-    # The birth_date is required on the model, but not on the form since it can be indirectly
-    # populated if the age is provided.
-    birth_date = forms.DateField(widget=AdminDateWidget(attrs={"required": False}), required=False)
 
     class Meta:
         model = get_user_model()
@@ -126,6 +123,7 @@ class RegistrationForm(UserCreationForm):
 
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
+            required_fields.update(["age"])
             for field in settings.HIDE_FIELDS["global_fields"]:
                 self.fields[field].required = False
                 self.fields[field].widget.is_required = False
@@ -138,6 +136,16 @@ class RegistrationForm(UserCreationForm):
             required=required_fields,
             hidden=hidden_fields
         )
+
+        # Manual overrides:
+
+        # NOTE: These will then also ignore all other overrides set up till
+        # this point.
+
+        # The birth_date is required on the model, but not on the form since it
+        # can be indirectly populated if the age is provided.
+        self.fields["birth_date"].required = False
+        self.fields["birth_date"].widget.is_required = False
 
     def clean_password2(self):
         # Short circuit normal validation if not high security.
