@@ -51,7 +51,7 @@ class TestOIDCSessionMiddleware(TestCase):
             test_output = [
                 "WARNING:authentication_service.middleware:" \
                 "User redirected off domain; " \
-                "(testserver) -> (nuked-session.com). Session flushed."
+                "(testserver) -> (nuked-session.com)."
             ]
             output = cm.output
             self.assertListEqual(output, test_output)
