@@ -163,7 +163,7 @@ msgstr ""
 #: authentication_service/templates/two_factor/core/login.html:5
 #: authentication_service/templates/two_factor/core/login.html:9
 msgid "Login"
-msgstr "Teken In"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/login.html:22
 #: authentication_service/templates/two_factor/core/login.html:49
@@ -181,7 +181,7 @@ msgstr ""
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Click here to reset it."
-msgstr ""
+msgstr "这是一个测试"
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:5
 #: authentication_service/templates/authentication_service/profile/delete_account.html:9

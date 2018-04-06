@@ -31,7 +31,6 @@ urlpatterns = [
     url(r'^i18n/', include('django.conf.urls.i18n')),
 ]
 urlpatterns += i18n_patterns(
-    url(r'^i18n/', include('django.conf.urls.i18n')),
     url(
         r"^static/(?P<path>.*)$",
         serve,
