@@ -29,6 +29,10 @@ from two_factor.views import ProfileView
 from authentication_service import views
 urlpatterns = [
     url(r'^i18n/', include('django.conf.urls.i18n')),
+    # API URL's
+    url(
+        r"^api/v1/", include("authentication_service.api.urls"), name="api"
+    )
 ]
 urlpatterns += i18n_patterns(
     url(
@@ -130,8 +134,4 @@ urlpatterns += i18n_patterns(
     ),
 
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
-    # API URL's
-    url(
-        r"api/v1/", include("authentication_service.api.urls"), name="api"
-    )
 )

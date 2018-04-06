@@ -61,7 +61,7 @@ class TestLogin(TestCase):
             data=data,
             follow=True
         )
-        self.assertRedirects(response, "/login/?next=%2Fadmin%2F")
+        self.assertRedirects(response, "{}?next=%2Fen%2Fadmin%2F".format(reverse("login")))
 
 
 class TestLockout(TestCase):
@@ -219,7 +219,7 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url, "/two-factor-auth/account/login/")
+        self.assertIn(response.url, reverse("login"))
 
         # Test most basic registration with age instead of birth_date
         response = self.client.post(
@@ -236,7 +236,7 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url, "/two-factor-auth/account/login/")
+        self.assertIn(response.url, reverse("login"))
 
         # Test most basic registration with age and birth_date. Birth_date takes precedence.
         response = self.client.post(
@@ -254,7 +254,7 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url, "/two-factor-auth/account/login/")
+        self.assertIn(response.url, reverse("login"))
 
         # Test redirect url, no 2fa
         self.client.cookies.load(
@@ -294,8 +294,7 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url,
-                      "/two-factor-auth/account/two_factor/setup/")
+        self.assertIn(response.url, reverse("two_factor_auth:setup"))
 
         # Test redirect url, high security
         response = self.client.post(
@@ -315,8 +314,7 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url,
-                      "/two-factor-auth/account/two_factor/setup/")
+        self.assertIn(response.url, reverse("two_factor_auth:setup"))
 
     def test_user_save(self):
         response = self.client.post(
@@ -335,8 +333,7 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url,
-                      "/two-factor-auth/account/two_factor/setup/")
+        self.assertIn(response.url, reverse("two_factor_auth:setup"))
         user = get_user_model().objects.get(username="Unique@User@Name")
         self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
@@ -362,8 +359,7 @@ class TestRegistrationView(TestCase):
                 "form-1-answer": "Answer2"
             }
         )
-        self.assertIn(response.url,
-                      "/two-factor-auth/account/two_factor/setup/")
+        self.assertIn(response.url, reverse("two_factor_auth:setup"))
         user = get_user_model().objects.get(username="Unique@User@Name")
         self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
@@ -381,7 +377,7 @@ class TestRegistrationView(TestCase):
     def test_redirect_view(self):
         # Test without redirect cookie set.
         response = self.client.get(reverse("redirect_view"))
-        self.assertIn(response.url, "/two-factor-auth/account/login/")
+        self.assertIn(response.url, reverse("login"))
 
         # Test with redirect cookie set.
         self.client.cookies.load(
@@ -493,7 +489,7 @@ class EditProfileViewTestCase(TestCase):
 
         # Post form
         self.client.cookies.load(
-            {"ge_redirect_cookie": "/admin/"})
+            {"ge_redirect_cookie": reverse("admin:index")})
         response = self.client.post(
             "%s?redirect_uri=/admin/" % reverse("edit_profile"),
             {
@@ -504,7 +500,7 @@ class EditProfileViewTestCase(TestCase):
         updated = get_user_model().objects.get(username="testuser")
 
         self.assertEquals(updated.email, "test@user.com")
-        self.assertRedirects(response, "/admin/")
+        self.assertRedirects(response, reverse("admin:index"))
 
     def test_2fa_link_enabled(self):
         # Login user
@@ -607,7 +603,7 @@ class ResetPasswordTestCase(TestCase):
         send_mail.assert_called()
         self.assertNotIn("User not found", response)
         self.assertEquals(response.status_code, 302)
-        self.assertEquals(response.url, "/reset-password/done/")
+        self.assertEquals(response.url, reverse("password_reset_done"))
 
     def test_user_not_found(self):
         response = self.client.post(
