@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
+from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import logout, PasswordResetDoneView, \
@@ -26,8 +27,11 @@ from two_factor.urls import urlpatterns as two_factor_patterns
 from two_factor.views import ProfileView
 
 from authentication_service import views
-
 urlpatterns = [
+    url(r'^i18n/', include('django.conf.urls.i18n')),
+]
+urlpatterns += i18n_patterns(
+    url(r'^i18n/', include('django.conf.urls.i18n')),
     url(
         r"^static/(?P<path>.*)$",
         serve,
@@ -131,4 +135,4 @@ urlpatterns = [
     url(
         r"api/v1/", include("authentication_service.api.urls"), name="api"
     )
-]
+)

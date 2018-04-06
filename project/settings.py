@@ -2,6 +2,7 @@ from environs import Env
 from corsheaders.defaults import default_headers
 
 from django.core.urlresolvers import reverse_lazy
+from django.utils.translation import ugettext_lazy as _
 
 from project.settings_base import *
 
@@ -20,6 +21,17 @@ AUTH_USER_MODEL = "authentication_service.CoreUser"
 
 STATIC_URL = "/static/"
 STATIC_ROOT = "/static/"
+
+LOCALE_PATHS = [
+    "locale"
+]
+
+LANGUAGE_CODE = 'en'
+
+LANGUAGES = [
+    ('af', _('Afrikaans')),
+    ('en', _('English')),
+]
 
 AUTH_PASSWORD_VALIDATORS += [
     {
