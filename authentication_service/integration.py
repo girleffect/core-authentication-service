@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.db.models.expressions import RawSQL
 from django.forms import model_to_dict
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -48,7 +49,9 @@ class Implementation(AbstractStubClass):
         if client_token_id:
             clients = clients.filter(client_id=client_token_id)
 
-        clients = clients[offset:offset + limit]
+        clients = clients.annotate(
+            x_total_count=RawSQL("COUNT(*) OVER ()", [])
+        )[offset:offset + limit]
         return [strip_empty_optional_fields(client) for client in clients]
 
 
