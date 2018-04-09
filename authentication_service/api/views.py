@@ -126,13 +126,13 @@ class Clients(View):
         """
         # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
         offset = request.GET.get("offset", None)
+        # limit (optional): integer An optional query parameter to limit the number of results returned.
+        limit = request.GET.get("limit", None)
         # client_ids (optional): array An optional list of client ids
         client_ids = request.GET.getlist("client_ids", None)
         # client_token_id (optional): string An optional client id to filter on. This is not the primary key.
         client_token_id = request.GET.get("client_token_id", None)
-        # limit (optional): integer An optional query parameter to limit the number of results returned.
-        limit = request.GET.get("limit", None)
-        result = Stubs.client_list(request, offset, client_ids, client_token_id, limit, )
+        result = Stubs.client_list(request, offset, limit, client_ids, client_token_id, )
 
         if type(result) is tuple:
             result, headers = result
@@ -277,17 +277,17 @@ class Users(View):
         :param self: A Users instance
         :param request: An HttpRequest
         """
-        # username_prefix (optional): string An optional username prefix filter
-        username_prefix = request.GET.get("username_prefix", None)
         # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
         offset = request.GET.get("offset", None)
-        # email (optional): string An optional email filter
-        email = request.GET.get("email", None)
-        # user_ids (optional): array An optional list of user ids
-        user_ids = request.GET.getlist("user_ids", None)
         # limit (optional): integer An optional query parameter to limit the number of results returned.
         limit = request.GET.get("limit", None)
-        result = Stubs.user_list(request, username_prefix, offset, email, user_ids, limit, )
+        # email (optional): string An optional email filter
+        email = request.GET.get("email", None)
+        # username_prefix (optional): string An optional username prefix filter
+        username_prefix = request.GET.get("username_prefix", None)
+        # user_ids (optional): array An optional list of user ids
+        user_ids = request.GET.getlist("user_ids", None)
+        result = Stubs.user_list(request, offset, limit, email, username_prefix, user_ids, )
 
         if type(result) is tuple:
             result, headers = result
