@@ -169,7 +169,7 @@ msgstr ""
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Click here to reset it."
-msgstr "这是一个测试"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:5
 #: authentication_service/templates/authentication_service/profile/delete_account.html:9

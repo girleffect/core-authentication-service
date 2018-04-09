@@ -86,3 +86,11 @@ database:
 
 test:
 	$(PYTHON) manage.py test --settings=authentication_service.tests.settings.111
+
+translate:
+	@echo "$(CYAN)Generating .po files...$(CLEAR)"
+	django-admin makemessages --all -i "ve/*"
+	@echo "$(GREEN)DONE$(CLEAR)"
+	@echo "$(CYAN)Compiling translation files...$(CLEAR)"
+	django-admin compilemessages --locale af --locale de
+	@echo "$(GREEN)DONE($CLEAR)"

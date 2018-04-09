@@ -28,11 +28,6 @@ LOCALE_PATHS = [
 
 LANGUAGE_CODE = 'en'
 
-LANGUAGES = [
-    ('af', _('Afrikaans')),
-    ('en', _('English')),
-]
-
 AUTH_PASSWORD_VALIDATORS += [
     {
         "NAME": "authentication_service.password_validation.DiversityValidator",
