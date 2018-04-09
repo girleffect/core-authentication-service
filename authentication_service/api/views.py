@@ -126,16 +126,24 @@ class Clients(View):
         """
         # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
         offset = request.GET.get("offset", None)
-        # limit (optional): integer An optional query parameter to limit the number of results returned.
-        limit = request.GET.get("limit", None)
         # client_ids (optional): array An optional list of client ids
         client_ids = request.GET.getlist("client_ids", None)
         # client_token_id (optional): string An optional client id to filter on. This is not the primary key.
         client_token_id = request.GET.get("client_token_id", None)
-        result = Stubs.client_list(request, offset, limit, client_ids, client_token_id, )
+        # limit (optional): integer An optional query parameter to limit the number of results returned.
+        limit = request.GET.get("limit", None)
+        result = Stubs.client_list(request, offset, client_ids, client_token_id, limit, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
         maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        response = JsonResponse(result, safe=False)
+        for key, val in headers.items():
+            response[key] = val
+        return response
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -151,9 +159,17 @@ class ClientsClientId(View):
         :param client_id: string A string value identifying the client
         """
         result = Stubs.client_read(request, client_id, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
         maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        response = JsonResponse(result, safe=False)
+        for key, val in headers.items():
+            response[key] = val
+        return response
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -261,20 +277,28 @@ class Users(View):
         :param self: A Users instance
         :param request: An HttpRequest
         """
-        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
-        offset = request.GET.get("offset", None)
-        # limit (optional): integer An optional query parameter to limit the number of results returned.
-        limit = request.GET.get("limit", None)
-        # email (optional): string An optional email filter
-        email = request.GET.get("email", None)
         # username_prefix (optional): string An optional username prefix filter
         username_prefix = request.GET.get("username_prefix", None)
+        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
+        offset = request.GET.get("offset", None)
+        # email (optional): string An optional email filter
+        email = request.GET.get("email", None)
         # user_ids (optional): array An optional list of user ids
         user_ids = request.GET.getlist("user_ids", None)
-        result = Stubs.user_list(request, offset, limit, email, username_prefix, user_ids, )
+        # limit (optional): integer An optional query parameter to limit the number of results returned.
+        limit = request.GET.get("limit", None)
+        result = Stubs.user_list(request, username_prefix, offset, email, user_ids, limit, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
         maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        response = JsonResponse(result, safe=False)
+        for key, val in headers.items():
+            response[key] = val
+        return response
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -295,9 +319,17 @@ class UsersUserId(View):
         :param user_id: string A UUID value identifying the user.
         """
         result = Stubs.user_delete(request, user_id, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
         maybe_validate_result(result, self.DELETE_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        response = JsonResponse(result, safe=False)
+        for key, val in headers.items():
+            response[key] = val
+        return response
 
     def get(self, request, user_id, *args, **kwargs):
         """
@@ -306,9 +338,17 @@ class UsersUserId(View):
         :param user_id: string A UUID value identifying the user.
         """
         result = Stubs.user_read(request, user_id, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
         maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        response = JsonResponse(result, safe=False)
+        for key, val in headers.items():
+            response[key] = val
+        return response
 
     def put(self, request, user_id, *args, **kwargs):
         """
@@ -321,9 +361,17 @@ class UsersUserId(View):
             return HttpResponseBadRequest("Body required")
 
         result = Stubs.user_update(request, body, user_id, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
         maybe_validate_result(result, self.PUT_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        response = JsonResponse(result, safe=False)
+        for key, val in headers.items():
+            response[key] = val
+        return response
 
 
 class __SWAGGER_SPEC__(View):

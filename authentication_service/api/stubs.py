@@ -13,7 +13,7 @@ class AbstractStubClass(object):
     """
 
     @staticmethod
-    def client_list(request, offset=None, limit=None, client_ids=None, client_token_id=None, *args, **kwargs):
+    def client_list(request, offset=None, client_ids=None, client_token_id=None, limit=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         """
@@ -28,7 +28,7 @@ class AbstractStubClass(object):
         raise NotImplementedError()
 
     @staticmethod
-    def user_list(request, offset=None, limit=None, email=None, username_prefix=None, user_ids=None, *args, **kwargs):
+    def user_list(request, username_prefix=None, offset=None, email=None, user_ids=None, limit=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         """
@@ -67,7 +67,7 @@ class MockedStubClass(AbstractStubClass):
     GENERATOR = DataGenerator()
 
     @staticmethod
-    def client_list(request, offset=None, limit=None, client_ids=None, client_token_id=None, *args, **kwargs):
+    def client_list(request, offset=None, client_ids=None, client_token_id=None, limit=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         """
@@ -160,7 +160,7 @@ class MockedStubClass(AbstractStubClass):
         return MockedStubClass.GENERATOR.random_value(response_schema)
 
     @staticmethod
-    def user_list(request, offset=None, limit=None, email=None, username_prefix=None, user_ids=None, *args, **kwargs):
+    def user_list(request, username_prefix=None, offset=None, email=None, user_ids=None, limit=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         """

@@ -28,7 +28,7 @@ $(VENV):
 # Creates the virtual environment.
 build-virtualenv: $(VENV)
 	@echo "$(CYAN)Building virtualenv...$(CLEAR)"
-	# TODO: Depending on project type, requirements will need to be installed here.
+	$(VENV)/bin/pip install -r requirements/requirements.txt
 	@echo "$(GREEN)DONE$(CLEAR)"
 
 # Deletes the virtual environment.
@@ -86,3 +86,7 @@ database:
 
 test:
 	$(PYTHON) manage.py test --settings=authentication_service.tests.settings.111
+
+authentication-service-api: $(VENV)
+	$(VENV)/bin/pip install -r $(VENV)/src/swagger-django-generator/requirements.txt
+	$(PYTHON) $(VENV)/src/swagger-django-generator/swagger_django_generator/generator.py swagger/authentication_service.yml --output-dir authentication_service/api --module-name authentication_service.api

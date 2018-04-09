@@ -49,10 +49,16 @@ class Implementation(AbstractStubClass):
         if client_token_id:
             clients = clients.filter(client_id=client_token_id)
 
-        clients = clients.annotate(
-            x_total_count=RawSQL("COUNT(*) OVER ()", [])
-        )[offset:offset + limit]
-        return [strip_empty_optional_fields(client) for client in clients]
+        clients = clients[offset:offset + limit]
+        #.annotate(
+        #    x_total_count=RawSQL("COUNT(*) OVER ()", [])
+        #)[offset:offset + limit]
+        return (
+            [strip_empty_optional_fields(client) for client in clients],
+            {
+                "X-Total-Count": 666#clients[0]["x_total_count"] if len(clients) > 0 else 0
+            }
+        )
 
 
     @staticmethod
@@ -84,7 +90,13 @@ class Implementation(AbstractStubClass):
             users = users.filter(username__startswith=username_prefix)
 
         users = users[offset:offset + limit]
-        return [strip_empty_optional_fields(user) for user in users]
+        #.annotate(
+        #    x_total_count=RawSQL("COUNT(*) OVER ()", [])
+        #)[offset:offset + limit]
+        return (
+            [strip_empty_optional_fields(user) for user in users],
+            {"X-Total-Count": 666}#users[0]["x_total_count"]}
+        )
 
     @staticmethod
     def user_delete(request, user_id, *args, **kwargs):
