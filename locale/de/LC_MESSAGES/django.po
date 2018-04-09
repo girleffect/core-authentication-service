@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-09 10:07+0200\n"
+"POT-Creation-Date: 2018-04-09 14:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -68,10 +68,6 @@ msgstr ""
 
 #: authentication_service/models.py:22
 msgid "email address"
-msgstr ""
-
-#: authentication_service/models.py:31
-msgid "Country"
 msgstr ""
 
 #: authentication_service/models.py:69
@@ -311,6 +307,10 @@ msgstr ""
 
 #: authentication_service/templates/registration/password_reset_confirm.html:18
 msgid "Change my password"
+msgstr ""
+
+#: authentication_service/templates/translation.html:5
+msgid "username"
 msgstr ""
 
 #: authentication_service/templates/two_factor/_wizard_actions.html:3

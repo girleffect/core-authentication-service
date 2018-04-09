@@ -92,5 +92,5 @@ translate:
 	django-admin makemessages --all -i "ve/*"
 	@echo "$(GREEN)DONE$(CLEAR)"
 	@echo "$(CYAN)Compiling translation files...$(CLEAR)"
-	django-admin compilemessages --locale af --locale de
+	django-admin compilemessages
 	@echo "$(GREEN)DONE($CLEAR)"
