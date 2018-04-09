@@ -97,8 +97,8 @@ class Implementation(AbstractStubClass):
         return (
             [strip_empty_optional_fields(user) for user in users],
             {
-                "X-Total-Count": clients[0][
-                    "x_total_count"] if len(user) > 0 else 0
+                "X-Total-Count": users[0][
+                    "x_total_count"] if len(users) > 0 else 0
             }
         )
 
