@@ -125,6 +125,9 @@ class RegistrationForm(UserCreationForm):
         if settings.HIDE_FIELDS["global_enable"]:
             required_fields.update(["age"])
             for field in settings.HIDE_FIELDS["global_fields"]:
+                if field in required_fields:
+                    continue  # Required field cannot be hidden
+
                 self.fields[field].required = False
                 self.fields[field].widget.is_required = False
                 hidden_fields.update([field])

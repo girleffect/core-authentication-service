@@ -86,7 +86,3 @@ database:
 
 test:
 	$(PYTHON) manage.py test --settings=authentication_service.tests.settings.111
-
-authentication-service-api: $(VENV)
-	$(VENV)/bin/pip install -r $(VENV)/src/swagger-django-generator/requirements.txt
-	$(PYTHON) $(VENV)/src/swagger-django-generator/swagger_django_generator/generator.py swagger/authentication_service.yml --output-dir authentication_service/api --module-name authentication_service.api

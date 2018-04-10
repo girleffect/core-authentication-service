@@ -107,7 +107,7 @@ class StandardTestCase(BaseTestCase):
         # users will see another login screen.
         response = self.post_credential_step(self.standard_user, "1234")
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, "/login/?next=%2Fadmin%2F")
+        self.assertRedirects(response, "{}?next=%2Fen%2Fadmin%2F".format(reverse("login")))
 
 
 class TwoFATestCase(BaseTestCase):
@@ -126,7 +126,7 @@ class TwoFATestCase(BaseTestCase):
         # Post token step
         response = self.post_token_step()
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, "/login/?next=%2Fadmin%2F")
+        self.assertRedirects(response, "{}?next=%2Fen%2Fadmin%2F".format(reverse("login")))
 
 
 class BackupCodeTestCase(BaseTestCase):
@@ -173,7 +173,7 @@ class BackupCodeTestCase(BaseTestCase):
         # Post backup step
         response = self.post_backup_step("abcdef123")
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, "/login/?next=%2Fadmin%2F")
+        self.assertRedirects(response, "{}?next=%2Fen%2Fadmin%2F".format(reverse("login")))
 
 
 class SuperUserTestCase(BaseTestCase):
@@ -188,4 +188,4 @@ class SuperUserTestCase(BaseTestCase):
         # account, they should immediately be signed into the admin interface.
         response = self.post_credential_step(self.super_user, "1234")
         self.assertEquals(response.status_code, 200)
-        self.assertRedirects(response, "/admin/")
+        self.assertRedirects(response, reverse("admin:index"))
