@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.db.models.expressions import RawSQL
 from django.forms import model_to_dict
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -27,9 +28,9 @@ USER_VALUES = [
 
 class Implementation(AbstractStubClass):
 
+    # client_list -- Synchronisation point for meld
     @staticmethod
-    def client_list(request, offset=None, limit=None, client_ids=None,
-                    client_token_id=None, *args, **kwargs):
+    def client_list(request, offset=None, limit=None, client_ids=None, client_token_id=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         :param offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
@@ -48,10 +49,19 @@ class Implementation(AbstractStubClass):
         if client_token_id:
             clients = clients.filter(client_id=client_token_id)
 
-        clients = clients[offset:offset + limit]
-        return [strip_empty_optional_fields(client) for client in clients]
+        clients = clients.annotate(
+            x_total_count=RawSQL("COUNT(*) OVER ()", [])
+        )[offset:offset + limit]
+        return (
+            [strip_empty_optional_fields(client) for client in clients],
+            {
+                "X-Total-Count": clients[0][
+                    "x_total_count"] if len(clients) > 0 else 0
+            }
+        )
 
 
+    # client_read -- Synchronisation point for meld
     @staticmethod
     def client_read(request, client_id, *args, **kwargs):
         """
@@ -62,6 +72,7 @@ class Implementation(AbstractStubClass):
         result = to_dict_with_custom_fields(client, CLIENT_VALUES)
         return strip_empty_optional_fields(result)
 
+    # user_list -- Synchronisation point for meld
     @staticmethod
     def user_list(request, offset=None, limit=None, email=None,
                   username_prefix=None, user_ids=None, *args, **kwargs):
@@ -80,9 +91,18 @@ class Implementation(AbstractStubClass):
         if username_prefix:
             users = users.filter(username__startswith=username_prefix)
 
-        users = users[offset:offset + limit]
-        return [strip_empty_optional_fields(user) for user in users]
+        users = users.annotate(
+            x_total_count=RawSQL("COUNT(*) OVER ()", [])
+        )[offset:offset + limit]
+        return (
+            [strip_empty_optional_fields(user) for user in users],
+            {
+                "X-Total-Count": users[0][
+                    "x_total_count"] if len(users) > 0 else 0
+            }
+        )
 
+    # user_delete -- Synchronisation point for meld
     @staticmethod
     def user_delete(request, user_id, *args, **kwargs):
         """
@@ -94,6 +114,7 @@ class Implementation(AbstractStubClass):
         user.delete()
         return strip_empty_optional_fields(result)
 
+    # user_read -- Synchronisation point for meld
     @staticmethod
     def user_read(request, user_id, *args, **kwargs):
         """
@@ -104,6 +125,7 @@ class Implementation(AbstractStubClass):
         result = to_dict_with_custom_fields(user, USER_VALUES)
         return strip_empty_optional_fields(result)
 
+    # user_update -- Synchronisation point for meld
     @staticmethod
     def user_update(request, body, user_id, *args, **kwargs):
         """

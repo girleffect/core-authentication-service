@@ -4,11 +4,13 @@ Do not modify this file. It is generated from the Swagger specification.
 If you need to tweak the functionality in this file, you can replace it
 with your own.
 """
+from functools import wraps
 import base64
 import json
-from functools import wraps
-
 import jsonschema
+import os
+import sys
+
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse
@@ -38,8 +40,8 @@ def body_to_dict(body, schema):
 def login_required_no_redirect(view_func):
     """
     Helper function that returns an HTTP 401 response if the user making the
-    request is not logged in, or did not provide basic HTTP authentication or an
-    API key in the request.
+    request is not logged in, or did not provide basic HTTP authentication in
+    the request.
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -51,7 +53,11 @@ def login_required_no_redirect(view_func):
             if len(auth) == 2:
                 # NOTE: We only support basic authentication for now.
                 if auth[0].lower() == "basic":
-                    uname, passwd = base64.b64decode(auth[1]).split(b":")
+                    base_val = base64.b64decode(auth[1])
+                    if sys.version_info[0] > 2:
+                        uname, passwd = base_val.split(b":")
+                    else:
+                        uname, passwd = base_val.split(":")
                     user = authenticate(username=uname, password=passwd)
                     if user and user.is_active:
                         login(request, user)
@@ -63,6 +69,6 @@ def login_required_no_redirect(view_func):
             if key in settings.ALLOWED_API_KEYS:
                 return view_func(request, *args, **kwargs)
 
-        return HttpResponse("Unauthorized FOO", status=401)
+        return HttpResponse("Unauthorized", status=401)
 
     return wrapper

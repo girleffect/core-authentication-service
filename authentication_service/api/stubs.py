@@ -12,6 +12,7 @@ class AbstractStubClass(object):
     Implementations need to be derived from this class.
     """
 
+    # client_list -- Synchronisation point for meld
     @staticmethod
     def client_list(request, offset=None, limit=None, client_ids=None, client_token_id=None, *args, **kwargs):
         """
@@ -19,6 +20,7 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # client_read -- Synchronisation point for meld
     @staticmethod
     def client_read(request, client_id, *args, **kwargs):
         """
@@ -27,6 +29,7 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # user_list -- Synchronisation point for meld
     @staticmethod
     def user_list(request, offset=None, limit=None, email=None, username_prefix=None, user_ids=None, *args, **kwargs):
         """
@@ -34,6 +37,7 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # user_delete -- Synchronisation point for meld
     @staticmethod
     def user_delete(request, user_id, *args, **kwargs):
         """
@@ -42,6 +46,7 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # user_read -- Synchronisation point for meld
     @staticmethod
     def user_read(request, user_id, *args, **kwargs):
         """
@@ -50,6 +55,7 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # user_update -- Synchronisation point for meld
     @staticmethod
     def user_update(request, body, user_id, *args, **kwargs):
         """

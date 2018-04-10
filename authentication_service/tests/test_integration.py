@@ -75,16 +75,19 @@ class IntegrationTestCase(TestCase):
         # Test complete list
         response = self.client.get("/api/v1/clients")
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test limit
         response = self.client.get("/api/v1/clients?limit=1")
         self.assertEqual(len(response.json()), 1)
         self.assertContains(response, "%s" % self.client_1.id)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test offset
         response = self.client.get("/api/v1/clients?offset=1")
         self.assertEqual(len(response.json()), 1)
         self.assertContains(response, "%s" % self.client_2.id)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test list using client.id
         response = self.client.get(
@@ -92,12 +95,14 @@ class IntegrationTestCase(TestCase):
                 self.client_1.id, self.client_2.id)
         )
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test list using client.client_id
         response = self.client.get(
             "/api/v1/clients?client_token_id=%s" % self.client_1.client_id
         )
         self.assertContains(response, "test_client_id_1")
+        self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test list using combination
         response = self.client.get(
@@ -105,6 +110,7 @@ class IntegrationTestCase(TestCase):
                 self.client_1.id, self.client_1.client_id)
         )
         self.assertEqual(len(response.json()), 1)
+        self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test bad request
         response = self.client.get("/api/v1/clients?limit=500")
@@ -133,34 +139,41 @@ class IntegrationTestCase(TestCase):
         # Test complete list
         response = self.client.get("/api/v1/users")
         self.assertEqual(len(response.json()), 3)
+        self.assertEqual(int(response["X-Total-Count"]), 3)
 
         # Test limit
         response = self.client.get("/api/v1/users?limit=1")
         self.assertEqual(len(response.json()), 1)
+        self.assertEqual(int(response["X-Total-Count"]), 3)
 
         # Test offset
         response = self.client.get("/api/v1/users?offset=1")
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 3)
 
         # Test list using email
         response = self.client.get("/api/v1/users?email=test@user.com")
         self.assertContains(response, "test_user_3")
+        self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test list using username_prefix
         response = self.client.get("/api/v1/users?username_prefix=test")
         self.assertEqual(len(response.json()), 3)
+        self.assertEqual(int(response["X-Total-Count"]), 3)
 
         # Test list using multiple user id's
         response = self.client.get(
             "/api/v1/users?user_ids=%s&user_ids=%s" % (
                 self.user_1.id, self.user_3.id))
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test combination
         response = self.client.get(
             "/api/v1/users?email=%s&username_prefix=test&user_ids=%s" % (
                 self.user_3.email, self.user_3.id))
         self.assertEqual(len(response.json()), 1)
+        self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test bad request
         response = self.client.get("/api/v1/users?limit=500")
