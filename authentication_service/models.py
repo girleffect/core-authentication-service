@@ -28,7 +28,7 @@ class CoreUser(AbstractUser):
         max_length=10, blank=True, null=True, choices=GENDER_CHOICES
     )
     birth_date = models.DateField()
-    country = models.ForeignKey(_("Country"), blank=True, null=True)
+    country = models.ForeignKey("Country", blank=True, null=True)
     avatar = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
