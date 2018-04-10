@@ -26,7 +26,7 @@ LOCALE_PATHS = [
     "locale"
 ]
 
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = "en"
 
 AUTH_PASSWORD_VALIDATORS += [
     {
