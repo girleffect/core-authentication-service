@@ -32,7 +32,8 @@ urlpatterns = [
     # API URL's
     url(
         r"^api/v1/", include("authentication_service.api.urls"), name="api"
-    )
+    ),
+    url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
 ]
 urlpatterns += i18n_patterns(
     url(
@@ -85,7 +86,6 @@ urlpatterns += i18n_patterns(
 
     url(r"^admin/", admin.site.urls),
     url(r'^admin/defender/', include('defender.urls')),  # defender admin
-    url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
     # Override the login URL implicitly defined by Two Factor Auth to redirect
     # to our login view (which is derived from theirs).
     url(r"^two-factor-auth/account/login/",
