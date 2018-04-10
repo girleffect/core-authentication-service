@@ -41,10 +41,9 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
             location = response.get("Location", "")
             parsed_url = urlparse(location)
             if parsed_url.netloc != "" and current_host != parsed_url.netloc:
-                request.session.flush()
                 LOGGER.warning(
                     "User redirected off domain; " \
-                    "(%s) -> (%s). Session flushed." % (
+                    "(%s) -> (%s)." % (
                         current_host, parsed_url.netloc
                     )
                 )
