@@ -6,6 +6,7 @@ import user_data_store
 
 def get_user_site_data(user_id, site_id):
     config = user_data_store.configuration.Configuration()
+    config.host = settings.ACCESS_CONTROL_API
     api = user_data_store.api.UserDataApi(
         api_client=user_data_store.ApiClient(
             header_name="X-API-KEY",
@@ -17,6 +18,7 @@ def get_user_site_data(user_id, site_id):
 
 def create_user_site_data(user_id, site_id):
     config = user_data_store.configuration.Configuration()
+    config.host = settings.ACCESS_CONTROL_API
     api = user_data_store.api.UserDataApi(
         api_client=user_data_store.ApiClient(
             header_name="X-API-KEY",
@@ -30,6 +32,7 @@ def create_user_site_data(user_id, site_id):
 
 def user_site_roles_aggregated(kwargs):
     config = access_control.configuration.Configuration()
+    config.host = settings.USER_DATA_API
     api = access_control.api.UserDataApi(
         api_client=access_control.ApiClient(
             header_name="X-API-KEY",
