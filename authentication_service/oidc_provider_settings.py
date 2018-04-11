@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 
 from oidc_provider.lib.claims import ScopeClaims
 
+from authentication_service import api_helpers
 
 USER_MODEL = get_user_model()
 
@@ -112,7 +113,7 @@ class CustomScopeClaims(ScopeClaims):
         LOGGER.debug("Requesting roles for user: %s/%s, on site: %s" % (
             self.user.username, self.user.id, self.client))
 
-        roles = ["Not", "Implemented", "Yet"]
+        roles = api_helpers.user_site_roles_aggregated(self.user.id, self.client.client_id)
         result = {"roles": roles}
 
         return result
