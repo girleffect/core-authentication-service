@@ -4,6 +4,10 @@ PIP=$(VENV)/bin/pip
 FLAKE8=$(VENV)/bin/flake8
 DB_NAME=authentication_service
 DB_USER=authentication_service
+CODEGEN_VERSION=2.4.0
+CODEGEN=java -jar swagger-codegen-cli-$(CODEGEN_VERSION).jar generate
+USER_DATA_STORE_CLIENT_DIR=user_data_store
+ACCESS_CONTROL_CLIENT_DIR=access_control
 
 # Colours.
 CLEAR=\033[0m
@@ -89,7 +93,7 @@ test:
 
 authentication-service-api: $(VENV)
 	$(VENV)/bin/pip install -r $(VENV)/src/swagger-django-generator/requirements.txt
-	$(PYTHON) $(VENV)/src/swagger-django-generator/swagger_django_generator/generator.py swagger/authentication_serv
+	$(PYTHON) $(VENV)/src/swagger-django-generator/swagger_django_generator/generator.py swagger/authentication_service
 
 make-translations:
 	@echo "$(CYAN)Generating .po files...$(CLEAR)"
@@ -104,3 +108,28 @@ translate:
 	@echo "$(CYAN)Compiling translation files...$(CLEAR)"
 	django-admin compilemessages
 	@echo "$(GREEN)DONE($CLEAR)"
+
+swagger-codegen-cli-$(CODEGEN_VERSION).jar:
+	# curl https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/$(CODEGEN_VERSION)/swagger-codegen-cli-$(CODEGEN_VERSION).jar
+	# We use the development snapshot until the 2.4.0 release is actually made.
+	# The previous version (2.3.1) contains bugs which have been fixed, but not released.
+	# Once 2.4.0 is officially released, we can download the non-SNAPSHOT version.
+	curl https://oss.sonatype.org/content/repositories/snapshots/io/swagger/swagger-codegen-cli/$(CODEGEN_VERSION)-SNAPSHOT/swagger-codegen-cli-$(CODEGEN_VERSION)-20180411.010038-223.jar -o swagger-codegen-cli-$(CODEGEN_VERSION).jar
+
+swagger/user_data_store.yml:
+	curl https://raw.githubusercontent.com/girleffect/core-user-data-store/develop/swagger/user_data_store.yml -o swagger/user_data_store.yml
+
+swagger/access_control.yml:
+	curl https://raw.githubusercontent.com/girleffect/core-access-control/develop/swagger/access_control.yml -o swagger/access_control.yml
+
+# Generate the client code to interface with the User Data Store
+user-data-store-client: swagger-codegen-cli-$(CODEGEN_VERSION).jar swagger/user_data_store.yml
+	echo "Generating the client for the User Data Store API..."
+	$(CODEGEN) --lang python -i swagger/user_data_store.yml -D packageName=user_data_store -o /tmp/$(USER_DATA_STORE_CLIENT_DIR)
+	cp -r /tmp/$(USER_DATA_STORE_CLIENT_DIR)/user_data_store/ $(USER_DATA_STORE_CLIENT_DIR)
+
+# Generate the client code to interface with the Access Control component
+access-control-client: swagger-codegen-cli-$(CODEGEN_VERSION).jar swagger/access_control.yml
+	echo "Generating the client for the Access Control API..."
+	$(CODEGEN) --lang python -i swagger/access_control.yml -D packageName=access_control -o /tmp/$(ACCESS_CONTROL_CLIENT_DIR)
+	cp -r /tmp/$(ACCESS_CONTROL_CLIENT_DIR)/access_control/ $(ACCESS_CONTROL_CLIENT_DIR)
