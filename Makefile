@@ -132,4 +132,4 @@ user-data-store-client: swagger-codegen-cli-$(CODEGEN_VERSION).jar swagger/user_
 access-control-client: swagger-codegen-cli-$(CODEGEN_VERSION).jar swagger/access_control.yml
 	echo "Generating the client for the Access Control API..."
 	$(CODEGEN) --lang python -i swagger/access_control.yml -D packageName=access_control -o /tmp/$(ACCESS_CONTROL_CLIENT_DIR)
-	cp -r /tmp/$(ACCESS_CONTROL_CLIENT_DIR)/access_control/ $(ACCESS_CONTROL_CLIENT_DIR)
+	cp -r /tmp/$(ACCESS_CONTROL_CLIENT_DIR)/access_control/. ./$(ACCESS_CONTROL_CLIENT_DIR)

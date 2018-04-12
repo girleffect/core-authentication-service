@@ -91,15 +91,7 @@ class CustomScopeClaims(ScopeClaims):
         #  this client.
         # 2. Use the site id and user id to query the User Data Store component for the
         #  site-specific data for the user.
-        result = {
-            "site": {
-                "id": self.client.client_id,
-                "mocked": True,
-                "status": "This is demo data"
-            }
-        }
-
-        return result
+        return api_helpers.get_user_site_data(self.user.id, self.client.id)
 
     def scope_roles(self) -> dict:
         """
