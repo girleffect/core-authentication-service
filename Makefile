@@ -126,7 +126,7 @@ swagger/access_control.yml:
 user-data-store-client: swagger-codegen-cli-$(CODEGEN_VERSION).jar swagger/user_data_store.yml
 	echo "Generating the client for the User Data Store API..."
 	$(CODEGEN) --lang python -i swagger/user_data_store.yml -D packageName=user_data_store -o /tmp/$(USER_DATA_STORE_CLIENT_DIR)
-	cp -r /tmp/$(USER_DATA_STORE_CLIENT_DIR)/user_data_store/ $(USER_DATA_STORE_CLIENT_DIR)
+	cp -r /tmp/$(USER_DATA_STORE_CLIENT_DIR)/user_data_store/. ./$(USER_DATA_STORE_CLIENT_DIR)
 
 # Generate the client code to interface with the Access Control component
 access-control-client: swagger-codegen-cli-$(CODEGEN_VERSION).jar swagger/access_control.yml
