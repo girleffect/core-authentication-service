@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.conf import settings
 
@@ -14,7 +15,7 @@ def get_user_site_data(user_id, client_id):
     sites = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
     if len(sites) > 0:
         site = sites[0]
-        site_data = settings.USER_DATA_STORE_API.usersitedata_read(str(user_id), site_id)
+        site_data = settings.USER_DATA_STORE_API.usersitedata_read(str(user_id), client_id)
         # TODO if it does not exist, create.
         return site_data
     LOGGER.error(f"Site for client.id ({client_id}) not found")
