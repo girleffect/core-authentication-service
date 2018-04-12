@@ -33,7 +33,7 @@ class Site(object):
     swagger_types = {
         'id': 'int',
         'name': 'str',
-        'client_id': 'str',
+        'client_id': 'int',
         'domain_id': 'int',
         'description': 'str',
         'is_active': 'bool',
@@ -130,7 +130,7 @@ class Site(object):
 
 
         :return: The client_id of this Site.  # noqa: E501
-        :rtype: str
+        :rtype: int
         """
         return self._client_id
 
@@ -140,10 +140,8 @@ class Site(object):
 
 
         :param client_id: The client_id of this Site.  # noqa: E501
-        :type: str
+        :type: int
         """
-        if client_id is not None and len(client_id) > 255:
-            raise ValueError("Invalid value for `client_id`, length must be less than or equal to `255`")  # noqa: E501
 
         self._client_id = client_id
 

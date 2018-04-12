@@ -58,6 +58,7 @@ def userinfo(claims: dict, user: USER_MODEL) -> dict:
         else:
             LOGGER.error("Unsupported claim '{}' encountered.".format(key))
 
+    print ("AUTH:USERINFO")
     return claims
 
 
@@ -99,6 +100,7 @@ class CustomScopeClaims(ScopeClaims):
             }
         }
 
+        print ("AUTH:SCOPE:SITE_DATA")
         return result
 
     def scope_roles(self) -> dict:
@@ -115,5 +117,6 @@ class CustomScopeClaims(ScopeClaims):
 
         roles = api_helpers.user_site_roles_aggregated(self.user.id, self.client.client_id)
         result = {"roles": roles}
+        print ("AUTH:SCOPE:ROLES")
 
         return result

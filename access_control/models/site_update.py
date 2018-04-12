@@ -31,7 +31,7 @@ class SiteUpdate(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'client_id': 'str',
+        'client_id': 'int',
         'domain_id': 'int',
         'name': 'str',
         'description': 'str',
@@ -73,7 +73,7 @@ class SiteUpdate(object):
 
 
         :return: The client_id of this SiteUpdate.  # noqa: E501
-        :rtype: str
+        :rtype: int
         """
         return self._client_id
 
@@ -83,10 +83,8 @@ class SiteUpdate(object):
 
 
         :param client_id: The client_id of this SiteUpdate.  # noqa: E501
-        :type: str
+        :type: int
         """
-        if client_id is not None and len(client_id) > 255:
-            raise ValueError("Invalid value for `client_id`, length must be less than or equal to `255`")  # noqa: E501
 
         self._client_id = client_id
 
