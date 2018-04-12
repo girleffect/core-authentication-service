@@ -5,6 +5,8 @@ from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
 from project.settings_base import *
+import access_control
+import user_data_store
 
 env = Env()
 
@@ -115,11 +117,41 @@ DEFENDER_ACCESS_ATTEMPT_EXPIRATION = 24  # hours
 DEFENDER_USERNAME_FORM_FIELD = "auth-username"
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
+
+# GE API settings and setup
 ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
-USER_DATA_STORE_API = env.str("USER_DATA_STORE_API")
+USER_DATA_STORE_API_URL = env.str("USER_DATA_STORE_API")
 USER_DATA_STORE_API_KEY = env.str("USER_DATA_STORE_API_KEY")
-ACCESS_CONTROL_API = env.str("ACCESS_CONTROL_API")
+ACCESS_CONTROL_API_URL = env.str("ACCESS_CONTROL_API")
 ACCESS_CONTROL_API_KEY = env.str("ACCESS_CONTROL_API_KEY")
+
+## Setup API clients
+config = user_data_store.configuration.Configuration()
+config.host = USER_DATA_STORE_API_URL
+USER_DATA_STORE_API = user_data_store.api.UserDataApi(
+    api_client=user_data_store.ApiClient(
+        header_name="X-API-KEY",
+        header_value=USER_DATA_STORE_API_KEY,
+        configuration=config
+    )
+)
+
+config = access_control.configuration.Configuration()
+config.host = ACCESS_CONTROL_API_URL
+ACCESS_CONTROL_API = access_control.api.AccessControlApi(
+    api_client=access_control.ApiClient(
+        header_name="X-API-KEY",
+        header_value=ACCESS_CONTROL_API_KEY,
+        configuration=config
+    )
+)
+AC_OPERATIONAL_API = access_control.api.OperationalApi(
+    api_client=access_control.ApiClient(
+        header_name="X-API-KEY",
+        header_value=ACCESS_CONTROL_API_KEY,
+        configuration=config
+    )
+)
 
 # CORS settings
 CORS_ORIGIN_WHITELIST = [
