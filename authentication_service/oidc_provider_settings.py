@@ -113,7 +113,8 @@ class CustomScopeClaims(ScopeClaims):
         LOGGER.debug("Requesting roles for user: %s/%s, on site: %s" % (
             self.user.username, self.user.id, self.client))
 
-        roles = api_helpers.user_site_roles_aggregated(self.user.id, self.client.client_id)
+        roles = api_helpers.user_site_roles_aggregated(
+            self.user.id, self.client.id)
         result = {"roles": roles}
 
         return result

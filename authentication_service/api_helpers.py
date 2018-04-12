@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 
 
@@ -11,6 +13,12 @@ def create_user_site_data(user_id, site_id):
     })
 
 def user_site_roles_aggregated(user_id, client_id):
+    # Returns a list of sites.
     result = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
-    site_id = result[0]
-    return settings.AC_OPERATIONAL_API.get_user_site_role_labels_aggregated(str(user_id), site_id)
+
+    # Get the id of the site
+    site_id = result[0].id
+
+    # Return the roles
+    return settings.AC_OPERATIONAL_API.get_user_site_role_labels_aggregated(
+        str(user_id), site_id).roles

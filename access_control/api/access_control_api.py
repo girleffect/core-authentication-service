@@ -331,6 +331,7 @@ class AccessControlApi(object):
         :param async bool
         :param int offset: An optional query parameter specifying the offset in the result set to start from.
         :param int limit: An optional query parameter to limit the number of results returned.
+        :param int parent_id: An optional query parameter to filter by parent_id
         :param list[int] domain_ids: An optional list of domain ids
         :return: list[Domain]
                  If the method is called asynchronously,
@@ -354,13 +355,14 @@ class AccessControlApi(object):
         :param async bool
         :param int offset: An optional query parameter specifying the offset in the result set to start from.
         :param int limit: An optional query parameter to limit the number of results returned.
+        :param int parent_id: An optional query parameter to filter by parent_id
         :param list[int] domain_ids: An optional list of domain ids
         :return: list[Domain]
                  If the method is called asynchronously,
                  returns the request thread.
         """
 
-        all_params = ['offset', 'limit', 'domain_ids']  # noqa: E501
+        all_params = ['offset', 'limit', 'parent_id', 'domain_ids']  # noqa: E501
         all_params.append('async')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -394,6 +396,8 @@ class AccessControlApi(object):
             query_params.append(('offset', params['offset']))  # noqa: E501
         if 'limit' in params:
             query_params.append(('limit', params['limit']))  # noqa: E501
+        if 'parent_id' in params:
+            query_params.append(('parent_id', params['parent_id']))  # noqa: E501
         if 'domain_ids' in params:
             query_params.append(('domain_ids', params['domain_ids']))  # noqa: E501
             collection_formats['domain_ids'] = 'multi'  # noqa: E501
@@ -4518,6 +4522,7 @@ class AccessControlApi(object):
         :param int offset: An optional query parameter specifying the offset in the result set to start from.
         :param int limit: An optional query parameter to limit the number of results returned.
         :param list[int] site_ids: An optional list of site ids
+        :param int client_id: An optional client id to filter on
         :return: list[Site]
                  If the method is called asynchronously,
                  returns the request thread.
@@ -4541,12 +4546,13 @@ class AccessControlApi(object):
         :param int offset: An optional query parameter specifying the offset in the result set to start from.
         :param int limit: An optional query parameter to limit the number of results returned.
         :param list[int] site_ids: An optional list of site ids
+        :param int client_id: An optional client id to filter on
         :return: list[Site]
                  If the method is called asynchronously,
                  returns the request thread.
         """
 
-        all_params = ['offset', 'limit', 'site_ids']  # noqa: E501
+        all_params = ['offset', 'limit', 'site_ids', 'client_id']  # noqa: E501
         all_params.append('async')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -4583,6 +4589,8 @@ class AccessControlApi(object):
         if 'site_ids' in params:
             query_params.append(('site_ids', params['site_ids']))  # noqa: E501
             collection_formats['site_ids'] = 'multi'  # noqa: E501
+        if 'client_id' in params:
+            query_params.append(('client_id', params['client_id']))  # noqa: E501
 
         header_params = {}
 
