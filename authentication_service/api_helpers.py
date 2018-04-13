@@ -19,7 +19,7 @@ def get_user_site_data(user_id, client_id):
 
     # Get the site. Client id is unique on access-control
     sites = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
-    if len(sites) > 0 and sites[0]["is_active"]:
+    if len(sites) > 0 and sites[0].is_active:
         site_id = sites[0].id
         try:
             site_data = settings.USER_DATA_STORE_API.usersitedata_read(str(user_id), site_id)
@@ -32,7 +32,7 @@ def get_user_site_data(user_id, client_id):
     LOGGER.error(f"Site for client.id ({client_id}) not found, or inactive")
 
 
-def user_site_roles_aggregated(user_id, client_id):
+def get_user_site_role_labels_aggregated(user_id, client_id):
     # Returns a list of sites.
     result = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
 

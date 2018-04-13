@@ -86,14 +86,11 @@ class CustomScopeClaims(ScopeClaims):
         """
         LOGGER.debug("Looking up site {} data for user {}".format(
             self.client.client_id, self.user))
-        # TODO:
-        # 1. Use the client id to query the Access Control component for the site id linked to it
-        #  this client.
-        # 2. Use the site id and user id to query the User Data Store component for the
-        #  site-specific data for the user.
         result = {
-            "site":
-            api_helpers.get_user_site_data(self.user.id, self.client.id).to_dict()
+            "site": {
+                "data": api_helpers.get_user_site_data(
+                    self.user.id, self.client.id).to_dict()["data"]
+            }
         }
 
         return result
@@ -110,7 +107,7 @@ class CustomScopeClaims(ScopeClaims):
         LOGGER.debug("Requesting roles for user: %s/%s, on site: %s" % (
             self.user.username, self.user.id, self.client))
 
-        roles = api_helpers.user_site_roles_aggregated(
+        roles = api_helpers.get_user_site_role_labels_aggregated(
             self.user.id, self.client.id)
         result = {"roles": roles}
 
