@@ -92,9 +92,7 @@ class CustomScopeClaims(ScopeClaims):
             self.user.id, self.client.id).to_dict()["data"]
         now = timezone.now()
         result = {
-            "site": {
-                "data": data if data else {"retrieved_at": f"{now}"}
-            }
+            "site": {"retrieved_at": f"{now}", "data": data}
         }
 
         return result
