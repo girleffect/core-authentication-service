@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.core import exceptions
 
 from user_data_store.rest import ApiException
 
@@ -29,16 +30,22 @@ def get_user_site_data(user_id, client_id):
             else:
                 raise e
         return site_data
-    LOGGER.error(f"Site for client.id ({client_id}) not found, or inactive")
+    raise exceptions.ImproperlyConfigured(
+        f"Site for client.id ({client_id}) not found, or inactive"
+    )
 
 
 def get_user_site_role_labels_aggregated(user_id, client_id):
     # Returns a list of sites.
-    result = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
+    sites = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
 
     # Get the id of the site
-    site_id = result[0].id
+    if len(sites) > 0 and sites[0].is_active:
+        site_id = sites[0].id
 
-    # Return the roles
-    return settings.AC_OPERATIONAL_API.get_user_site_role_labels_aggregated(
-        str(user_id), site_id).roles
+        # Return the roles
+        return settings.AC_OPERATIONAL_API.get_user_site_role_labels_aggregated(
+            str(user_id), site_id).roles
+    raise exceptions.ImproperlyConfigured(
+        f"Site for client.id ({client_id}) not found, or inactive"
+    )
