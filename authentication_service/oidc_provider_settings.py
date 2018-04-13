@@ -1,7 +1,8 @@
 import logging
 
-from django.utils.translation import ugettext as _
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
 from oidc_provider.lib.claims import ScopeClaims
 
@@ -86,10 +87,13 @@ class CustomScopeClaims(ScopeClaims):
         """
         LOGGER.debug("Looking up site {} data for user {}".format(
             self.client.client_id, self.user))
+
+        data = api_helpers.get_user_site_data(
+            self.user.id, self.client.id).to_dict()["data"]
+        now = timezone.now()
         result = {
             "site": {
-                "data": api_helpers.get_user_site_data(
-                    self.user.id, self.client.id).to_dict()["data"]
+                "data": data if data else {"retrieved_at": f"{now}"}
             }
         }
 
