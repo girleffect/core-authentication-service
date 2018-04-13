@@ -116,12 +116,12 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
-        # fields_data["birth_date"] = {
-        #     "attributes": {
-        #         "help_text": _("Please use dd/mm/yyyy format")
-        #     }
-        # }
         fields_data = {
+            "birth_date": {
+                "attributes": {
+                    "help_text": _("Please use dd/mm/yyyy format")
+                }
+            },
             "nickname": {
                 "attributes": {
                     "label": "Display name"
