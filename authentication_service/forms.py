@@ -124,12 +124,12 @@ class RegistrationForm(UserCreationForm):
             },
             "nickname": {
                 "attributes": {
-                    "label": "Display name"
+                    "label": _("Display name")
                 }
             },
             "msisdn": {
                 "attributes": {
-                    "label": "Mobile"
+                    "label": _("Mobile")
                 }
             }
         }
