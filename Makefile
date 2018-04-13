@@ -86,3 +86,21 @@ database:
 
 test:
 	$(PYTHON) manage.py test --settings=authentication_service.tests.settings.111
+
+authentication-service-api: $(VENV)
+	$(VENV)/bin/pip install -r $(VENV)/src/swagger-django-generator/requirements.txt
+	$(PYTHON) $(VENV)/src/swagger-django-generator/swagger_django_generator/generator.py swagger/authentication_serv
+
+make-translations:
+	@echo "$(CYAN)Generating .po files...$(CLEAR)"
+	mkdir other_packages
+	cp -r ./ve/lib/python3.6/site-packages/oidc_provider ./other_packages
+	cp -r ./ve/lib/python3.6/site-packages/two_factor ./other_packages
+	django-admin makemessages --all -i "ve/*"
+	rm -rf other_packages
+	@echo "$(GREEN)DONE$(CLEAR)"
+
+translate:
+	@echo "$(CYAN)Compiling translation files...$(CLEAR)"
+	django-admin compilemessages
+	@echo "$(GREEN)DONE($CLEAR)"
