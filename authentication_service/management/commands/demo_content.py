@@ -96,7 +96,7 @@ class Command(BaseCommand):
                 "jwt_alg": "RS256",
                 "redirect_uris": [
                     "http://localhost:3000/oidc/callback/",
-                    "http://core-management-portal:3000/oidc/callback/"
+                    "http://core-management-portal:3000/#/oidc/callback?"
                 ]
             }
         )
