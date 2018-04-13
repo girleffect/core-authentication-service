@@ -42,7 +42,8 @@ REQUIREMENT_DEFINITION = {
 
 # Groupings of form fields which can be used to simplify specifying sets of hidden fields.
 HIDDEN_DEFINITION = {
-    "end-user": ["first_name", "last_name", "country", "gender", "avatar"]
+    "end-user": ["first_name", "last_name", "country", "avatar", "msisdn"],
+    "system-user": ["avatar"]
 }
 
 
@@ -115,9 +116,21 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
-        fields_data["birth_date"] = {
-            "attributes": {
-                "help_text": _("Please use dd/mm/yyyy format")
+        # fields_data["birth_date"] = {
+        #     "attributes": {
+        #         "help_text": _("Please use dd/mm/yyyy format")
+        #     }
+        # }
+        fields_data = {
+            "nickname": {
+                "attributes": {
+                    "label": "Display name"
+                }
+            },
+            "msisdn": {
+                "attributes": {
+                    "label": "Mobile"
+                }
             }
         }
 
