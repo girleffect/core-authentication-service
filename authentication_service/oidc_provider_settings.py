@@ -1,10 +1,13 @@
+import datetime
 import logging
 
-from django.utils.translation import ugettext as _
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
 from oidc_provider.lib.claims import ScopeClaims
 
+from authentication_service import api_helpers
 
 USER_MODEL = get_user_model()
 
@@ -85,17 +88,11 @@ class CustomScopeClaims(ScopeClaims):
         """
         LOGGER.debug("Looking up site {} data for user {}".format(
             self.client.client_id, self.user))
-        # TODO:
-        # 1. Use the client id to query the Access Control component for the site id linked to it
-        #  this client.
-        # 2. Use the site id and user id to query the User Data Store component for the
-        #  site-specific data for the user.
+        data = api_helpers.get_user_site_data(
+            self.user.id, self.client.id).to_dict()["data"]
+        now = timezone.now().astimezone(datetime.timezone.utc).isoformat()
         result = {
-            "site": {
-                "id": self.client.client_id,
-                "mocked": True,
-                "status": "This is demo data"
-            }
+            "site": {"retrieved_at": f"{now}", "data": data}
         }
 
         return result
@@ -112,7 +109,8 @@ class CustomScopeClaims(ScopeClaims):
         LOGGER.debug("Requesting roles for user: %s/%s, on site: %s" % (
             self.user.username, self.user.id, self.client))
 
-        roles = ["Not", "Implemented", "Yet"]
+        roles = api_helpers.get_user_site_role_labels_aggregated(
+            self.user.id, self.client.id)
         result = {"roles": roles}
 
         return result

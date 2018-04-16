@@ -92,11 +92,12 @@ class Command(BaseCommand):
             client_id="management_portal",
             defaults={
                 "name": "Management Portal",
+                "client_type": "public",
                 "response_type": "id_token token",
                 "jwt_alg": "RS256",
                 "redirect_uris": [
                     "http://localhost:3000/oidc/callback/",
-                    "http://core-management-portal:3000/oidc/callback/"
+                    "http://core-management-portal:3000/#/oidc/callback?"
                 ]
             }
         )
