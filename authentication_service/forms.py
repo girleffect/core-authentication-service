@@ -42,8 +42,8 @@ REQUIREMENT_DEFINITION = {
 
 # Groupings of form fields which can be used to simplify specifying sets of hidden fields.
 HIDDEN_DEFINITION = {
-    "end-user": ["first_name", "last_name", "country", "avatar", "msisdn"],
-    "system-user": ["avatar"]
+    "end-user": ["first_name", "last_name", "country", "msisdn"],
+    "system-user": []
 }
 
 
