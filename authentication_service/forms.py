@@ -340,13 +340,28 @@ class EditProfileForm(forms.ModelForm):
                 }
             },
         }
-
         hidden_fields = []
+
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
             for field in settings.HIDE_FIELDS["global_fields"]:
                 self.fields[field].required = False
                 self.fields[field].widget.is_required = False
+                hidden_fields.append(field)
+
+        # Since email is required on registration for a system user,
+        # we can assume that the user is a system user if they have an email
+        # address. Should the email address become required for end users as
+        # well, this will no longer function.
+        if self.instance.email:
+            for field in HIDDEN_DEFINITION["system-user"]:
+                hidden_fields.append(field)
+
+            # Show email address explicitly since it is hidden in the
+            # global hidden fields.
+            hidden_fields.remove("email")
+        else:
+            for field in HIDDEN_DEFINITION["end-user"]:
                 hidden_fields.append(field)
 
         # Update the actual fields and widgets.
