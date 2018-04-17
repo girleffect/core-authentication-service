@@ -348,10 +348,6 @@ class EditProfileForm(forms.ModelForm):
                 self.fields[field].widget.is_required = False
                 hidden_fields.append(field)
 
-        # Since email is required on registration for a system user,
-        # we can assume that the user is a system user if they have an email
-        # address. Should the email address become required for end users as
-        # well, this will no longer function.
         if self.instance.organisational_unit:
             # Show email address explicitly since it is hidden in the
             # global hidden fields.
