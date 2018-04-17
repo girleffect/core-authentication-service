@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-17 18:57+0200\n"
+"POT-Creation-Date: 2018-04-17 21:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: authentication_service/forms.py:121 authentication_service/forms.py:343
+#: authentication_service/forms.py:121 authentication_service/forms.py:344
 msgid "Please use dd/mm/yyyy format"
 msgstr ""
 
@@ -34,7 +34,7 @@ msgstr "Mobiltelefon"
 msgid "Age"
 msgstr "Alter"
 
-#: authentication_service/forms.py:187 authentication_service/forms.py:513
+#: authentication_service/forms.py:187 authentication_service/forms.py:514
 msgid "Password not long enough."
 msgstr "Passwort nicht lang genug."
 
@@ -58,19 +58,23 @@ msgstr "Jede Frage kann nur einmal ausgewählt werden."
 msgid "Select a question"
 msgstr "Wähle eine Frage"
 
-#: authentication_service/forms.py:383
+#: authentication_service/forms.py:289
+msgid "Question"
+msgstr "Frage"
+
+#: authentication_service/forms.py:384
 msgid "Username/email"
 msgstr "Benutzername / E-Mail"
 
-#: authentication_service/forms.py:390
+#: authentication_service/forms.py:391
 msgid "Please enter your username or email address."
 msgstr "Bitte geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein."
 
-#: authentication_service/forms.py:457
+#: authentication_service/forms.py:458
 msgid "Please enter your answer."
 msgstr "Bitte gib deine Antwort ein."
 
-#: authentication_service/forms.py:463
+#: authentication_service/forms.py:464
 msgid "Please tell us why you want your account deleted"
 msgstr "Bitte teilen Sie uns mit, warum Sie Ihr Konto löschen möchten"
 
@@ -105,10 +109,6 @@ msgstr ""
 #: authentication_service/models.py:78
 msgid "answer"
 msgstr "Antworten"
-
-#: authentication_service/models.py:80 authentication_service/models.py:105
-msgid "question"
-msgstr "Frage"
 
 #: authentication_service/models.py:96
 msgid "Default question text"

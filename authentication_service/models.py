@@ -77,7 +77,7 @@ class UserSecurityQuestion(models.Model):
     user = models.ForeignKey("CoreUser")
     answer = models.TextField(_("answer"))
     language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
-    question = models.ForeignKey("SecurityQuestion", verbose_name=_("question"))
+    question = models.ForeignKey("SecurityQuestion")
 
     # NOTE as always, be aware certain update, create and save paths will never
     # trigger save() or the post/pre save signals.
@@ -102,7 +102,7 @@ class SecurityQuestion(models.Model):
 class QuestionLanguageText(models.Model):
     language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
     question = models.ForeignKey(
-        "SecurityQuestion", on_delete=models.CASCADE, verbose_name=_("question")
+        "SecurityQuestion", on_delete=models.CASCADE
     )
     question_text = models.TextField()
 

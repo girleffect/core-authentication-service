@@ -285,7 +285,8 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 class SecurityQuestionForm(forms.ModelForm):
     question = forms.ModelChoiceField(
         queryset=QuerySet(),
-        empty_label=_("Select a question")
+        empty_label=_("Select a question"),
+        label=_("Question")
     )
 
     class Meta:
