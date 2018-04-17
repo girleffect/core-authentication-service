@@ -22,7 +22,7 @@ from django.forms import modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
 from authentication_service.models import UserSecurityQuestion
@@ -129,6 +129,11 @@ class RegistrationForm(UserCreationForm):
             "msisdn": {
                 "attributes": {
                     "label": _("Mobile")
+                }
+            },
+            "age": {
+                "attributes": {
+                    "label": _("Age")
                 }
             }
         }
@@ -280,7 +285,7 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 class SecurityQuestionForm(forms.ModelForm):
     question = forms.ModelChoiceField(
         queryset=QuerySet(),
-        empty_label="Select a question"
+        empty_label=_("Select a question")
     )
 
     class Meta:
@@ -375,7 +380,7 @@ class ResetPasswordForm(PasswordResetForm):
     required_css_class = "required"
 
     email = forms.CharField(
-        label="Username/email"
+        label=_("Username/email")
     )
 
     def clean(self):
@@ -455,7 +460,7 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
 class DeleteAccountForm(forms.Form):
     reason = forms.CharField(
         required=False,
-        label=_("Please tell use why you want your account deleted")
+        label=_("Please tell us why you want your account deleted")
     )
 
 

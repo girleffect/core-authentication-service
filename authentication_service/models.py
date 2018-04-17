@@ -5,7 +5,7 @@ from django.contrib.auth import hashers
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 
 GENDER_CHOICES = (
@@ -25,10 +25,11 @@ class CoreUser(AbstractUser):
     msisdn = models.CharField(blank=True, null=True, max_length=16)
     msisdn_verified = models.BooleanField(default=False)
     gender = models.CharField(
-        max_length=10, blank=True, null=True, choices=GENDER_CHOICES
+        _('gender'), max_length=10, blank=True, null=True, choices=GENDER_CHOICES
     )
     birth_date = models.DateField()
-    country = models.ForeignKey("Country", blank=True, null=True)
+    country = models.ForeignKey("Country", blank=True, null=True,
+                                verbose_name=_("country"))
     avatar = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -74,9 +75,9 @@ class Country(models.Model):
 
 class UserSecurityQuestion(models.Model):
     user = models.ForeignKey("CoreUser")
-    answer = models.TextField()
+    answer = models.TextField(_("answer"))
     language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
-    question = models.ForeignKey("SecurityQuestion")
+    question = models.ForeignKey("SecurityQuestion", verbose_name=_("question"))
 
     # NOTE as always, be aware certain update, create and save paths will never
     # trigger save() or the post/pre save signals.
@@ -101,7 +102,7 @@ class SecurityQuestion(models.Model):
 class QuestionLanguageText(models.Model):
     language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
     question = models.ForeignKey(
-        "SecurityQuestion", on_delete=models.CASCADE
+        "SecurityQuestion", on_delete=models.CASCADE, verbose_name=_("question")
     )
     question_text = models.TextField()
 
