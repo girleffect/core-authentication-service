@@ -51,7 +51,7 @@ DATABASES = {
         "PORT=5432")
 }
 
-INSTALLED_APPS = list(INSTALLED_APPS)
+INSTALLED_APPS = list(INSTALLED_APPS) + ["raven.contrib.django.raven_compat"]
 
 ADDITIONAL_APPS = [
     "layers",
@@ -195,6 +195,57 @@ DEFAULT_LISTING_LIMIT = 20
 MAX_LISTING_LIMIT = 100
 MIN_LISTING_LIMIT = 1
 DEFAULT_LISTING_OFFSET = 0
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": True,
+    "formatters": {
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(module)s "
+                      "%(process)d %(thread)d %(message)s"
+        },
+    },
+    "handlers": {
+        "sentry": {
+            "level": "ERROR",
+            "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
+            "tags": {"custom-tag": "x"},
+        },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose"
+        }
+    },
+    "loggers": {
+        "root": {
+            "level": "WARNING",
+            "handlers": ["sentry"],
+        },
+        "django.db.backends": {
+            "level": "ERROR",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "raven": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "sentry.errors": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+    },
+}
+
+RAVEN_CONFIG = {
+    "dsn": env.str(
+        "RAVEN_DSN",
+        "https://7026a856f01348ed887633e3b33b0991:8159ab14103b45be90cd491db1317d5e@sentry.io/1188799"
+    )
+}
 
 
 # Attempt to import local settings if present.
