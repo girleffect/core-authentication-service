@@ -42,8 +42,7 @@ REQUIREMENT_DEFINITION = {
 
 # Groupings of form fields which can be used to simplify specifying sets of hidden fields.
 HIDDEN_DEFINITION = {
-    "end-user": ["first_name", "last_name", "country", "msisdn"],
-    "system-user": []
+    "end-user": ["first_name", "last_name", "country", "msisdn"]
 }
 
 
@@ -353,10 +352,7 @@ class EditProfileForm(forms.ModelForm):
         # we can assume that the user is a system user if they have an email
         # address. Should the email address become required for end users as
         # well, this will no longer function.
-        if self.instance.email:
-            for field in HIDDEN_DEFINITION["system-user"]:
-                hidden_fields.append(field)
-
+        if self.instance.organisational_unit:
             # Show email address explicitly since it is hidden in the
             # global hidden fields.
             hidden_fields.remove("email")
