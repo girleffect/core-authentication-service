@@ -42,7 +42,7 @@ REQUIREMENT_DEFINITION = {
 
 # Groupings of form fields which can be used to simplify specifying sets of hidden fields.
 HIDDEN_DEFINITION = {
-    "end-user": ["first_name", "last_name", "country", "gender", "avatar"]
+    "end-user": ["first_name", "last_name", "country", "msisdn"]
 }
 
 
@@ -115,9 +115,21 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
-        fields_data["birth_date"] = {
-            "attributes": {
-                "help_text": _("Please use dd/mm/yyyy format")
+        fields_data = {
+            "birth_date": {
+                "attributes": {
+                    "help_text": _("Please use dd/mm/yyyy format")
+                }
+            },
+            "nickname": {
+                "attributes": {
+                    "label": _("Display name")
+                }
+            },
+            "msisdn": {
+                "attributes": {
+                    "label": _("Mobile")
+                }
             }
         }
 
@@ -327,13 +339,21 @@ class EditProfileForm(forms.ModelForm):
                 }
             },
         }
-
         hidden_fields = []
+
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
             for field in settings.HIDE_FIELDS["global_fields"]:
                 self.fields[field].required = False
                 self.fields[field].widget.is_required = False
+                hidden_fields.append(field)
+
+        if self.instance.organisational_unit:
+            # Show email address explicitly since it is hidden in the
+            # global hidden fields.
+            hidden_fields.remove("email")
+        else:
+            for field in HIDDEN_DEFINITION["end-user"]:
                 hidden_fields.append(field)
 
         # Update the actual fields and widgets.
