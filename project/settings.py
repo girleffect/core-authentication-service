@@ -51,7 +51,7 @@ DATABASES = {
         "PORT=5432")
 }
 
-INSTALLED_APPS = list(INSTALLED_APPS) + ["raven.contrib.django.raven_compat"]
+INSTALLED_APPS = list(INSTALLED_APPS)
 
 ADDITIONAL_APPS = [
     "layers",
@@ -70,6 +70,9 @@ ADDITIONAL_APPS = [
 
     # CORS headers
     "corsheaders",
+
+    # Sentry
+    "raven.contrib.django.raven_compat"
 ]
 
 # Project app has to be first in the list.
@@ -241,10 +244,7 @@ LOGGING = {
 }
 
 RAVEN_CONFIG = {
-    "dsn": env.str(
-        "RAVEN_DSN",
-        "https://7026a856f01348ed887633e3b33b0991:8159ab14103b45be90cd491db1317d5e@sentry.io/1188799"
-    )
+    "dsn": env.str("RAVEN_DSN", None)
 }
 
 
