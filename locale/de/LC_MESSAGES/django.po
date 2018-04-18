@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-17 21:01+0200\n"
+"POT-Creation-Date: 2018-04-18 11:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -368,29 +368,55 @@ msgid ""
 "you registered with, and check your spam folder."
 msgstr ""
 
-#: authentication_service/templates/translation.html:5
+#: authentication_service/templates/translation.html:6
 msgid "username"
 msgstr ""
 
-#: authentication_service/templates/translation.html:6
+#: authentication_service/templates/translation.html:7
 msgid "Token"
 msgstr "Zeichen"
 
-#: authentication_service/templates/translation.html:7
+#: authentication_service/templates/translation.html:8
 #, fuzzy
 #| msgid "Password update"
 msgid "Password confirmation"
 msgstr "Passwort aktualisieren"
 
-#: authentication_service/templates/translation.html:8
+#: authentication_service/templates/translation.html:9
 msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
 msgstr ""
 
-#: authentication_service/templates/translation.html:9
+#: authentication_service/templates/translation.html:10
 #, fuzzy
 #| msgid "Password update"
 msgid "New password confirmation"
 msgstr "Passwort aktualisieren"
+
+#: authentication_service/templates/translation.html:11
+msgid "Your password can't be too similar to your other personal information."
+msgstr ""
+
+#: authentication_service/templates/translation.html:12
+#, fuzzy
+#| msgid ""
+#| "The password must contain at least one uppercase letter, one lowercase "
+#| "one, a digit and special character."
+msgid "Your password must contain at least (min_length)d character."
+msgstr ""
+"Das Passwort muss mindestens einen Großbuchstaben enthalten, einen "
+"Kleinbuchstabeneine Ziffer und ein Sonderzeichen."
+
+#: authentication_service/templates/translation.html:13
+msgid "Your password can't be a commonly used password."
+msgstr ""
+
+#: authentication_service/templates/translation.html:14
+msgid "Your password can't be entirely numeric."
+msgstr ""
+
+#: authentication_service/templates/translation.html:15
+msgid "Enter the same password as before, for verification."
+msgstr ""
 
 #: authentication_service/templates/two_factor/_wizard_actions.html:3
 msgid "Next"

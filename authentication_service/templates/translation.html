@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
     The unofficial translation template used to add strings that aren't translated by Django for certain languages.
 {% endcomment %}
@@ -7,3 +8,7 @@
 {% trans "Password confirmation" %}
 {% trans "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."%}
 {% trans "New password confirmation"%}
+{% trans "Your password can't be too similar to your other personal information." %}
+{% trans "Your password can't be a commonly used password." %}
+{% trans "Your password can't be entirely numeric." %}
+{% trans "Enter the same password as before, for verification." %}
