@@ -1,6 +1,7 @@
 import itertools
 import logging
-from datetime import date  # Required because we patch it in the tests (test_forms.py)
+from datetime import date, \
+    timedelta  # Required because we patch it in the tests (test_forms.py)
 from dateutil.relativedelta import relativedelta
 
 from django import forms
@@ -338,6 +339,13 @@ class EditProfileForm(forms.ModelForm):
     error_css_class = "error"
     required_css_class = "required"
 
+    # Helper field that user's who don't know their birth date can use instead.
+    age = forms.IntegerField(
+        min_value=1,
+        max_value=100,
+        required=False
+    )
+
     def __init__(self, *args, **kwargs):
         super(EditProfileForm, self).__init__(*args, **kwargs)
         fields_data= {"birth_date": {
@@ -345,6 +353,11 @@ class EditProfileForm(forms.ModelForm):
                     "help_text": _("Please use dd/mm/yyyy format")
                 }
             },
+            "age": {
+                "attributes": {
+                    "label": _("Age")
+                }
+            }
         }
         hidden_fields = []
 
@@ -363,6 +376,8 @@ class EditProfileForm(forms.ModelForm):
             for field in HIDDEN_DEFINITION["end-user"]:
                 hidden_fields.append(field)
 
+        # Init age field
+        self.fields["age"].initial = date.today().year - self.instance.birth_date.year
         # Update the actual fields and widgets.
         update_form_fields(
             self,
@@ -373,7 +388,7 @@ class EditProfileForm(forms.ModelForm):
         model = get_user_model()
         fields = [
             "first_name", "last_name", "nickname", "email", "msisdn", "gender",
-            "birth_date", "country", "avatar"
+            "birth_date", "age", "country", "avatar"
         ]
 
 
