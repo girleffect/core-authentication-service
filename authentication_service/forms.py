@@ -22,7 +22,7 @@ from django.forms import modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
 from authentication_service.models import UserSecurityQuestion
@@ -42,7 +42,7 @@ REQUIREMENT_DEFINITION = {
 
 # Groupings of form fields which can be used to simplify specifying sets of hidden fields.
 HIDDEN_DEFINITION = {
-    "end-user": ["first_name", "last_name", "country", "gender", "avatar"]
+    "end-user": ["first_name", "last_name", "country", "msisdn"]
 }
 
 
@@ -115,9 +115,26 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
-        fields_data["birth_date"] = {
-            "attributes": {
-                "help_text": _("Please use dd/mm/yyyy format")
+        fields_data = {
+            "birth_date": {
+                "attributes": {
+                    "help_text": _("Please use dd/mm/yyyy format")
+                }
+            },
+            "nickname": {
+                "attributes": {
+                    "label": _("Display name")
+                }
+            },
+            "msisdn": {
+                "attributes": {
+                    "label": _("Mobile")
+                }
+            },
+            "age": {
+                "attributes": {
+                    "label": _("Age")
+                }
             }
         }
 
@@ -268,7 +285,8 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 class SecurityQuestionForm(forms.ModelForm):
     question = forms.ModelChoiceField(
         queryset=QuerySet(),
-        empty_label="Select a question"
+        empty_label=_("Select a question"),
+        label=_("Question")
     )
 
     class Meta:
@@ -327,13 +345,21 @@ class EditProfileForm(forms.ModelForm):
                 }
             },
         }
-
         hidden_fields = []
+
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
             for field in settings.HIDE_FIELDS["global_fields"]:
                 self.fields[field].required = False
                 self.fields[field].widget.is_required = False
+                hidden_fields.append(field)
+
+        if self.instance.organisational_unit:
+            # Show email address explicitly since it is hidden in the
+            # global hidden fields.
+            hidden_fields.remove("email")
+        else:
+            for field in HIDDEN_DEFINITION["end-user"]:
                 hidden_fields.append(field)
 
         # Update the actual fields and widgets.
@@ -355,7 +381,7 @@ class ResetPasswordForm(PasswordResetForm):
     required_css_class = "required"
 
     email = forms.CharField(
-        label="Username/email"
+        label=_("Username/email")
     )
 
     def clean(self):
@@ -435,7 +461,7 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
 class DeleteAccountForm(forms.Form):
     reason = forms.CharField(
         required=False,
-        label=_("Please tell use why you want your account deleted")
+        label=_("Please tell us why you want your account deleted")
     )
 
 

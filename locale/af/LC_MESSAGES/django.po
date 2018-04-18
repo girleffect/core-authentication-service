@@ -1,102 +1,132 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: test\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-10 09:10+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2018-04-18 11:50+0200\n"
+"Language: af\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: authentication_service/forms.py:120 authentication_service/forms.py:323
+#: authentication_service/forms.py:121 authentication_service/forms.py:344
 msgid "Please use dd/mm/yyyy format"
+msgstr "Gebruik asseblief dd/mm/jjjj formaat"
+
+#: authentication_service/forms.py:126
+msgid "Display name"
 msgstr ""
 
-#: authentication_service/forms.py:167 authentication_service/forms.py:485
+#: authentication_service/forms.py:131
+msgid "Mobile"
+msgstr "Telefoon nommer"
+
+#: authentication_service/forms.py:136
+msgid "Age"
+msgstr "Ouderdom"
+
+#: authentication_service/forms.py:187 authentication_service/forms.py:514
 msgid "Password not long enough."
-msgstr ""
+msgstr "Wagwoord nie lank genoeg nie."
 
-#: authentication_service/forms.py:191
+#: authentication_service/forms.py:211
 msgid "Enter either email or msisdn"
-msgstr ""
+msgstr "Tik e-pos of msisdn in"
 
-#: authentication_service/forms.py:201
+#: authentication_service/forms.py:221
 msgid "Enter either birth date or age"
-msgstr ""
+msgstr "Voer óf geboortedatum of ouderdom in"
 
-#: authentication_service/forms.py:246 authentication_service/forms.py:261
+#: authentication_service/forms.py:266 authentication_service/forms.py:281
 msgid "Please fill in all Security Question fields."
-msgstr ""
+msgstr "Vul asseblief alle Veiligheidsvraag velde in."
 
-#: authentication_service/forms.py:253
+#: authentication_service/forms.py:273
 msgid "Each question can only be picked once."
-msgstr ""
+msgstr "Elke vraag kan net een keer gekies word."
 
-#: authentication_service/forms.py:362
+#: authentication_service/forms.py:288
+msgid "Select a question"
+msgstr "Kies 'n vraag"
+
+#: authentication_service/forms.py:289
+msgid "Question"
+msgstr "Vraag"
+
+#: authentication_service/forms.py:384
+#, fuzzy
+#| msgid "username"
+msgid "Username/email"
+msgstr "gebruikersnaam"
+
+#: authentication_service/forms.py:391
 msgid "Please enter your username or email address."
-msgstr ""
+msgstr "Voer asseblief u gebruikersnaam of e-posadres in."
 
-#: authentication_service/forms.py:429
+#: authentication_service/forms.py:458
 msgid "Please enter your answer."
-msgstr ""
+msgstr "Sleutel asseblief u antwoord in."
 
-#: authentication_service/forms.py:435
-msgid "Please tell use why you want your account deleted"
-msgstr ""
+#: authentication_service/forms.py:464
+msgid "Please tell us why you want your account deleted"
+msgstr "Vertel asseblief waarom jy wil hê jou rekening moet verwyder word"
 
 #: authentication_service/models.py:12
 msgid "Female"
-msgstr ""
+msgstr "Vroulik"
 
 #: authentication_service/models.py:13
 msgid "Male"
-msgstr ""
+msgstr "Manlik"
 
 #: authentication_service/models.py:14
 msgid "Other"
-msgstr ""
+msgstr "Ander"
 
 #: authentication_service/models.py:22
 msgid "email address"
-msgstr ""
+msgstr "e-pos adres"
 
-#: authentication_service/models.py:69
+#: authentication_service/models.py:28
+msgid "gender"
+msgstr "Geslag:"
+
+#: authentication_service/models.py:32
+msgid "country"
+msgstr "Land"
+
+#: authentication_service/models.py:70
 msgid "Countries"
-msgstr ""
+msgstr "lande"
 
-#: authentication_service/models.py:95
+#: authentication_service/models.py:78
+msgid "answer"
+msgstr "Antwoord"
+
+#: authentication_service/models.py:96
 msgid "Default question text"
-msgstr ""
+msgstr "Verstekvraestel"
 
-#: authentication_service/models.py:113
+#: authentication_service/models.py:114
 msgid "Question text can not be assigned to more than one question."
-msgstr ""
+msgstr "Vraagtekst kan nie aan meer as een vraag toegeken word nie."
 
-#: authentication_service/oidc_provider_settings.py:70
+#: authentication_service/oidc_provider_settings.py:73
 msgid "Site"
-msgstr ""
+msgstr "Werf"
 
-#: authentication_service/oidc_provider_settings.py:70
+#: authentication_service/oidc_provider_settings.py:73
 msgid "Data for the requesting site"
-msgstr ""
+msgstr "Data vir die versoekende webwerf"
 
-#: authentication_service/oidc_provider_settings.py:74
+#: authentication_service/oidc_provider_settings.py:77
 msgid "Roles"
-msgstr ""
+msgstr "rolle"
 
-#: authentication_service/oidc_provider_settings.py:74
+#: authentication_service/oidc_provider_settings.py:77
 msgid "Roles for the requesting site"
-msgstr ""
+msgstr "Rolle vir die versoekende webwerf"
 
 #: authentication_service/password_validation.py:26
 #: authentication_service/password_validation.py:34
@@ -104,22 +134,31 @@ msgid ""
 "The password must contain at least one uppercase letter, one lowercase one, "
 "a digit and special character."
 msgstr ""
+"Die wagwoord moet ten minste een hoofletter, een kleinletter, een syfer en "
+"spesiale karakter bevat."
 
 #: authentication_service/tasks.py:17
 msgid "Email from Girl Effect"
-msgstr ""
+msgstr "E-pos van Girl Effect"
 
 #: authentication_service/tasks.py:21
 msgid "Password reset for Girl Effect account"
-msgstr ""
+msgstr "Wagwoordterugstelling vir Girl Effect-rekening"
 
 #: authentication_service/templates/authentication_service/lockout.html:5
 #: authentication_service/templates/authentication_service/lockout.html:9
 msgid "Oh no! You've been locked out"
-msgstr ""
+msgstr "O nee! Jy is uitgesluit"
 
 #: authentication_service/templates/authentication_service/lockout.html:14
-#, python-format
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "        <p>You have exceeded the maximum number of allowed incorrect "
+#| "reset attempts (%(failure_limit)s).\n"
+#| "        Please wait %(cooloff_time_minutes)s minutes before trying again."
+#| "</p>\n"
+#| "        "
 msgid ""
 "\n"
 "        <p>You have exceeded the maximum number of allowed incorrect reset "
@@ -128,9 +167,22 @@ msgid ""
 "p>\n"
 "        "
 msgstr ""
+"\n"
+"        <p> U het die maksimum aantal toegelate foutiewe herstelpogings (% "
+"(failure_limit) s) oortref.\n"
+"        Wag asseblief% (cooloff_time_minutes) s minute voordat u weer "
+"probeer. </ P>\n"
+"        "
 
 #: authentication_service/templates/authentication_service/lockout.html:19
-#, python-format
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "        <p>You have exceeded the maximum number of allowed incorrect "
+#| "login attempts (%(failure_limit)s).\n"
+#| "        Please wait %(cooloff_time_minutes)s minutes before trying again."
+#| "</p>\n"
+#| "        "
 msgid ""
 "\n"
 "        <p>You have exceeded the maximum number of allowed incorrect login "
@@ -139,54 +191,62 @@ msgid ""
 "p>\n"
 "        "
 msgstr ""
+"\n"
+"        <p> U het die maksimum aantal toegelate foutiewe aanmeldpogings (% "
+"(failure_limit) s) oorskry.\n"
+"        Wag asseblief% (cooloff_time_minutes) s minute voordat u weer "
+"probeer. </ P>\n"
+"        "
 
 #: authentication_service/templates/authentication_service/lockout.html:24
 #: authentication_service/templates/authentication_service/login.html:5
 #: authentication_service/templates/authentication_service/login.html:9
 #: authentication_service/templates/authentication_service/login.html:18
+#: authentication_service/templates/registration/password_reset_done.html:15
 #: authentication_service/templates/two_factor/core/login.html:5
 #: authentication_service/templates/two_factor/core/login.html:9
 msgid "Login"
-msgstr ""
+msgstr "Teken aan"
 
 #: authentication_service/templates/authentication_service/login.html:22
 #: authentication_service/templates/two_factor/core/login.html:49
 msgid "As a last resort, you can use a backup token:"
-msgstr ""
+msgstr "As laaste uitweg kan u 'n rugsteunteken gebruik:"
 
 #: authentication_service/templates/authentication_service/login.html:23
 #: authentication_service/templates/two_factor/core/login.html:52
 msgid "Use Backup Token"
-msgstr ""
+msgstr "Gebruik Rugsteun Token"
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Forgot password?"
-msgstr ""
+msgstr "Wagwoord vergeet?"
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Click here to reset it."
-msgstr "这是一个测试"
+msgstr "Klik hier om dit te herstel."
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:5
 #: authentication_service/templates/authentication_service/profile/delete_account.html:9
 msgid "Delete Your Account"
-msgstr ""
+msgstr "Vee jou rekening uit"
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:14
 msgid "We're sad to see you go. Are you sure you want to delete your account?"
 msgstr ""
+"Ons is hartseer om jou te sien gaan. Is jy seker jy wil jou rekening uitvee?"
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:25
 msgid "Yes"
-msgstr ""
+msgstr "Ja"
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:29
 msgid "No, I've changed my mind"
-msgstr ""
+msgstr "Nee, ek het my gedagtes verander"
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:36
 msgid "Delete account?"
-msgstr ""
+msgstr "Skrap rekening?"
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:40
 #: authentication_service/templates/authentication_service/profile/update_password.html:21
@@ -195,97 +255,103 @@ msgstr ""
 #: authentication_service/templates/two_factor/_wizard_actions.html:11
 #: authentication_service/templates/two_factor/core/otp_required.html:24
 msgid "Back"
-msgstr ""
+msgstr "Terug"
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:5
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:9
 msgid "Edit Your Profile"
-msgstr ""
+msgstr "Wysig jou profiel"
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:18
 #: authentication_service/templates/authentication_service/profile/update_password.html:17
 #: authentication_service/templates/authentication_service/profile/update_security_questions.html:21
 msgid "Update"
-msgstr ""
+msgstr "Opdateer"
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:23
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:26
 msgid "Password update"
-msgstr ""
+msgstr "Opdateer wagwoord"
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:27
 msgid "Security questions update"
-msgstr ""
+msgstr "Veiligheidsvraagopdatering"
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:28
 msgid "Delete account"
-msgstr ""
+msgstr "Skrap rekening"
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:30
 msgid "2FA settings"
-msgstr ""
+msgstr "2FA instellings"
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:32
 msgid "Logout"
-msgstr ""
+msgstr "Teken uit"
 
 #: authentication_service/templates/authentication_service/profile/update_password.html:5
 #: authentication_service/templates/authentication_service/profile/update_password.html:9
 msgid "Update Your Password"
-msgstr ""
+msgstr "Opdateer jou wagwoord"
 
 #: authentication_service/templates/authentication_service/profile/update_security_questions.html:5
 #: authentication_service/templates/authentication_service/profile/update_security_questions.html:9
 msgid "Update Security Questions"
-msgstr ""
+msgstr "Opdateer sekuriteitsvrae"
 
 #: authentication_service/templates/authentication_service/redirect_issue.html:5
 #: authentication_service/templates/authentication_service/redirect_issue.html:9
 msgid "Oops"
-msgstr ""
+msgstr "Oeps"
 
 #: authentication_service/templates/authentication_service/redirect_issue.html:13
 msgid "Oops! We don't seem to know what to do with you."
-msgstr ""
+msgstr "Oeps! Ons wil nie weet wat om met u te doen nie."
 
 #: authentication_service/templates/authentication_service/registration.html:5
 #: authentication_service/templates/authentication_service/registration.html:9
 msgid "Registration"
-msgstr ""
+msgstr "Registrasie"
 
 #: authentication_service/templates/authentication_service/registration.html:25
 msgid "Register"
-msgstr ""
+msgstr "Registreer"
 
 #: authentication_service/templates/authentication_service/reset_password/reset_password.html:5
 #: authentication_service/templates/authentication_service/reset_password/reset_password.html:9
 msgid "Forgot your password?"
-msgstr ""
+msgstr "Het jy jou wagwoord vergeet?"
 
 #: authentication_service/templates/authentication_service/reset_password/reset_password.html:17
 #: authentication_service/templates/authentication_service/reset_password/security_questions.html:18
 msgid "Submit"
-msgstr ""
+msgstr "Indien"
 
 #: authentication_service/templates/authentication_service/reset_password/security_questions.html:5
 #: authentication_service/templates/authentication_service/reset_password/security_questions.html:9
 msgid "Security Questions"
-msgstr ""
+msgstr "Sekuriteitsvrae"
 
 #: authentication_service/templates/base.html:56
 msgid "Back to "
-msgstr ""
+msgstr "Terug na "
 
 #: authentication_service/templates/oidc_provider/authorize.html:16
 #: authentication_service/templates/oidc_provider/authorize.html:20
 msgid "Request for Permission"
-msgstr ""
+msgstr "Versoek om toestemming"
 
 #: authentication_service/templates/oidc_provider/authorize.html:24
-#, python-format
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "        <p class=\"Intro\">You recently logged in to <strong>"
+#| "%(client_name)s</strong>, and they would like to access this information "
+#| "of you:</p>\n"
+#| "    "
 msgid ""
 "\n"
 "        <p class=\"Intro\">You recently logged in to <strong>"
@@ -293,39 +359,98 @@ msgid ""
 "you:</p>\n"
 "    "
 msgstr ""
+"\n"
+"        <p class = \"Intro\"> Jy het onlangs ingeteken by <strong>% "
+"(client_name) s </ strong>, en hulle wil toegang tot hierdie inligting van "
+"jou hê: </ p>\n"
+"    "
 
 #: authentication_service/templates/registration/password_reset_confirm.html:5
 #: authentication_service/templates/registration/password_reset_confirm.html:9
+#: authentication_service/templates/registration/password_reset_done.html:5
+#: authentication_service/templates/registration/password_reset_done.html:9
 msgid "Password Reset"
-msgstr ""
+msgstr "Wagwoord Herstel"
 
 #: authentication_service/templates/registration/password_reset_confirm.html:13
 msgid ""
 "Please enter your new password twice so we can verify you typed it in "
 "correctly."
 msgstr ""
+"Voer asseblief u nuwe wagwoord twee keer in, sodat ons kan verifieer dat u "
+"dit korrek ingevoer het."
 
 #: authentication_service/templates/registration/password_reset_confirm.html:18
 msgid "Change my password"
+msgstr "Verander my wagwoord"
+
+#: authentication_service/templates/registration/password_reset_done.html:13
+msgid ""
+"We've emailed you instructions for setting your password, if an account "
+"exists with the email you entered. You should receive them shortly."
 msgstr ""
 
-#: authentication_service/templates/translation.html:5
+#: authentication_service/templates/registration/password_reset_done.html:14
+msgid ""
+"If you don't receive an email, please make sure you've entered the address "
+"you registered with, and check your spam folder."
+msgstr ""
+
+#: authentication_service/templates/translation.html:6
 msgid "username"
-msgstr "Gebruikers Naam"
+msgstr "gebruikersnaam"
+
+#: authentication_service/templates/translation.html:7
+msgid "Token"
+msgstr "Teken"
+
+#: authentication_service/templates/translation.html:8
+msgid "Password confirmation"
+msgstr "Wagwoord bevestiging"
+
+#: authentication_service/templates/translation.html:9
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr "Vereis. 150 karakters of minder. Slegs letters, nommers en @/./+/-/_."
+
+#: authentication_service/templates/translation.html:10
+msgid "New password confirmation"
+msgstr "Nuwe wagwoord bevestiging"
+
+#: authentication_service/templates/translation.html:11
+msgid "Your password can't be too similar to your other personal information."
+msgstr ""
+"Jou wagwoord kan nie te gelyk wees aan jou ander persoonlike inligting nie."
+
+msgid "Your password must contain at least %(min_length)d character."
+msgid_plural "Your password must contain at least %(min_length)d characters."
+msgstr[0] "Jou wagwoord moet ten minste %(min_length)d karakter bevat."
+msgstr[1] "Jou wagwoord moet ten minste %(min_length)d karakters bevat."
+
+#: authentication_service/templates/translation.html:13
+msgid "Your password can't be a commonly used password."
+msgstr "Jou wagwoord kan nie 'n algemeen gebruikte wagwoord wees nie."
+
+#: authentication_service/templates/translation.html:14
+msgid "Your password can't be entirely numeric."
+msgstr "Jou wagwoord kan nie heeltemal numeriese wees nie."
+
+#: authentication_service/templates/translation.html:15
+msgid "Enter the same password as before, for verification."
+msgstr "Gee dieselfde wagwoord as voorheen vir verifikasie."
 
 #: authentication_service/templates/two_factor/_wizard_actions.html:3
 msgid "Next"
-msgstr ""
+msgstr "Volgende"
 
 #: authentication_service/templates/two_factor/_wizard_actions.html:16
 msgid "Cancel"
-msgstr ""
+msgstr "Kanselleer"
 
 #: authentication_service/templates/two_factor/core/backup_tokens.html:5
 #: authentication_service/templates/two_factor/core/backup_tokens.html:9
 #: authentication_service/templates/two_factor/profile/profile.html:43
 msgid "Backup Tokens"
-msgstr ""
+msgstr "Rugsteun Tokens"
 
 #: authentication_service/templates/two_factor/core/backup_tokens.html:13
 msgid ""
@@ -335,44 +460,58 @@ msgid ""
 "      can generate a new set of backup tokens. Only the backup tokens shown\n"
 "      below will be valid."
 msgstr ""
+"Backup tokens kan gebruik word wanneer u primêre en Friends\n"
+"      telefoonnommers is nie beskikbaar nie. Die rugsteun-tokens hieronder "
+"kan gebruik word\n"
+"      vir inskrywing verifikasie. As jy al jou Friends-tokens opgebruik het, "
+"sal jy\n"
+"      kan 'n nuwe stel rugsteun-tokens genereer. Slegs die rugsteuntekens "
+"gewys\n"
+"      hieronder sal geldig wees."
 
 #: authentication_service/templates/two_factor/core/backup_tokens.html:25
 msgid "Print these tokens and keep them somewhere safe."
-msgstr ""
+msgstr "Druk hierdie tekens en hou hulle iewers veilig."
 
 #: authentication_service/templates/two_factor/core/backup_tokens.html:27
 msgid "You don't have any backup codes yet."
-msgstr ""
+msgstr "U het nog geen rugsteunkodes nie."
 
 #: authentication_service/templates/two_factor/core/backup_tokens.html:31
 msgid "Generate Tokens"
-msgstr ""
+msgstr "Genereer Tokens"
 
 #: authentication_service/templates/two_factor/core/backup_tokens.html:35
 msgid "Back to Account Security"
-msgstr ""
+msgstr "Terug na rekening sekuriteit"
 
 #: authentication_service/templates/two_factor/core/login.html:14
 msgid "Enter your credentials."
-msgstr ""
+msgstr "Gee jou referenties op."
 
 #: authentication_service/templates/two_factor/core/login.html:17
 msgid ""
 "We are calling your phone right now, please enter the\n"
 "        digits you hear."
 msgstr ""
+"Ons bel jou selfoon nou, vul asseblief die\n"
+"        syfers wat jy hoor."
 
 #: authentication_service/templates/two_factor/core/login.html:20
 msgid ""
 "We sent you a text message, please enter the tokens we\n"
 "        sent."
 msgstr ""
+"Ons het vir u 'n sms-boodskap gestuur, vul asseblief die tokens in\n"
+"        gestuur."
 
 #: authentication_service/templates/two_factor/core/login.html:23
 msgid ""
 "Please enter the tokens generated by your token\n"
 "        generator."
 msgstr ""
+"Voer asseblief die tokens wat deur u token opgewek is, in\n"
+"        kragopwekker."
 
 #: authentication_service/templates/two_factor/core/login.html:27
 msgid ""
@@ -381,15 +520,18 @@ msgid ""
 "Please\n"
 "      enter one of these backup tokens to login to your account."
 msgstr ""
+"Gebruik hierdie vorm om rugsteun-tokens in te voer vir inskrywing.\n"
+"      Hierdie tekens is gegenereer om te druk en veilig te hou. asseblief\n"
+"      Voer een van hierdie back-up tokens in om by jou rekening aan te meld."
 
 #: authentication_service/templates/two_factor/core/login.html:39
 msgid "Or, alternatively, use one of your backup phones:"
-msgstr ""
+msgstr "Of, gebruik ook een van u Friends-fone:"
 
 #: authentication_service/templates/two_factor/core/otp_required.html:5
 #: authentication_service/templates/two_factor/core/otp_required.html:9
 msgid "Permission Denied"
-msgstr ""
+msgstr "Toestemming geweier"
 
 #: authentication_service/templates/two_factor/core/otp_required.html:13
 msgid ""
@@ -398,6 +540,9 @@ msgid ""
 "these\n"
 "    security features in order to access this page."
 msgstr ""
+"Die bladsy wat u aangevra het, dwing gebruikers om te verifieer met gebruik\n"
+"    twee-faktor verifikasie vir sekuriteitsredes. Jy moet dit aktiveer\n"
+"    sekuriteitskenmerke om toegang tot hierdie bladsy te verkry."
 
 #: authentication_service/templates/two_factor/core/otp_required.html:17
 msgid ""
@@ -405,6 +550,9 @@ msgid ""
 "    account. Enable two-factor authentication for enhanced account\n"
 "    security."
 msgstr ""
+"Tweefaktor-verifikasie is nie vir jou geaktiveer nie\n"
+"    rekening. Aktiveer tweefaktor-verifikasie vir verbeterde rekening\n"
+"    sekuriteit."
 
 #: authentication_service/templates/two_factor/core/otp_required.html:22
 #: authentication_service/templates/two_factor/core/setup.html:5
@@ -413,12 +561,12 @@ msgstr ""
 #: authentication_service/templates/two_factor/core/setup_complete.html:9
 #: authentication_service/templates/two_factor/profile/profile.html:66
 msgid "Enable Two-Factor Authentication"
-msgstr ""
+msgstr "Aktiveer twee-faktor-verifikasie"
 
 #: authentication_service/templates/two_factor/core/phone_register.html:5
 #: authentication_service/templates/two_factor/core/phone_register.html:9
 msgid "Add Backup Phone"
-msgstr ""
+msgstr "Voeg rugsteunfoon by"
 
 #: authentication_service/templates/two_factor/core/phone_register.html:14
 msgid ""
@@ -426,12 +574,17 @@ msgid ""
 "        account. This number will be used if your primary method of\n"
 "        registration is not available."
 msgstr ""
+"Jy sal 'n rugsteunfoonnommer by jou voeg\n"
+"        rekening. Hierdie nommer sal gebruik word as u primêre metode van\n"
+"        registrasie is nie beskikbaar nie."
 
 #: authentication_service/templates/two_factor/core/phone_register.html:18
 msgid ""
 "We've sent a token to your phone number. Please\n"
 "        enter the token you've received."
 msgstr ""
+"Ons het 'n teken na jou foonnommer gestuur. asseblief\n"
+"        voer die teken in wat jy ontvang het."
 
 #: authentication_service/templates/two_factor/core/setup.html:14
 msgid ""
@@ -439,12 +592,18 @@ msgid ""
 "        next level. Follow the steps in this wizard to enable two-factor\n"
 "        authentication."
 msgstr ""
+"U is op die punt om u rekening sekuriteit na die\n"
+"        volgende vlak. Volg die stappe in hierdie towenaar om twee-faktor "
+"aan te skakel\n"
+"        verifikasie."
 
 #: authentication_service/templates/two_factor/core/setup.html:18
 msgid ""
 "Please select which authentication method you would\n"
 "        like to use."
 msgstr ""
+"Kies asseblief watter verifikasie metode jy sou wou hê\n"
+"        hou daarvan om te gebruik."
 
 #: authentication_service/templates/two_factor/core/setup.html:21
 msgid ""
@@ -453,6 +612,12 @@ msgid ""
 "        Authenticator. Then, enter the token generated by the app.\n"
 "        "
 msgstr ""
+"Om 'n tokengenerator te gebruik, gebruik asseblief jou\n"
+"        slimfoon om die QR-kode hieronder te skandeer. Gebruik byvoorbeeld "
+"Google\n"
+"        Authenticator-. Voer dan die token wat deur die program gegenereer "
+"is, in.\n"
+"        "
 
 #: authentication_service/templates/two_factor/core/setup.html:27
 msgid ""
@@ -460,24 +625,33 @@ msgid ""
 "      text messages on. This number will be validated in the next step.\n"
 "      "
 msgstr ""
+"Voer asseblief die foonnommer in wat u wil ontvang\n"
+"      sms'e op. Hierdie nommer sal in die volgende stap gevalideer word.\n"
+"      "
 
 #: authentication_service/templates/two_factor/core/setup.html:31
 msgid ""
 "Please enter the phone number you wish to be called on.\n"
 "      This number will be validated in the next step. "
 msgstr ""
+"Voer asseblief die foonnommer in waarop u aangemeld wil word.\n"
+"      Hierdie nommer sal in die volgende stap gevalideer word."
 
 #: authentication_service/templates/two_factor/core/setup.html:36
 msgid ""
 "We are calling your phone right now, please enter the\n"
 "          digits you hear."
 msgstr ""
+"Ons bel jou selfoon nou, vul asseblief die\n"
+"          syfers wat jy hoor."
 
 #: authentication_service/templates/two_factor/core/setup.html:39
 msgid ""
 "We sent you a text message, please enter the tokens we\n"
 "          sent."
 msgstr ""
+"Ons het vir u 'n sms-boodskap gestuur, vul asseblief die tokens in\n"
+"          gestuur."
 
 #: authentication_service/templates/two_factor/core/setup.html:43
 msgid ""
@@ -489,6 +663,14 @@ msgid ""
 "issue\n"
 "        persists, contact the site administrator."
 msgstr ""
+"ons het\n"
+"        'n probleem ondervind met die geselekteerde verifikasie metode. "
+"asseblief\n"
+"        gaan terug en maak seker dat jy jou inligting korrek ingevoer het, "
+"probeer\n"
+"        weer, of gebruik eerder 'n ander verifikasie metode. As die "
+"probleem\n"
+"        Hou aan met die webwerf administrateur."
 
 #: authentication_service/templates/two_factor/core/setup.html:50
 msgid ""
@@ -496,17 +678,22 @@ msgid ""
 "      token in the field below. Your YubiKey will be linked to your\n"
 "      account."
 msgstr ""
+"Om u YubiKey te identifiseer en te verifieer, vul asseblief 'n\n"
+"      teken in die veld hieronder. Jou YubiKey sal gekoppel word aan jou\n"
+"      rekening."
 
 #: authentication_service/templates/two_factor/core/setup_complete.html:13
 msgid ""
 "Congratulations, you've successfully enabled two-factor\n"
 "      authentication."
 msgstr ""
+"Veels geluk, jy het twee-faktor suksesvol aangeskakel\n"
+"      verifikasie."
 
 #: authentication_service/templates/two_factor/core/setup_complete.html:18
 #: authentication_service/templates/two_factor/core/setup_complete.html:25
 msgid "Back to Profile"
-msgstr ""
+msgstr "Terug na Profiel"
 
 #: authentication_service/templates/two_factor/core/setup_complete.html:20
 msgid ""
@@ -514,64 +701,75 @@ msgid ""
 "      your primary token device. To enable account recovery, add a phone \n"
 "      number."
 msgstr ""
+"Dit kan egter gebeur dat u nie toegang het tot\n"
+"      jou primêre token toestel. Om rekeningherstel in te skakel, voeg 'n "
+"foon by\n"
+"      nommer."
 
 #: authentication_service/templates/two_factor/core/setup_complete.html:27
 #: authentication_service/templates/two_factor/profile/profile.html:40
 msgid "Add Phone Number"
-msgstr ""
+msgstr "Voeg telefoonnommer by"
 
 #: authentication_service/templates/two_factor/profile/disable.html:5
 #: authentication_service/templates/two_factor/profile/disable.html:9
 msgid "Disable Two-factor Authentication"
-msgstr ""
+msgstr "Deaktiveer tweefaktor-verifikasie"
 
 #: authentication_service/templates/two_factor/profile/disable.html:13
 msgid ""
 "You are about to disable two-factor authentication. This\n"
 "    compromises your account security, are you sure?"
 msgstr ""
+"Jy is op die punt om twee-faktor-verifikasie uit te skakel. hierdie\n"
+"    kompromitteer jou rekening sekuriteit, is jy seker?"
 
 #: authentication_service/templates/two_factor/profile/disable.html:19
 msgid "Disable"
-msgstr ""
+msgstr "afskakel"
 
 #: authentication_service/templates/two_factor/profile/profile.html:5
 #: authentication_service/templates/two_factor/profile/profile.html:9
 msgid "Account Security"
-msgstr ""
+msgstr "Rekening Sekuriteit"
 
 #: authentication_service/templates/two_factor/profile/profile.html:15
 msgid "Tokens will be generated by your token generator."
-msgstr ""
+msgstr "Tokens sal gegenereer word deur jou tokengenerator."
 
 #: authentication_service/templates/two_factor/profile/profile.html:17
-#, python-format
+#, fuzzy, python-format
+#| msgid "Primary method: %(primary)s"
 msgid "Primary method: %(primary)s"
-msgstr ""
+msgstr "Primêre metode: %(primêre)s"
 
 #: authentication_service/templates/two_factor/profile/profile.html:19
 msgid "Tokens will be generated by your YubiKey."
-msgstr ""
+msgstr "Tokens sal gegenereer word deur jou YubiKey."
 
 #: authentication_service/templates/two_factor/profile/profile.html:23
 msgid "Backup Phone Numbers"
-msgstr ""
+msgstr "Rugsteun telefoonnommers"
 
 #: authentication_service/templates/two_factor/profile/profile.html:24
 msgid ""
 "If your primary method is not available, we are able to\n"
 "        send backup tokens to the phone numbers listed below."
 msgstr ""
+"As u primêre metode nie beskikbaar is nie, kan ons\n"
+"        stuur rugsteun tokens na die telefoonnommers hieronder gelys."
 
 #: authentication_service/templates/two_factor/profile/profile.html:34
 msgid "Unregister"
-msgstr ""
+msgstr "Deregistreer"
 
 #: authentication_service/templates/two_factor/profile/profile.html:45
 msgid ""
 "If you don't have any device with you, you can access\n"
 "        your account using backup tokens."
 msgstr ""
+"As jy nie 'n toestel by jou het nie, kan jy toegang verkry\n"
+"na jou rekening deur die gebruik van rugsteun-tokens."
 
 #: authentication_service/templates/two_factor/profile/profile.html:47
 #, python-format
@@ -584,22 +782,30 @@ msgid_plural ""
 "        You have %(counter)s backup tokens remaining.\n"
 "      "
 msgstr[0] ""
+"\n"
+"        U het net een rugsteunteken oor.\n"
+"      "
 msgstr[1] ""
+"\n"
+"U het %(counter)s rugsteuntekens oor.\n"
+"      "
 
 #: authentication_service/templates/two_factor/profile/profile.html:54
 msgid "Show Codes"
-msgstr ""
+msgstr "Wys kodes"
 
 #: authentication_service/templates/two_factor/profile/profile.html:56
 #: authentication_service/templates/two_factor/profile/profile.html:60
 msgid "Disable Two-Factor Authentication"
-msgstr ""
+msgstr "Deaktiveer twee-faktor-verifikasie"
 
 #: authentication_service/templates/two_factor/profile/profile.html:57
 msgid ""
 "However we strongly discourage you to do so, you can\n"
 "      also disable two-factor authentication for your account."
 msgstr ""
+"Skakel twee-faktor-verifikasie vir u rekening uit.\n"
+"On ontmoedig dit egter sterk."
 
 #: authentication_service/templates/two_factor/profile/profile.html:62
 msgid ""
@@ -607,10 +813,13 @@ msgid ""
 "      account. Enable two-factor authentication for enhanced account\n"
 "      security."
 msgstr ""
+"Tweefaktor-verifikasie is nie vir jou geaktiveer nie\n"
+"      rekening. Aktiveer tweefaktor-verifikasie vir verbeterde rekening\n"
+"      sekuriteit."
 
 #: authentication_service/templates/two_factor/profile/profile.html:76
 msgid "Bye bye!"
-msgstr ""
+msgstr "Totsiens!"
 
 #: authentication_service/templates/two_factor/profile/profile.html:78
 msgid ""
@@ -618,23 +827,26 @@ msgid ""
 "            Continue from where you were before registration.\n"
 "        "
 msgstr ""
+"\n"
+"Gaan voort van waar U voor registrasie was.\n"
+"        "
 
 #: authentication_service/templates/two_factor/profile/profile.html:84
 msgid "Back from whence you came!"
-msgstr ""
+msgstr "Terug waarvandaan jy gekom het!"
 
 #: authentication_service/views.py:270
 msgid "Successfully updated password."
-msgstr ""
+msgstr "Suksesvolle wagwoord opgedateer."
 
 #: authentication_service/views.py:338
 msgid "You require either an email or msisdn to request an account deletion"
-msgstr ""
+msgstr "U het 'n e-pos of msisdn nodig om 'n rekening te verwyder"
 
 #: authentication_service/views.py:371
 msgid "Successfully requested account deletion."
-msgstr ""
+msgstr "Suksesvolle rekeningverwydering aangevra."
 
 #: authentication_service/views.py:446
 msgid "One or more answers are incorrect"
-msgstr ""
+msgstr "Een of meer antwoorde is verkeerd"
