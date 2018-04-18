@@ -15,7 +15,7 @@ COPY ./requirements /app/requirements
 
 RUN pip3 install --no-cache-dir -r /app/requirements/requirements.txt --src /usr/local/src
 
-RUN ALLOWED_API_KEYS="unused" USER_DATA_STORE_API="unused" USER_DATA_STORE_API_KEY="unused" ACCESS_CONTROL_API="unused" ACCESS_CONTROL_API_KEY="unused" ./ve/bin/python manage.py compilemessages
+RUN ALLOWED_API_KEYS="unused" USER_DATA_STORE_API="unused" USER_DATA_STORE_API_KEY="unused" ACCESS_CONTROL_API="unused" ACCESS_CONTROL_API_KEY="unused" python manage.py compilemessages
 
 COPY . /app/
 
