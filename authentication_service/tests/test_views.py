@@ -679,11 +679,9 @@ class DeleteAccountTestCase(TestCase):
             response,
             "<input name=\"confirmed_deletion\" type=\"submit\" value=\"Yes\" class=\"Button\" />"
         )
-
-        # TODO re-add later.
-        #self.assertContains(response,
-        #    '<textarea name="reason" cols="40" rows="10" id="id_reason" class=" Textarea "></textarea>'
-        #)
+        self.assertContains(response,
+            "<textarea name=\"reason\" cols=\"40\" rows=\"10\" id=\"id_reason\" class=\" Textarea \">"
+        )
 
     @patch("authentication_service.tasks.send_mail.apply_async")
     def test_mail_task_fires(self, send_mail):
