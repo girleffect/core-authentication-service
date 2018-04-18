@@ -15,7 +15,7 @@ logger = logging.getLogger()
 MAIL_TYPE_DATA = {
     "default": {
         "subject": _("Email from Girl Effect"),
-        "from_email": "",
+        "from_email": "auth@gehosting.org",
     },
     "password_reset": {
         "subject": _("Password reset for Girl Effect account"),
@@ -25,7 +25,7 @@ MAIL_TYPE_DATA = {
         "subject": "Account deletion",
         "template_name": "authentication_service/email/delete_account.html",
         # TODO GE mail address to be added.
-        "recipients": ["ge@ge.com"]
+        "recipients": ["ge@ge.com", "fritz@praekelt.com"]
     },
 }
 
@@ -103,7 +103,8 @@ def send_mail(
     )
 
     # Alternate content is added if available.
-    message.attach_alternative(extra.get("html_content", ""), "text/html")
+    if extra.get("html_content", None):
+        message.attach_alternative(extra.get("html_content", ""), "text/html")
 
     # Add attachments to the mail if needed.
     for attachment in extra.get("files", []):
