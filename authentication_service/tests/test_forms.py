@@ -605,7 +605,7 @@ class EditProfileFormTestCase(TestCase):
         data = {
             "email": "right@email.com",
             "msisdn": "+27821234567",
-            "birth_date": datetime.date(2005, 1, 1)
+            "age": 34
         }
 
         form = EditProfileForm(instance=self.user, data=data)
@@ -615,7 +615,7 @@ class EditProfileFormTestCase(TestCase):
     def test_nothing_updated(self):
         data = model_to_dict(self.user)
 
-        form = EditProfileForm(data, instance=self.user)
+        form = EditProfileForm(instance=self.user, data=data)
         self.assertFalse(form.has_changed())
         self.assertTrue(form.is_valid())
 

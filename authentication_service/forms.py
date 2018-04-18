@@ -377,19 +377,30 @@ class EditProfileForm(forms.ModelForm):
                 hidden_fields.append(field)
 
         # Init age field
-        self.fields["age"].initial = date.today().year - self.instance.birth_date.year
+        birth_date = self.instance.birth_date
+        if birth_date:
+            self.fields["age"].initial = \
+                date.today().year - birth_date.year
         # Update the actual fields and widgets.
         update_form_fields(
             self,
             fields_data=fields_data,
-            hidden=hidden_fields,
+            hidden=hidden_fields
         )
+
     class Meta:
         model = get_user_model()
         fields = [
             "first_name", "last_name", "nickname", "email", "msisdn", "gender",
             "birth_date", "age", "country", "avatar"
         ]
+
+    def clean(self):
+        cleaned_data = super(EditProfileForm, self).clean()
+        age = cleaned_data.get("age")
+        if age:
+            cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
+        return cleaned_data
 
 
 class ResetPasswordForm(PasswordResetForm):
