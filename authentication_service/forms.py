@@ -341,7 +341,7 @@ class EditProfileForm(forms.ModelForm):
 
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
-        min_value=1,
+        min_value=13,
         max_value=100,
         required=False
     )
