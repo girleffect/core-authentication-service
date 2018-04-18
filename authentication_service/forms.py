@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 from django.conf import settings
 from django.contrib.admin.widgets import AdminDateWidget
+from django.forms.widgets import Textarea
 from django.contrib.auth import get_user_model, hashers
 from django.contrib.auth.forms import (
     UserCreationForm,
@@ -461,7 +462,8 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
 class DeleteAccountForm(forms.Form):
     reason = forms.CharField(
         required=False,
-        label=_("Please tell us why you want your account deleted")
+        label=_("Please tell us why you want your account deleted"),
+        widget=Textarea()
     )
 
 
