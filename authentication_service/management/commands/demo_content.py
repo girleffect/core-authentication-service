@@ -30,7 +30,7 @@ class Command(BaseCommand):
                 "response_type": "code",
                 "jwt_alg": "HS256",
                 "redirect_uris": [
-                    os.environ.get("WAGTAIL_1_IP", 'http://example.com/')
+                    os.environ.get("WAGTAIL_1_CALLBACK", 'http://example.com/')
                 ],
                 "_post_logout_redirect_uris": [
                     os.environ.get("WAGTAIL_1_LOGOUT_REDIRECT", 'http://example.com/')
