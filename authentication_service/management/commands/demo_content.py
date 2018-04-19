@@ -32,7 +32,7 @@ class Command(BaseCommand):
                 "redirect_uris": [
                     os.environ.get("WAGTAIL_1_CALLBACK", 'http://example.com/')
                 ],
-                "_post_logout_redirect_uris": [
+                "post_logout_redirect_uris": [
                     os.environ.get("WAGTAIL_1_LOGOUT_REDIRECT", 'http://example.com/')
                 ],
             }
@@ -51,7 +51,7 @@ class Command(BaseCommand):
                 "redirect_uris": [
                     os.environ.get("WAGTAIL_2_CALLBACK", 'http://example.com/')
                 ],
-                "_post_logout_redirect_uris": [
+                "post_logout_redirect_uris": [
                     os.environ.get("WAGTAIL_2_LOGOUT_REDIRECT", 'http://example.com/')
                 ],
             }
@@ -72,7 +72,7 @@ class Command(BaseCommand):
                                    "http://localhost:8000/ui/oauth2-redirect.html"),
                     "http://core-management-layer:8000/ui/oauth2-redirect.html"
                 ],
-                "_post_logout_redirect_uris": [],
+                "post_logout_redirect_uris": [],
             }
         )
         self.stdout.write(self.style.SUCCESS("{} {}".format(
@@ -89,7 +89,7 @@ class Command(BaseCommand):
                 "redirect_uris": [
                     "http://localhost:8000/oidc/callback/",
                 ],
-                "_post_logout_redirect_uris": [],
+                "post_logout_redirect_uris": [],
             }
         )
         self.stdout.write(self.style.SUCCESS("{} {}".format(
@@ -107,7 +107,7 @@ class Command(BaseCommand):
                     "http://localhost:3000/oidc/callback/",
                     "http://core-management-portal:3000/#/oidc/callback?"
                 ],
-                "_post_logout_redirect_uris": [
+                "post_logout_redirect_uris": [
                     "http://localhost:3000/oidc/callback/",
                     "http://core-management-portal:3000/"
                 ],
