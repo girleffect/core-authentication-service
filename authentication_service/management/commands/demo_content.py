@@ -31,7 +31,10 @@ class Command(BaseCommand):
                 "jwt_alg": "HS256",
                 "redirect_uris": [
                     os.environ.get("WAGTAIL_1_IP", 'http://example.com/')
-                ]
+                ],
+                "_post_logout_redirect_uris": [
+                    os.environ.get("WAGTAIL_1_LOGOUT_REDIRECT", 'http://example.com/')
+                ],
             }
         )
         self.stdout.write(self.style.SUCCESS("{} {}".format(
@@ -46,8 +49,11 @@ class Command(BaseCommand):
                 "response_type": "code",
                 "jwt_alg": "HS256",
                 "redirect_uris": [
-                    os.environ.get("WAGTAIL_2_IP", 'http://example.com/')
-                ]
+                    os.environ.get("WAGTAIL_2_CALLBACK", 'http://example.com/')
+                ],
+                "_post_logout_redirect_uris": [
+                    os.environ.get("WAGTAIL_2_LOGOUT_REDIRECT", 'http://example.com/')
+                ],
             }
         )
         self.stdout.write(self.style.SUCCESS("{} {}".format(
@@ -65,7 +71,8 @@ class Command(BaseCommand):
                     os.environ.get("MANAGEMENT_LAYER_WORKAROUND_REDIRECT",
                                    "http://localhost:8000/ui/oauth2-redirect.html"),
                     "http://core-management-layer:8000/ui/oauth2-redirect.html"
-                ]
+                ],
+                "_post_logout_redirect_uris": [],
             }
         )
         self.stdout.write(self.style.SUCCESS("{} {}".format(
@@ -81,7 +88,8 @@ class Command(BaseCommand):
                 "jwt_alg": "HS256",
                 "redirect_uris": [
                     "http://localhost:8000/oidc/callback/",
-                ]
+                ],
+                "_post_logout_redirect_uris": [],
             }
         )
         self.stdout.write(self.style.SUCCESS("{} {}".format(
@@ -98,7 +106,11 @@ class Command(BaseCommand):
                 "redirect_uris": [
                     "http://localhost:3000/oidc/callback/",
                     "http://core-management-portal:3000/#/oidc/callback?"
-                ]
+                ],
+                "_post_logout_redirect_uris": [
+                    "http://localhost:3000/oidc/callback/",
+                    "http://core-management-portal:3000/"
+                ],
             }
         )
         self.stdout.write(self.style.SUCCESS("{} {}".format(
