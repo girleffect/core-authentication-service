@@ -170,6 +170,7 @@ CORS_ORIGIN_WHITELIST = [
     "core-management-layer:8000", "core-management-portal:3000",  # Demo environment
 ]
 CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
+CORS_ALLOW_CREDENTIALS = True  # Allow CORS requests to send cookies along
 CORS_ALLOW_HEADERS = default_headers + (
     "Access-Control-Allow-Origin",
 )
