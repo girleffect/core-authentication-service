@@ -19,17 +19,19 @@ GENDER_CHOICES = (
 # break once migrations have already been run once.
 class CoreUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid1, editable=False)
-    email = models.EmailField(_('email address'), blank=True, null=True, unique=True)
+    email = models.EmailField(
+        _("email address"), blank=True, null=True, unique=True)
     email_verified = models.BooleanField(default=False)
     nickname = models.CharField(blank=True, null=True, max_length=30)
     msisdn = models.CharField(blank=True, null=True, max_length=16)
     msisdn_verified = models.BooleanField(default=False)
     gender = models.CharField(
-        _('gender'), max_length=10, blank=True, null=True, choices=GENDER_CHOICES
+        _("gender"), max_length=10, blank=True, null=True,
+        choices=GENDER_CHOICES
     )
     birth_date = models.DateField()
     country = models.ForeignKey("Country", blank=True, null=True,
-                                verbose_name=_("country"))
+        verbose_name=_("country"))
     avatar = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -60,6 +62,15 @@ class CoreUser(AbstractUser):
     @property
     def has_security_questions(self):
         return self.usersecurityquestion_set.all() or None
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["email",]),
+            models.Index(fields=["date_joined",]),
+            models.Index(fields=["gender",]),
+            models.Index(fields=["last_login",]),
+            models.Index(fields=["updated_at",]),
+        ]
 
 
 class Country(models.Model):
