@@ -5,14 +5,15 @@
 django>=1.11,<2.0
 
 # Database connector.
-psycopg2==2.7.3.2
+psycopg2>=2.7.4,<2.8
+django-partial-index>=0.4.0,<0.5
 
 # API requirements.
 djangorestframework-extras==0.2.1
 djangorestframework==3.7.3
 
 # 3rd party auth packages.
-django-oidc-provider==0.5.2
+django-oidc-provider>=0.6.0,<0.7
 django-two-factor-auth==1.7.0
 
 # 3rd Pary form tools.
