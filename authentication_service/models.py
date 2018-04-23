@@ -17,6 +17,29 @@ GENDER_CHOICES = (
     ("other", _("Other"))
 )
 
+class AutoQueryField(models.TextField):
+    """
+    Custom field to populate concatenated query field.
+
+    Should work for more scenarios than just save() or create()
+    """
+    def pre_save(self, model_instance, add):
+        value = ""
+        fields = [
+            "email", "first_name", "last_name", "msisdn", "nickname", "username"
+        ]
+        for field in fields:
+            attr_value = getattr(model_instance, field, None)
+            if attr_value:
+                value = f"{value}{(' ' if value else '')}{attr_value}"
+
+        # Default will be an empty string. DB value will be the default set to
+        # the field or the value after data migration.
+        if value != "":
+            setattr(model_instance, self.attname, value)
+            return value
+        else:
+            return super(AutoQField, self).pre_save(model_instance, add)
 
 class TrigramIndex(GinIndex):
     """
@@ -62,6 +85,7 @@ class CoreUser(AbstractUser):
     organisational_unit = models.ForeignKey(
         "OrganisationalUnit", blank=True, null=True
     )
+    q = AutoQueryField()
 
     def __init__(self, *args, **kwargs):
         super(CoreUser, self).__init__(*args, **kwargs)
@@ -110,6 +134,7 @@ class CoreUser(AbstractUser):
             TrigramIndex(fields=["email"],),
             TrigramIndex(fields=["first_name"],),
             TrigramIndex(fields=["last_name"],),
+            TrigramIndex(fields=["q"],),
         ]
 
 

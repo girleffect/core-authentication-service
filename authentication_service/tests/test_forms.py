@@ -326,7 +326,7 @@ class TestRegistrationForm(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "email": ["User with this Email address already exists."],
+            "email": ["Core user with this Email address already exists."],
         })
 
         # Test users without emails do not cause validation errors.
