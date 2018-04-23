@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model, hashers
 from django.contrib.auth.forms import (
     UserCreationForm,
     PasswordResetForm,
-)
+    AuthenticationForm)
 from django.contrib.auth.forms import SetPasswordForm as DjangoSetPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
 from django.contrib.auth.tokens import default_token_generator
@@ -546,3 +546,13 @@ class SetPasswordForm(DjangoSetPasswordForm):
 
 class PasswordChangeForm(SetPasswordForm, DjangoPasswordChangeForm):
     pass
+
+
+class LoginForm(AuthenticationForm):
+    error_messages = {
+        'invalid_login': _(
+            "Please enter a correct %(username)s and password. Note that both "
+            "fields may be case-sensitive."
+        ),
+        'inactive': settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
+    }

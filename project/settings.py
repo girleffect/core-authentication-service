@@ -181,6 +181,8 @@ LOGIN_URL = reverse_lazy("login")
 # To avoid the login loop, we rather redirect to a page that shows
 # the message oops.
 LOGIN_REDIRECT_URL = "redirect_issue"
+INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
+    _("Your account has been deactivated. Please contact support.")
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
