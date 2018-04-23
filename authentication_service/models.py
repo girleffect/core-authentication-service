@@ -1,5 +1,7 @@
 import uuid
 
+from partial_index import PartialIndex
+
 from django.conf import settings
 from django.contrib.auth import hashers
 from django.contrib.auth.models import AbstractUser
@@ -70,6 +72,18 @@ class CoreUser(AbstractUser):
             models.Index(fields=["gender",]),
             models.Index(fields=["last_login",]),
             models.Index(fields=["updated_at",]),
+            PartialIndex(
+                fields=["is_active",], unique=False,
+                where_postgresql="is_active = false"
+            ),
+            PartialIndex(
+                fields=["email_verified",], unique=False,
+                where_postgresql="email_verified = true"
+            ),
+            PartialIndex(
+                fields=["msisdn_verified",], unique=False,
+                where_postgresql="msisdn_verified = true"
+            ),
         ]
 
 
