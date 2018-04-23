@@ -5,6 +5,7 @@ from partial_index import PartialIndex
 from django.conf import settings
 from django.contrib.auth import hashers
 from django.contrib.auth.models import AbstractUser
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -15,6 +16,27 @@ GENDER_CHOICES = (
     ("male", _("Male")),
     ("other", _("Other"))
 )
+
+
+class TrigramIndex(GinIndex):
+    """
+    Inspired by solution on:
+    https://stackoverflow.com/questions/44820345/
+
+    Should perform a sql action similar to:
+    CREATE INDEX trgm_idx ON <table>_<column> USING gin (<column> gin_trgm_ops);
+    """
+    def get_sql_create_template_values(self, model, schema_editor, using):
+        sql_values = super(TrigramIndex, self).get_sql_create_template_values(
+            model, schema_editor, using)
+
+        # Replace existing column values with gin_trgm_ops appended ones.
+        columns = sql_values["columns"].split(", ")
+        new_columns = []
+        for column in columns:
+            new_columns.append(f"{column} gin_trgm_ops")
+        sql_values["columns"] = ", ".join(new_columns)
+        return sql_values
 
 
 # NOTE: Changing AUTH_USER_MODEL will cause migration 0001 from otp_totp to
@@ -84,6 +106,10 @@ class CoreUser(AbstractUser):
                 fields=["msisdn_verified",], unique=False,
                 where_postgresql="msisdn_verified = true"
             ),
+            TrigramIndex(fields=["username"],),
+            TrigramIndex(fields=["email"],),
+            TrigramIndex(fields=["first_name"],),
+            TrigramIndex(fields=["last_name"],),
         ]
 
 
