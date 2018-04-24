@@ -117,7 +117,7 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
-        fields_data = {
+        fields_data.update({
             "birth_date": {
                 "attributes": {
                     "help_text": _("Please use dd/mm/yyyy format")
@@ -138,7 +138,7 @@ class RegistrationForm(UserCreationForm):
                     "label": _("Age")
                 }
             }
-        }
+        })
 
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:

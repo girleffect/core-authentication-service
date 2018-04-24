@@ -354,6 +354,29 @@ class TestRegistrationForm(TestCase):
         self.assertTrue(form.is_valid())
 
 
+class TestRegistrationFormHTML(TestCase):
+
+    def test_default_state(self):
+        form = RegistrationForm(data={})
+        self.assertFalse(form.is_valid())
+        # TODO Update once end user has new copy
+        self.assertNotIn("<li>Your password can&#39;t be too similar to your " \
+        "other personal information.</li><li>Your password must contain at " \
+        "least 8 characters.</li><li>Your password can&#39;t be a commonly " \
+        "used password.</li><li>Your password can&#39;t be entirely numeric." \
+        "</li><li>The password must contain at least one uppercase letter, " \
+        "one lowercase one, a digit and special character.</li>", form.as_div())
+
+    def test_high_security_state(self):
+        form = RegistrationForm(data={}, security="high")
+        self.assertFalse(form.is_valid())
+        self.assertIn("<li>Your password can&#39;t be too similar to your " \
+        "other personal information.</li><li>Your password must contain at " \
+        "least 8 characters.</li><li>Your password can&#39;t be a commonly " \
+        "used password.</li><li>Your password can&#39;t be entirely numeric." \
+        "</li><li>The password must contain at least one uppercase letter, " \
+        "one lowercase one, a digit and special character.</li>", form.as_div())
+
 class TestRegistrationFormWithHideSetting(TestCase):
 
     def test_default_state(self):
