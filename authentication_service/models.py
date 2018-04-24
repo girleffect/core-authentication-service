@@ -28,10 +28,9 @@ class AutoQueryField(models.TextField):
         fields = [
             "email", "first_name", "last_name", "msisdn", "nickname", "username"
         ]
-        for field in fields:
-            attr_value = getattr(model_instance, field, None)
-            if attr_value:
-                value = f"{value}{(' ' if value else '')}{attr_value}"
+        value = " ".join(
+            getattr(model_instance, field, "") or "" for field in fields
+        )
 
         # Default will be an empty string. DB value will be the default set to
         # the field or the value after data migration.
@@ -133,6 +132,7 @@ class CoreUser(AbstractUser):
             TrigramIndex(fields=["email"],),
             TrigramIndex(fields=["first_name"],),
             TrigramIndex(fields=["last_name"],),
+            TrigramIndex(fields=["nickname"],),
             TrigramIndex(fields=["q"],),
         ]
 
