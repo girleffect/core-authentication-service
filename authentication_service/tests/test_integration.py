@@ -157,7 +157,7 @@ class IntegrationTestCase(TestCase):
         self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test list using username_prefix
-        response = self.client.get("/api/v1/users?username_prefix=test")
+        response = self.client.get("/api/v1/users?username=test")
         self.assertEqual(len(response.json()), 3)
         self.assertEqual(int(response["X-Total-Count"]), 3)
 

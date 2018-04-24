@@ -112,12 +112,12 @@ LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
 PASSWORD_RESET_TIMEOUT_DAYS = 3
 
 # Defender options
-DEFENDER_LOGIN_FAILURE_LIMIT = 5
+DEFENDER_LOGIN_FAILURE_LIMIT = 5  # A maximum of 5 failed attempts to be allowed
 DEFENDER_BEHIND_REVERSE_PROXY = False
 DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
 DEFENDER_DISABLE_IP_LOCKOUT = True
 DEFENDER_DISABLE_USERNAME_LOCKOUT = False
-DEFENDER_COOLOFF_TIME = 600  # seconds
+DEFENDER_COOLOFF_TIME = 600  # seconds that failures will be remembered
 DEFENDER_REVERSE_PROXY_HEADER = "HTTP_X_FORWARDED_FOR"
 DEFENDER_CACHE_PREFIX = "defender"
 DEFENDER_LOCKOUT_URL = "/lockout"
@@ -252,7 +252,7 @@ LOGGING = {
 }
 
 RAVEN_CONFIG = {
-    "dsn": env.str("RAVEN_DSN", None)
+    "dsn": env.str("SENTRY_DSN", None)
 }
 
 
