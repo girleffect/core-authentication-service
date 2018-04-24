@@ -24,7 +24,7 @@ class AutoQueryField(models.TextField):
     Should work for more scenarios than just save() or create()
     """
     def __init__(self, query_fields=None, *args, **kwargs):
-        self.query_fields = [] if not query_fields else query_fields
+        self.query_fields = query_fields or []
         super(AutoQueryField, self).__init__(*args, **kwargs)
 
     def pre_save(self, model_instance, add):
