@@ -23,13 +23,14 @@ class AutoQueryField(models.TextField):
 
     Should work for more scenarios than just save() or create()
     """
+    def __init__(self, query_fields=None, *args, **kwargs):
+        self.query_fields = [] if not query_fields else query_fields
+        super(AutoQueryField, self).__init__(*args, **kwargs)
+
     def pre_save(self, model_instance, add):
-        value = ""
-        fields = [
-            "email", "first_name", "last_name", "msisdn", "nickname", "username"
-        ]
         value = " ".join(
-            getattr(model_instance, field, "") or "" for field in fields
+            getattr(
+                model_instance, field, "") or "" for field in self.query_fields
         )
 
         # Default will be an empty string. DB value will be the default set to
@@ -38,7 +39,7 @@ class AutoQueryField(models.TextField):
             setattr(model_instance, self.attname, value)
             return value
         else:
-            return super(AutoQField, self).pre_save(model_instance, add)
+            return super(AutoQueryField, self).pre_save(model_instance, add)
 
 class TrigramIndex(GinIndex):
     """
@@ -84,7 +85,11 @@ class CoreUser(AbstractUser):
     organisational_unit = models.ForeignKey(
         "OrganisationalUnit", blank=True, null=True
     )
-    q = AutoQueryField()
+    q = AutoQueryField(
+        query_fields=[
+            "email", "first_name", "last_name", "msisdn", "nickname", "username"
+        ]
+    )
 
     def __init__(self, *args, **kwargs):
         super(CoreUser, self).__init__(*args, **kwargs)
