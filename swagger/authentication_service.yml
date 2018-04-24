@@ -653,7 +653,7 @@ paths:
           required: false
           type: string
           minLength: 3
-        - name: 2fa_enabled
+        - name: tfa_enabled
           description: An optional filter based on whether a user has 2FA enabled or not
           in: query
           required: false
@@ -663,6 +663,16 @@ paths:
           in: query
           required: false
           type: boolean
+        - name: order_by
+          description: Fields and directions to order by, e.g. "-created_at,username". Add "-" in front
+            of a field name to indicate descending order.
+          in: query
+          required: false
+          type: array
+          collectionFormat: csv
+          items:
+            type: string
+          uniqueItems: true
         - name: user_ids
           description: An optional list of user ids
           in: query

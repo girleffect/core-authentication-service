@@ -74,8 +74,12 @@ class Implementation(AbstractStubClass):
 
     # user_list -- Synchronisation point for meld
     @staticmethod
-    def user_list(request, offset=None, limit=None, email=None,
-                  username_prefix=None, user_ids=None, *args, **kwargs):
+    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None,
+                  email=None, email_verified=None, first_name=None, gender=None, is_active=None,
+                  last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None,
+                  organisational_unit_id=None, updated_at=None, username=None, q=None,
+                  tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None,
+                  *args, **kwargs):
         """
         :param request: An HttpRequest
         """
@@ -88,8 +92,8 @@ class Implementation(AbstractStubClass):
             users = users.filter(id__in=user_ids)
         if email:
             users = users.filter(email=email)
-        if username_prefix:
-            users = users.filter(username__startswith=username_prefix)
+        if username:
+            users = users.filter(username__icontains=username)
 
         users = users.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
