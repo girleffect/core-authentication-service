@@ -252,7 +252,7 @@ LOGGING = {
 }
 
 RAVEN_CONFIG = {
-    "dsn": env.str("RAVEN_DSN", None)
+    "dsn": env.str("SENTRY_DSN", None)
 }
 
 
