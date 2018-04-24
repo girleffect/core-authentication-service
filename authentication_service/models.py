@@ -113,7 +113,6 @@ class CoreUser(AbstractUser):
 
     class Meta:
         indexes = [
-            models.Index(fields=["email",]),
             models.Index(fields=["date_joined",]),
             models.Index(fields=["gender",]),
             models.Index(fields=["last_login",]),
