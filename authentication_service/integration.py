@@ -1,11 +1,13 @@
 import logging
 
+from oidc_provider.models import Client
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.forms import model_to_dict
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from oidc_provider.models import Client
 
 from authentication_service.api.stubs import AbstractStubClass
 from authentication_service.models import CoreUser
@@ -86,14 +88,53 @@ class Implementation(AbstractStubClass):
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
         limit = check_limit(limit)
 
-        users = CoreUser.objects.values(*USER_VALUES).order_by("id")
+        users = get_user_model().objects.values(*USER_VALUES).order_by("id")
 
+        # TODO, loop from func kwargs
+        if birth_date:
+            users = users.filter(birth_date__range=[])
+        if date_joined:
+            users = users.filter(date_joined__range=[])
+        if last_login:
+            users = users.filter(last_login__range=[])
+        if updated_at:
+            users = users.filter(updated_at__range=[])
+        if country:
+            users = users.filter(country__code=country)
         if user_ids:
             users = users.filter(id__in=user_ids)
         if email:
             users = users.filter(email=email)
+        if email_verified:
+            users = users.filter(email_verified=email_verified)
+        if first_name:
+            users = users.filter(first_name=first_name)
+        if gender:
+            users = users.filter(gender=gender)
+        if is_active:
+            users = users.filter(is_active)
         if username:
             users = users.filter(username__icontains=username)
+        if last_name:
+            users = users.filter(last_name=last_name)
+        if last_name:
+            users = users.filter(last_name=last_name)
+        if msisdn:
+            users = users.filter(msisdn=msisdn)
+        if msisdn_verified:
+            users = users.filter(msisdn_verified=msisdn_verified)
+        if nickname:
+            users = users.filter(nockname=nickname)
+        if organisational_unit_id:
+            users = users.filter(organisational_unit__id=organisational_unit_id)
+        if q:
+            users = users.filter(q__icontains=q)
+        if tfa_enabled:
+            # TODO
+            get_user_model().totp_device_set.filter(confirmed=True)
+            #users = users.filter(totp_device__confirmed=True )
+        if has_organisational_unit:
+            users = users.filter(organisational_unit__is_null=False)
 
         users = users.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
