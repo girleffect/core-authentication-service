@@ -1,14 +1,17 @@
+import random
 import json
 import os
-
+import jsonschema
 import datetime
 import uuid
 
-import jsonschema
-from django.contrib.auth import get_user_model
-from django.test import TestCase
 from oidc_provider.models import Client
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+
+from authentication_service import models
 from authentication_service.api import schemas
 
 
@@ -67,6 +70,14 @@ class IntegrationTestCase(TestCase):
                 os.environ.get("TEST_2_IP", 'http://example.com/')
             ]
         )
+
+        # Create countries
+        for language in settings.LANGUAGES:
+            if not len(language[1]) > 2:
+                models.Country.objects.create(
+                    code=language[0], name=language[1]
+                )
+
 
     def test_client_list(self):
         # Authorize user
@@ -249,3 +260,41 @@ class IntegrationTestCase(TestCase):
         # Test non-existent user
         response = self.client.delete("/api/v1/users/%s" % self.user_2.id)
         self.assertEqual(response.status_code, 404)
+
+    def test_client_list_filter(self):
+        self.client.login(username="test_user_1", password="password")
+        users = []
+        for index in range(1, random.randint(12, 20)):
+            uuid_val = uuid.uuid4()
+            user = get_user_model().objects.create(
+                username=f"username_{uuid_val}",
+                email=f"{uuid_val}@email.com",
+                birth_date=datetime.date(2000, 1, 1)
+            )
+            users.append((user, uuid_val))
+
+        # Test list using username
+        response = self.client.get("/api/v1/users?username=username_")
+        self.assertEqual(len(response.json()), len(users))
+
+        # Test list on last_name
+        count = 0
+        for index in range(1, 9):
+            count += 1
+            user = users[index][0]
+            user.last_name = f"last_{index}"
+            user.save()
+            users[index] = (user, users[index][1])
+        response = self.client.get("/api/v1/users?last_name=last_")
+        self.assertEqual(len(response.json()), count)
+
+        # Test list on first_name
+        count = 0
+        for index in range(1, 10):
+            count += 1
+            user = users[index][0]
+            user.first_name = f"first_{index}"
+            user.save()
+            users[index] = (user, users[index][1])
+        response = self.client.get("/api/v1/users?first_name=first_")
+        self.assertEqual(len(response.json()), count)

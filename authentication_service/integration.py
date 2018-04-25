@@ -104,27 +104,25 @@ class Implementation(AbstractStubClass):
         if user_ids:
             users = users.filter(id__in=user_ids)
         if email:
-            users = users.filter(email=email)
+            users = users.filter(email__icontains=email)
         if email_verified:
             users = users.filter(email_verified=email_verified)
         if first_name:
-            users = users.filter(first_name=first_name)
+            users = users.filter(first_name__icontains=first_name)
         if gender:
             users = users.filter(gender=gender)
         if is_active:
-            users = users.filter(is_active)
+            users = users.filter(is_active=True)
         if username:
             users = users.filter(username__icontains=username)
         if last_name:
-            users = users.filter(last_name=last_name)
-        if last_name:
-            users = users.filter(last_name=last_name)
+            users = users.filter(last_name__icontains=last_name)
         if msisdn:
             users = users.filter(msisdn=msisdn)
         if msisdn_verified:
             users = users.filter(msisdn_verified=msisdn_verified)
         if nickname:
-            users = users.filter(nockname=nickname)
+            users = users.filter(nickname__icontains=nickname)
         if organisational_unit_id:
             users = users.filter(organisational_unit__id=organisational_unit_id)
         if q:
