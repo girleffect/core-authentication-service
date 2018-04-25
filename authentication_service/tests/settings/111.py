@@ -1,4 +1,6 @@
 from django.core.urlresolvers import reverse_lazy
+from django.utils.translation import ugettext_lazy as _
+
 from project.settings_base import *
 
 HIDE_FIELDS = {
@@ -81,6 +83,12 @@ LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
 # Only change this once custom login flow has been decided on and the need
 # arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("login")
+
+INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
+    _("Your account has been deactivated. Please contact support.")
+INCORRECT_CREDENTIALS_MESSAGE = \
+    _("Please enter a correct %(username)s and password. Note that both "
+      "fields may be case-sensitive.")
 
 LOGIN_REDIRECT_URL = "admin:index"
 

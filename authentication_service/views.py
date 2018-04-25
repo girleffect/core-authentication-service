@@ -33,7 +33,7 @@ from two_factor.utils import default_device
 from two_factor.views import core
 
 from authentication_service import forms, models, tasks, constants
-
+from authentication_service.forms import LoginForm
 
 REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
 
@@ -108,7 +108,7 @@ class LoginView(core.LoginView):
     template_name = "authentication_service/login.html"
 
     form_list = (
-        ('auth', AuthenticationForm),
+        ('auth', LoginForm),
         ('token', AuthenticationTokenForm),
         ('backup', BackupTokenForm),
     )

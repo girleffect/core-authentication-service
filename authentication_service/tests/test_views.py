@@ -45,7 +45,7 @@ class TestLogin(TestCase):
             data=data,
             follow=True
         )
-        self.assertContains(response, "This account is inactive")
+        self.assertContains(response, "Your account has been deactivated. Please contact support.")
 
     def test_active_user_login(self):
         self.user.is_active = True
