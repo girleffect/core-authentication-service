@@ -559,17 +559,120 @@ paths:
       parameters:
         - $ref: '#/parameters/optional_offset'
         - $ref: '#/parameters/optional_limit'
+        - name: birth_date
+          description: An optional birth_date range filter
+          in: query
+          required: false
+          type: string
+        - name: country
+          description: An optional country filter
+          in: query
+          required: false
+          type: string
+          minLength: 2
+          maxLength: 2
+        - name: date_joined
+          description: An optional date joined range filter
+          in: query
+          required: false
+          type: string
         - name: email
-          description: An optional email filter
+          description: An optional case insensitive email inner match filter
           in: query
           required: false
           type: string
-          format: email
-        - name: username_prefix
-          description: An optional username prefix filter
+          minLength: 3
+        - name: email_verified
+          description: An optional email verified filter
+          in: query
+          required: false
+          type: boolean
+        - name: first_name
+          description: An optional case insensitive first name inner match filter
           in: query
           required: false
           type: string
+          minLength: 3
+        - name: gender
+          description: An optional gender filter
+          in: query
+          required: false
+          type: string
+        - name: is_active
+          description: An optional is_active filter
+          in: query
+          required: false
+          type: boolean
+        - name: last_login
+          description: An optional last login range filter
+          in: query
+          required: false
+          type: string
+        - name: last_name
+          description: An optional case insensitive last name inner match filter
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: msisdn
+          description: An optional case insensitive MSISDN inner match filter
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: msisdn_verified
+          description: An optional MSISDN verified filter
+          in: query
+          required: false
+          type: boolean
+        - name: nickname
+          description: An optional case insensitive nickname inner match filter
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: organisational_unit_id
+          description: An optional filter on the organisational unit id
+          in: query
+          required: false
+          type: integer
+        - name: updated_at
+          description: An optional updated_at range filter
+          in: query
+          required: false
+          type: string
+        - name: username
+          description: An optional case insensitive username inner match filter
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: q
+          description: An optional case insensitive inner match filter across all searchable text fields
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: tfa_enabled
+          description: An optional filter based on whether a user has 2FA enabled or not
+          in: query
+          required: false
+          type: boolean
+        - name: has_organisational_unit
+          description: An optional filter based on whether a user has an organisational unit or not
+          in: query
+          required: false
+          type: boolean
+        - name: order_by
+          description: Fields and directions to order by, e.g. "-created_at,username". Add "-" in front
+            of a field name to indicate descending order.
+          in: query
+          required: false
+          type: array
+          collectionFormat: csv
+          items:
+            type: string
+          uniqueItems: true
         - name: user_ids
           description: An optional list of user ids
           in: query

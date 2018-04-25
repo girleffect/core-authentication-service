@@ -17,6 +17,6 @@ RUN pip3 install --no-cache-dir -r /app/requirements/requirements.txt --src /usr
 
 COPY . /app/
 
-RUN ALLOWED_API_KEYS="unused" USER_DATA_STORE_API="unused" USER_DATA_STORE_API_KEY="unused" ACCESS_CONTROL_API="unused" ACCESS_CONTROL_API_KEY="unused" EMAIL_HOST_USER="unused" EMAIL_HOST_PASSWORD="unused" python manage.py compilemessages
+RUN BUILDER="true" python manage.py compilemessages
 
 EXPOSE 8000
