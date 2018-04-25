@@ -22,6 +22,13 @@ from two_factor.utils import get_otpauth_url
 class Command(BaseCommand):
     help = "Setup used for demonstration purposes only"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--no-api-calls",
+            action="store_true",
+            help="Don't create objects that make api calls.",
+        )
+
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Creating clients..."))
         c, created = Client.objects.update_or_create(
@@ -43,20 +50,21 @@ class Command(BaseCommand):
             "Created" if created else "Updated", c.client_id
         )))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
-        site = settings.ACCESS_CONTROL_API.site_create(data={
-            "domain_id": 1,
-            "name": "springster",
-            "client_id": c.id
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
+        if not options["no_api_calls"]:
+            self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
+            site = settings.ACCESS_CONTROL_API.site_create(data={
+                "domain_id": 1,
+                "name": "springster",
+                "client_id": c.id
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
-        schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
-            "site_id": site.id,
-            "schema": {"type": "data"}
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
+            self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
+            schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
+                "site_id": site.id,
+                "schema": {"type": "data"}
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
 
         c, created = Client.objects.update_or_create(
             client_id="client_id_2",
@@ -77,20 +85,21 @@ class Command(BaseCommand):
             "Created" if created else "Updated", c.client_id
         )))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
-        site = settings.ACCESS_CONTROL_API.site_create(data={
-            "domain_id": 1,
-            "name": "ninyampinga",
-            "client_id": c.id
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
+        if not options["no_api_calls"]:
+            self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
+            site = settings.ACCESS_CONTROL_API.site_create(data={
+                "domain_id": 1,
+                "name": "ninyampinga",
+                "client_id": c.id
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
-        schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
-            "site_id": site.id,
-            "schema": {"type": "data"}
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
+            self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
+            schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
+                "site_id": site.id,
+                "schema": {"type": "data"}
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
 
         c, created = Client.objects.update_or_create(
             client_id="management_layer_workaround",
@@ -111,20 +120,21 @@ class Command(BaseCommand):
             "Created" if created else "Updated", c.client_id
         )))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
-        site = settings.ACCESS_CONTROL_API.site_create(data={
-            "domain_id": 1,
-            "name": "management_layer_workaround",
-            "client_id": c.id
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
+        if not options["no_api_calls"]:
+            self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
+            site = settings.ACCESS_CONTROL_API.site_create(data={
+                "domain_id": 1,
+                "name": "management_layer_workaround",
+                "client_id": c.id
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
-        schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
-            "site_id": site.id,
-            "schema": {"type": "data"}
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
+            self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
+            schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
+                "site_id": site.id,
+                "schema": {"type": "data"}
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
 
         c, created = Client.objects.update_or_create(
             client_id="springster_integration",
@@ -143,20 +153,21 @@ class Command(BaseCommand):
             "Created" if created else "Updated", c.client_id
         )))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
-        site = settings.ACCESS_CONTROL_API.site_create(data={
-            "domain_id": 1,
-            "name": "springster_integration",
-            "client_id": c.id
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
+        if not options["no_api_calls"]:
+            self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
+            site = settings.ACCESS_CONTROL_API.site_create(data={
+                "domain_id": 1,
+                "name": "springster_integration",
+                "client_id": c.id
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
-        schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
-            "site_id": site.id,
-            "schema": {"type": "data"}
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
+            self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
+            schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
+                "site_id": site.id,
+                "schema": {"type": "data"}
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
 
         c, created = Client.objects.update_or_create(
             client_id="management_portal",
@@ -179,20 +190,21 @@ class Command(BaseCommand):
             "Created" if created else "Updated", c.client_id
         )))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
-        site = settings.ACCESS_CONTROL_API.site_create(data={
-            "domain_id": 1,
-            "name": "management_portal",
-            "client_id": c.id
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
+        if not options["no_api_calls"]:
+            self.stdout.write(self.style.SUCCESS(f"Creating site for {c}..."))
+            site = settings.ACCESS_CONTROL_API.site_create(data={
+                "domain_id": 1,
+                "name": "management_portal",
+                "client_id": c.id
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created site for {c}..."))
 
-        self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
-        schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
-            "site_id": site.id,
-            "schema": {"type": "data"}
-        })
-        self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
+            self.stdout.write(self.style.SUCCESS(f"Creating schema for {site}..."))
+            schema = settings.USER_DATA_STORE_API.sitedataschema_create(data={
+                "site_id": site.id,
+                "schema": {"type": "data"}
+            })
+            self.stdout.write(self.style.SUCCESS(f"Created schema for {site}..."))
 
         # Super user
         self.stdout.write(self.style.SUCCESS("Creating superuser..."))

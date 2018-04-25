@@ -13,4 +13,4 @@ class TestManagementCommands(TestCase):
     def test_demo_content(self):
         # We simply test that the management command executes without any
         # errors.
-        call_command("demo_content")
+        call_command("demo_content", "--no-api-calls")
