@@ -287,6 +287,8 @@ class IntegrationTestCase(TestCase):
             users[index] = (user, users[index][1])
         response = self.client.get("/api/v1/users?last_name=last_")
         self.assertEqual(len(response.json()), count)
+        response = self.client.get("/api/v1/users?last_name=ast")
+        self.assertEqual(len(response.json()), count)
 
         # Test list on first_name
         count = 0
@@ -297,4 +299,6 @@ class IntegrationTestCase(TestCase):
             user.save()
             users[index] = (user, users[index][1])
         response = self.client.get("/api/v1/users?first_name=first_")
+        self.assertEqual(len(response.json()), count)
+        response = self.client.get("/api/v1/users?first_name=irs")
         self.assertEqual(len(response.json()), count)
