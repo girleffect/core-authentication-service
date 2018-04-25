@@ -550,9 +550,6 @@ class PasswordChangeForm(SetPasswordForm, DjangoPasswordChangeForm):
 
 class LoginForm(AuthenticationForm):
     error_messages = {
-        'invalid_login': _(
-            "Please enter a correct %(username)s and password. Note that both "
-            "fields may be case-sensitive."
-        ),
-        'inactive': settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
+        "invalid_login": settings.INCORRECT_CREDENTIALS_MESSAGE,
+        "inactive": settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
     }

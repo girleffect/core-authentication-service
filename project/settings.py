@@ -183,6 +183,9 @@ LOGIN_URL = reverse_lazy("login")
 LOGIN_REDIRECT_URL = "redirect_issue"
 INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
     _("Your account has been deactivated. Please contact support.")
+INCORRECT_CREDENTIALS_MESSAGE = \
+    _("Please enter a correct %(username)s and password. Note that both "
+      "fields may be case-sensitive.")
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \

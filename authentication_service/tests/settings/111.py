@@ -86,6 +86,9 @@ LOGIN_URL = reverse_lazy("login")
 
 INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
     _("Your account has been deactivated. Please contact support.")
+INCORRECT_CREDENTIALS_MESSAGE = \
+    _("Please enter a correct %(username)s and password. Note that both "
+      "fields may be case-sensitive.")
 
 LOGIN_REDIRECT_URL = "admin:index"
 
