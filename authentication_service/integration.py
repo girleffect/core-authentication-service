@@ -11,8 +11,8 @@ from django.shortcuts import get_object_or_404
 
 from authentication_service.api.stubs import AbstractStubClass
 from authentication_service.models import CoreUser
-from authentication_service.utils import strip_empty_optional_fields, \
-    check_limit, to_dict_with_custom_fields
+from authentication_service.utils import (strip_empty_optional_fields,
+    check_limit, to_dict_with_custom_fields, range_filter_parser)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,7 +91,9 @@ class Implementation(AbstractStubClass):
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
         limit = check_limit(limit)
 
-        users = get_user_model().objects.values(*USER_VALUES).order_by("id")
+        order_by = order_by or ["id"]
+        users = get_user_model().objects.values(
+            *USER_VALUES).order_by(*order_by)
 
         # Bools
         if tfa_enabled:
@@ -107,17 +109,18 @@ class Implementation(AbstractStubClass):
             users = users.filter(is_active=True)
 
         # Dates
-        # TODO Find out about ranges, spec currently seems to be a string and
-        # not array
-        # TODO Parse dates into YYYY-MM-DD if needed.
         if birth_date:
-            users = users.filter(birth_date__range=[birth_date, birth_date])
+            ranges = range_filter_parser(birth_date)
+            users = users.filter(**{"birth_date__%s" % ranges[0]:ranges[1]})
         if date_joined:
-            users = users.filter(date_joined__range=[date_joined, date_joined])
+            ranges = range_filter_parser(date_joined)
+            users = users.filter(**{"date_joined__%s" % ranges[0]:ranges[1]})
         if last_login:
-            users = users.filter(last_login__range=[last_login, last_login])
+            ranges = range_filter_parser(last_login)
+            users = users.filter(**{"last_login__%s" % ranges[0]:ranges[1]})
         if updated_at:
-            users = users.filter(updated_at__range=[updated_at, updated_at])
+            ranges = range_filter_parser(updated_at)
+            users = users.filter(**{"updated_at__%s" % ranges[0]:ranges[1]})
 
         # Partial matches
         if email:

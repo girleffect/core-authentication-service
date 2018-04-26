@@ -332,8 +332,22 @@ class IntegrationTestCase(TestCase):
         self.assertEqual(len(response.json()), count)
 
         # DOB
-        response = self.client.get("/api/v1/users?birth_date=2007-01-01")
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            "[2007-01-01T10:44:47.021Z,2018-04-26T10:44:47.021Z]"
+        )
         self.assertEqual(len(response.json()), len(users))
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            "[2006-01-01T10:44:47.021Z,None]"
+        )
+        self.assertEqual(len(response.json()), len(users))
+        self.assertEqual(len(response.json()), len(users))
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            "[None, 1980-01-01T10:44:47.021Z]"
+        )
+        self.assertEqual(len(response.json()), 0)
 
         # Country
         user = users[0][0]
