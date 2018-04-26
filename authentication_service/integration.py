@@ -93,10 +93,24 @@ class Implementation(AbstractStubClass):
 
         users = get_user_model().objects.values(*USER_VALUES).order_by("id")
 
-        # TODO, loop from func kwargs
         # TODO Find out about ranges, spec currently seems to be a string and
         # not array
         # TODO Parse dates into YYYY-MM-DD if needed.
+
+        # Bools
+        if tfa_enabled:
+            users = users.filter(phonedevice__isnull=False)
+        if has_organisational_unit:
+            users = users.filter(
+                organisational_unit__isnull=False
+                    if has_organisational_unit else True
+            )
+        if email_verified:
+            users = users.filter(email_verified=email_verified)
+        if is_active:
+            users = users.filter(is_active=True)
+
+        # Dates
         if birth_date:
             users = users.filter(birth_date__range=[birth_date, birth_date])
         if date_joined:
@@ -105,44 +119,36 @@ class Implementation(AbstractStubClass):
             users = users.filter(last_login__range=[last_login, last_login])
         if updated_at:
             users = users.filter(updated_at__range=[updated_at, updated_at])
-        if country:
-            users = users.filter(country__code=country)
-        if user_ids:
-            users = users.filter(id__in=user_ids)
+
+        # Partial matches
         if email:
             users = users.filter(email__ilike=email)
-        if email_verified:
-            users = users.filter(email_verified=email_verified)
         if first_name:
             users = users.filter(first_name__ilike=first_name)
-        if gender:
-            users = users.filter(gender=gender)
-        if is_active:
-            users = users.filter(is_active=True)
         if username:
             users = users.filter(username__ilike=username)
         if last_name:
             users = users.filter(last_name__ilike=last_name)
-        if msisdn:
-            users = users.filter(msisdn=msisdn)
         if msisdn_verified:
             users = users.filter(msisdn_verified=msisdn_verified)
         if nickname:
             users = users.filter(nickname__ilike=nickname)
-        if organisational_unit_id:
-            users = users.filter(organisational_unit__id=organisational_unit_id)
         if q:
             users = users.filter(q__ilike=q)
-        if tfa_enabled:
-            # TODO
-            get_user_model().totp_device_set.filter(confirmed=True)
-            #users = users.filter(totp_device__confirmed=True )
-        if has_organisational_unit:
-            users = users.filter(
-                organisational_unit__isnull=False
-                    if has_organisational_unit else True
-            )
 
+        # Other filters
+        if country:
+            users = users.filter(country__code=country)
+        if user_ids:
+            users = users.filter(id__in=user_ids)
+        if gender:
+            users = users.filter(gender=gender)
+        if msisdn:
+            users = users.filter(msisdn=msisdn)
+        if organisational_unit_id:
+            users = users.filter(organisational_unit__id=organisational_unit_id)
+
+        # Count
         users = users.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
         )[offset:offset + limit]

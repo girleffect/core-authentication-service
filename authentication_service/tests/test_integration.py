@@ -360,3 +360,7 @@ class IntegrationTestCase(TestCase):
         response = self.client.get(
             f"/api/v1/users?organisational_unit_id={self.org_unit.id}")
         self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(
+            f"/api/v1/users?tfa_enabled=false")
+        self.assertEqual(len(response.json()), 0)
