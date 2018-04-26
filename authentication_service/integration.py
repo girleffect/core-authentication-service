@@ -94,7 +94,7 @@ class Implementation(AbstractStubClass):
 
         # Bools
         if tfa_enabled:
-            users = users.filter(phonedevice__isnull=False)
+            users = users.filter(totpdevice__isnull=False)
         if has_organisational_unit:
             users = users.filter(
                 organisational_unit__isnull=False
