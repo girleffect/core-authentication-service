@@ -100,11 +100,11 @@ class Implementation(AbstractStubClass):
         if birth_date:
             users = users.filter(birth_date__range=[birth_date, birth_date])
         if date_joined:
-            users = users.filter(date_joined__range=[])
+            users = users.filter(date_joined__range=[date_joined, date_joined])
         if last_login:
-            users = users.filter(last_login__range=[])
+            users = users.filter(last_login__range=[last_login, last_login])
         if updated_at:
-            users = users.filter(updated_at__range=[])
+            users = users.filter(updated_at__range=[updated_at, updated_at])
         if country:
             users = users.filter(country__code=country)
         if user_ids:
