@@ -77,6 +77,11 @@ class IntegrationTestCase(TestCase):
                 models.Country.objects.create(
                     code=language[0], name=language[1]
                 )
+        # Organisational unit
+        cls.org_unit = models.OrganisationalUnit.objects.create(
+            name="test_unit",
+            description="Desc"
+        )
 
 
     def test_client_list(self):
@@ -343,7 +348,15 @@ class IntegrationTestCase(TestCase):
         self.assertEqual(len(response.json()), 2)
 
         # has organisational unit
+        user = users[0][0]
+        user.organisational_unit = self.org_unit
+        user.save()
         response = self.client.get(
             "/api/v1/users?has_organisational_unit=true")
-        self.assertEqual(len(response.json()), 0)
-        # TODO organisational_unit
+        self.assertEqual(len(response.json()), 1)
+
+
+        # organisational_unit
+        response = self.client.get(
+            f"/api/v1/users?organisational_unit_id={self.org_unit.id}")
+        self.assertEqual(len(response.json()), 1)
