@@ -261,7 +261,7 @@ class IntegrationTestCase(TestCase):
         response = self.client.delete("/api/v1/users/%s" % self.user_2.id)
         self.assertEqual(response.status_code, 404)
 
-    def test_client_list_filter(self):
+    def test_user_list_filter(self):
         self.client.login(username="test_user_1", password="password")
         users = []
         for index in range(1, random.randint(12, 20)):
@@ -274,8 +274,35 @@ class IntegrationTestCase(TestCase):
             users.append((user, uuid_val))
 
         # Test list using username
-        response = self.client.get("/api/v1/users?username=username_")
+        print ("\nusername")
+        response = self.client.get("/api/v1/users?username=SerNAme")
+
+        # SQL
+        """SELECT "authentication_service_coreuser"."id",
+        "authentication_service_coreuser"."username",
+        "authentication_service_coreuser"."first_name",
+        "authentication_service_coreuser"."last_name",
+        "authentication_service_coreuser"."email",
+        "authentication_service_coreuser"."is_active",
+        "authentication_service_coreuser"."date_joined",
+        "authentication_service_coreuser"."last_login",
+        "authentication_service_coreuser"."email_verified",
+        "authentication_service_coreuser"."msisdn_verified",
+        "authentication_service_coreuser"."msisdn",
+        "authentication_service_coreuser"."gender",
+        "authentication_service_coreuser"."birth_date",
+        "authentication_service_coreuser"."avatar",
+        "authentication_service_coreuser"."country_id",
+        "authentication_service_coreuser"."created_at",
+        "authentication_service_coreuser"."updated_at", (COUNT(*) OVER ()) AS
+        "x_total_count" FROM "authentication_service_coreuser" WHERE
+        "authentication_service_coreuser"."username" ILIKE %SerNAme% ORDER BY
+        "authentication_service_coreuser"."id" ASC LIMIT 20"""
+
+
+
         self.assertEqual(len(response.json()), len(users))
+        print ("\n" + "-"*20)
 
         # Test list on last_name
         count = 0
@@ -285,9 +312,7 @@ class IntegrationTestCase(TestCase):
             user.last_name = f"last_{index}"
             user.save()
             users[index] = (user, users[index][1])
-        response = self.client.get("/api/v1/users?last_name=last_")
-        self.assertEqual(len(response.json()), count)
-        response = self.client.get("/api/v1/users?last_name=ast")
+        response = self.client.get("/api/v1/users?last_name=ASt")
         self.assertEqual(len(response.json()), count)
 
         # Test list on first_name
@@ -298,7 +323,5 @@ class IntegrationTestCase(TestCase):
             user.first_name = f"first_{index}"
             user.save()
             users[index] = (user, users[index][1])
-        response = self.client.get("/api/v1/users?first_name=first_")
-        self.assertEqual(len(response.json()), count)
-        response = self.client.get("/api/v1/users?first_name=irs")
+        response = self.client.get("/api/v1/users?first_name=IrsT")
         self.assertEqual(len(response.json()), count)
