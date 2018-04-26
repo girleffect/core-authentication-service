@@ -27,9 +27,6 @@ USER_VALUES = [
     "gender", "birth_date", "avatar", "country", "created_at", "updated_at"
 ]
 
-from django.db import connections
-from django.db.models.query import QuerySet
-
 
 class Implementation(AbstractStubClass):
 
