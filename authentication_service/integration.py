@@ -93,10 +93,6 @@ class Implementation(AbstractStubClass):
 
         users = get_user_model().objects.values(*USER_VALUES).order_by("id")
 
-        # TODO Find out about ranges, spec currently seems to be a string and
-        # not array
-        # TODO Parse dates into YYYY-MM-DD if needed.
-
         # Bools
         if tfa_enabled:
             users = users.filter(phonedevice__isnull=False)
@@ -111,6 +107,9 @@ class Implementation(AbstractStubClass):
             users = users.filter(is_active=True)
 
         # Dates
+        # TODO Find out about ranges, spec currently seems to be a string and
+        # not array
+        # TODO Parse dates into YYYY-MM-DD if needed.
         if birth_date:
             users = users.filter(birth_date__range=[birth_date, birth_date])
         if date_joined:
