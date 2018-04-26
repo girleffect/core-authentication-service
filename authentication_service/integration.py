@@ -138,7 +138,10 @@ class Implementation(AbstractStubClass):
             get_user_model().totp_device_set.filter(confirmed=True)
             #users = users.filter(totp_device__confirmed=True )
         if has_organisational_unit:
-            users = users.filter(organisational_unit__is_null=False)
+            users = users.filter(
+                organisational_unit__isnull=False
+                    if has_organisational_unit else True
+            )
 
         users = users.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])

@@ -342,4 +342,8 @@ class IntegrationTestCase(TestCase):
         response = self.client.get("/api/v1/users?country=de")
         self.assertEqual(len(response.json()), 2)
 
-        # TODO organisational_unit and has_organisational_unit
+        # has organisational unit
+        response = self.client.get(
+            "/api/v1/users?has_organisational_unit=true")
+        self.assertEqual(len(response.json()), 0)
+        # TODO organisational_unit
