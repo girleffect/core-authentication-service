@@ -73,7 +73,7 @@ class IntegrationTestCase(TestCase):
 
         # Create countries
         for language in settings.LANGUAGES:
-            if not len(language[1]) > 2:
+            if not len(language[0]) > 2:
                 models.Country.objects.create(
                     code=language[0], name=language[1]
                 )
@@ -329,3 +329,17 @@ class IntegrationTestCase(TestCase):
         # DOB
         response = self.client.get("/api/v1/users?birth_date=2007-01-01")
         self.assertEqual(len(response.json()), len(users))
+
+        # Country
+        user = users[0][0]
+        user.country = models.Country.objects.get(code="de")
+        user.save()
+        users[0] = (user, users[0][1])
+        user = users[3][0]
+        user.country = models.Country.objects.get(code="de")
+        user.save()
+        users[3] = (user, users[3][1])
+        response = self.client.get("/api/v1/users?country=de")
+        self.assertEqual(len(response.json()), 2)
+
+        # TODO organisational_unit and has_organisational_unit
