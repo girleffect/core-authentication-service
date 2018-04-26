@@ -140,7 +140,6 @@ class Implementation(AbstractStubClass):
         users = users.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
         )[offset:offset + limit]
-        print(users.query)
         return (
             [strip_empty_optional_fields(user) for user in users],
             {
