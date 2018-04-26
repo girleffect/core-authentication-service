@@ -6,6 +6,8 @@ import datetime
 import uuid
 
 from oidc_provider.models import Client
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.util import random_hex
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -378,3 +380,14 @@ class IntegrationTestCase(TestCase):
         response = self.client.get(
             f"/api/v1/users?tfa_enabled=false")
         self.assertEqual(len(response.json()), 0)
+
+        totp_device = TOTPDevice.objects.create(
+            user=users[0][0],
+            name="default",
+            confirmed=True,
+            key=random_hex().decode()
+        )
+
+        response = self.client.get(
+            f"/api/v1/users?tfa_enabled=true")
+        self.assertEqual(len(response.json()), 1)
