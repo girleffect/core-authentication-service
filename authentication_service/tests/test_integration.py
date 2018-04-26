@@ -269,7 +269,7 @@ class IntegrationTestCase(TestCase):
             user = get_user_model().objects.create(
                 username=f"username_{uuid_val}",
                 email=f"{uuid_val}@email.com",
-                birth_date=datetime.date(2000, 1, 1)
+                birth_date=datetime.date(2007, 1, 1)
             )
             users.append((user, uuid_val))
 
@@ -325,3 +325,7 @@ class IntegrationTestCase(TestCase):
             users[index] = (user, users[index][1])
         response = self.client.get("/api/v1/users?first_name=IrsT")
         self.assertEqual(len(response.json()), count)
+
+        # DOB
+        response = self.client.get("/api/v1/users?birth_date=2007-01-01")
+        self.assertEqual(len(response.json()), len(users))
