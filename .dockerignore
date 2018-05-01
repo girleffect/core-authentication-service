@@ -3,12 +3,7 @@
 .gitignore
 .tox
 .travis.yml
-AUTHORS.rst
-CHANGELOG.rst
-LICENSE
-MANIFEST.in
 Makefile
-README.rst
 docs/
 tox.ini
 ve/

@@ -25,7 +25,7 @@ SESSION_COOKIE_AGE = 86400
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
 STATIC_URL = "/static/"
-STATIC_ROOT = "/static/"
+STATIC_ROOT = "/app/static"
 
 LOCALE_PATHS = [
     "locale"
@@ -206,6 +206,11 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": False,
         },
+        "celery": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False,
+        },
     },
 }
 
@@ -223,10 +228,12 @@ IS_WORKER = env.str("CELERY_APP", None) == "project"
 if IS_WORKER:
     # Email settings
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = "email-smtp.eu-west-1.amazonaws.com"
-    EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
-    EMAIL_USE_TLS = True
+    EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
+    EMAIL_HOST_USER = env.str("EMAIL_USER", "")
+    EMAIL_HOST_PASSWORD = env.str("EMAIL_PASSWORD", "")
+    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", False)
+    EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", False)
+    EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", None)
 
 # NOTE: Celery workers do not currently require the apis either.
 if not any([IS_WORKER, env.bool("BUILDER", False)]):
