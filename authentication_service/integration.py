@@ -93,17 +93,21 @@ class Implementation(AbstractStubClass):
             *USER_VALUES).order_by(*order_by)
 
         # Bools
-        if tfa_enabled:
-            users = users.filter(totpdevice__isnull=False)
-        if has_organisational_unit:
+        if isinstance(tfa_enabled, bool):
+            users = users.filter(totpdevice__isnull=False
+                if tfa_enabled else True
+            )
+        if isinstance(has_organisational_unit, bool):
             users = users.filter(
                 organisational_unit__isnull=False
                     if has_organisational_unit else True
             )
-        if email_verified:
+        if isinstance(email_verified, bool):
             users = users.filter(email_verified=email_verified)
-        if is_active:
-            users = users.filter(is_active=True)
+        if isinstance(is_active, bool):
+            users = users.filter(is_active=is_active)
+        if isinstance(msisdn_verified, bool):
+            users = users.filter(msisdn_verified=msisdn_verified)
 
         # Dates
         if birth_date:
@@ -128,8 +132,6 @@ class Implementation(AbstractStubClass):
             users = users.filter(username__ilike=username)
         if last_name:
             users = users.filter(last_name__ilike=last_name)
-        if msisdn_verified:
-            users = users.filter(msisdn_verified=msisdn_verified)
         if nickname:
             users = users.filter(nickname__ilike=nickname)
         if q:
