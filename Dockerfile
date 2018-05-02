@@ -9,11 +9,15 @@ RUN apt-get update && apt-get install -y git gcc netcat $EXTRA_DEPS gettext libg
 
 RUN mkdir -p /app/static
 
-COPY . /app/
-
 WORKDIR /app/
 
-RUN pip3 install --no-cache-dir -r /app/requirements/requirements.txt --src /usr/local/src
+# Copy and install requirements.txt first. If requirements did not change, the
+# cached layers can be re-used, which significantly speeds up the build.
+COPY ./requirements/requirements.txt /app/requirements.txt
+RUN pip3 install --no-cache-dir -r /app/requirements.txt --src /usr/local/src
+
+COPY . /app/
+
 RUN pip install -e .
 
 RUN BUILDER="true" django-admin collectstatic --noinput
