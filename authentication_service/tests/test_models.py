@@ -2,10 +2,11 @@ import uuid
 import datetime
 
 from django.test import TestCase
+from django.conf import settings
 from django.contrib.auth import get_user_model, hashers
 
 from authentication_service.models import SecurityQuestion, \
-    UserSecurityQuestion
+    UserSecurityQuestion, Country
 
 
 class TestRegistrationModels(TestCase):
@@ -25,6 +26,13 @@ class TestRegistrationModels(TestCase):
         cls.question_two = SecurityQuestion.objects.create(
             question_text="Some text for the other question"
         )
+        for language in settings.LANGUAGES:
+            if not len(language[0]) > 2:
+                Country.objects.create(
+                    code=language[0], name=language[1]
+                )
+        cls.user.country = Country.objects.get(code="de")
+        cls.user.save()
 
     def test_answer_hashing(self):
         text = "Some_text"

@@ -2,7 +2,8 @@
 -e git+https://github.com/praekelt/apitools@master#egg=apitools
 
 # Main Django requirement.
-django>=1.11,<2.0
+#django>=1.11,<2.0
+django==1.11.12
 
 # Database connector.
 psycopg2>=2.7.4,<2.8
