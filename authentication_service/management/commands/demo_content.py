@@ -7,6 +7,8 @@ import os
 from base64 import b32encode
 
 import sys
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
@@ -19,6 +21,13 @@ from two_factor.utils import get_otpauth_url
 
 class Command(BaseCommand):
     help = "Setup used for demonstration purposes only"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--no-api-calls",
+            action="store_true",
+            help="Don't create objects that make api calls.",
+        )
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Creating clients..."))
@@ -63,7 +72,7 @@ class Command(BaseCommand):
         c, created = Client.objects.update_or_create(
             client_id="management_layer_workaround",
             defaults={
-                "name": "Management Layer UI Temporary Workaround",
+                "name": "Management Layer Workaround",
                 "client_secret": "management_layer_workaround",
                 "response_type": "code",
                 "jwt_alg": "HS256",
@@ -116,6 +125,30 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("{} {}".format(
             "Created" if created else "Updated", c.client_id
         )))
+
+
+        # Set up Site and SiteDataSchema objects
+        if not options["no_api_calls"]:
+            for client in Client.objects.all():
+                self.stdout.write(
+                    self.style.SUCCESS(f"Creating site for {client.name}..."))
+                site = settings.ACCESS_CONTROL_API.site_create(data={
+                    "domain_id": 1,
+                    "name": client.name,
+                    "client_id": client.id
+                })
+                self.stdout.write(
+                    self.style.SUCCESS(f"Created site for {client.name}..."))
+
+                self.stdout.write(
+                    self.style.SUCCESS(f"Creating schema for {site.name}..."))
+                schema = settings.USER_DATA_STORE_API.sitedataschema_create(
+                    data={
+                        "site_id": site.id,
+                        "schema": {"type": "data"}
+                    })
+                self.stdout.write(
+                    self.style.SUCCESS(f"Created schema for {site.name}..."))
 
         # Super user
         self.stdout.write(self.style.SUCCESS("Creating superuser..."))

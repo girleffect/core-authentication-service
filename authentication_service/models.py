@@ -88,7 +88,8 @@ class CoreUser(AbstractUser):
     q = AutoQueryField(
         query_fields=[
             "email", "first_name", "last_name", "msisdn", "nickname", "username"
-        ]
+        ],
+        null=True
     )
 
     def __init__(self, *args, **kwargs):

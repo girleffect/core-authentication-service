@@ -25,7 +25,7 @@ SESSION_COOKIE_AGE = 86400
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
 STATIC_URL = "/static/"
-STATIC_ROOT = "/static/"
+STATIC_ROOT = "/app/static"
 
 LOCALE_PATHS = [
     "locale"
@@ -139,6 +139,11 @@ LOGIN_URL = reverse_lazy("login")
 # To avoid the login loop, we rather redirect to a page that shows
 # the message oops.
 LOGIN_REDIRECT_URL = "redirect_issue"
+INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
+    _("Your account has been deactivated. Please contact support.")
+INCORRECT_CREDENTIALS_MESSAGE = \
+    _("Please enter a correct %(username)s and password. Note that both "
+      "fields may be case-sensitive.")
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
@@ -206,6 +211,11 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": False,
         },
+        "celery": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False,
+        },
     },
 }
 
@@ -223,10 +233,12 @@ IS_WORKER = env.str("CELERY_APP", None) == "project"
 if IS_WORKER:
     # Email settings
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = "email-smtp.eu-west-1.amazonaws.com"
-    EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
-    EMAIL_USE_TLS = True
+    EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
+    EMAIL_HOST_USER = env.str("EMAIL_USER", "")
+    EMAIL_HOST_PASSWORD = env.str("EMAIL_PASSWORD", "")
+    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", False)
+    EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", False)
+    EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", None)
 
 # NOTE: Celery workers do not currently require the apis either.
 if not any([IS_WORKER, env.bool("BUILDER", False)]):
