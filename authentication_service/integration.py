@@ -93,21 +93,31 @@ class Implementation(AbstractStubClass):
             *USER_VALUES).order_by(*order_by)
 
         # Bools
-        if isinstance(tfa_enabled, bool):
-            users = users.filter(totpdevice__isnull=False
-                if tfa_enabled else True
-            )
-        if isinstance(has_organisational_unit, bool):
+        if tfa_enabled is not None:
+            check = True if tfa_enabled.lower() == "true" else False
             users = users.filter(
-                organisational_unit__isnull=False
-                    if has_organisational_unit else True
+                totpdevice__isnull=not check
             )
-        if isinstance(email_verified, bool):
-            users = users.filter(email_verified=email_verified)
-        if isinstance(is_active, bool):
-            users = users.filter(is_active=is_active)
-        if isinstance(msisdn_verified, bool):
-            users = users.filter(msisdn_verified=msisdn_verified)
+        if has_organisational_unit is not None:
+            check = True if has_organisational_unit.lower() == "true" else False
+            users = users.filter(
+                organisational_unit__isnull=not check
+            )
+        if email_verified is not None:
+            users = users.filter(
+                email_verified=True if email_verified.lower() == "true"
+                else False
+            )
+        if is_active is not None:
+            users = users.filter(
+                is_active=True if is_active.lower() == "true"
+                else False
+            )
+        if msisdn_verified is not None:
+            users = users.filter(
+                msisdn_verified=True if msisdn_verified.lower() == "true"
+                else False
+            )
 
         # Dates
         if birth_date:

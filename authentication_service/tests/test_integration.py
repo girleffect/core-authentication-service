@@ -364,13 +364,15 @@ class IntegrationTestCase(TestCase):
         self.assertEqual(len(response.json()), 2)
 
         # has organisational unit
+        response = self.client.get(
+            "/api/v1/users?has_organisational_unit=true")
+        self.assertEqual(len(response.json()), 0)
         user = users[0][0]
         user.organisational_unit = self.org_unit
         user.save()
         response = self.client.get(
             "/api/v1/users?has_organisational_unit=true")
         self.assertEqual(len(response.json()), 1)
-
 
         # organisational_unit
         response = self.client.get(
@@ -379,7 +381,7 @@ class IntegrationTestCase(TestCase):
 
         response = self.client.get(
             f"/api/v1/users?tfa_enabled=false")
-        self.assertEqual(len(response.json()), 0)
+        self.assertTrue(len(response.json()) > 0)
 
         totp_device = TOTPDevice.objects.create(
             user=users[0][0],
