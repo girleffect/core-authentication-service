@@ -140,6 +140,8 @@ class Implementation(AbstractStubClass):
             users = users.filter(first_name__ilike=first_name)
         if username:
             users = users.filter(username__ilike=username)
+        if msisdn:
+            users = users.filter(msisdn__ilike=msisdn)
         if last_name:
             users = users.filter(last_name__ilike=last_name)
         if nickname:
@@ -154,8 +156,6 @@ class Implementation(AbstractStubClass):
             users = users.filter(id__in=user_ids)
         if gender:
             users = users.filter(gender=gender)
-        if msisdn:
-            users = users.filter(msisdn=msisdn)
         if organisational_unit_id:
             users = users.filter(organisational_unit__id=organisational_unit_id)
 
