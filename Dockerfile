@@ -3,7 +3,6 @@ FROM praekeltfoundation/django-bootstrap:py3
 ARG EXTRA_DEPS
 
 ENV DJANGO_SETTINGS_MODULE=project.settings
-ENV SKIP_MIGRATIONS=1
 
 # Git is required because one of the pip requirements is pulled from github.
 RUN apt-get update && apt-get install -y git gcc netcat $EXTRA_DEPS gettext libgettextpo-dev
