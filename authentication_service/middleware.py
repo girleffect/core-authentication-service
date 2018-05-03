@@ -145,9 +145,10 @@ class RedirectManagementMiddleware(MiddlewareMixin):
             )
 
             # Set Terms link
+            # TODO also set on session
             response.set_cookie(
                 self.client_terms_key,
-                value=self.oidc_values.params.get("terms_url", None),
+                value=self.oidc_values.client.terms_url,
                 httponly=True
             )
         return response
