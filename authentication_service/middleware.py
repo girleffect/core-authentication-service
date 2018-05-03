@@ -129,6 +129,9 @@ class RedirectManagementMiddleware(MiddlewareMixin):
             request.session[EXTRA_SESSION_KEY] = {
                 self.client_name_key: authorize.client.name
             }
+            request.session[EXTRA_SESSION_KEY] = {
+                self.client_terms_key: authorize.client.terms_url
+            }
 
     def process_response(self, request, response):
         if self.oidc_values:
@@ -145,7 +148,6 @@ class RedirectManagementMiddleware(MiddlewareMixin):
             )
 
             # Set Terms link
-            # TODO also set on session
             response.set_cookie(
                 self.client_terms_key,
                 value=self.oidc_values.client.terms_url,

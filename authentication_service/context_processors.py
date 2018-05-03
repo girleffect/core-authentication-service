@@ -9,6 +9,10 @@ def global_context(request):
         EXTRA_SESSION_KEY,
         {}
     ).get(COOKIES["redirect_client_name"])
+    session_client_terms = request.session.get(
+        EXTRA_SESSION_KEY,
+        {}
+    ).get(COOKIES["redirect_client_terms"], GE_TERMS_URL)
     return {
         "ge_global_redirect_uri": request.COOKIES.get(
             COOKIES["redirect_cookie"]
@@ -17,6 +21,6 @@ def global_context(request):
             COOKIES["redirect_client_name"], session_client_name
         ),
         "ge_global_client_terms": request.COOKIES.get(
-            COOKIES["redirect_client_terms"], GE_TERMS_URL
+            COOKIES["redirect_client_terms"], session_client_terms
         )
     }
