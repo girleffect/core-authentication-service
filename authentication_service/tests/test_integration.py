@@ -307,7 +307,6 @@ class IntegrationTestCase(TestCase):
         "authentication_service_coreuser"."id" ASC LIMIT 20"""
 
 
-
         self.assertEqual(len(response.json()), len(users))
         print ("\n" + "-"*20)
 
@@ -341,9 +340,13 @@ class IntegrationTestCase(TestCase):
         self.assertEqual(len(response.json()), len(users))
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[2006-01-01T10:44:47.021Z,None]"
+            "[2007-01-01,2018-04-26]"
         )
         self.assertEqual(len(response.json()), len(users))
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            "[2006-01-01T10:44:47.021Z,None]"
+        )
         self.assertEqual(len(response.json()), len(users))
         response = self.client.get(
             "/api/v1/users?birth_date="
@@ -393,3 +396,33 @@ class IntegrationTestCase(TestCase):
         response = self.client.get(
             f"/api/v1/users?tfa_enabled=true")
         self.assertEqual(len(response.json()), 1)
+
+    def test_user_list_filter_errors(self):
+        self.client.login(username="test_user_3", password="password")
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            "[None, None]"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b"Date range list does not contain a date object")
+
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            "[1, 2, 3]"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b"Date range list with length:3, exceeds max length of 2")
+
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            "[None, None, None]"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b"Date range list with length:3, exceeds max length of 2")
+
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            "[1, 2]"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b"Date value(1) does not have correct format YYYY-MM-DD")
