@@ -213,9 +213,13 @@ class RegistrationForm(UserCreationForm):
 
     def _html_output(self, *args, **kwargs):
         # Django does not allow the exclusion of fields on none ModelForm forms.
+
+        # Remove the field from the form during the html output creation.
         original_fields = self.fields.copy()
         self.fields.pop("terms")
         html = super(RegistrationForm, self)._html_output(*args, **kwargs)
+
+        # Replace the original fields.
         self.fields = original_fields
         return html
 
