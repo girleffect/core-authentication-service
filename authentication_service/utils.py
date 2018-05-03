@@ -128,7 +128,8 @@ def range_filter_parser(date_range):
     # On the off chance there are more than 2 entries in the list.
     if len(date_range) > 2:
         raise exceptions.BadRequestException(
-            f"Date range list with length:{len(date_range)}, exceeds max length of 2"
+            f"Date range list with length:"
+            f"{len(date_range)}, exceeds max length of 2"
         )
 
     for date in date_range:
@@ -138,18 +139,22 @@ def range_filter_parser(date_range):
             # Assumptions are made about the date format, based on swagger spec.
             # 2018-04-26T10:44:47.021Z
             try:
-                parsed_range.append(
-                    datetime.datetime.strptime(
-                        date.split("T")[0], "%Y-%M-%d"
-                    ).date()
-                )
+                if "T" in date:
+                    formatted_date = datetime.datetime.strptime(
+                        date.split(".")[0], "%Y-%m-%dT%H:%M:%S"
+                    )
+                else:
+                    formatted_date = datetime.datetime.strptime(
+                        date, "%Y-%m-%d"
+                    )
+                parsed_range.append(formatted_date)
             except ValueError:
                 raise exceptions.BadRequestException(
-                    f"Date value({date}) does not have correct format YYYY-MM-DD"
+                    f"Date value({date}) does not have "
+                    f"correct format YYYY-MM-DD"
                 )
-        elif isinstance(date, datetime.datetime):
-            parsed_range.append(date.date())
-        elif isinstance(date, datetime.date):
+        elif isinstance(date, datetime.datetime) or isinstance(
+                date, datetime.date):
             parsed_range.append(date)
         else:
             parsed_range.append(None)

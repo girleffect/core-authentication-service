@@ -56,30 +56,39 @@ class DateFilterTestCase(TestCase):
             "[2007-01-01T10:44:47.021Z,2018-04-26T10:44:47.021Z]")
         self.assertEqual(
             value,
-            ("range", [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+            ("range", [
+                datetime.datetime(2007, 1, 1, 10, 44, 47),
+                datetime.datetime(2018, 4, 26, 10, 44, 47)
+            ])
         )
         value = utils.range_filter_parser("[2007-01-01,2018-04-26]")
         self.assertEqual(
             value,
-            ("range", [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+            ("range", [
+                datetime.datetime(2007, 1, 1, 0, 0),
+                datetime.datetime(2018, 4, 26, 0, 0)
+            ])
         )
         value = utils.range_filter_parser(
             "[2007-01-01T10:44:47.021Z,None]")
         self.assertEqual(
             value,
-            ("gte", datetime.date(2007, 1, 1))
+            ("gte", datetime.datetime(2007, 1, 1, 10, 44, 47))
         )
         value = utils.range_filter_parser(
             "[None,2018-04-26]")
         self.assertEqual(
             value,
-            ("lte", datetime.date(2018, 1, 26))
+            ("lte", datetime.datetime(2018, 4, 26, 0, 0))
         )
         value = utils.range_filter_parser(
             "[2007-01-01,2018-04-26T10:44:47.021Z]")
         self.assertEqual(
             value,
-            ("range", [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+            ("range", [
+                datetime.datetime(2007, 1, 1, 0, 0),
+                datetime.datetime(2018, 4, 26, 10, 44, 47)
+            ])
         )
     def test_list_range(self):
         value = utils.range_filter_parser(
@@ -94,7 +103,10 @@ class DateFilterTestCase(TestCase):
         ])
         self.assertEqual(
             value,
-            ("range", [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+            ("range", [
+                datetime.datetime(2007, 1, 1, 5, 20, 10),
+                datetime.datetime(2018, 1, 26, 5, 20, 10)
+            ])
         )
         value = utils.range_filter_parser(
             [datetime.date(2007, 1, 1), None])
@@ -114,7 +126,10 @@ class DateFilterTestCase(TestCase):
         ])
         self.assertEqual(
             value,
-            ("range", [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+            ("range", [
+                datetime.date(2007, 1, 1),
+                datetime.datetime(2018, 1, 26, 5, 20, 10)
+            ])
         )
 
     def test_error_list_range(self):
