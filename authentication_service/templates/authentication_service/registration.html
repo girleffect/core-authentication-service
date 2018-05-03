@@ -33,7 +33,10 @@
                 {{ form.terms }}
                 {{form.terms.errors }}
             </div>
-            <div class="Field-message">{{ form.terms.help_text }}</div>
+            <div class="Field-message">
+                {{ form.terms.help_text }}
+                <a href="{{ ge_global_client_terms }}">{% trans "Click here to view the terms and conditions" %}</a>
+            </div>
         </div>
 
         <div class="Form-buttons">

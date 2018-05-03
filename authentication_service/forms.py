@@ -24,7 +24,6 @@ from django.forms import modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
@@ -53,13 +52,7 @@ class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
     terms = forms.BooleanField(
-        label=_("Accept terms and conditions"),
-        # TODO Move to __init__, use client or default url
-        help_text=mark_safe(
-            "<a href='%s'>%s</a>" % (
-                None, _("Click here for the terms and conditions")
-            )
-        )
+        label=_("Accept terms and conditions")
     )
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(

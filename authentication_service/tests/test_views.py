@@ -437,6 +437,23 @@ class TestRegistrationView(TestCase):
         output.sort()
         self.assertListEqual(output, test_output)
 
+    def test_view_terms_html(self):
+        response = self.client.get(
+            reverse("registration")
+        )
+        self.assertContains(response, '<a href="https://www.girleffect.org/'\
+        'terms-and-conditions/">Click here to view the terms and conditions</a>'
+        )
+        self.client.cookies.load(
+            {"ge_oidc_client_terms": "http://www.example.com"}
+        )
+        response = self.client.get(
+            reverse("registration")
+        )
+        self.assertContains(response, '<a href="http://www.example.com">'\
+        'Click here to view the terms and conditions</a>'
+        )
+
 
 class EditProfileViewTestCase(TestCase):
 

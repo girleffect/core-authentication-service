@@ -1,6 +1,8 @@
 from django.conf import settings
 
-from authentication_service.constants import COOKIES, EXTRA_SESSION_KEY
+from authentication_service.constants import (
+    COOKIES, EXTRA_SESSION_KEY, GE_TERMS_URL
+)
 
 def global_context(request):
     session_client_name = request.session.get(
@@ -13,5 +15,8 @@ def global_context(request):
         ),
         "ge_global_client_name": request.COOKIES.get(
             COOKIES["redirect_client_name"], session_client_name
+        ),
+        "ge_global_client_terms": request.COOKIES.get(
+            COOKIES["redirect_client_terms"], GE_TERMS_URL
         )
     }
