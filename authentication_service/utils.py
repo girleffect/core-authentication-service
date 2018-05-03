@@ -1,3 +1,5 @@
+import datetime
+
 from django.conf import settings
 from django.core.exceptions import ValidationError, SuspiciousOperation
 from django.forms import HiddenInput
@@ -112,3 +114,32 @@ def to_dict_with_custom_fields(instance, custom_fields):
             else:
                 result[field.name] = getattr(instance, field.name)
     return result
+
+def range_filter_parser(date_range):
+    parsed_range = []
+    if not isinstance(date_range, list):
+        # Depending on the format of the dates inside, literal_eval will break.
+        date_range = date_range.replace(" ", "").replace(
+            "[", "").replace("]", "").split(",")
+
+    for date in date_range:
+        if date != "None":
+            # Assumptions are made about the date format, based on swagger spec.
+            # 2018-04-26T10:44:47.021Z
+            parsed_range.append(
+                datetime.datetime.strptime(date.split("T")[0], "%Y-%M-%d"))
+        else:
+            parsed_range.append(None)
+
+    # On the off chance there are more than 2 entries in the list.
+    if len(parsed_range) > 2:
+        parsed_range = [parsed_range[0], parsed_range[-1]]
+
+    if parsed_range[0] is None:
+        parsed_range = ("lte", parsed_range[1])
+    elif parsed_range[1] is None:
+        parsed_range = ("gte", parsed_range[0])
+    else:
+        parsed_range = ("range", parsed_range)
+
+    return parsed_range
