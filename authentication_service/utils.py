@@ -1,7 +1,11 @@
+import datetime
+
 from django.conf import settings
 from django.core.exceptions import ValidationError, SuspiciousOperation
 from django.forms import HiddenInput
 from django.http import HttpResponseBadRequest
+
+from authentication_service import exceptions
 
 
 def update_form_fields(form, required=None, hidden=None, validators=None, fields_data=None):
@@ -112,3 +116,62 @@ def to_dict_with_custom_fields(instance, custom_fields):
             else:
                 result[field.name] = getattr(instance, field.name)
     return result
+
+
+def range_filter_parser(date_range):
+    parsed_range = []
+    if not isinstance(date_range, list):
+        # Depending on the format of the dates inside, literal_eval will break.
+        date_range = date_range.replace(" ", "").replace(
+            "[", "").replace("]", "").split(",")
+
+    # On the off chance there are more than 2 entries in the list.
+    if len(date_range) > 2:
+        raise exceptions.BadRequestException(
+            f"Date range list with length:"
+            f"{len(date_range)}, exceeds max length of 2"
+        )
+
+    for date in date_range:
+        # Preferable to not mix date and datetime objects, make sure all are
+        # date objects.
+        if isinstance(date, str) and date.lower() != "none":
+            # Assumptions are made about the date format, based on swagger spec.
+            # 2018-04-26T10:44:47.021Z
+            try:
+                if "T" in date:
+                    formatted_date = datetime.datetime.strptime(
+                        date.split(".")[0], "%Y-%m-%dT%H:%M:%S"
+                    )
+                else:
+                    formatted_date = datetime.datetime.strptime(
+                        date, "%Y-%m-%d"
+                    )
+                parsed_range.append(formatted_date)
+            except ValueError:
+                raise exceptions.BadRequestException(
+                    f"Date value({date}) does not have "
+                    f"correct format YYYY-MM-DD"
+                )
+        elif isinstance(date, datetime.datetime) or isinstance(
+                date, datetime.date):
+            parsed_range.append(date)
+        else:
+            parsed_range.append(None)
+
+    # Should contain atleast one not NoneType object.
+    if any(set(parsed_range)):
+        # We need to pass some hints along to the caller. __range does not
+        # support [,date]/[date,]
+        if parsed_range[0] is None:
+            parsed_range = ("lte", parsed_range[1])
+        elif parsed_range[1] is None:
+            parsed_range = ("gte", parsed_range[0])
+        else:
+            parsed_range = ("range", parsed_range)
+    else:
+        raise exceptions.BadRequestException(
+            "Date range list does not contain a date object"
+        )
+
+    return parsed_range

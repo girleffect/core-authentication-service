@@ -135,6 +135,7 @@ class CoreUser(AbstractUser):
                 where_postgresql="msisdn_verified = true"
             ),
             TrigramIndex(fields=["username"],),
+            TrigramIndex(fields=["msisdn"],),
             TrigramIndex(fields=["email"],),
             TrigramIndex(fields=["first_name"],),
             TrigramIndex(fields=["last_name"],),

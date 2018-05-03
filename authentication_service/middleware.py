@@ -12,7 +12,9 @@ from oidc_provider.lib.errors import (
 
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
+from django.http import HttpResponseBadRequest
 
+from authentication_service import exceptions
 from authentication_service.constants import COOKIES, EXTRA_SESSION_KEY
 
 
@@ -141,3 +143,9 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                 httponly=True
             )
         return response
+
+
+class ErrorMiddleware(MiddlewareMixin):
+    def process_exception(self, request, exc):
+        if isinstance(exc, exceptions.BadRequestException):
+            return HttpResponseBadRequest(exc.args)

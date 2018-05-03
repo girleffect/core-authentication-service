@@ -1,6 +1,9 @@
 import datetime
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+
+from authentication_service import utils, exceptions
 
 
 class APIKeyTestCase(TestCase):
@@ -44,3 +47,136 @@ class APIKeyTestCase(TestCase):
             **{"HTTP_X_API_KEY": "some_other_api_key"}
         )
         self.assertEqual(response.status_code, 200)
+
+
+class DateFilterTestCase(TestCase):
+
+    def test_string_range(self):
+        value = utils.range_filter_parser(
+            "[2007-01-01T10:44:47.021Z,2018-04-26T10:44:47.021Z]")
+        self.assertEqual(
+            value,
+            ("range", [
+                datetime.datetime(2007, 1, 1, 10, 44, 47),
+                datetime.datetime(2018, 4, 26, 10, 44, 47)
+            ])
+        )
+        value = utils.range_filter_parser("[2007-01-01,2018-04-26]")
+        self.assertEqual(
+            value,
+            ("range", [
+                datetime.datetime(2007, 1, 1, 0, 0),
+                datetime.datetime(2018, 4, 26, 0, 0)
+            ])
+        )
+        value = utils.range_filter_parser(
+            "[2007-01-01T10:44:47.021Z,None]")
+        self.assertEqual(
+            value,
+            ("gte", datetime.datetime(2007, 1, 1, 10, 44, 47))
+        )
+        value = utils.range_filter_parser(
+            "[None,2018-04-26]")
+        self.assertEqual(
+            value,
+            ("lte", datetime.datetime(2018, 4, 26, 0, 0))
+        )
+        value = utils.range_filter_parser(
+            "[2007-01-01,2018-04-26T10:44:47.021Z]")
+        self.assertEqual(
+            value,
+            ("range", [
+                datetime.datetime(2007, 1, 1, 0, 0),
+                datetime.datetime(2018, 4, 26, 10, 44, 47)
+            ])
+        )
+    def test_list_range(self):
+        value = utils.range_filter_parser(
+            [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+        self.assertEqual(
+            value,
+            ("range", [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+        )
+        value = utils.range_filter_parser([
+            datetime.datetime(2007, 1, 1, 5, 20, 10),
+            datetime.datetime(2018, 1, 26, 5, 20, 10)
+        ])
+        self.assertEqual(
+            value,
+            ("range", [
+                datetime.datetime(2007, 1, 1, 5, 20, 10),
+                datetime.datetime(2018, 1, 26, 5, 20, 10)
+            ])
+        )
+        value = utils.range_filter_parser(
+            [datetime.date(2007, 1, 1), None])
+        self.assertEqual(
+            value,
+            ("gte", datetime.date(2007, 1, 1))
+        )
+        value = utils.range_filter_parser(
+            [None, datetime.date(2018, 1, 26)])
+        self.assertEqual(
+            value,
+            ("lte", datetime.date(2018, 1, 26))
+        )
+        value = utils.range_filter_parser([
+            datetime.date(2007, 1, 1),
+            datetime.datetime(2018, 1, 26, 5, 20, 10)
+        ])
+        self.assertEqual(
+            value,
+            ("range", [
+                datetime.date(2007, 1, 1),
+                datetime.datetime(2018, 1, 26, 5, 20, 10)
+            ])
+        )
+
+    def test_error_list_range(self):
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            value = utils.range_filter_parser([
+                1,2,3
+            ])
+            self.assertEqual(
+                e.message,
+                "Date range list with length:3, exceeds max length of 2"
+            )
+
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            value = utils.range_filter_parser([
+                None, None, None
+            ])
+            self.assertEqual(
+                e.message,
+                "Date range list with length:3, exceeds max length of 2"
+            )
+
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            value = utils.range_filter_parser([
+                None, None
+            ])
+            self.assertEqual(
+                e.message,
+                "Date range list does not contain a date object"
+            )
+
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            value = utils.range_filter_parser("[None, None, None]")
+            self.assertEqual(
+                e.message,
+                "Date range list with length:3, exceeds max length of 2"
+            )
+
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            value = utils.range_filter_parser("[1, 2, 3]")
+            self.assertEqual(
+                e.message,
+                "Date range list with length:3, exceeds max length of 2"
+            )
+
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            value = utils.range_filter_parser("[1, 2]")
+            self.assertEqual(
+                e.message,
+                "Date value(1) does not have correct format YYYY-MM-DD"
+            )
