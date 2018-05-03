@@ -129,9 +129,8 @@ class RedirectManagementMiddleware(MiddlewareMixin):
             request.session[EXTRA_SESSION_KEY] = {
                 self.client_name_key: authorize.client.name
             }
-            request.session[EXTRA_SESSION_KEY] = {
-                self.client_terms_key: authorize.client.terms_url
-            }
+            request.session[EXTRA_SESSION_KEY][
+                self.client_terms_key] = authorize.client.terms_url
 
     def process_response(self, request, response):
         if self.oidc_values:
