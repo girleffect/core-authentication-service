@@ -24,6 +24,7 @@ from django.forms import modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
@@ -51,6 +52,15 @@ HIDDEN_DEFINITION = {
 class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
+    terms = forms.BooleanField(
+        label=_("Accept terms and conditions"),
+        # TODO Move to __init__, use client or default url
+        help_text=mark_safe(
+            "<a href='%s'>%s</a>" % (
+                None, _("Click here for the terms and conditions")
+            )
+        )
+    )
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
         min_value=1,
@@ -63,8 +73,9 @@ class RegistrationForm(UserCreationForm):
         fields = [
             "username", "first_name", "last_name", "email",
             "nickname", "msisdn", "gender", "birth_date", "age",
-            "country", "avatar"
+            "country", "avatar", "password1", "password2"
         ]
+        exclude = ["terms",]
 
     def __init__(self, security=None, required=None, hidden=None, *args, **kwargs):
         # Super needed before we can actually update the form.
@@ -199,6 +210,14 @@ class RegistrationForm(UserCreationForm):
         if self.cleaned_data.get("email", None) is None:
             exclude.append("email")
         return exclude
+
+    def _html_output(self, *args, **kwargs):
+        # Django does not allow the exclusion of fields on none ModelForm forms.
+        original_fields = self.fields.copy()
+        self.fields.pop("terms")
+        html = super(RegistrationForm, self)._html_output(*args, **kwargs)
+        self.fields = original_fields
+        return html
 
 
     def clean(self):

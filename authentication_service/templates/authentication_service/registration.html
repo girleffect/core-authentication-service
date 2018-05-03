@@ -21,6 +21,21 @@
                 {{ qform.as_div }}
             {% endfor %}
         </div>
+
+        {% comment %}
+            Ts&Cs need to be at bottom of the form.
+            Since the formset is not strictly part of the base form,
+            this is the needed workaround.
+        {% endcomment %}
+        <div class="{{ form.terms.css_classes }}">
+            {{ form.terms.label }}
+            <div class="Field-item">
+                {{ form.terms }}
+                {{form.terms.errors }}
+            </div>
+            <div class="Field-message">{{ form.terms.help_text }}</div>
+        </div>
+
         <div class="Form-buttons">
             <input type="submit" value="{% trans "Register" %}" class="Button" />
         </div>
