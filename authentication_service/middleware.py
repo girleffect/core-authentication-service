@@ -1,6 +1,7 @@
 from urllib.parse import urlparse, parse_qs
 import logging
 
+from django.urls import reverse
 from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
 from oidc_provider.lib.errors import (
     AuthorizeError,
@@ -126,7 +127,8 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                 else:
                     raise e
 
-            if not api_helpers.is_site_active(authorize.client):
+            if request.path == reverse("login") \
+                    and not api_helpers.is_site_active(authorize.client):
                 return render(
                     request,
                     "authentication_service/redirect_middleware_error.html",
