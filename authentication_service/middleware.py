@@ -99,6 +99,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
 class RedirectManagementMiddleware(MiddlewareMixin):
     cookie_key = COOKIES["redirect_cookie"]
     client_name_key = COOKIES["redirect_client_name"]
+    client_terms_key = COOKIES["redirect_client_terms"]
     oidc_values = None
 
     def process_view(self, request, view_func, view_args, view_kwargs):
@@ -128,6 +129,8 @@ class RedirectManagementMiddleware(MiddlewareMixin):
             request.session[EXTRA_SESSION_KEY] = {
                 self.client_name_key: authorize.client.name
             }
+            request.session[EXTRA_SESSION_KEY][
+                self.client_terms_key] = authorize.client.terms_url
 
     def process_response(self, request, response):
         if self.oidc_values:
@@ -140,6 +143,13 @@ class RedirectManagementMiddleware(MiddlewareMixin):
             # parts of auth service.
             response.set_cookie(
                 self.client_name_key, value=self.oidc_values.client.name,
+                httponly=True
+            )
+
+            # Set Terms link
+            response.set_cookie(
+                self.client_terms_key,
+                value=self.oidc_values.client.terms_url,
                 httponly=True
             )
         return response

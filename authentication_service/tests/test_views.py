@@ -212,6 +212,7 @@ class TestRegistrationView(TestCase):
                 "password2": "password",
                 "age": "18",
                 "birth_date": "2000-01-01",
+                "terms": True,
                 "email": "email@email.com",
                 "form-TOTAL_FORMS": "2",
                 "form-INITIAL_FORMS": "0",
@@ -229,6 +230,7 @@ class TestRegistrationView(TestCase):
                 "password1": "password",
                 "password2": "password",
                 "age": "16",
+                "terms": True,
                 "email": "email1@email.com",
                 "form-TOTAL_FORMS": "2",
                 "form-INITIAL_FORMS": "0",
@@ -247,6 +249,7 @@ class TestRegistrationView(TestCase):
                 "password2": "password",
                 "birth_date": "1999-01-01",
                 "age": "16",
+                "terms": True,
                 "email": "email1a@email.com",
                 "form-TOTAL_FORMS": "2",
                 "form-INITIAL_FORMS": "0",
@@ -266,6 +269,7 @@ class TestRegistrationView(TestCase):
                 "password1": "password",
                 "password2": "password",
                 "age": "18",
+                "terms": True,
                 "birth_date": "2000-01-01",
                 "email": "email2@email.com",
                 "form-TOTAL_FORMS": "2",
@@ -286,6 +290,7 @@ class TestRegistrationView(TestCase):
                 "password1": "password",
                 "password2": "password",
                 "age": "18",
+                "terms": True,
                 "birth_date": "2000-01-01",
                 "email": "email3@email.com",
                 "form-TOTAL_FORMS": "2",
@@ -306,6 +311,7 @@ class TestRegistrationView(TestCase):
                 "password1": "awesom#saFe3",
                 "password2": "awesom#saFe3",
                 "age": "18",
+                "terms": True,
                 "birth_date": "2000-01-01",
                 "email": "email4@email.com",
                 "form-TOTAL_FORMS": "2",
@@ -324,6 +330,7 @@ class TestRegistrationView(TestCase):
                 "password1": "awesom#saFe3",
                 "password2": "awesom#saFe3",
                 "birth_date": "2000-01-01",
+                "terms": True,
                 "email": "emailunique@email.com",
                 "msisdn": "0856545698",
                 "age": "16",
@@ -347,6 +354,7 @@ class TestRegistrationView(TestCase):
                 "password1": "awesom#saFe3",
                 "password2": "awesom#saFe3",
                 "birth_date": "2000-01-01",
+                "terms": True,
                 "email": "emailunique@email.com",
                 "msisdn": "0856545698",
                 "form-TOTAL_FORMS": "2",
@@ -428,6 +436,23 @@ class TestRegistrationView(TestCase):
         output = cm.output
         output.sort()
         self.assertListEqual(output, test_output)
+
+    def test_view_terms_html(self):
+        response = self.client.get(
+            reverse("registration")
+        )
+        self.assertContains(response, '<a href="https://www.girleffect.org/'\
+        'terms-and-conditions/">Click here to view the terms and conditions</a>'
+        )
+        self.client.cookies.load(
+            {"ge_oidc_client_terms": "http://www.example.com"}
+        )
+        response = self.client.get(
+            reverse("registration")
+        )
+        self.assertContains(response, '<a href="http://www.example.com">'\
+        'Click here to view the terms and conditions</a>'
+        )
 
 
 class EditProfileViewTestCase(TestCase):

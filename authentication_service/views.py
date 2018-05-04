@@ -37,6 +37,7 @@ from authentication_service.forms import LoginForm
 
 REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
 
+
 class LanguageMixin:
     """This mixin sets an instance variable called self.language, value is
     passed in via url or determined by django language middleware
@@ -128,13 +129,6 @@ class RegistrationView(LanguageRedirectMixin, CreateView):
     template_name = "authentication_service/registration.html"
     form_class = forms.RegistrationForm
     security = None
-
-    def dispatch(self, *args, **kwargs):
-        # Grab language off of querystring first. Otherwise default to django
-        # middleware set one.
-        self.language = self.request.GET.get("language") \
-            if self.request.GET.get("language") else self.request.LANGUAGE_CODE
-        return super(RegistrationView, self).dispatch(*args, **kwargs)
 
     @property
     def get_formset(self):
