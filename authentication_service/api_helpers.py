@@ -14,6 +14,25 @@ def create_user_site_data(user_id, site_id):
     })
 
 
+def is_site_active(client):
+    """Check if the site associated with the specified client id is enabled.
+    :param client: OIDC Client
+    :return: boolean
+    """
+    try:
+        sites = settings.ACCESS_CONTROL_API.site_list(client_id=client.id)
+    except ApiException as e:
+        LOGGER.error(str(e))
+        return False
+
+    if sites:
+        return sites[0].is_active
+
+    raise exceptions.ImproperlyConfigured(
+        f"Site for client.id ({client_id}) not found"
+    )
+
+
 def get_user_site_data(user_id, client_id):
     # API clients require uuid as a string.
     user_id = str(user_id)
