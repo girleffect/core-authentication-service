@@ -1,6 +1,5 @@
 from urllib.parse import urlparse, parse_qs
 import logging
-import os
 
 from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
 from oidc_provider.lib.errors import (
@@ -13,8 +12,9 @@ from oidc_provider.lib.errors import (
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
 from django.http import HttpResponseBadRequest
+from django.utils.translation import ugettext as _
 
-from authentication_service import exceptions
+from authentication_service import exceptions, api_helpers
 from authentication_service.constants import COOKIES, EXTRA_SESSION_KEY
 
 
@@ -115,7 +115,7 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                 return render(
                     request,
                     "authentication_service/redirect_middleware_error.html",
-                    {"error": e.error, "message": e.description, "uri": uri},
+                    {"error": e.error, "message": e.description},
                     status=500
                 )
             except AuthorizeError as e:
@@ -125,6 +125,18 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                     pass
                 else:
                     raise e
+
+            if not api_helpers.is_site_active(authorize.client):
+                return render(
+                    request,
+                    "authentication_service/redirect_middleware_error.html",
+                    {
+                        "error": _("Site access disabled"),
+                        "message": _("The site you are trying to log in to has been disabled.")
+                    },
+                    status=403
+                )
+
             self.oidc_values = authorize
             request.session[EXTRA_SESSION_KEY] = {
                 self.client_name_key: authorize.client.name
