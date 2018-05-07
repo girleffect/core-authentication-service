@@ -156,7 +156,8 @@ class TestRedirectManagementMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "login"
-            ) + "?client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F"
+            ) + "?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id"
+                "%3Dclient_id_1%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -165,7 +166,8 @@ class TestRedirectManagementMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "login"
-            ) + "?client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F"
+            ) + "?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id"
+                "%3Dclient_id_1%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
         )
         self.assertEqual(
             response.templates[0].name,

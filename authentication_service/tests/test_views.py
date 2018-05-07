@@ -1,7 +1,5 @@
 import datetime
 import random
-import uuid
-from importlib import import_module
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
@@ -15,7 +13,6 @@ from django_otp.util import random_hex
 from unittest.mock import patch
 from defender.utils import unblock_username
 
-from authentication_service import models
 from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 

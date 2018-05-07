@@ -1,3 +1,4 @@
+import copy
 from urllib.parse import urlparse, parse_qs
 import logging
 
@@ -12,7 +13,7 @@ from oidc_provider.lib.errors import (
 
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpRequest, QueryDict
 from django.utils.translation import ugettext as _
 
 from authentication_service import exceptions, api_helpers
@@ -103,11 +104,69 @@ class RedirectManagementMiddleware(MiddlewareMixin):
     client_terms_key = COOKIES["redirect_client_terms"]
     oidc_values = None
 
+    def create_disabled_site_response(self, request):
+        if request.path == reverse("login"):
+            next_query = request.GET.get("next")
+            if next_query:
+                parsed_next_query = urlparse(next_query)
+                next_query_args = parse_qs(parsed_next_query.query)
+                if "client_id" not in next_query_args:
+                    # This is not a proper login request. Most probably it is a test.
+                    # We cannot prevent login of a site without a client_id, so
+                    # we move along.
+                    return None
+
+                # Build a pseudo-request based on the one originally received.
+                # We pass this pseudo-request to a function provided by OIDC which
+                # validates the parameters.
+                pseudo_request = copy.copy(request)
+                pseudo_request.path = parsed_next_query.path
+                pseudo_request.GET = QueryDict(query_string=parsed_next_query.query)
+
+                authorize = AuthorizeEndpoint(pseudo_request)
+                try:
+                    authorize.validate_params()
+                except (ClientIdError, RedirectUriError) as e:
+                    return render(
+                        request,
+                        "authentication_service/redirect_middleware_error.html",
+                        {"error": e.error, "message": e.description},
+                        status=500
+                    )
+                except AuthorizeError as e:
+                    # Suppress one of the errors oidc raises. It is not required
+                    # for pages beyond login.
+                    if e.error == "unsupported_response_type":
+                        pass
+                    else:
+                        raise e
+
+                if api_helpers.is_site_active(authorize.client) is False:
+                    return render(
+                        request,
+                        "authentication_service/redirect_middleware_error.html",
+                        {
+                            "error": _("Site access disabled"),
+                            "message": _("The site you are trying to log in to has been disabled.")
+                        },
+                        status=403
+                    )
+
     def process_view(self, request, view_func, view_args, view_kwargs):
         # Before storing the redirect_uri, ensure it comes from a valid client.
         # This is to prevent urls on other parts of the site being misused to
         # redirect users to none client apps.
+
+        # Should the site be disabled we need to prevent login. This helper function
+        # checks if (1) this is a login request and (2) if the client_id provided is
+        # linked to a disabled site. If so, login is prevented by rendering a custom
+        # page explaining that the site has been disabled.
+        response = self.create_disabled_site_response(request)
+        if response:
+            return response
+
         uri = request.GET.get("redirect_uri", None)
+
         if uri and request.method != "POST":
             authorize = AuthorizeEndpoint(request)
             try:
@@ -126,18 +185,6 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                     pass
                 else:
                     raise e
-
-            if request.path == reverse("login") \
-                    and not api_helpers.is_site_active(authorize.client):
-                return render(
-                    request,
-                    "authentication_service/redirect_middleware_error.html",
-                    {
-                        "error": _("Site access disabled"),
-                        "message": _("The site you are trying to log in to has been disabled.")
-                    },
-                    status=403
-                )
 
             self.oidc_values = authorize
             request.session[EXTRA_SESSION_KEY] = {
