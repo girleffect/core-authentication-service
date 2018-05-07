@@ -104,8 +104,9 @@ class RedirectManagementMiddleware(MiddlewareMixin):
     client_terms_key = COOKIES["redirect_client_terms"]
     oidc_values = None
 
-    def create_disabled_site_response(self, request):
-        if request.path == reverse("login"):
+    @staticmethod
+    def create_disabled_site_response(request):
+        if request.path == reverse("login") and request.method != "POST":
             next_query = request.GET.get("next")
             if next_query:
                 parsed_next_query = urlparse(next_query)
@@ -141,7 +142,7 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                     else:
                         raise e
 
-                if api_helpers.is_site_active(authorize.client) is False:
+                if not api_helpers.is_site_active(authorize.client):
                     return render(
                         request,
                         "authentication_service/redirect_middleware_error.html",
