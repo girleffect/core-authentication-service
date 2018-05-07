@@ -1,11 +1,14 @@
 import datetime
+from unittest.mock import MagicMock, patch
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from oidc_provider.models import Client
 
+from access_control import Site
 from authentication_service import constants
 
 
@@ -31,9 +34,10 @@ class TestOIDCSessionMiddleware(TestCase):
         cls.user.set_password("P0ppy")
         cls.user.save()
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_redirect_view(self):
         self.client.login(username=self.user.username, password="P0ppy")
-       # Ensure there is indeed auth data on the session.
+        # Ensure there is indeed auth data on the session.
         self.assertIn("_auth_user_id", self.client.session.keys())
         # Test with redirect cookie set.
         self.client.cookies.load(
@@ -43,6 +47,7 @@ class TestOIDCSessionMiddleware(TestCase):
         # Make sure session is flushed.
         self.assertEqual(len(self.client.session.items()), 0)
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_session_flush_logger(self):
         with self.assertLogs(level="WARNING") as cm:
             self.client.cookies.load(
@@ -72,6 +77,7 @@ class TestRedirectManagementMiddleware(TestCase):
         )
         cls.client_obj.save()
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_cookie_and_session_values(self):
         response = self.client.get(
             reverse(
@@ -95,6 +101,7 @@ class TestRedirectManagementMiddleware(TestCase):
             self.client_obj.name
         )
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_context_values(self):
         response = self.client.get(
             reverse(
@@ -124,6 +131,7 @@ class TestRedirectManagementMiddleware(TestCase):
             response.context["ge_global_client_name"], self.client_obj.name
         )
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_client_id_and_redirect_uri_validation(self):
         response = self.client.get(
             reverse(
@@ -140,3 +148,29 @@ class TestRedirectManagementMiddleware(TestCase):
             response.templates[0].name,
             "authentication_service/redirect_middleware_error.html"
         )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_disabled_site(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "login"
+            ) + "?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id"
+                "%3Dclient_id_1%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # When the site matching the client_id is inactive, access is forbidden.
+        mocked_is_site_active.return_value = False
+        response = self.client.get(
+            reverse(
+                "login"
+            ) + "?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id"
+                "%3Dclient_id_1%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
+        )
+        self.assertEqual(
+            response.templates[0].name,
+            "authentication_service/redirect_middleware_error.html"
+        )
+        self.assertEqual(response.status_code, 403)

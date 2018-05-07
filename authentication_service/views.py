@@ -1,14 +1,8 @@
-import json
-
 from defender.decorators import watch_login
-from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
-    get_username_blocked_cache_key
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, update_session_auth_hash, \
-    hashers, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, authenticate, hashers, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import (
     PasswordResetView,
@@ -17,7 +11,6 @@ from django.contrib.auth.views import (
 )
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
@@ -122,7 +115,6 @@ class LoginView(core.LoginView):
 defender_decorator = watch_login()
 watch_login_method = method_decorator(defender_decorator)
 LoginView.dispatch = watch_login_method(LoginView.dispatch)
-# TODO: Do something similar to the password reset view when it is implemented.
 
 
 class RegistrationView(LanguageRedirectMixin, CreateView):
