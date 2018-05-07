@@ -124,7 +124,7 @@ def range_filter_parser(date_range):
     parsed_range = []
     if not isinstance(date_range, list):
         # Depending on the format of the dates inside, literal_eval will break.
-        # Handle a string argument given if it looks like a string or a list.
+        # Handle a string argument given if it looks like an object or a list.
         if "{" in date_range:
             dates = date_range.replace('"', "").replace(
                 " ", "").replace("{", "").replace("}", "").split(",")
@@ -136,11 +136,10 @@ def range_filter_parser(date_range):
                 "[", "").replace("]", "").split(",")
 
     # On the off chance there are more or less than 2 entries in the list.
-    if len(date_range) >= 2:
+    if len(date_range) > 2:
         raise exceptions.BadRequestException(
             f"Date range list with length:"
-            f"{len(date_range)}, does not meet required length of 2"
-            f"(empty dates are declared by a 'none' string.)"
+            f"{len(date_range)}, exceeds max length of 2"
         )
 
     for date in date_range:
@@ -170,7 +169,7 @@ def range_filter_parser(date_range):
         else:
             parsed_range.append(None)
 
-    # Should contain atleast one not NoneType object.
+    # Should contain at least one not NoneType object.
     if any(set(parsed_range)):
         # We need to pass some hints along to the caller. __range does not
         # support [,date]/[date,]
