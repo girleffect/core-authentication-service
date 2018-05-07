@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import SuspiciousOperation
 from django.test import TestCase
 
 from authentication_service import utils, exceptions
@@ -53,7 +54,7 @@ class DateFilterTestCase(TestCase):
 
     def test_string_range(self):
         value = utils.range_filter_parser(
-            "[2007-01-01T10:44:47.021Z,2018-04-26T10:44:47.021Z]")
+            '{"from":"2007-01-01T10:44:47.021Z","to":"2018-04-26T10:44:47.021Z"}')
         self.assertEqual(
             value,
             ("range", [
@@ -61,7 +62,7 @@ class DateFilterTestCase(TestCase):
                 datetime.datetime(2018, 4, 26, 10, 44, 47)
             ])
         )
-        value = utils.range_filter_parser("[2007-01-01,2018-04-26]")
+        value = utils.range_filter_parser('{"from":"2007-01-01","to":"2018-04-26"}')
         self.assertEqual(
             value,
             ("range", [
@@ -70,19 +71,19 @@ class DateFilterTestCase(TestCase):
             ])
         )
         value = utils.range_filter_parser(
-            "[2007-01-01T10:44:47.021Z,None]")
+            '{"from":"2007-01-01T10:44:47.021Z"}')
         self.assertEqual(
             value,
             ("gte", datetime.datetime(2007, 1, 1, 10, 44, 47))
         )
         value = utils.range_filter_parser(
-            "[None,2018-04-26]")
+            '{"to":"2018-04-26"}')
         self.assertEqual(
             value,
             ("lte", datetime.datetime(2018, 4, 26, 0, 0))
         )
         value = utils.range_filter_parser(
-            "[2007-01-01,2018-04-26T10:44:47.021Z]")
+            '{"from":"2007-01-01","to":"2018-04-26T10:44:47.021Z"}')
         self.assertEqual(
             value,
             ("range", [
@@ -90,17 +91,22 @@ class DateFilterTestCase(TestCase):
                 datetime.datetime(2018, 4, 26, 10, 44, 47)
             ])
         )
+
     def test_list_range(self):
         value = utils.range_filter_parser(
-            [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+            {
+                "from": datetime.date(2007, 1, 1),
+                "to": datetime.date(2018, 1, 26)
+            }
+        )
         self.assertEqual(
             value,
             ("range", [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
         )
-        value = utils.range_filter_parser([
-            datetime.datetime(2007, 1, 1, 5, 20, 10),
-            datetime.datetime(2018, 1, 26, 5, 20, 10)
-        ])
+        value = utils.range_filter_parser({
+            "from": datetime.datetime(2007, 1, 1, 5, 20, 10),
+            "to": datetime.datetime(2018, 1, 26, 5, 20, 10)
+        })
         self.assertEqual(
             value,
             ("range", [
@@ -109,21 +115,21 @@ class DateFilterTestCase(TestCase):
             ])
         )
         value = utils.range_filter_parser(
-            [datetime.date(2007, 1, 1), None])
+            {"from": datetime.date(2007, 1, 1)})
         self.assertEqual(
             value,
             ("gte", datetime.date(2007, 1, 1))
         )
         value = utils.range_filter_parser(
-            [None, datetime.date(2018, 1, 26)])
+            {"to": datetime.date(2018, 1, 26)})
         self.assertEqual(
             value,
             ("lte", datetime.date(2018, 1, 26))
         )
-        value = utils.range_filter_parser([
-            datetime.date(2007, 1, 1),
-            datetime.datetime(2018, 1, 26, 5, 20, 10)
-        ])
+        value = utils.range_filter_parser({
+            "from": datetime.date(2007, 1, 1),
+            "to": datetime.datetime(2018, 1, 26, 5, 20, 10)
+        })
         self.assertEqual(
             value,
             ("range", [
@@ -134,48 +140,60 @@ class DateFilterTestCase(TestCase):
 
     def test_error_list_range(self):
         with self.assertRaises(exceptions.BadRequestException) as e:
-            value = utils.range_filter_parser([
-                1,2,3
-            ])
+            value = utils.range_filter_parser({
+                "from": 1,
+                "to": 2,
+                "too": 3
+            })
             self.assertEqual(
                 e.message,
-                "Date range list with length:3, exceeds max length of 2"
+                "Date range object with length:3, exceeds max length of 2"
             )
 
         with self.assertRaises(exceptions.BadRequestException) as e:
-            value = utils.range_filter_parser([
-                None, None, None
-            ])
+            value = utils.range_filter_parser({
+                "from": None,
+                "to": None,
+                "too": None
+            })
             self.assertEqual(
                 e.message,
-                "Date range list with length:3, exceeds max length of 2"
+                "Date range object with length:3, exceeds max length of 2"
             )
 
         with self.assertRaises(exceptions.BadRequestException) as e:
-            value = utils.range_filter_parser([
-                None, None
-            ])
+            value = utils.range_filter_parser({
+                "from": None,
+                "to": None
+            })
             self.assertEqual(
                 e.message,
-                "Date range list does not contain a date object"
+                "Date range object does not contain any date object values"
             )
 
         with self.assertRaises(exceptions.BadRequestException) as e:
-            value = utils.range_filter_parser("[None, None, None]")
+            value = utils.range_filter_parser([1, 2, 3])
             self.assertEqual(
                 e.message,
-                "Date range list with length:3, exceeds max length of 2"
+                "Date range not an object or JSON string."
             )
 
         with self.assertRaises(exceptions.BadRequestException) as e:
-            value = utils.range_filter_parser("[1, 2, 3]")
+            value = utils.range_filter_parser('{"from":null,"to":null,"too":null}')
             self.assertEqual(
                 e.message,
-                "Date range list with length:3, exceeds max length of 2"
+                "Date range object with length:3, exceeds max length of 2"
             )
 
         with self.assertRaises(exceptions.BadRequestException) as e:
-            value = utils.range_filter_parser("[1, 2]")
+            value = utils.range_filter_parser('{"from":1,"to":2,"too":3}')
+            self.assertEqual(
+                e.message,
+                "Date range object with length:3, exceeds max length of 2"
+            )
+
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            value = utils.range_filter_parser('{"from":"1","to":"2"}')
             self.assertEqual(
                 e.message,
                 "Date value(1) does not have correct format YYYY-MM-DD"

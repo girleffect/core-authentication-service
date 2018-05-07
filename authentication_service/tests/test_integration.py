@@ -85,7 +85,6 @@ class IntegrationTestCase(TestCase):
             description="Desc"
         )
 
-
     def test_client_list(self):
         # Authorize user
         self.client.login(username="test_user_1", password="password")
@@ -335,22 +334,22 @@ class IntegrationTestCase(TestCase):
         # DOB
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[2007-01-01T10:44:47.021Z,2018-04-26T10:44:47.021Z]"
+            '{"from":"2007-01-01T10:44:47.021Z","to":"2018-04-26T10:44:47.021Z]"}'
         )
         self.assertEqual(len(response.json()), len(users))
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[2007-01-01,2018-04-26]"
+            '{"from":"2007-01-01","to":"2018-04-26"}'
         )
         self.assertEqual(len(response.json()), len(users))
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[2006-01-01T10:44:47.021Z,None]"
+            '{"from":"2006-01-01T10:44:47.021Z"}'
         )
         self.assertEqual(len(response.json()), len(users))
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[None, 1980-01-01T10:44:47.021Z]"
+            '{"to":"1980-01-01T10:44:47.021Z"}'
         )
         self.assertEqual(len(response.json()), 0)
 
@@ -401,28 +400,34 @@ class IntegrationTestCase(TestCase):
         self.client.login(username="test_user_3", password="password")
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[None, None]"
+            '{"from":null,"to":null}'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b"Date range list does not contain a date object")
+        self.assertEqual(response.content, b"Date range object does not contain any date object values")
 
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[1, 2, 3]"
+            '{"from":1,"to":2,"too":3}'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b"Date range list with length:3, exceeds max length of 2")
+        self.assertEqual(response.content, b"Date range object with length:3, exceeds max length of 2")
 
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[None, None, None]"
+            '{"from":null,"to":null,"too":null}'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b"Date range list with length:3, exceeds max length of 2")
+        self.assertEqual(response.content, b"Date range object with length:3, exceeds max length of 2")
 
         response = self.client.get(
             "/api/v1/users?birth_date="
-            "[1, 2]"
+            '{"from":"1","to":"2"}'
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b"Date value(1) does not have correct format YYYY-MM-DD")
+
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":"1","to"}'
+        )
+        self.assertEqual(response.status_code, 400)
