@@ -1,14 +1,12 @@
 import datetime
 from unittest.mock import MagicMock, patch
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
 
 from oidc_provider.models import Client
 
-from access_control import Site
 from authentication_service import constants
 
 
@@ -155,19 +153,19 @@ class TestRedirectManagementMiddleware(TestCase):
         mocked_is_site_active.return_value = True
         response = self.client.get(
             reverse(
-                "login"
-            ) + "?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id"
-                "%3Dclient_id_1%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
         # When the site matching the client_id is inactive, access is forbidden.
         mocked_is_site_active.return_value = False
         response = self.client.get(
             reverse(
-                "login"
-            ) + "?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id"
-                "%3Dclient_id_1%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F"
         )
         self.assertEqual(
             response.templates[0].name,

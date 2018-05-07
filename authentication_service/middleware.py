@@ -106,52 +106,38 @@ class RedirectManagementMiddleware(MiddlewareMixin):
 
     @staticmethod
     def create_disabled_site_response(request):
-        if request.path == reverse("login") and request.method != "POST":
-            next_query = request.GET.get("next")
-            if next_query:
-                parsed_next_query = urlparse(next_query)
-                next_query_args = parse_qs(parsed_next_query.query)
-                if "client_id" not in next_query_args:
-                    # This is not a proper login request. Most probably it is a test.
-                    # We cannot prevent login of a site without a client_id, so
-                    # we move along.
-                    return None
+        path_without_trailing_slash = request.path.rstrip("/")
+        if path_without_trailing_slash == reverse("oidc_provider:authorize") and \
+                request.method != "POST":
+            authorize = AuthorizeEndpoint(request)
+            try:
+                authorize.validate_params()
+            except (ClientIdError, RedirectUriError) as e:
+                return render(
+                    request,
+                    "authentication_service/redirect_middleware_error.html",
+                    {"error": e.error, "message": e.description},
+                    status=500
+                )
+            except AuthorizeError as e:
+                # Suppress one of the errors oidc raises. It is not required
+                # for pages beyond login.
+                if e.error == "unsupported_response_type":
+                    pass
+                else:
+                    raise e
 
-                # Build a pseudo-request based on the one originally received.
-                # We pass this pseudo-request to a function provided by OIDC which
-                # validates the parameters.
-                pseudo_request = copy.copy(request)
-                pseudo_request.path = parsed_next_query.path
-                pseudo_request.GET = QueryDict(query_string=parsed_next_query.query)
-
-                authorize = AuthorizeEndpoint(pseudo_request)
-                try:
-                    authorize.validate_params()
-                except (ClientIdError, RedirectUriError) as e:
-                    return render(
-                        request,
-                        "authentication_service/redirect_middleware_error.html",
-                        {"error": e.error, "message": e.description},
-                        status=500
-                    )
-                except AuthorizeError as e:
-                    # Suppress one of the errors oidc raises. It is not required
-                    # for pages beyond login.
-                    if e.error == "unsupported_response_type":
-                        pass
-                    else:
-                        raise e
-
-                if not api_helpers.is_site_active(authorize.client):
-                    return render(
-                        request,
-                        "authentication_service/redirect_middleware_error.html",
-                        {
-                            "error": _("Site access disabled"),
-                            "message": _("The site you are trying to log in to has been disabled.")
-                        },
-                        status=403
-                    )
+            site_is_active = api_helpers.is_site_active(authorize.client)
+            if not site_is_active:
+                return render(
+                    request,
+                    "authentication_service/redirect_middleware_error.html",
+                    {
+                        "error": _("Site access disabled"),
+                        "message": _("The site you are trying to log in to has been disabled.")
+                    },
+                    status=403
+                )
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         # Before storing the redirect_uri, ensure it comes from a valid client.
