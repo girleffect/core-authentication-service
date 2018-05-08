@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model, hashers
 from django.contrib.auth.forms import (
     UserCreationForm,
     PasswordResetForm,
-)
+    AuthenticationForm)
 from django.contrib.auth.forms import SetPasswordForm as DjangoSetPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
 from django.contrib.auth.tokens import default_token_generator
@@ -51,6 +51,9 @@ HIDDEN_DEFINITION = {
 class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
+    terms = forms.BooleanField(
+        label=_("Accept terms and conditions")
+    )
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
         min_value=1,
@@ -63,8 +66,9 @@ class RegistrationForm(UserCreationForm):
         fields = [
             "username", "first_name", "last_name", "email",
             "nickname", "msisdn", "gender", "birth_date", "age",
-            "country", "avatar"
+            "country", "avatar", "password1", "password2"
         ]
+        exclude = ["terms",]
 
     def __init__(self, security=None, required=None, hidden=None, *args, **kwargs):
         # Super needed before we can actually update the form.
@@ -117,7 +121,7 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
-        fields_data = {
+        fields_data.update({
             "birth_date": {
                 "attributes": {
                     "help_text": _("Please use dd/mm/yyyy format")
@@ -138,7 +142,7 @@ class RegistrationForm(UserCreationForm):
                     "label": _("Age")
                 }
             }
-        }
+        })
 
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
@@ -199,6 +203,18 @@ class RegistrationForm(UserCreationForm):
         if self.cleaned_data.get("email", None) is None:
             exclude.append("email")
         return exclude
+
+    def _html_output(self, *args, **kwargs):
+        # Django does not allow the exclusion of fields on none ModelForm forms.
+
+        # Remove the field from the form during the html output creation.
+        original_fields = self.fields.copy()
+        self.fields.pop("terms")
+        html = super(RegistrationForm, self)._html_output(*args, **kwargs)
+
+        # Replace the original fields.
+        self.fields = original_fields
+        return html
 
 
     def clean(self):
@@ -546,3 +562,10 @@ class SetPasswordForm(DjangoSetPasswordForm):
 
 class PasswordChangeForm(SetPasswordForm, DjangoPasswordChangeForm):
     pass
+
+
+class LoginForm(AuthenticationForm):
+    error_messages = {
+        "invalid_login": settings.INCORRECT_CREDENTIALS_MESSAGE,
+        "inactive": settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
+    }

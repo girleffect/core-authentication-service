@@ -1,10 +1,12 @@
+import uuid
 import datetime
 
 from django.test import TestCase
+from django.conf import settings
 from django.contrib.auth import get_user_model, hashers
 
 from authentication_service.models import SecurityQuestion, \
-    UserSecurityQuestion
+    UserSecurityQuestion, Country
 
 
 class TestRegistrationModels(TestCase):
@@ -24,6 +26,13 @@ class TestRegistrationModels(TestCase):
         cls.question_two = SecurityQuestion.objects.create(
             question_text="Some text for the other question"
         )
+        for language in settings.LANGUAGES:
+            if not len(language[0]) > 2:
+                Country.objects.create(
+                    code=language[0], name=language[1]
+                )
+        cls.user.country = Country.objects.get(code="de")
+        cls.user.save()
 
     def test_answer_hashing(self):
         text = "Some_text"
@@ -75,3 +84,45 @@ class UserModelTestCase(TestCase):
 
         # Check verification is false
         self.assertFalse(self.user.msisdn_verified)
+
+    def test_q_field(self):
+        # "email", "first_name", "last_name", "msisdn", "nickname", "username"
+        uid = uuid.uuid4()
+        user = get_user_model().objects.create(
+            username=f"{uid}",
+            email=f"{uid}@email.com",
+            first_name="AfirstName",
+            last_name="LastName",
+            msisdn="0865412369",
+            nickname="N1ckN4m3",
+            birth_date=datetime.date(2000, 1, 1)
+        )
+
+        self.assertEquals(
+            user.q,
+            f"{uid}@email.com AfirstName LastName 0865412369 N1ckN4m3 {uid}"
+        )
+
+        # Updates are a necessary evil.
+        get_user_model().objects.filter(
+            username=f"{uid}",
+            email=f"{uid}@email.com",
+            first_name="AfirstName",
+            last_name="LastName",
+            msisdn="0865412369",
+            nickname="N1ckN4m3",
+            birth_date=datetime.date(2000, 1, 1)
+        ).update(first_name="Altered", last_name="AlteredLastName")
+
+        user = get_user_model().objects.get(username=f"{uid}")
+        self.assertEquals(
+            user.q,
+            f"{uid}@email.com AfirstName LastName 0865412369 N1ckN4m3 {uid}"
+        )
+
+        # Save will always trigger the field code path again.
+        user.save()
+        self.assertEquals(
+            user.q,
+            f"{uid}@email.com Altered AlteredLastName 0865412369 N1ckN4m3 {uid}"
+        )

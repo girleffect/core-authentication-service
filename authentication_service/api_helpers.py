@@ -14,13 +14,32 @@ def create_user_site_data(user_id, site_id):
     })
 
 
+def is_site_active(client):
+    """Check if the site associated with the specified client id is enabled.
+    :param client: OIDC Client
+    :return: boolean
+    """
+    try:
+        sites = settings.ACCESS_CONTROL_API.site_list(client_id=client.id)
+    except ApiException as e:
+        LOGGER.error(str(e))
+        return False
+
+    if sites:
+        return sites[0].is_active
+
+    raise exceptions.ImproperlyConfigured(
+        f"Site for client.id ({client.id}) not found"
+    )
+
+
 def get_user_site_data(user_id, client_id):
     # API clients require uuid as a string.
     user_id = str(user_id)
 
     # Get the site. Client id is unique on access-control
     sites = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
-    if len(sites) > 0 and sites[0].is_active:
+    if len(sites) == 1:  # It is not necessary to check if the site is active.
         site_id = sites[0].id
         try:
             site_data = settings.USER_DATA_STORE_API.usersitedata_read(str(user_id), site_id)
@@ -31,7 +50,7 @@ def get_user_site_data(user_id, client_id):
                 raise e
         return site_data
     raise exceptions.ImproperlyConfigured(
-        f"Site for client.id ({client_id}) not found, or inactive"
+        f"Site for client.id ({client_id}) not found."
     )
 
 
@@ -40,12 +59,12 @@ def get_user_site_role_labels_aggregated(user_id, client_id):
     sites = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
 
     # Get the id of the site
-    if len(sites) > 0 and sites[0].is_active:
+    if len(sites) == 1:  # It is not necessary to check if the site is active
         site_id = sites[0].id
 
         # Return the roles
         return settings.AC_OPERATIONAL_API.get_user_site_role_labels_aggregated(
             str(user_id), site_id).roles
     raise exceptions.ImproperlyConfigured(
-        f"Site for client.id ({client_id}) not found, or inactive"
+        f"Site for client.id ({client_id}) not found."
     )

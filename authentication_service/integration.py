@@ -1,16 +1,18 @@
 import logging
 
+from oidc_provider.models import Client
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.forms import model_to_dict
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from oidc_provider.models import Client
 
 from authentication_service.api.stubs import AbstractStubClass
 from authentication_service.models import CoreUser
-from authentication_service.utils import strip_empty_optional_fields, \
-    check_limit, to_dict_with_custom_fields
+from authentication_service.utils import (strip_empty_optional_fields,
+    check_limit, to_dict_with_custom_fields, range_filter_parser)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,23 +76,90 @@ class Implementation(AbstractStubClass):
 
     # user_list -- Synchronisation point for meld
     @staticmethod
-    def user_list(request, offset=None, limit=None, email=None,
-                  username_prefix=None, user_ids=None, *args, **kwargs):
+    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None,
+                  email=None, email_verified=None, first_name=None, gender=None, is_active=None,
+                  last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None,
+                  organisational_unit_id=None, updated_at=None, username=None, q=None,
+                  tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None,
+                  *args, **kwargs):
         """
         :param request: An HttpRequest
         """
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
         limit = check_limit(limit)
 
-        users = CoreUser.objects.values(*USER_VALUES).order_by("id")
+        order_by = order_by or ["id"]
+        users = get_user_model().objects.values(
+            *USER_VALUES).order_by(*order_by)
 
+        # Bools
+        if tfa_enabled is not None:
+            check = True if tfa_enabled.lower() == "true" else False
+            users = users.filter(
+                totpdevice__isnull=not check
+            )
+        if has_organisational_unit is not None:
+            check = True if has_organisational_unit.lower() == "true" else False
+            users = users.filter(
+                organisational_unit__isnull=not check
+            )
+        if email_verified is not None:
+            users = users.filter(
+                email_verified=True if email_verified.lower() == "true"
+                else False
+            )
+        if is_active is not None:
+            users = users.filter(
+                is_active=True if is_active.lower() == "true"
+                else False
+            )
+        if msisdn_verified is not None:
+            users = users.filter(
+                msisdn_verified=True if msisdn_verified.lower() == "true"
+                else False
+            )
+
+        # Dates
+        if birth_date:
+            ranges = range_filter_parser(birth_date)
+            users = users.filter(**{"birth_date__%s" % ranges[0]:ranges[1]})
+        if date_joined:
+            ranges = range_filter_parser(date_joined)
+            users = users.filter(**{"date_joined__%s" % ranges[0]:ranges[1]})
+        if last_login:
+            ranges = range_filter_parser(last_login)
+            users = users.filter(**{"last_login__%s" % ranges[0]:ranges[1]})
+        if updated_at:
+            ranges = range_filter_parser(updated_at)
+            users = users.filter(**{"updated_at__%s" % ranges[0]:ranges[1]})
+
+        # Partial matches
+        if email:
+            users = users.filter(email__ilike=email)
+        if first_name:
+            users = users.filter(first_name__ilike=first_name)
+        if username:
+            users = users.filter(username__ilike=username)
+        if msisdn:
+            users = users.filter(msisdn__ilike=msisdn)
+        if last_name:
+            users = users.filter(last_name__ilike=last_name)
+        if nickname:
+            users = users.filter(nickname__ilike=nickname)
+        if q:
+            users = users.filter(q__ilike=q)
+
+        # Other filters
+        if country:
+            users = users.filter(country__code=country)
         if user_ids:
             users = users.filter(id__in=user_ids)
-        if email:
-            users = users.filter(email=email)
-        if username_prefix:
-            users = users.filter(username__startswith=username_prefix)
+        if gender:
+            users = users.filter(gender=gender)
+        if organisational_unit_id:
+            users = users.filter(organisational_unit__id=organisational_unit_id)
 
+        # Count
         users = users.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
         )[offset:offset + limit]

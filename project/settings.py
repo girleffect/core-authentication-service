@@ -25,7 +25,7 @@ SESSION_COOKIE_AGE = 86400
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
 STATIC_URL = "/static/"
-STATIC_ROOT = "/static/"
+STATIC_ROOT = "/app/static"
 
 LOCALE_PATHS = [
     "locale"
@@ -83,17 +83,12 @@ MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django_otp.middleware.OTPMiddleware",
+    "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.ThemeManagementMiddleware",
     "authentication_service.middleware.OIDCSessionManagementMiddleware",
     "authentication_service.middleware.RedirectManagementMiddleware",
     "crum.CurrentRequestUserMiddleware",
 ]
-
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "email-smtp.eu-west-1.amazonaws.com"
-EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = True
 
 # TODO: django-layers-hr needs looking into
 # Request based layering has an issue due to the crum package setting current
@@ -112,12 +107,12 @@ LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
 PASSWORD_RESET_TIMEOUT_DAYS = 3
 
 # Defender options
-DEFENDER_LOGIN_FAILURE_LIMIT = 5
+DEFENDER_LOGIN_FAILURE_LIMIT = 5  # A maximum of 5 failed attempts to be allowed
 DEFENDER_BEHIND_REVERSE_PROXY = False
 DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
 DEFENDER_DISABLE_IP_LOCKOUT = True
 DEFENDER_DISABLE_USERNAME_LOCKOUT = False
-DEFENDER_COOLOFF_TIME = 600  # seconds
+DEFENDER_COOLOFF_TIME = 600  # seconds that failures will be remembered
 DEFENDER_REVERSE_PROXY_HEADER = "HTTP_X_FORWARDED_FOR"
 DEFENDER_CACHE_PREFIX = "defender"
 DEFENDER_LOCKOUT_URL = "/lockout"
@@ -128,41 +123,6 @@ DEFENDER_USERNAME_FORM_FIELD = "auth-username"
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
 
-# GE API settings and setup
-ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
-USER_DATA_STORE_API_URL = env.str("USER_DATA_STORE_API")
-USER_DATA_STORE_API_KEY = env.str("USER_DATA_STORE_API_KEY")
-ACCESS_CONTROL_API_URL = env.str("ACCESS_CONTROL_API")
-ACCESS_CONTROL_API_KEY = env.str("ACCESS_CONTROL_API_KEY")
-
-## Setup API clients
-config = user_data_store.configuration.Configuration()
-config.host = USER_DATA_STORE_API_URL
-USER_DATA_STORE_API = user_data_store.api.UserDataApi(
-    api_client=user_data_store.ApiClient(
-        header_name="X-API-KEY",
-        header_value=USER_DATA_STORE_API_KEY,
-        configuration=config
-    )
-)
-
-config = access_control.configuration.Configuration()
-config.host = ACCESS_CONTROL_API_URL
-ACCESS_CONTROL_API = access_control.api.AccessControlApi(
-    api_client=access_control.ApiClient(
-        header_name="X-API-KEY",
-        header_value=ACCESS_CONTROL_API_KEY,
-        configuration=config
-    )
-)
-AC_OPERATIONAL_API = access_control.api.OperationalApi(
-    api_client=access_control.ApiClient(
-        header_name="X-API-KEY",
-        header_value=ACCESS_CONTROL_API_KEY,
-        configuration=config
-    )
-)
-
 # CORS settings
 CORS_ORIGIN_WHITELIST = [
     "localhost:8000", "127.0.0.1:8000",  # Development: Management Layer UI
@@ -170,16 +130,21 @@ CORS_ORIGIN_WHITELIST = [
     "core-management-layer:8000", "core-management-portal:3000",  # Demo environment
 ]
 CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
+CORS_ALLOW_CREDENTIALS = True  # Allow CORS requests to send cookies along
 CORS_ALLOW_HEADERS = default_headers + (
     "Access-Control-Allow-Origin",
 )
-
 
 LOGIN_URL = reverse_lazy("login")
 
 # To avoid the login loop, we rather redirect to a page that shows
 # the message oops.
 LOGIN_REDIRECT_URL = "redirect_issue"
+INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
+    _("Your account has been deactivated. Please contact support.")
+INCORRECT_CREDENTIALS_MESSAGE = \
+    _("Please enter a correct %(username)s and password. Note that both "
+      "fields may be case-sensitive.")
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
@@ -247,13 +212,71 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": False,
         },
+        "celery": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False,
+        },
     },
 }
 
 RAVEN_CONFIG = {
-    "dsn": env.str("RAVEN_DSN", None)
+    "dsn": env.str("SENTRY_DSN", None)
 }
 
+########################
+# EXTRA SETTINGS LOGIC #
+########################
+
+# NOTE: Logic to reduce duplication of uneeded env vars for certain uses of
+# docker image.
+IS_WORKER = env.str("CELERY_APP", None) == "project"
+if IS_WORKER:
+    # Email settings
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
+    EMAIL_HOST_USER = env.str("EMAIL_USER", "")
+    EMAIL_HOST_PASSWORD = env.str("EMAIL_PASSWORD", "")
+    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", False)
+    EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", False)
+    EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", None)
+
+# NOTE: Celery workers do not currently require the apis either.
+if not any([IS_WORKER, env.bool("BUILDER", False)]):
+    # GE API settings and setup
+    ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
+    USER_DATA_STORE_API_URL = env.str("USER_DATA_STORE_API")
+    USER_DATA_STORE_API_KEY = env.str("USER_DATA_STORE_API_KEY")
+    ACCESS_CONTROL_API_URL = env.str("ACCESS_CONTROL_API")
+    ACCESS_CONTROL_API_KEY = env.str("ACCESS_CONTROL_API_KEY")
+
+    ## Setup API clients
+    config = user_data_store.configuration.Configuration()
+    config.host = USER_DATA_STORE_API_URL
+    USER_DATA_STORE_API = user_data_store.api.UserDataApi(
+        api_client=user_data_store.ApiClient(
+            header_name="X-API-KEY",
+            header_value=USER_DATA_STORE_API_KEY,
+            configuration=config
+        )
+    )
+
+    config = access_control.configuration.Configuration()
+    config.host = ACCESS_CONTROL_API_URL
+    ACCESS_CONTROL_API = access_control.api.AccessControlApi(
+        api_client=access_control.ApiClient(
+            header_name="X-API-KEY",
+            header_value=ACCESS_CONTROL_API_KEY,
+            configuration=config
+        )
+    )
+    AC_OPERATIONAL_API = access_control.api.OperationalApi(
+        api_client=access_control.ApiClient(
+            header_name="X-API-KEY",
+            header_value=ACCESS_CONTROL_API_KEY,
+            configuration=config
+        )
+    )
 
 # Attempt to import local settings if present.
 try:

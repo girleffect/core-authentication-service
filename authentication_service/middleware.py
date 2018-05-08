@@ -1,7 +1,8 @@
+import copy
 from urllib.parse import urlparse, parse_qs
 import logging
-import os
 
+from django.urls import reverse
 from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
 from oidc_provider.lib.errors import (
     AuthorizeError,
@@ -12,7 +13,10 @@ from oidc_provider.lib.errors import (
 
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
+from django.http import HttpResponseBadRequest, HttpRequest, QueryDict
+from django.utils.translation import ugettext as _
 
+from authentication_service import exceptions, api_helpers
 from authentication_service.constants import COOKIES, EXTRA_SESSION_KEY
 
 
@@ -97,14 +101,14 @@ class ThemeManagementMiddleware(MiddlewareMixin):
 class RedirectManagementMiddleware(MiddlewareMixin):
     cookie_key = COOKIES["redirect_cookie"]
     client_name_key = COOKIES["redirect_client_name"]
+    client_terms_key = COOKIES["redirect_client_terms"]
     oidc_values = None
 
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        # Before storing the redirect_uri, ensure it comes from a valid client.
-        # This is to prevent urls on other parts of the site being misused to
-        # redirect users to none client apps.
-        uri = request.GET.get("redirect_uri", None)
-        if uri and request.method != "POST":
+    @staticmethod
+    def create_disabled_site_response(request):
+        path_without_trailing_slash = request.path.rstrip("/")
+        if path_without_trailing_slash == reverse("oidc_provider:authorize") and \
+                request.method != "POST":
             authorize = AuthorizeEndpoint(request)
             try:
                 authorize.validate_params()
@@ -112,7 +116,7 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                 return render(
                     request,
                     "authentication_service/redirect_middleware_error.html",
-                    {"error": e.error, "message": e.description, "uri": uri},
+                    {"error": e.error, "message": e.description},
                     status=500
                 )
             except AuthorizeError as e:
@@ -122,10 +126,59 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                     pass
                 else:
                     raise e
+
+            site_is_active = api_helpers.is_site_active(authorize.client)
+            if not site_is_active:
+                return render(
+                    request,
+                    "authentication_service/redirect_middleware_error.html",
+                    {
+                        "error": _("Site access disabled"),
+                        "message": _("The site you are trying to log in to has been disabled.")
+                    },
+                    status=403
+                )
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        # Before storing the redirect_uri, ensure it comes from a valid client.
+        # This is to prevent urls on other parts of the site being misused to
+        # redirect users to none client apps.
+
+        # Should the site be disabled we need to prevent login. This helper function
+        # checks if (1) this is a login request and (2) if the client_id provided is
+        # linked to a disabled site. If so, login is prevented by rendering a custom
+        # page explaining that the site has been disabled.
+        response = self.create_disabled_site_response(request)
+        if response:
+            return response
+
+        uri = request.GET.get("redirect_uri", None)
+
+        if uri and request.method != "POST":
+            authorize = AuthorizeEndpoint(request)
+            try:
+                authorize.validate_params()
+            except (ClientIdError, RedirectUriError) as e:
+                return render(
+                    request,
+                    "authentication_service/redirect_middleware_error.html",
+                    {"error": e.error, "message": e.description},
+                    status=500
+                )
+            except AuthorizeError as e:
+                # Suppress one of the errors oidc raises. It is not required
+                # for pages beyond login.
+                if e.error == "unsupported_response_type":
+                    pass
+                else:
+                    raise e
+
             self.oidc_values = authorize
             request.session[EXTRA_SESSION_KEY] = {
                 self.client_name_key: authorize.client.name
             }
+            request.session[EXTRA_SESSION_KEY][
+                self.client_terms_key] = authorize.client.terms_url
 
     def process_response(self, request, response):
         if self.oidc_values:
@@ -140,4 +193,17 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                 self.client_name_key, value=self.oidc_values.client.name,
                 httponly=True
             )
+
+            # Set Terms link
+            response.set_cookie(
+                self.client_terms_key,
+                value=self.oidc_values.client.terms_url,
+                httponly=True
+            )
         return response
+
+
+class ErrorMiddleware(MiddlewareMixin):
+    def process_exception(self, request, exc):
+        if isinstance(exc, exceptions.BadRequestException):
+            return HttpResponseBadRequest(exc.args)

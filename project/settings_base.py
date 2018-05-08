@@ -75,7 +75,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'authentication_service.wsgi.application'
+WSGI_APPLICATION = 'project.wsgi.application'
 
 
 # Database

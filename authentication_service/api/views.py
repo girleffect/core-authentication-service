@@ -41,10 +41,10 @@ Module = importlib.import_module(module_name)
 Stubs = getattr(Module, class_name)
 
 
-def maybe_validate_result(result, schema):
+def maybe_validate_result(result_string, schema):
     if VALIDATE_RESPONSES:
         try:
-            jsonschema.validate(result, schema)
+            jsonschema.validate(json.loads(result_string, encoding="utf8"), schema)
         except ValidationError as e:
             LOGGER.error(e.message)
 
@@ -138,11 +138,17 @@ class Clients(View):
             result, headers = result
         else:
             headers = {}
-        maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
         response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
         for key, val in headers.items():
             response[key] = val
+
         return response
 
 
@@ -164,11 +170,17 @@ class ClientsClientId(View):
             result, headers = result
         else:
             headers = {}
-        maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
         response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
         for key, val in headers.items():
             response[key] = val
+
         return response
 
 
@@ -281,23 +293,67 @@ class Users(View):
         offset = request.GET.get("offset", None)
         # limit (optional): integer An optional query parameter to limit the number of results returned.
         limit = request.GET.get("limit", None)
-        # email (optional): string An optional email filter
+        # birth_date (optional): string An optional birth_date range filter
+        birth_date = request.GET.get("birth_date", None)
+        # country (optional): string An optional country filter
+        country = request.GET.get("country", None)
+        # date_joined (optional): string An optional date joined range filter
+        date_joined = request.GET.get("date_joined", None)
+        # email (optional): string An optional case insensitive email inner match filter
         email = request.GET.get("email", None)
-        # username_prefix (optional): string An optional username prefix filter
-        username_prefix = request.GET.get("username_prefix", None)
+        # email_verified (optional): boolean An optional email verified filter
+        email_verified = request.GET.get("email_verified", None)
+        # first_name (optional): string An optional case insensitive first name inner match filter
+        first_name = request.GET.get("first_name", None)
+        # gender (optional): string An optional gender filter
+        gender = request.GET.get("gender", None)
+        # is_active (optional): boolean An optional is_active filter
+        is_active = request.GET.get("is_active", None)
+        # last_login (optional): string An optional last login range filter
+        last_login = request.GET.get("last_login", None)
+        # last_name (optional): string An optional case insensitive last name inner match filter
+        last_name = request.GET.get("last_name", None)
+        # msisdn (optional): string An optional case insensitive MSISDN inner match filter
+        msisdn = request.GET.get("msisdn", None)
+        # msisdn_verified (optional): boolean An optional MSISDN verified filter
+        msisdn_verified = request.GET.get("msisdn_verified", None)
+        # nickname (optional): string An optional case insensitive nickname inner match filter
+        nickname = request.GET.get("nickname", None)
+        # organisational_unit_id (optional): integer An optional filter on the organisational unit id
+        organisational_unit_id = request.GET.get("organisational_unit_id", None)
+        # updated_at (optional): string An optional updated_at range filter
+        updated_at = request.GET.get("updated_at", None)
+        # username (optional): string An optional case insensitive username inner match filter
+        username = request.GET.get("username", None)
+        # q (optional): string An optional case insensitive inner match filter across all searchable text fields
+        q = request.GET.get("q", None)
+        # tfa_enabled (optional): boolean An optional filter based on whether a user has 2FA enabled or not
+        tfa_enabled = request.GET.get("tfa_enabled", None)
+        # has_organisational_unit (optional): boolean An optional filter based on whether a user has an organisational unit or not
+        has_organisational_unit = request.GET.get("has_organisational_unit", None)
+        # order_by (optional): array Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
+        order_by = request.GET.get("order_by", None)
+        if order_by is not None:
+            order_by = order_by.split(",")
         # user_ids (optional): array An optional list of user ids
         user_ids = request.GET.getlist("user_ids", None)
-        result = Stubs.user_list(request, offset, limit, email, username_prefix, user_ids, )
+        result = Stubs.user_list(request, offset, limit, birth_date, country, date_joined, email, email_verified, first_name, gender, is_active, last_login, last_name, msisdn, msisdn_verified, nickname, organisational_unit_id, updated_at, username, q, tfa_enabled, has_organisational_unit, order_by, user_ids, )
 
         if type(result) is tuple:
             result, headers = result
         else:
             headers = {}
-        maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
         response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
         for key, val in headers.items():
             response[key] = val
+
         return response
 
 
@@ -324,11 +380,17 @@ class UsersUserId(View):
             result, headers = result
         else:
             headers = {}
-        maybe_validate_result(result, self.DELETE_RESPONSE_SCHEMA)
 
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
         response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.DELETE_RESPONSE_SCHEMA)
+
         for key, val in headers.items():
             response[key] = val
+
         return response
 
     def get(self, request, user_id, *args, **kwargs):
@@ -343,11 +405,17 @@ class UsersUserId(View):
             result, headers = result
         else:
             headers = {}
-        maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
         response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
         for key, val in headers.items():
             response[key] = val
+
         return response
 
     def put(self, request, user_id, *args, **kwargs):
@@ -366,11 +434,17 @@ class UsersUserId(View):
             result, headers = result
         else:
             headers = {}
-        maybe_validate_result(result, self.PUT_RESPONSE_SCHEMA)
 
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
         response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.PUT_RESPONSE_SCHEMA)
+
         for key, val in headers.items():
             response[key] = val
+
         return response
 
 
@@ -732,19 +806,158 @@ class __SWAGGER_SPEC__(View):
                         ]
                     },
                     {
-                        "description": "An optional email filter",
-                        "format": "email",
+                        "description": "An optional birth_date range filter",
                         "in": "query",
+                        "name": "birth_date",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional country filter",
+                        "in": "query",
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "name": "country",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional date joined range filter",
+                        "in": "query",
+                        "name": "date_joined",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive email inner match filter",
+                        "in": "query",
+                        "minLength": 3,
                         "name": "email",
                         "required": false,
                         "type": "string"
                     },
                     {
-                        "description": "An optional username prefix filter",
+                        "description": "An optional email verified filter",
                         "in": "query",
-                        "name": "username_prefix",
+                        "name": "email_verified",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "description": "An optional case insensitive first name inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "first_name",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "description": "An optional gender filter",
+                        "in": "query",
+                        "name": "gender",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional is_active filter",
+                        "in": "query",
+                        "name": "is_active",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "description": "An optional last login range filter",
+                        "in": "query",
+                        "name": "last_login",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive last name inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "last_name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive MSISDN inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "msisdn",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional MSISDN verified filter",
+                        "in": "query",
+                        "name": "msisdn_verified",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "description": "An optional case insensitive nickname inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "nickname",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional filter on the organisational unit id",
+                        "in": "query",
+                        "name": "organisational_unit_id",
+                        "required": false,
+                        "type": "integer"
+                    },
+                    {
+                        "description": "An optional updated_at range filter",
+                        "in": "query",
+                        "name": "updated_at",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive username inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "username",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive inner match filter across all searchable text fields",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "q",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional filter based on whether a user has 2FA enabled or not",
+                        "in": "query",
+                        "name": "tfa_enabled",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "description": "An optional filter based on whether a user has an organisational unit or not",
+                        "in": "query",
+                        "name": "has_organisational_unit",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "collectionFormat": "csv",
+                        "description": "Fields and directions to order by, e.g. \\"-created_at,username\\". Add \\"-\\" in front of a field name to indicate descending order.",
+                        "in": "query",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "order_by",
+                        "required": false,
+                        "type": "array",
+                        "uniqueItems": true
                     },
                     {
                         "collectionFormat": "multi",
