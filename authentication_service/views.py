@@ -11,8 +11,10 @@ from django.contrib.auth.views import (
 )
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
+
+# NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -27,6 +29,10 @@ from two_factor.views import core
 
 from authentication_service import forms, models, tasks, constants
 from authentication_service.forms import LoginForm
+
+# TODO REPLACE
+from authentication_service.tests.models import TemporaryUserStore
+
 
 REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
 
@@ -102,10 +108,24 @@ class LoginView(core.LoginView):
     template_name = "authentication_service/login.html"
 
     form_list = (
-        ('auth', LoginForm),
-        ('token', AuthenticationTokenForm),
-        ('backup', BackupTokenForm),
+        ("auth", LoginForm),
+        ("token", AuthenticationTokenForm),
+        ("backup", BackupTokenForm),
     )
+
+    def post(self, *args, **kwargs):
+        # Super can not be called first. The temporary user objects will break
+        # functionality in the base view. Only attempt on the first step.
+        if self.get_step_index() == 0:
+            form = self.get_form(
+                data=self.request.POST, files=self.request.FILES
+            )
+            if form.is_valid():
+                form_user = form.get_user()
+                if isinstance(form_user, TemporaryUserStore):
+                    # TODO redirect to new data capture wizard, when applicable. 
+                    return redirect(reverse("registration"))
+        return super(LoginView, self).post(*args, **kwargs)
 
 
 # Protect the login view using Defender. Defender provides a method decorator

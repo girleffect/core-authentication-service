@@ -39,8 +39,11 @@ AUTH_PASSWORD_VALIDATORS += [
     },
 ]
 
-AUTHENTICATION_BACKENDS = \
-    ["authentication_service.backends.GirlEffectAuthBackend"]
+AUTHENTICATION_BACKENDS = [
+    "authentication_service.backends.GirlEffectAuthBackend",
+    # TODO enable
+    #"authentication_service.backends.MigratedUserAuthBackend"
+]
 
 DATABASES = {
     "default": env.dict("DB_DEFAULT", "ENGINE=django.db.backends.postgresql," \
@@ -77,7 +80,7 @@ ADDITIONAL_APPS = [
 ]
 
 # Project app has to be first in the list.
-INSTALLED_APPS = ["authentication_service"] + INSTALLED_APPS + ADDITIONAL_APPS
+INSTALLED_APPS = ["authentication_service", "authentication_service.tests"] + INSTALLED_APPS + ADDITIONAL_APPS
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",

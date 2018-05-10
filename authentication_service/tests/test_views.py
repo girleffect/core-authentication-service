@@ -60,6 +60,27 @@ class TestLogin(TestCase):
         )
         self.assertRedirects(response, "{}?next=%2Fen%2Fadmin%2F".format(reverse("login")))
 
+    def test_migrated_user_login(self):
+        # TODO move import and data creation once finalised.
+        from authentication_service.tests.models import TemporaryUserStore
+        temp_user = TemporaryUserStore.objects.create_user(
+            username="migrateduser",
+            email="inactive@email.com",
+            password="Qwer!234",
+        )
+
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+        response = self.client.post(
+            reverse("login"),
+            data=data,
+            follow=True
+        )
+        self.assertRedirects(response, reverse("registration"))
+
 
 class TestLockout(TestCase):
 

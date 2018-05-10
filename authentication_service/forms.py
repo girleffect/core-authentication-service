@@ -569,3 +569,10 @@ class LoginForm(AuthenticationForm):
         "invalid_login": settings.INCORRECT_CREDENTIALS_MESSAGE,
         "inactive": settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
     }
+
+    #def clean(self):
+    #    try:
+    #        cleaned_data = super(LoginForm, self).clean()
+    #        return cleaned_data
+    #    except forms.ValidationError as e:
+    #        return cleaned_data

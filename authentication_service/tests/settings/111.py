@@ -18,8 +18,10 @@ AUTH_PASSWORD_VALIDATORS += [
     },
 ]
 
-AUTHENTICATION_BACKENDS = \
-    ["authentication_service.backends.GirlEffectAuthBackend"]
+AUTHENTICATION_BACKENDS = [
+    "authentication_service.backends.GirlEffectAuthBackend",
+    "authentication_service.backends.MigratedUserAuthBackend"
+]
 
 # Defender options
 DEFENDER_LOGIN_FAILURE_LIMIT = 3
