@@ -16,6 +16,8 @@ from defender.utils import unblock_username
 from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 
+from authentication_service.tests.models import TemporaryUserStore
+
 
 class TestLogin(TestCase):
 
@@ -62,7 +64,6 @@ class TestLogin(TestCase):
 
     def test_migrated_user_login(self):
         # TODO move import and data creation once finalised.
-        from authentication_service.tests.models import TemporaryUserStore
         temp_user = TemporaryUserStore.objects.create_user(
             username="migrateduser",
             email="inactive@email.com",
@@ -79,7 +80,116 @@ class TestLogin(TestCase):
             data=data,
             follow=True
         )
-        self.assertRedirects(response, reverse("registration"))
+        self.assertRedirects(response, reverse("migrate_user_step", kwargs={
+            "temp_id": temp_user.id, "step": "userdata"}
+        ))
+
+
+class TestMigration(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestMigration, cls).setUpTestData()
+        cls.temp_user = TemporaryUserStore.objects.create_user(
+            username="coolmigrateduser",
+            email="migrater@email.com",
+            password="Qwer!234",
+        )
+        cls.user = get_user_model().objects.create_user(
+            username="existinguser",
+            email="existing@email.com",
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+    def test_userdata_step(self):
+        # Default required
+        data = {
+            "migrate_user_wizard-current_step": "userdata"
+        }
+        response = self.client.post(
+            reverse("migrate_user_step", kwargs={
+                "temp_id": self.temp_user.id,
+                "step": "userdata"
+            }),
+            data=data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["wizard"]["steps"].current, "userdata"
+        )
+        self.assertEqual(
+            response.context["wizard"]["form"].errors,
+            {"username": ["This field is required."],
+            'age': ["This field is required."]}
+        )
+
+        # Username unique
+        data = {
+            "migrate_user_wizard-current_step": "userdata",
+            "userdata-username": self.user.username,
+            "userdata-age": 20
+        }
+        response = self.client.post(
+            reverse("migrate_user_step", kwargs={
+                "temp_id": self.temp_user.id,
+                "step": "userdata"
+            }),
+            data=data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["wizard"]["steps"].current, "userdata"
+        )
+        self.assertEqual(
+            response.context["wizard"]["form"].errors,
+            {"username": ["A user with that username already exists."]}
+        )
+
+    def test_securityquestion_step(self):
+        # Username unique
+        data = {
+            "migrate_user_wizard-current_step": "userdata",
+            "userdata-username": "newusername",
+            "userdata-age": 20
+        }
+        response = self.client.post(
+            reverse("migrate_user_step", kwargs={
+                "temp_id": self.temp_user.id,
+                "step": "userdata"
+            }),
+            data=data,
+        )
+        response = self.client.get(response.url)
+        data = {
+            "migrate_user_wizard-current_step": "securityquestions",
+            "securityquestions-TOTAL_FORMS": 2,
+            "securityquestions-INITIAL_FORMS": 0,
+            "securityquestions-MIN_NUM_FORMS": 0,
+            "securityquestions-MAX_NUM_FORMS": 1000,
+        }
+        response = self.client.post(
+            reverse("migrate_user_step", kwargs={
+                "temp_id": self.temp_user.id,
+                "step": response.context["wizard"]["steps"].current
+            }),
+            data=data,
+        )
+
+        # TODO None form errors not displayed on frontend properly
+        self.assertEqual(
+            response.context["wizard"]["form"].non_form_errors(),
+            ["Please fill in all Security Question fields."]
+        )
+
 
 
 class TestLockout(TestCase):

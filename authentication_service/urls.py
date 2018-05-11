@@ -35,24 +35,42 @@ urlpatterns = [
     ),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
 ]
+
+migration_wizard = views.MigrateUserWizard.as_view(
+    url_name="migrate_user_step",
+    done_step_name="finished"
+)
 urlpatterns += i18n_patterns(
     url(
         r"^static/(?P<path>.*)$",
         serve,
         {"document_root": settings.STATIC_ROOT}
     ),
+
     # Login URLs
-    url(r"^login/", views.LoginView.as_view(), name="login"),
+    url(r"^login/$", views.LoginView.as_view(), name="login"),
     # Override the login URL implicitly defined by Django Admin to redirect
     # to our login view.
     url(
-        r"^admin/login/",
-        RedirectView.as_view(pattern_name="login", permanent=True,
-                             query_string=True)
+        r"^admin/login/$",
+        RedirectView.as_view(
+            pattern_name="login",
+            permanent=True,
+            query_string=True
+        )
     ),
+
+    # Migrate user wizard
+    url(
+        r"^migrate/(?P<temp_id>[0-9])/(?P<step>.+)/$",
+        migration_wizard,
+        name="migrate_user_step"
+    ),
+    url(r"^migrate/(?P<temp_id>[0-9])/$", migration_wizard, name="migrate_user"),
+
     # Generic redirect issue
     url(
-        r"^redirect-issue/",
+        r"^redirect-issue/$",
         TemplateView.as_view(
             template_name="authentication_service/redirect_issue.html"),
         name="redirect_issue"

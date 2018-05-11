@@ -1,4 +1,5 @@
 from defender.decorators import watch_login
+from formtools.wizard.views import NamedUrlSessionWizardView
 
 from django.conf import settings
 from django.contrib import messages
@@ -124,7 +125,9 @@ class LoginView(core.LoginView):
                 form_user = form.get_user()
                 if isinstance(form_user, TemporaryUserStore):
                     # TODO redirect to new data capture wizard, when applicable. 
-                    return redirect(reverse("registration"))
+                    return redirect(reverse(
+                        "migrate_user", kwargs={"temp_id": form_user.id}
+                    ))
         return super(LoginView, self).post(*args, **kwargs)
 
 
@@ -474,3 +477,26 @@ ResetPasswordSecurityQuestionsView.dispatch = watch_login_method(
 
 class PasswordResetConfirmView(PasswordResetConfirmView):
     form_class = forms.SetPasswordForm
+
+
+migration_forms = (
+    ("userdata", forms.UserDataForm),
+    ("securityquestions", forms.SecurityQuestionFormSet),
+)
+class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
+    form_list = migration_forms
+    instance_dict = {
+        "securityquestions": models.SecurityQuestion.objects.none()
+    }
+
+    def get_step_url(self, step):
+        temp_id = self.kwargs["temp_id"]
+        return reverse(self.url_name, kwargs={"temp_id": temp_id, "step": step})
+
+    def get_form_kwargs(self, step=None):
+        """
+        """
+        kwargs = {}
+        if step == "securityquestions":
+            kwargs["language"] = self.language
+        return kwargs

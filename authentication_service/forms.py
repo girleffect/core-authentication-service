@@ -253,7 +253,7 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 
         # Question field, queryset.
         self.question_queryset = kwargs.pop(
-            "querstion_queryset", None
+            "question_queryset", None
         )
         self.language = language
         super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
@@ -570,9 +570,30 @@ class LoginForm(AuthenticationForm):
         "inactive": settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
     }
 
-    #def clean(self):
-    #    try:
-    #        cleaned_data = super(LoginForm, self).clean()
-    #        return cleaned_data
-    #    except forms.ValidationError as e:
-    #        return cleaned_data
+# TODO move
+from django.utils import six
+from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUsernameValidator
+
+# Lifted Django user model validator.
+USERNAME_VALIDATOR = (UnicodeUsernameValidator()
+    if six.PY3 else ASCIIUsernameValidator()
+)
+class UserDataForm(forms.Form):
+    pass
+    username = forms.CharField(
+        max_length=150,
+        help_text=_("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
+        validators=[USERNAME_VALIDATOR],
+    )
+    age = forms.IntegerField(
+        min_value=1,
+        max_value=100
+    )
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if get_user_model().objects.filter(username=username).count() > 0:
+            raise forms.ValidationError(
+                _("A user with that username already exists.")
+            )
+        return username
