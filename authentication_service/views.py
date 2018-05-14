@@ -511,6 +511,7 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
         self.token = self.kwargs["token"]
         # TODO pass along and store on wizard session
         # self.next = 
+
         try:
             self.temp_id = signing.loads(
                 self.token,
@@ -543,12 +544,19 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
             kwargs["language"] = self.language
         return kwargs
 
+    def get_form_initial(self, step):
+        if step == "userdata":
+            return {
+                "username": self.get_user_data.username
+            }
+        return self.initial_dict.get(step, {})
+
     def done(self, form_list, **kwargs):
         # TODO
         super(MigrateUserWizard, self).done(form_list, **kwargs)
 
     @cached_property
-    def get_initiative(self):
+    def get_user_data(self):
         try:
             return TemporaryUserStore.objects.get(
                 id=self.temp_id
