@@ -296,6 +296,11 @@ class TestMigration(TestCase):
         self.assertEqual(get_user_model().objects.filter(
             username="newusername").count(), 1
         )
+        self.assertEqual(
+            get_user_model().objects.get(
+                username="newusername").usersecurityquestion_set.all().count(),
+            2
+        )
 
 
 
