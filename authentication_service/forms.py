@@ -589,6 +589,17 @@ class UserDataForm(forms.Form):
         min_value=1,
         max_value=100
     )
+    password1 = forms.CharField(
+        label=_("Password"),
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+    password2 = forms.CharField(
+        label=_("Password confirmation"),
+        widget=forms.PasswordInput,
+        strip=False,
+        help_text=_("Enter the same password as before, for verification."),
+    )
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
@@ -597,3 +608,17 @@ class UserDataForm(forms.Form):
                 _("A user with that username already exists.")
             )
         return username
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+        if len(password2) < 4:
+            raise forms.ValidationError(
+                _("Password needs to be at least 4 characters long.")
+            )
+        return password2

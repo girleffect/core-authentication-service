@@ -563,8 +563,7 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
             birth_date = date.today() - relativedelta(
                 years=cleaned_data["age"]
             ),
-            # TODO add password update fields
-            password=self.get_user_data.password
+            password=cleaned_data["password2"]
         )
         # TODO Save security questions
         # TODO delete temp user data

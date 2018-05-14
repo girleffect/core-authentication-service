@@ -155,14 +155,19 @@ class TestMigration(TestCase):
         self.assertEqual(
             response.context["wizard"]["form"].errors,
             {"username": ["This field is required."],
-            'age': ["This field is required."]}
+            'age': ["This field is required."],
+            "password1": ["This field is required."],
+            "password2": ["This field is required."]
+            }
         )
 
         # Username unique
         data = {
             "migrate_user_wizard-current_step": "userdata",
             "userdata-username": self.user.username,
-            "userdata-age": 20
+            "userdata-age": 20,
+            "userdata-password1": "asdasd",
+            "userdata-password2": "asdasd"
         }
         response = self.client.post(
             response._request.path,
@@ -194,7 +199,9 @@ class TestMigration(TestCase):
         data = {
             "migrate_user_wizard-current_step": "userdata",
             "userdata-username": "newusername",
-            "userdata-age": 20
+            "userdata-age": 20,
+            "userdata-password1": "asdasd",
+            "userdata-password2": "asdasd"
         }
         response = self.client.post(
             response.redirect_chain[-1][0],
@@ -257,7 +264,9 @@ class TestMigration(TestCase):
         data = {
             "migrate_user_wizard-current_step": "userdata",
             "userdata-username": "newusername",
-            "userdata-age": 20
+            "userdata-age": 20,
+            "userdata-password1": "asdasd",
+            "userdata-password2": "asdasd"
         }
         response = self.client.post(
             response.redirect_chain[-1][0],
