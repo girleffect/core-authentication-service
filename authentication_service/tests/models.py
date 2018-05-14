@@ -1,6 +1,7 @@
-from  django.contrib.auth.base_user import AbstractBaseUser
-from  django.contrib.auth.models import UserManager
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import UserManager
 from django.db import models
+from django.contrib.auth.hashers import check_password, make_password
 
 
 
@@ -8,14 +9,7 @@ class DummyModel(models.Model):
     pass
 
 
-# TODO Port these over to auth service itself, once all data has been
-# finalised. Also point tests and auth backend to correct model when ready.
-class TemporaryUserManager(UserManager):
-    def create_user(self, username, email=None, password=None, **extra_fields):
-        return self._create_user(username, email, password, **extra_fields)
-
-
-class TemporaryUserStore(AbstractBaseUser):
+class TemporaryUserStore(models.Model):
     # TODO needs client/app ids to filter on.
     USERNAME_FIELD = 'username'
     username = models.CharField(
@@ -27,7 +21,14 @@ class TemporaryUserStore(AbstractBaseUser):
             'unique': "A user with that username already exists.",
         },
     )
+    password = models.CharField("password", max_length=128)
     email = models.EmailField(
         "email address", blank=True, default="", unique=True
     )
-    objects = TemporaryUserManager()
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+        self.save()

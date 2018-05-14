@@ -62,11 +62,11 @@ urlpatterns += i18n_patterns(
 
     # Migrate user wizard
     url(
-        r"^migrate/(?P<temp_id>[0-9])/(?P<step>.+)/$",
+        r"^migrate/(?P<token>[\w:-]+)/(?P<step>.+)/$",
         migration_wizard,
         name="migrate_user_step"
     ),
-    url(r"^migrate/(?P<temp_id>[0-9])/$", migration_wizard, name="migrate_user"),
+    url(r"^migrate/(?P<token>[\w:-]+)/$", migration_wizard, name="migrate_user"),
 
     # Generic redirect issue
     url(

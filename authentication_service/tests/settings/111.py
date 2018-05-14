@@ -19,8 +19,7 @@ AUTH_PASSWORD_VALIDATORS += [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    "authentication_service.backends.GirlEffectAuthBackend",
-    "authentication_service.backends.MigratedUserAuthBackend"
+    "authentication_service.backends.GirlEffectAuthBackend"
 ]
 
 # Defender options

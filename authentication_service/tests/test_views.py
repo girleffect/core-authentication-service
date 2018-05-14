@@ -64,11 +64,11 @@ class TestLogin(TestCase):
 
     def test_migrated_user_login(self):
         # TODO move import and data creation once finalised.
-        temp_user = TemporaryUserStore.objects.create_user(
+        temp_user = TemporaryUserStore.objects.create(
             username="migrateduser",
             email="inactive@email.com",
-            password="Qwer!234",
         )
+        temp_user.set_password("Qwer!234")
 
         data = {
             "login_view-current_step": "auth",
@@ -80,26 +80,47 @@ class TestLogin(TestCase):
             data=data,
             follow=True
         )
-        self.assertRedirects(response, reverse("migrate_user_step", kwargs={
-            "temp_id": temp_user.id, "step": "userdata"}
-        ))
+        self.assertIn(
+            "/migrate/",
+            response.redirect_chain[-1][0],
+        )
+        self.assertIn(
+            "/userdata/",
+            response.redirect_chain[-1][0],
+        )
+        self.assertEqual(
+            response.redirect_chain[-1][1],
+            302,
+        )
 
 
 class TestMigration(TestCase):
+    """
+    Test urls can be handled a bit better, however this was the fastest way
+    to refactor the existing tests.
+    """
+
+    # Wizard helper methods
+    def do_login(self, data):
+        return self.client.post(
+            reverse("login"),
+            data=data,
+            follow=True
+        )
 
     @classmethod
     def setUpTestData(cls):
         super(TestMigration, cls).setUpTestData()
-        cls.temp_user = TemporaryUserStore.objects.create_user(
+        cls.temp_user = TemporaryUserStore.objects.create(
             username="coolmigrateduser",
             email="migrater@email.com",
-            password="Qwer!234",
         )
+        cls.temp_user.set_password("Qwer!234")
         cls.user = get_user_model().objects.create_user(
             username="existinguser",
             email="existing@email.com",
-            password="Qwer!234",
-            birth_date=datetime.date(2001, 1, 1)
+            birth_date=datetime.date(2001, 1, 1),
+            password="Qwer!234"
         )
         cls.question_one = SecurityQuestion.objects.create(
             question_text="Some text for the one question"
@@ -109,15 +130,21 @@ class TestMigration(TestCase):
         )
 
     def test_userdata_step(self):
+        # Login and get the response url
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": self.temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+
+        response = self.do_login(data)
         # Default required
         data = {
             "migrate_user_wizard-current_step": "userdata"
         }
+
         response = self.client.post(
-            reverse("migrate_user_step", kwargs={
-                "temp_id": self.temp_user.id,
-                "step": "userdata"
-            }),
+            response.redirect_chain[-1][0],
             data=data,
         )
 
@@ -138,10 +165,7 @@ class TestMigration(TestCase):
             "userdata-age": 20
         }
         response = self.client.post(
-            reverse("migrate_user_step", kwargs={
-                "temp_id": self.temp_user.id,
-                "step": "userdata"
-            }),
+            response._request.path,
             data=data,
         )
 
@@ -153,8 +177,19 @@ class TestMigration(TestCase):
             response.context["wizard"]["form"].errors,
             {"username": ["A user with that username already exists."]}
         )
+        self.assertContains(
+            response, "A user with that username already exists."
+        )
 
     def test_securityquestion_step(self):
+        # Login and get the response url
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": self.temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+
+        response = self.do_login(data)
         # Username unique
         data = {
             "migrate_user_wizard-current_step": "userdata",
@@ -162,10 +197,7 @@ class TestMigration(TestCase):
             "userdata-age": 20
         }
         response = self.client.post(
-            reverse("migrate_user_step", kwargs={
-                "temp_id": self.temp_user.id,
-                "step": "userdata"
-            }),
+            response.redirect_chain[-1][0],
             data=data,
         )
         response = self.client.get(response.url)
@@ -177,10 +209,7 @@ class TestMigration(TestCase):
             "securityquestions-MAX_NUM_FORMS": 1000,
         }
         response = self.client.post(
-            reverse("migrate_user_step", kwargs={
-                "temp_id": self.temp_user.id,
-                "step": response.context["wizard"]["steps"].current
-            }),
+            response._request.path,
             data=data,
         )
 
@@ -188,6 +217,32 @@ class TestMigration(TestCase):
         self.assertEqual(
             response.context["wizard"]["form"].non_form_errors(),
             ["Please fill in all Security Question fields."]
+        )
+        self.assertContains(
+            response, "Please fill in all Security Question fields."
+        )
+
+        data = {
+            "migrate_user_wizard-current_step": "securityquestions",
+            "securityquestions-TOTAL_FORMS": 2,
+            "securityquestions-INITIAL_FORMS": 0,
+            "securityquestions-MIN_NUM_FORMS": 0,
+            "securityquestions-MAX_NUM_FORMS": 1000,
+            "securityquestions-0-question": self.question_one.id,
+            "securityquestions-0-answer": "Answer1",
+            "securityquestions-1-question": self.question_one.id,
+            "securityquestions-1-answer": "Answer2"
+        }
+        response = self.client.post(
+            response._request.path,
+            data=data,
+        )
+        self.assertEqual(
+            response.context["wizard"]["form"].non_form_errors(),
+            ["Each question can only be picked once."]
+        )
+        self.assertContains(
+            response, "Each question can only be picked once."
         )
 
 

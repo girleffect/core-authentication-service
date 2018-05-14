@@ -13,11 +13,13 @@ from django.contrib.auth.views import (
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
 
+from django.core import signing
 # NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
+from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext as _
 from django.views.generic import View, TemplateView
@@ -121,13 +123,29 @@ class LoginView(core.LoginView):
             form = self.get_form(
                 data=self.request.POST, files=self.request.FILES
             )
-            if form.is_valid():
+
+            # Is valid triggers authentication.
+            if not form.is_valid():
                 form_user = form.get_user()
-                if isinstance(form_user, TemporaryUserStore):
-                    # TODO redirect to new data capture wizard, when applicable. 
-                    return redirect(reverse(
-                        "migrate_user", kwargs={"temp_id": form_user.id}
-                    ))
+                # Only do these checks if no user was authenticated.
+                if form_user is None:
+                    username = form.cleaned_data["username"]
+                    password = form.cleaned_data["password"]
+                    try:
+                        # TODO filters to update as we have finalised fields
+                        user = TemporaryUserStore.objects.get(username=username)
+
+                        # TODO build initial value as needed, can't assume id
+                        token = signing.dumps(
+                            user.id, salt="ge-migration-user-registration"
+                        )
+                        if user.check_password(password):
+                            return redirect(reverse(
+                                "migrate_user", kwargs={"token": token}
+                            ))
+                    except TemporaryUserStore.DoesNotExist:
+                        # Let login fail as usual
+                        pass
         return super(LoginView, self).post(*args, **kwargs)
 
 
@@ -489,9 +507,33 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
         "securityquestions": models.SecurityQuestion.objects.none()
     }
 
+    def dispatch(self, *args, **kwargs):
+        self.token = self.kwargs["token"]
+        # TODO pass along and store on wizard session
+        # self.next = 
+        try:
+            self.temp_id = signing.loads(
+                self.token,
+                salt="ge-migration-user-registration",
+                max_age=900 # 15 min in seconds
+            )
+        except signing.SignatureExpired:
+            messages.error(
+                self.request,
+                _("Migration url has expired, please login again.")
+            )
+            # TODO pass next along and add next back in here.
+            return HttpResponseRedirect(reverse("login"))
+        return super(MigrateUserWizard, self).dispatch(*args, **kwargs)
+
     def get_step_url(self, step):
-        temp_id = self.kwargs["temp_id"]
-        return reverse(self.url_name, kwargs={"temp_id": temp_id, "step": step})
+        return reverse(
+            self.url_name,
+            kwargs={
+                "token": self.token,
+                "step": step
+            }
+        )
 
     def get_form_kwargs(self, step=None):
         """
@@ -500,3 +542,19 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
         if step == "securityquestions":
             kwargs["language"] = self.language
         return kwargs
+
+    def done(self, form_list, **kwargs):
+        # TODO
+        super(MigrateUserWizard, self).done(form_list, **kwargs)
+
+    @cached_property
+    def get_initiative(self):
+        try:
+            return TemporaryUserStore.objects.get(
+                id=self.temp_id
+            )
+        except TemporaryUserStore.DoesNotExist:
+            raise Http404(
+                f"Migrating user with id {self.temp_id} does not exist."
+            )
+

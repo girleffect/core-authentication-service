@@ -40,9 +40,7 @@ AUTH_PASSWORD_VALIDATORS += [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    "authentication_service.backends.GirlEffectAuthBackend",
-    # TODO enable
-    #"authentication_service.backends.MigratedUserAuthBackend"
+    "authentication_service.backends.GirlEffectAuthBackend"
 ]
 
 DATABASES = {
