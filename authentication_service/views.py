@@ -558,14 +558,20 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
 
     def done(self, form_list, **kwargs):
         cleaned_data = self.get_all_cleaned_data()
-        get_user_model().objects.create_user(
+        user = get_user_model().objects.create_user(
             username=cleaned_data["username"],
             birth_date = date.today() - relativedelta(
                 years=cleaned_data["age"]
             ),
             password=cleaned_data["password2"]
         )
-        # TODO Save security questions
+        for form_data in cleaned_data["formset-securityquestions"]:
+            # All fields on model are required, as such it requires the
+            # full set of data.
+            data = form_data
+            data["user_id"] = user.id
+            data["language_code"] = self.language
+            question = models.UserSecurityQuestion.objects.create(**data)
         # TODO delete temp user data
         # TODO login user
         # TODO add next querystring
