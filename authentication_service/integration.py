@@ -81,6 +81,7 @@ class Implementation(AbstractStubClass):
                   last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None,
                   organisational_unit_id=None, updated_at=None, username=None, q=None,
                   tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None,
+                  site_ids=None,
                   *args, **kwargs):
         """
         :param request: An HttpRequest
@@ -89,49 +90,51 @@ class Implementation(AbstractStubClass):
         limit = check_limit(limit)
 
         order_by = order_by or ["id"]
-        users = get_user_model().objects.values(
-            *USER_VALUES).order_by(*order_by)
+        # The user filter needs to contain a distinct() filter since joining
+        # with the UserSite table can lead to multiple rows containing the same user.
+        # In order for distinct() to always work as expected, the order_by fields
+        # need to be part of the list given to values().
+        # Ref: https://docs.djangoproject.com/en/1.11/ref/models/querysets/#django.db.models.query.QuerySet.distinct
+        users = get_user_model().objects.distinct().values(
+            *(USER_VALUES+order_by)).order_by(*order_by)
 
         # Bools
         if tfa_enabled is not None:
-            check = True if tfa_enabled.lower() == "true" else False
+            check = tfa_enabled.lower() == "true"
             users = users.filter(
                 totpdevice__isnull=not check
             )
         if has_organisational_unit is not None:
-            check = True if has_organisational_unit.lower() == "true" else False
+            check = has_organisational_unit.lower() == "true"
             users = users.filter(
                 organisational_unit__isnull=not check
             )
         if email_verified is not None:
             users = users.filter(
-                email_verified=True if email_verified.lower() == "true"
-                else False
+                email_verified=email_verified.lower() == "true"
             )
         if is_active is not None:
             users = users.filter(
-                is_active=True if is_active.lower() == "true"
-                else False
+                is_active=is_active.lower() == "true"
             )
         if msisdn_verified is not None:
             users = users.filter(
-                msisdn_verified=True if msisdn_verified.lower() == "true"
-                else False
+                msisdn_verified=msisdn_verified.lower() == "true"
             )
 
         # Dates
         if birth_date:
             ranges = range_filter_parser(birth_date)
-            users = users.filter(**{"birth_date__%s" % ranges[0]:ranges[1]})
+            users = users.filter(**{"birth_date__%s" % ranges[0]: ranges[1]})
         if date_joined:
             ranges = range_filter_parser(date_joined)
-            users = users.filter(**{"date_joined__%s" % ranges[0]:ranges[1]})
+            users = users.filter(**{"date_joined__%s" % ranges[0]: ranges[1]})
         if last_login:
             ranges = range_filter_parser(last_login)
-            users = users.filter(**{"last_login__%s" % ranges[0]:ranges[1]})
+            users = users.filter(**{"last_login__%s" % ranges[0]: ranges[1]})
         if updated_at:
             ranges = range_filter_parser(updated_at)
-            users = users.filter(**{"updated_at__%s" % ranges[0]:ranges[1]})
+            users = users.filter(**{"updated_at__%s" % ranges[0]: ranges[1]})
 
         # Partial matches
         if email:
@@ -158,6 +161,8 @@ class Implementation(AbstractStubClass):
             users = users.filter(gender=gender)
         if organisational_unit_id:
             users = users.filter(organisational_unit__id=organisational_unit_id)
+        if site_ids:
+            users = users.filter(usersite__site_id__in=site_ids)
 
         # Count
         users = users.annotate(

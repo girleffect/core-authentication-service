@@ -129,7 +129,9 @@ class Clients(View):
         # limit (optional): integer An optional query parameter to limit the number of results returned.
         limit = request.GET.get("limit", None)
         # client_ids (optional): array An optional list of client ids
-        client_ids = request.GET.getlist("client_ids", None)
+        client_ids = request.GET.get("client_ids", None)
+        if client_ids is not None:
+            client_ids = client_ids.split(",")
         # client_token_id (optional): string An optional client id to filter on. This is not the primary key.
         client_token_id = request.GET.get("client_token_id", None)
         result = Stubs.client_list(request, offset, limit, client_ids, client_token_id, )
@@ -336,8 +338,14 @@ class Users(View):
         if order_by is not None:
             order_by = order_by.split(",")
         # user_ids (optional): array An optional list of user ids
-        user_ids = request.GET.getlist("user_ids", None)
-        result = Stubs.user_list(request, offset, limit, birth_date, country, date_joined, email, email_verified, first_name, gender, is_active, last_login, last_name, msisdn, msisdn_verified, nickname, organisational_unit_id, updated_at, username, q, tfa_enabled, has_organisational_unit, order_by, user_ids, )
+        user_ids = request.GET.get("user_ids", None)
+        if user_ids is not None:
+            user_ids = user_ids.split(",")
+        # site_ids (optional): array An optional list of site ids
+        site_ids = request.GET.get("site_ids", None)
+        if site_ids is not None:
+            site_ids = site_ids.split(",")
+        result = Stubs.user_list(request, offset, limit, birth_date, country, date_joined, email, email_verified, first_name, gender, is_active, last_login, last_name, msisdn, msisdn_verified, nickname, organisational_unit_id, updated_at, username, q, tfa_enabled, has_organisational_unit, order_by, user_ids, site_ids, )
 
         if type(result) is tuple:
             result, headers = result
@@ -717,7 +725,7 @@ class __SWAGGER_SPEC__(View):
                         ]
                     },
                     {
-                        "collectionFormat": "multi",
+                        "collectionFormat": "csv",
                         "description": "An optional list of client ids",
                         "in": "query",
                         "items": {
@@ -960,7 +968,7 @@ class __SWAGGER_SPEC__(View):
                         "uniqueItems": true
                     },
                     {
-                        "collectionFormat": "multi",
+                        "collectionFormat": "csv",
                         "description": "An optional list of user ids",
                         "in": "query",
                         "items": {
@@ -969,6 +977,19 @@ class __SWAGGER_SPEC__(View):
                         },
                         "minItems": 0,
                         "name": "user_ids",
+                        "required": false,
+                        "type": "array",
+                        "uniqueItems": true
+                    },
+                    {
+                        "collectionFormat": "csv",
+                        "description": "An optional list of site ids",
+                        "in": "query",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "minItems": 0,
+                        "name": "site_ids",
                         "required": false,
                         "type": "array",
                         "uniqueItems": true

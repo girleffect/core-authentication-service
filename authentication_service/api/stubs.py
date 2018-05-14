@@ -31,7 +31,7 @@ class AbstractStubClass(object):
 
     # user_list -- Synchronisation point for meld
     @staticmethod
-    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisational_unit_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None, *args, **kwargs):
+    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisational_unit_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         """
@@ -166,7 +166,7 @@ class MockedStubClass(AbstractStubClass):
         return MockedStubClass.GENERATOR.random_value(response_schema)
 
     @staticmethod
-    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisational_unit_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None, *args, **kwargs):
+    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisational_unit_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         """

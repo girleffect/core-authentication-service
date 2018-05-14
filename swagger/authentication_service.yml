@@ -518,7 +518,7 @@ paths:
             type: integer
           required: false
           minItems: 0
-          collectionFormat: multi
+          collectionFormat: csv
           uniqueItems: true
         - description: An optional client id to filter on. This is not the primary key.
           in: query
@@ -682,7 +682,17 @@ paths:
             format: uuid
           required: false
           minItems: 0
-          collectionFormat: multi
+          collectionFormat: csv
+          uniqueItems: true
+        - name: site_ids
+          description: An optional list of site ids
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+          minItems: 0
+          collectionFormat: csv
           uniqueItems: true
       produces:
         - application/json

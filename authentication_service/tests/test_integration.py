@@ -15,6 +15,7 @@ from django.test import TestCase
 
 from authentication_service import models
 from authentication_service.api import schemas
+from authentication_service.models import UserSite
 
 
 class IntegrationTestCase(TestCase):
@@ -108,7 +109,7 @@ class IntegrationTestCase(TestCase):
 
         # Test list using client.id
         response = self.client.get(
-            "/api/v1/clients?client_ids=%s&client_ids=%s" % (
+            "/api/v1/clients?client_ids=%s,%s" % (
                 self.client_1.id, self.client_2.id)
         )
         self.assertEqual(len(response.json()), 2)
@@ -180,7 +181,7 @@ class IntegrationTestCase(TestCase):
 
         # Test list using multiple user id's
         response = self.client.get(
-            "/api/v1/users?user_ids=%s&user_ids=%s" % (
+            "/api/v1/users?user_ids=%s,%s" % (
                 self.user_1.id, self.user_3.id))
         self.assertEqual(len(response.json()), 2)
         self.assertEqual(int(response["X-Total-Count"]), 2)
@@ -305,7 +306,6 @@ class IntegrationTestCase(TestCase):
         "authentication_service_coreuser"."username" ILIKE %SerNAme% ORDER BY
         "authentication_service_coreuser"."id" ASC LIMIT 20"""
 
-
         self.assertEqual(len(response.json()), len(users))
         print ("\n" + "-"*20)
 
@@ -395,6 +395,33 @@ class IntegrationTestCase(TestCase):
         response = self.client.get(
             f"/api/v1/users?tfa_enabled=true")
         self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(
+            f"/api/v1/users?site_ids=1,2")
+        self.assertEqual(len(response.json()), 0)
+
+        # Link one user to 2 sites
+        UserSite.objects.create(user=users[0][0], site_id=1)
+        UserSite.objects.create(user=users[0][0], site_id=2)
+
+        response = self.client.get(
+            f"/api/v1/users?site_ids=1,2")
+        print(response.json())
+        self.assertEqual(len(response.json()), 1)
+
+        # Link another user to site 2
+        UserSite.objects.create(user=users[1][0], site_id=2)
+
+        # Querying both sites now results in 2 users...
+        response = self.client.get(
+            f"/api/v1/users?site_ids=1,2")
+        self.assertEqual(len(response.json()), 2)
+
+        # ...while querying only site 1 results in 1 user.
+        response = self.client.get(
+            f"/api/v1/users?site_ids=1")
+        self.assertEqual(len(response.json()), 1)
+
 
     def test_user_list_filter_errors(self):
         self.client.login(username="test_user_3", password="password")
