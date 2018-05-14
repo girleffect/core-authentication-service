@@ -17,6 +17,7 @@ GENDER_CHOICES = (
     ("other", _("Other"))
 )
 
+
 class AutoQueryField(models.TextField):
     """
     Custom field to populate concatenated query field.
@@ -40,6 +41,7 @@ class AutoQueryField(models.TextField):
             return value
         else:
             return super(AutoQueryField, self).pre_save(model_instance, add)
+
 
 class TrigramIndex(GinIndex):
     """
@@ -141,6 +143,21 @@ class CoreUser(AbstractUser):
             TrigramIndex(fields=["last_name"],),
             TrigramIndex(fields=["nickname"],),
             TrigramIndex(fields=["q"],),
+        ]
+
+
+class UserSite(models.Model):
+    user = models.ForeignKey("CoreUser")
+    site_id = models.IntegerField()
+    consented_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["user", "site_id"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["site_id"]),
         ]
 
 
