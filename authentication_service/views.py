@@ -1,3 +1,6 @@
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
 from defender.decorators import watch_login
 from formtools.wizard.views import NamedUrlSessionWizardView
 
@@ -13,6 +16,7 @@ from django.contrib.auth.views import (
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
 
+from django.contrib.auth import get_user_model
 from django.core import signing
 # NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.http import HttpResponseRedirect
@@ -508,6 +512,7 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
     }
 
     def dispatch(self, *args, **kwargs):
+        # TODO should store data on session storeage not self.
         self.token = self.kwargs["token"]
         # TODO pass along and store on wizard session
         # self.next = 
@@ -552,8 +557,20 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
         return self.initial_dict.get(step, {})
 
     def done(self, form_list, **kwargs):
-        # TODO
-        super(MigrateUserWizard, self).done(form_list, **kwargs)
+        cleaned_data = self.get_all_cleaned_data()
+        get_user_model().objects.create_user(
+            username=cleaned_data["username"],
+            birth_date = date.today() - relativedelta(
+                years=cleaned_data["age"]
+            ),
+            # TODO add password update fields
+            password=self.get_user_data.password
+        )
+        # TODO Save security questions
+        # TODO delete temp user data
+        # TODO login user
+        # TODO add next querystring
+        return HttpResponseRedirect(reverse("login"))
 
     @cached_property
     def get_user_data(self):

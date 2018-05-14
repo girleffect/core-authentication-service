@@ -213,7 +213,6 @@ class TestMigration(TestCase):
             data=data,
         )
 
-        # TODO None form errors not displayed on frontend properly
         self.assertEqual(
             response.context["wizard"]["form"].non_form_errors(),
             ["Please fill in all Security Question fields."]
@@ -243,6 +242,50 @@ class TestMigration(TestCase):
         )
         self.assertContains(
             response, "Each question can only be picked once."
+        )
+
+    def test_migration_step(self):
+        # Login and get the response url
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": self.temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+
+        response = self.do_login(data)
+        # Username unique
+        data = {
+            "migrate_user_wizard-current_step": "userdata",
+            "userdata-username": "newusername",
+            "userdata-age": 20
+        }
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            data=data,
+            follow=True
+        )
+        data = {
+            "migrate_user_wizard-current_step": "securityquestions",
+            "securityquestions-TOTAL_FORMS": 2,
+            "securityquestions-INITIAL_FORMS": 0,
+            "securityquestions-MIN_NUM_FORMS": 0,
+            "securityquestions-MAX_NUM_FORMS": 1000,
+            "securityquestions-0-question": self.question_one.id,
+            "securityquestions-0-answer": "Answer1",
+            "securityquestions-1-question": self.question_two.id,
+            "securityquestions-1-answer": "Answer2"
+        }
+        self.assertEqual(get_user_model().objects.filter(
+            username=self.temp_user.username).count(), 0
+        )
+        response = self.client.post(
+            response._request.path,
+            data=data,
+            follow=True
+        )
+        self.assertRedirects(response, reverse("login"))
+        self.assertEqual(get_user_model().objects.filter(
+            username="newusername").count(), 1
         )
 
 

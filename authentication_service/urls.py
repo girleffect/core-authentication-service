@@ -37,8 +37,7 @@ urlpatterns = [
 ]
 
 migration_wizard = views.MigrateUserWizard.as_view(
-    url_name="migrate_user_step",
-    done_step_name="finished"
+    url_name="migrate_user_step"
 )
 urlpatterns += i18n_patterns(
     url(
