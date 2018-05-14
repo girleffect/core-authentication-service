@@ -306,6 +306,10 @@ class TestMigration(TestCase):
                 username="coolmigrateduser").count(),
             0
         )
+        self.assertEqual(
+            response._request.user,
+            get_user_model().objects.get(username="newusername")
+        )
 
 
 
