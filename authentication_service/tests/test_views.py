@@ -301,6 +301,11 @@ class TestMigration(TestCase):
                 username="newusername").usersecurityquestion_set.all().count(),
             2
         )
+        self.assertEqual(
+            TemporaryUserStore.objects.filter(
+                username="coolmigrateduser").count(),
+            0
+        )
 
 
 

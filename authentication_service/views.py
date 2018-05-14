@@ -572,7 +572,7 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
             data["user_id"] = user.id
             data["language_code"] = self.language
             question = models.UserSecurityQuestion.objects.create(**data)
-        # TODO delete temp user data
+        self.get_user_data.delete()
         # TODO login user
         # TODO add next querystring
         return HttpResponseRedirect(reverse("login"))
