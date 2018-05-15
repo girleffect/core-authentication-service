@@ -1487,6 +1487,12 @@ class __SWAGGER_SPEC__(View):
                 "responses": {
                     "200": {
                         "description": "",
+                        "headers": {
+                            "X-Total-Count": {
+                                "description": "The total number of results matching the query",
+                                "type": "integer"
+                            }
+                        },
                         "schema": {
                             "items": {
                                 "$ref": "#/definitions/user",
