@@ -156,7 +156,6 @@ class UserSite(models.Model):
     class Meta:
         unique_together = ["user", "site_id"]
         indexes = [
-            models.Index(fields=["user"]),
             models.Index(fields=["site_id"]),
         ]
 
