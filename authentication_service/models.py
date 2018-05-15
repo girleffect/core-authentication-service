@@ -169,7 +169,7 @@ class Country(models.Model):
         verbose_name_plural = _("Countries")
 
     def __str__(self):
-        return "%s - %s" % (self.code, self.name)
+        return self.name
 
 
 class UserSecurityQuestion(models.Model):
@@ -222,3 +222,6 @@ class OrganisationalUnit(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
