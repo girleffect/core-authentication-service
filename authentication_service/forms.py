@@ -6,9 +6,8 @@ from dateutil.relativedelta import relativedelta
 
 from django import forms
 from django.conf import settings
-from django.contrib.admin.widgets import AdminDateWidget
 from django.forms.widgets import Textarea
-from django.contrib.auth import get_user_model, hashers
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import (
     UserCreationForm,
     PasswordResetForm,
@@ -27,7 +26,6 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
-from authentication_service.models import UserSecurityQuestion
 from authentication_service.utils import update_form_fields
 from authentication_service.constants import SECURITY_QUESTION_COUNT, \
     MIN_NON_HIGH_PASSWORD_LENGTH
@@ -215,7 +213,6 @@ class RegistrationForm(UserCreationForm):
         # Replace the original fields.
         self.fields = original_fields
         return html
-
 
     def clean(self):
         cleaned_data = super(RegistrationForm, self).clean()

@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.translation import ugettext as _
@@ -8,6 +9,7 @@ from django.utils.translation import ugettext as _
 from oidc_provider.lib.claims import ScopeClaims
 
 from authentication_service import api_helpers
+from authentication_service.models import UserSite
 
 USER_MODEL = get_user_model()
 
@@ -86,10 +88,15 @@ class CustomScopeClaims(ScopeClaims):
         * self.client: The Client requesting this claim.
         :return: A dictionary containing the claims for the custom Site scope
         """
+        # Find the Site ID associated with this Client
+        site_id = api_helpers.get_site_for_client(self.client.id)
+        # Make sure we have a UserSite entry, otherwise create one.
+        UserSite.objects.get_or_create({}, user=self.user, site_id=site_id)
+
         LOGGER.debug("Looking up site {} data for user {}".format(
             self.client.client_id, self.user))
         data = api_helpers.get_user_site_data(
-            self.user.id, self.client.id).to_dict()["data"]
+            self.user.id, site_id).to_dict()["data"]
         now = timezone.now().astimezone(datetime.timezone.utc).isoformat()
         result = {
             "site": {"retrieved_at": f"{now}", "data": data}
