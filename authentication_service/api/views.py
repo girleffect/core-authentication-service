@@ -1033,7 +1033,7 @@ class __SWAGGER_SPEC__(View):
                         "items": {
                             "type": "integer"
                         },
-                        "minItems": 0,
+                        "minItems": 1,
                         "name": "client_ids",
                         "required": false,
                         "type": "array",
@@ -1461,7 +1461,7 @@ class __SWAGGER_SPEC__(View):
                             "format": "uuid",
                             "type": "string"
                         },
-                        "minItems": 0,
+                        "minItems": 1,
                         "name": "user_ids",
                         "required": false,
                         "type": "array",
@@ -1474,7 +1474,7 @@ class __SWAGGER_SPEC__(View):
                         "items": {
                             "type": "integer"
                         },
-                        "minItems": 0,
+                        "minItems": 1,
                         "name": "site_ids",
                         "required": false,
                         "type": "array",
