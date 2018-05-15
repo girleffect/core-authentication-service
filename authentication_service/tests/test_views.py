@@ -316,7 +316,12 @@ class TestMigration(TestCase):
         )
         self.assertEqual(
             get_user_model().objects.get(username="newusername").migration_data,
-            {'app_id': 1, 'site_id': 1, 'user_id': 1, 'username': 'coolmigrateduser'}
+            {
+                "app_id": 1,
+                "site_id": 1,
+                "user_id": 1,
+                "username": "coolmigrateduser"
+            }
 
         )
 
