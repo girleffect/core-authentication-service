@@ -21,14 +21,14 @@ class TemporaryUserStore(models.Model):
             'unique': "A user with that username already exists.",
         },
     )
-    password = models.CharField("password", max_length=128)
-    email = models.EmailField(
-        "email address", blank=True, default="", unique=True
-    )
+    pw_hash = models.CharField("password", max_length=128)
+    app_id = models.IntegerField()
+    user_id = models.IntegerField()
+    site_id = models.IntegerField()
 
     def check_password(self, raw_password):
-        return check_password(raw_password, self.password)
+        return check_password(raw_password, self.pw_hash)
 
     def set_password(self, raw_password):
-        self.password = make_password(raw_password)
+        self.pw_hash = make_password(raw_password)
         self.save()

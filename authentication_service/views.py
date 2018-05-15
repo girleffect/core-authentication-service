@@ -581,7 +581,13 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
             birth_date = date.today() - relativedelta(
                 years=cleaned_data["age"]
             ),
-            password=cleaned_data["password2"]
+            password=cleaned_data["password2"],
+            migration_data = {
+                "app_id": self.get_user_data.app_id,
+                "site_id": self.get_user_data.site_id,
+                "user_id": self.get_user_data.user_id,
+                "username": self.get_user_data.username
+            }
         )
         for form_data in cleaned_data["formset-securityquestions"]:
             # All fields on model are required, as such it requires the
