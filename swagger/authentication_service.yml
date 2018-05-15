@@ -597,7 +597,7 @@ paths:
           items:
             type: integer
           required: false
-          minItems: 0
+          minItems: 1
           collectionFormat: csv
           uniqueItems: true
         - description: An optional client id to filter on. This is not the primary key.
@@ -862,7 +862,7 @@ paths:
             type: string
             format: uuid
           required: false
-          minItems: 0
+          minItems: 1
           collectionFormat: csv
           uniqueItems: true
         - name: site_ids
@@ -872,7 +872,7 @@ paths:
           items:
             type: integer
           required: false
-          minItems: 0
+          minItems: 1
           collectionFormat: csv
           uniqueItems: true
       produces:
