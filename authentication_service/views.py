@@ -121,6 +121,9 @@ class LoginView(core.LoginView):
     )
 
     def post(self, *args, **kwargs):
+        # Short circuit normal login flow as needed to migrate old existing
+        # users.
+
         # Super can not be called first. The temporary user objects will break
         # functionality in the base view. Only attempt on the first step.
         if self.get_step_index() == 0:
@@ -131,6 +134,7 @@ class LoginView(core.LoginView):
             # Is valid triggers authentication.
             if not form.is_valid():
                 form_user = form.get_user()
+
                 # Only do these checks if no user was authenticated.
                 if form_user is None:
                     username = form.cleaned_data["username"]
@@ -143,10 +147,17 @@ class LoginView(core.LoginView):
                         token = signing.dumps(
                             user.id, salt="ge-migration-user-registration"
                         )
+
+                        # If the temp user password matches, redirect to
+                        # migration wizard.
                         if user.check_password(password):
-                            return redirect(reverse(
+                            querystring = self.request.GET.get("next", "")
+                            url = reverse(
                                 "migrate_user", kwargs={"token": token}
-                            ))
+                            )
+                            return redirect(
+                                f"{url}?persist_query={querystring}"
+                            )
                     except TemporaryUserStore.DoesNotExist:
                         # Let login fail as usual
                         pass
@@ -530,7 +541,16 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
             )
             # TODO pass next along and add next back in here.
             return HttpResponseRedirect(reverse("login"))
-        return super(MigrateUserWizard, self).dispatch(*args, **kwargs)
+
+        # Super sets up storage.
+        dispatch = super(MigrateUserWizard, self).dispatch(*args, **kwargs)
+        query = self.request.GET.get("persist_query", None)
+
+        # Wizard querystrings get stripped, this will ovalidate true once.
+        # Change get_step_url to persist querystrings.
+        if query:
+            self.storage.extra_data["persist_query"] = query
+        return dispatch
 
     def get_step_url(self, step):
         return reverse(
@@ -542,8 +562,6 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
         )
 
     def get_form_kwargs(self, step=None):
-        """
-        """
         kwargs = {}
         if step == "securityquestions":
             kwargs["language"] = self.language
@@ -574,8 +592,9 @@ class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
             question = models.UserSecurityQuestion.objects.create(**data)
         self.get_user_data.delete()
         login(self.request, user)
-        # TODO add next querystring
-        return HttpResponseRedirect(reverse("login"))
+        query = self.storage.extra_data.get("persist_query", None)
+        next_query = f"?next={query}" if query is not None else ""
+        return HttpResponseRedirect(f"{reverse('login')}{next_query}")
 
     @cached_property
     def get_user_data(self):

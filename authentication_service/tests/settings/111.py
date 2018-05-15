@@ -22,6 +22,12 @@ AUTHENTICATION_BACKENDS = [
     "authentication_service.backends.GirlEffectAuthBackend"
 ]
 
+LOCALE_PATHS = [
+    "locale"
+]
+
+LANGUAGE_CODE = "en"
+
 # Defender options
 DEFENDER_LOGIN_FAILURE_LIMIT = 3
 DEFENDER_BEHIND_REVERSE_PROXY = False

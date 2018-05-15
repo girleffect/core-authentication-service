@@ -311,6 +311,62 @@ class TestMigration(TestCase):
             get_user_model().objects.get(username="newusername")
         )
 
+    def test_migration_redirect_persist(self):
+        temp_user = TemporaryUserStore.objects.create(
+            username="newmigratedsupercooluser",
+            email="newsweetmigrater@email.com",
+        )
+        temp_user.set_password("Qwer!234")
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+        response = self.client.post(
+            f"{reverse('login')}?next=http://awesomeredirect.com/?other=none",
+            data=data,
+            follow=True
+        )
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+        data = {
+            "migrate_user_wizard-current_step": "userdata",
+            "userdata-username": "newusername",
+            "userdata-age": 20,
+            "userdata-password1": "asdasd",
+            "userdata-password2": "asdasd"
+        }
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            data=data,
+            follow=True
+        )
+        data = {
+            "migrate_user_wizard-current_step": "securityquestions",
+            "securityquestions-TOTAL_FORMS": 2,
+            "securityquestions-INITIAL_FORMS": 0,
+            "securityquestions-MIN_NUM_FORMS": 0,
+            "securityquestions-MAX_NUM_FORMS": 1000,
+            "securityquestions-0-question": self.question_one.id,
+            "securityquestions-0-answer": "Answer1",
+            "securityquestions-1-question": self.question_two.id,
+            "securityquestions-1-answer": "Answer2"
+        }
+        self.assertEqual(get_user_model().objects.filter(
+            username=self.temp_user.username).count(), 0
+        )
+        response = self.client.post(
+            response._request.path,
+            data=data,
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next=http://awesomeredirect.com/?other=none",
+        )
 
 
 class TestLockout(TestCase):
