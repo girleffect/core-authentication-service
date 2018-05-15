@@ -85,6 +85,20 @@ host: 'localhost:8000'
 basePath: /api/v1
 
 definitions:
+  country:
+    type: object
+    properties:
+      code:
+        type: string
+        minLength: 2
+        maxLength: 2
+      name:
+        type: string
+        maxLength: 100
+    required:
+      - code
+      - name
+
   client:
     type: object
     properties:
@@ -132,6 +146,30 @@ definitions:
       - id
       - client_id
       - response_type
+
+  organisational_unit:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      description:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        readOnly: true
+    required:
+      - id
+      - name
+      - description
+      - created_at
+      - updated_at
 
   user:
     type: object
@@ -245,6 +283,35 @@ definitions:
         minLength: 2
         maxLength: 2
     minProperties: 1
+
+  user_site:
+    type: object
+    properties:
+      id:
+        type: integer
+      user_id:
+        type: string
+        format: uuid
+      site_id:
+        type: integer
+      consented_at:
+        type: string
+        format: 'date-time'
+      created_at:
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        readOnly: true
+    required:
+      - id
+      - user_id
+      - site_id
+      - consented_at
+      - created_at
+      - updated_at
 
 #  Token:
 #    description: |
@@ -494,7 +561,20 @@ parameters:
     name: client_id
     required: true
     type: string
-    format: string
+  country_code:
+    description: A string value identifying the country
+    in: path
+    name: country_code
+    required: true
+    type: string
+    minLength: 2
+    maxLength: 2
+  organisational_unit_id:
+    description: An integer identifying an organisational unit
+    in: path
+    name: organisational_unit_id
+    required: true
+    type: integer
   user_id:
     description: A UUID value identifying the user.
     in: path
@@ -518,7 +598,7 @@ paths:
             type: integer
           required: false
           minItems: 0
-          collectionFormat: multi
+          collectionFormat: csv
           uniqueItems: true
         - description: An optional client id to filter on. This is not the primary key.
           in: query
@@ -534,7 +614,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/client'
-
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
       tags:
         - authentication
 
@@ -550,6 +633,104 @@ paths:
           description: ''
           schema:
             $ref: '#/definitions/client'
+      tags:
+        - authentication
+
+  /countries:
+    get:
+      operationId: country_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+        - name: country_codes
+          description: An optional list of country codes
+          in: query
+          type: array
+          items:
+            type: string
+            minLength: 2
+            maxLength: 2
+          required: false
+          minItems: 1
+          collectionFormat: csv
+          uniqueItems: true
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/country'
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
+
+      tags:
+        - authentication
+
+  /countries/{country_code}:
+    parameters:
+      - $ref: '#/parameters/country_code'
+    get:
+      operationId: country_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/country'
+      tags:
+        - authentication
+
+  /organisational_units:
+    get:
+      operationId: organisational_unit_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+        - name: organisational_unit_ids
+          description: An optional list of organisational unit ids
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+          minItems: 1
+          collectionFormat: csv
+          uniqueItems: true
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/organisational_unit'
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
+
+      tags:
+        - authentication
+
+  /organisational_units/{organisational_unit_id}:
+    parameters:
+      - $ref: '#/parameters/organisational_unit_id'
+    get:
+      operationId: organisational_unit_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/organisational_unit'
       tags:
         - authentication
 
@@ -682,13 +863,27 @@ paths:
             format: uuid
           required: false
           minItems: 0
-          collectionFormat: multi
+          collectionFormat: csv
+          uniqueItems: true
+        - name: site_ids
+          description: An optional list of site ids
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+          minItems: 0
+          collectionFormat: csv
           uniqueItems: true
       produces:
         - application/json
       responses:
         '200':
           description: ''
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
           schema:
             type: array
             items:

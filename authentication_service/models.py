@@ -17,6 +17,7 @@ GENDER_CHOICES = (
     ("other", _("Other"))
 )
 
+
 class AutoQueryField(models.TextField):
     """
     Custom field to populate concatenated query field.
@@ -40,6 +41,7 @@ class AutoQueryField(models.TextField):
             return value
         else:
             return super(AutoQueryField, self).pre_save(model_instance, add)
+
 
 class TrigramIndex(GinIndex):
     """
@@ -144,6 +146,20 @@ class CoreUser(AbstractUser):
         ]
 
 
+class UserSite(models.Model):
+    user = models.ForeignKey("CoreUser")
+    site_id = models.IntegerField()
+    consented_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["user", "site_id"]
+        indexes = [
+            models.Index(fields=["site_id"]),
+        ]
+
+
 class Country(models.Model):
     code = models.CharField(max_length=2, primary_key=True)
     name = models.CharField(blank=True, null=True, max_length=100)
@@ -152,7 +168,7 @@ class Country(models.Model):
         verbose_name_plural = _("Countries")
 
     def __str__(self):
-        return "%s - %s" % (self.code, self.name)
+        return self.name
 
 
 class UserSecurityQuestion(models.Model):
@@ -205,3 +221,6 @@ class OrganisationalUnit(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name

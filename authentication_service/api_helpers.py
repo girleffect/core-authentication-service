@@ -33,25 +33,36 @@ def is_site_active(client):
     )
 
 
-def get_user_site_data(user_id, client_id):
+def get_site_for_client(client_id):
+    """
+    Return the id of the Site linked to the Client identified by client_id.
+    :param client_id: The Client ID
+    :return:  The Site ID
+    """
+    try:
+        sites = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
+        if len(sites) == 1:  # It is not necessary to check if the site is active.
+            return sites[0].id
+
+        raise exceptions.ImproperlyConfigured(
+            f"Site for client.id ({client_id}) not found."
+        )
+    except ApiException as e:
+        raise e
+
+
+def get_user_site_data(user_id, site_id):
     # API clients require uuid as a string.
     user_id = str(user_id)
 
-    # Get the site. Client id is unique on access-control
-    sites = settings.ACCESS_CONTROL_API.site_list(client_id=client_id)
-    if len(sites) == 1:  # It is not necessary to check if the site is active.
-        site_id = sites[0].id
-        try:
-            site_data = settings.USER_DATA_STORE_API.usersitedata_read(str(user_id), site_id)
-        except ApiException as e:
-            if e.status == 404:
-                site_data = create_user_site_data(user_id, site_id)
-            else:
-                raise e
-        return site_data
-    raise exceptions.ImproperlyConfigured(
-        f"Site for client.id ({client_id}) not found."
-    )
+    try:
+        site_data = settings.USER_DATA_STORE_API.usersitedata_read(str(user_id), site_id)
+    except ApiException as e:
+        if e.status == 404:
+            site_data = create_user_site_data(user_id, site_id)
+        else:
+            raise e
+    return site_data
 
 
 def get_user_site_role_labels_aggregated(user_id, client_id):

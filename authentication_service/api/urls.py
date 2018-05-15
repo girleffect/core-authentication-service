@@ -11,6 +11,10 @@ import authentication_service.api.views as views
 urlpatterns = [
     url(r"^users/(?P<user_id>.+)$", views.UsersUserId.as_view()),
     url(r"^users$", views.Users.as_view()),
+    url(r"^organisational_units/(?P<organisational_unit_id>.+)$", views.OrganisationalUnitsOrganisationalUnitId.as_view()),
+    url(r"^organisational_units$", views.OrganisationalUnits.as_view()),
+    url(r"^countries/(?P<country_code>.+)$", views.CountriesCountryCode.as_view()),
+    url(r"^countries$", views.Countries.as_view()),
     url(r"^clients/(?P<client_id>.+)$", views.ClientsClientId.as_view()),
     url(r"^clients$", views.Clients.as_view()),
 ]
