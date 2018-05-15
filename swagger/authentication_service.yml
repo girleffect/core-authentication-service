@@ -614,7 +614,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/client'
-
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
       tags:
         - authentication
 
@@ -660,6 +663,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/country'
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
 
       tags:
         - authentication
@@ -704,6 +711,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/organisational_unit'
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
 
       tags:
         - authentication
