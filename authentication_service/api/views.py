@@ -460,6 +460,10 @@ class Users(View):
             "msisdn_verified": {
                 "type": "boolean"
             },
+            "organisational_unit_id": {
+                "readOnly": true,
+                "type": "integer"
+            },
             "updated_at": {
                 "format": "date-time",
                 "readOnly": true,
@@ -838,6 +842,10 @@ class __SWAGGER_SPEC__(View):
                 },
                 "msisdn_verified": {
                     "type": "boolean"
+                },
+                "organisational_unit_id": {
+                    "readOnly": true,
+                    "type": "integer"
                 },
                 "updated_at": {
                     "format": "date-time",

@@ -198,6 +198,10 @@ user = json.loads("""
         "msisdn_verified": {
             "type": "boolean"
         },
+        "organisational_unit_id": {
+            "readOnly": true,
+            "type": "integer"
+        },
         "updated_at": {
             "format": "date-time",
             "readOnly": true,
