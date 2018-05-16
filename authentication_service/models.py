@@ -159,6 +159,9 @@ class UserSite(models.Model):
             models.Index(fields=["site_id"]),
         ]
 
+    def __str__(self):
+        return f"{self.user} - {self.site_id}"
+
 
 class Country(models.Model):
     code = models.CharField(max_length=2, primary_key=True)
