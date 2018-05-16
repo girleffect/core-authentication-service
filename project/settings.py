@@ -78,7 +78,10 @@ ADDITIONAL_APPS = [
 ]
 
 # Project app has to be first in the list.
-INSTALLED_APPS = ["authentication_service", "authentication_service.tests"] + INSTALLED_APPS + ADDITIONAL_APPS
+INSTALLED_APPS = [
+    "authentication_service",
+    "authentication_service.user_migration"
+] + INSTALLED_APPS + ADDITIONAL_APPS
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
