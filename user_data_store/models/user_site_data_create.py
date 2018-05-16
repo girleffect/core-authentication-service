@@ -33,35 +33,25 @@ class UserSiteDataCreate(object):
     swagger_types = {
         'user_id': 'str',
         'site_id': 'int',
-        'consented_at': 'datetime',
-        'blocked': 'bool',
         'data': 'object'
     }
 
     attribute_map = {
         'user_id': 'user_id',
         'site_id': 'site_id',
-        'consented_at': 'consented_at',
-        'blocked': 'blocked',
         'data': 'data'
     }
 
-    def __init__(self, user_id=None, site_id=None, consented_at=None, blocked=None, data=None):  # noqa: E501
+    def __init__(self, user_id=None, site_id=None, data=None):  # noqa: E501
         """UserSiteDataCreate - a model defined in Swagger"""  # noqa: E501
 
         self._user_id = None
         self._site_id = None
-        self._consented_at = None
-        self._blocked = None
         self._data = None
         self.discriminator = None
 
         self.user_id = user_id
         self.site_id = site_id
-        if consented_at is not None:
-            self.consented_at = consented_at
-        if blocked is not None:
-            self.blocked = blocked
         self.data = data
 
     @property
@@ -109,48 +99,6 @@ class UserSiteDataCreate(object):
             raise ValueError("Invalid value for `site_id`, must not be `None`")  # noqa: E501
 
         self._site_id = site_id
-
-    @property
-    def consented_at(self):
-        """Gets the consented_at of this UserSiteDataCreate.  # noqa: E501
-
-
-        :return: The consented_at of this UserSiteDataCreate.  # noqa: E501
-        :rtype: datetime
-        """
-        return self._consented_at
-
-    @consented_at.setter
-    def consented_at(self, consented_at):
-        """Sets the consented_at of this UserSiteDataCreate.
-
-
-        :param consented_at: The consented_at of this UserSiteDataCreate.  # noqa: E501
-        :type: datetime
-        """
-
-        self._consented_at = consented_at
-
-    @property
-    def blocked(self):
-        """Gets the blocked of this UserSiteDataCreate.  # noqa: E501
-
-
-        :return: The blocked of this UserSiteDataCreate.  # noqa: E501
-        :rtype: bool
-        """
-        return self._blocked
-
-    @blocked.setter
-    def blocked(self, blocked):
-        """Sets the blocked of this UserSiteDataCreate.
-
-
-        :param blocked: The blocked of this UserSiteDataCreate.  # noqa: E501
-        :type: bool
-        """
-
-        self._blocked = blocked
 
     @property
     def data(self):
