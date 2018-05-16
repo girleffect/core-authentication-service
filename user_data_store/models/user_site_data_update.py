@@ -31,73 +31,21 @@ class UserSiteDataUpdate(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'consented_at': 'datetime',
-        'blocked': 'bool',
         'data': 'object'
     }
 
     attribute_map = {
-        'consented_at': 'consented_at',
-        'blocked': 'blocked',
         'data': 'data'
     }
 
-    def __init__(self, consented_at=None, blocked=None, data=None):  # noqa: E501
+    def __init__(self, data=None):  # noqa: E501
         """UserSiteDataUpdate - a model defined in Swagger"""  # noqa: E501
 
-        self._consented_at = None
-        self._blocked = None
         self._data = None
         self.discriminator = None
 
-        if consented_at is not None:
-            self.consented_at = consented_at
-        if blocked is not None:
-            self.blocked = blocked
         if data is not None:
             self.data = data
-
-    @property
-    def consented_at(self):
-        """Gets the consented_at of this UserSiteDataUpdate.  # noqa: E501
-
-
-        :return: The consented_at of this UserSiteDataUpdate.  # noqa: E501
-        :rtype: datetime
-        """
-        return self._consented_at
-
-    @consented_at.setter
-    def consented_at(self, consented_at):
-        """Sets the consented_at of this UserSiteDataUpdate.
-
-
-        :param consented_at: The consented_at of this UserSiteDataUpdate.  # noqa: E501
-        :type: datetime
-        """
-
-        self._consented_at = consented_at
-
-    @property
-    def blocked(self):
-        """Gets the blocked of this UserSiteDataUpdate.  # noqa: E501
-
-
-        :return: The blocked of this UserSiteDataUpdate.  # noqa: E501
-        :rtype: bool
-        """
-        return self._blocked
-
-    @blocked.setter
-    def blocked(self, blocked):
-        """Sets the blocked of this UserSiteDataUpdate.
-
-
-        :param blocked: The blocked of this UserSiteDataUpdate.  # noqa: E501
-        :type: bool
-        """
-
-        self._blocked = blocked
 
     @property
     def data(self):

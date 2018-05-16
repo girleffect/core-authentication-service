@@ -114,7 +114,7 @@ swagger-codegen-cli-$(CODEGEN_VERSION).jar:
 	# We use the development snapshot until the 2.4.0 release is actually made.
 	# The previous version (2.3.1) contains bugs which have been fixed, but not released.
 	# Once 2.4.0 is officially released, we can download the non-SNAPSHOT version.
-	curl https://oss.sonatype.org/content/repositories/snapshots/io/swagger/swagger-codegen-cli/$(CODEGEN_VERSION)-SNAPSHOT/swagger-codegen-cli-$(CODEGEN_VERSION)-20180411.010038-223.jar -o swagger-codegen-cli-$(CODEGEN_VERSION).jar
+	curl https://oss.sonatype.org/content/repositories/snapshots/io/swagger/swagger-codegen-cli/$(CODEGEN_VERSION)-SNAPSHOT/swagger-codegen-cli-$(CODEGEN_VERSION)-20180511.013033-251.jar -o swagger-codegen-cli-$(CODEGEN_VERSION).jar
 
 swagger/user_data_store.yml:
 	curl https://raw.githubusercontent.com/girleffect/core-user-data-store/develop/swagger/user_data_store.yml -o swagger/user_data_store.yml

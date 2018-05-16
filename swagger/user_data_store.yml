@@ -182,13 +182,8 @@ definitions:
         format: uuid
       site_id:
         type: integer
-      consented_at:
-        type: string
-        format: 'date-time'
       data:
         type: object
-      blocked:
-        type: boolean
       created_at:
         type: string
         format: date-time
@@ -200,8 +195,6 @@ definitions:
     required:
       - user_id
       - site_id
-      - consented_at
-      - blocked
       - data
       - created_at
       - updated_at
@@ -214,11 +207,6 @@ definitions:
         format: uuid
       site_id:
         type: integer
-      consented_at:
-        type: string
-        format: 'date-time'
-      blocked:
-        type: boolean
       data:
         type: object
     required:
@@ -229,11 +217,6 @@ definitions:
   user_site_data_update:
     type: object
     properties:
-      consented_at:
-        type: string
-        format: 'date-time'
-      blocked:
-        type: boolean
       data:
         type: object
     minProperties: 1
