@@ -3,8 +3,6 @@ from django.db import models
 
 
 class TemporaryMigrationUserStore(models.Model):
-    # TODO needs client/app ids to filter on.
-    USERNAME_FIELD = 'username'
     username = models.CharField(
         "username",
         max_length=150,

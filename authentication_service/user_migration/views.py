@@ -35,28 +35,27 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
         " subclassed."
     )
     def dispatch(self, *args, **kwargs):
-        # TODO should store data on session storeage not self.
         self.token = self.kwargs["token"]
-        # TODO pass along and store on wizard session
-        # self.next = 
 
+        # Grab the query early, for use in the event the token has expired
+        query = self.request.GET.get("persist_query", None)
+
+        # Check if token has expired
         try:
             self.temp_id = signing.loads(
                 self.token,
                 salt="ge-migration-user-registration",
-                max_age=900 # 15 min in seconds
+                max_age=15*360 # 15 min in seconds
             )
         except signing.SignatureExpired:
             messages.error(
                 self.request,
                 _("Migration url has expired, please login again.")
             )
-            # TODO pass next along and add next back in here.
-            return HttpResponseRedirect(reverse("login"))
+            return redirect(self.get_login_url(query=query))
 
-        # Super sets up storage.
+        # Super sets up storage, needs to happen after token has been checked
         dispatch = super(MigrateUserWizard, self).dispatch(*args, **kwargs)
-        query = self.request.GET.get("persist_query", None)
 
         # Wizard querystrings get stripped, this will ovalidate true once.
         # Change get_step_url to persist querystrings.
@@ -108,11 +107,14 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             data["user_id"] = user.id
             data["language_code"] = self.language
             question = models.UserSecurityQuestion.objects.create(**data)
+
+        # Delete temporary migration data
         self.get_user_data.delete()
+
+        # Log new user in, allows for normal login flow to continue after
+        # redirect
         login(self.request, user)
-        query = self.storage.extra_data.get("persist_query", None)
-        next_query = f"?next={query}" if query is not None else ""
-        return redirect(f"{reverse('login')}{next_query}")
+        return self.get_login_url()
 
     @cached_property
     def get_user_data(self):
@@ -125,3 +127,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
                 f"Migrating user with id {self.temp_id} does not exist."
             )
 
+    def get_login_url(self, query=None):
+        query = self.storage.extra_data.get("persist_query", query)
+        next_query = f"?next={query}" if query is not None else ""
+        return redirect(f"{reverse('login')}{next_query}")

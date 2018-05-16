@@ -4,7 +4,7 @@ from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUserna
 from django.utils import six
 from django.utils.translation import ugettext as _
 
-# Lifted Django user model validator.
+# Lifted from Django user model validator.
 USERNAME_VALIDATOR = (UnicodeUsernameValidator()
     if six.PY3 else ASCIIUsernameValidator()
 )
@@ -45,8 +45,8 @@ class UserDataForm(forms.Form):
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError(
-                self.error_messages['password_mismatch'],
-                code='password_mismatch',
+                self.error_messages["password_mismatch"],
+                code="password_mismatch",
             )
         if len(password2) < 4:
             raise forms.ValidationError(

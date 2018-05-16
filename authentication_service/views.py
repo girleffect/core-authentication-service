@@ -144,12 +144,10 @@ class LoginView(core.LoginView):
                     username = form.cleaned_data["username"]
                     password = form.cleaned_data["password"]
                     try:
-                        # TODO filters to update as we have finalised fields
                         user = TemporaryMigrationUserStore.objects.get(
                             username=username
                         )
 
-                        # TODO build initial value as needed, can't assume id
                         token = signing.dumps(
                             user.id, salt="ge-migration-user-registration"
                         )
