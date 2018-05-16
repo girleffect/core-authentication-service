@@ -16,7 +16,9 @@ from defender.utils import unblock_username
 from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 
-from authentication_service.tests.models import TemporaryUserStore
+from authentication_service.user_migration.models import (
+    TemporaryMigrationUserStore
+)
 
 
 class TestLogin(TestCase):
@@ -64,7 +66,7 @@ class TestLogin(TestCase):
 
     def test_migrated_user_login(self):
         # TODO move import and data creation once finalised.
-        temp_user = TemporaryUserStore.objects.create(
+        temp_user = TemporaryMigrationUserStore.objects.create(
             username="migrateduser",
             app_id=1,
             site_id=1,
@@ -113,7 +115,7 @@ class TestMigration(TestCase):
     @classmethod
     def setUpTestData(cls):
         super(TestMigration, cls).setUpTestData()
-        cls.temp_user = TemporaryUserStore.objects.create(
+        cls.temp_user = TemporaryMigrationUserStore.objects.create(
             username="coolmigrateduser",
             app_id=1,
             site_id=1,
@@ -159,7 +161,7 @@ class TestMigration(TestCase):
         self.assertEqual(
             response.context["wizard"]["form"].errors,
             {"username": ["This field is required."],
-            'age': ["This field is required."],
+            "age": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."]
             }
@@ -306,7 +308,7 @@ class TestMigration(TestCase):
             2
         )
         self.assertEqual(
-            TemporaryUserStore.objects.filter(
+            TemporaryMigrationUserStore.objects.filter(
                 username="coolmigrateduser").count(),
             0
         )
@@ -326,7 +328,7 @@ class TestMigration(TestCase):
         )
 
     def test_migration_redirect_persist(self):
-        temp_user = TemporaryUserStore.objects.create(
+        temp_user = TemporaryMigrationUserStore.objects.create(
             username="newmigratedsupercooluser",
             app_id=1,
             site_id=1,

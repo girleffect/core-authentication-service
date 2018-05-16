@@ -27,6 +27,8 @@ from two_factor.urls import urlpatterns as two_factor_patterns
 from two_factor.views import ProfileView
 
 from authentication_service import views
+
+
 urlpatterns = [
     url(r'^i18n/', include('django.conf.urls.i18n')),
     # API URL's
@@ -36,9 +38,6 @@ urlpatterns = [
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
 ]
 
-migration_wizard = views.MigrateUserWizard.as_view(
-    url_name="migrate_user_step"
-)
 urlpatterns += i18n_patterns(
     url(
         r"^static/(?P<path>.*)$",
@@ -58,14 +57,6 @@ urlpatterns += i18n_patterns(
             query_string=True
         )
     ),
-
-    # Migrate user wizard
-    url(
-        r"^migrate/(?P<token>[\w:-]+)/(?P<step>.+)/$",
-        migration_wizard,
-        name="migrate_user_step"
-    ),
-    url(r"^migrate/(?P<token>[\w:-]+)/$", migration_wizard, name="migrate_user"),
 
     # Generic redirect issue
     url(
@@ -151,4 +142,11 @@ urlpatterns += i18n_patterns(
     ),
 
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
+
+    # Include the migration app
+    url(r"^user-migration/", include(
+            "authentication_service.user_migration.urls",
+            namespace="user_migration"
+        )
+    )
 )

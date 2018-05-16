@@ -2,7 +2,6 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from defender.decorators import watch_login
-from formtools.wizard.views import NamedUrlSessionWizardView
 
 from django.conf import settings
 from django.contrib import messages
@@ -23,7 +22,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
-from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext as _
 from django.views.generic import View, TemplateView
@@ -35,10 +33,11 @@ from two_factor.utils import default_device
 from two_factor.views import core
 
 from authentication_service import forms, models, tasks, constants
+from authentication_service.decorators import generic_deprecation
 from authentication_service.forms import LoginForm
 
-# TODO REPLACE
-from authentication_service.tests.models import TemporaryUserStore
+# TODO catch import error
+from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 
 REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
@@ -120,6 +119,11 @@ class LoginView(core.LoginView):
         ("backup", BackupTokenForm),
     )
 
+    @generic_deprecation(
+        "authentication_service.views.LoginView: def post(); makes use of" \
+        " models and urls found in 'authentication_service.user_migration'." \
+        " The app is temporary and will be removed."
+    )
     def post(self, *args, **kwargs):
         # Short circuit normal login flow as needed to migrate old existing
         # users.
@@ -141,7 +145,9 @@ class LoginView(core.LoginView):
                     password = form.cleaned_data["password"]
                     try:
                         # TODO filters to update as we have finalised fields
-                        user = TemporaryUserStore.objects.get(username=username)
+                        user = TemporaryMigrationUserStore.objects.get(
+                            username=username
+                        )
 
                         # TODO build initial value as needed, can't assume id
                         token = signing.dumps(
@@ -153,12 +159,14 @@ class LoginView(core.LoginView):
                         if user.check_password(password):
                             querystring = self.request.GET.get("next", "")
                             url = reverse(
-                                "migrate_user", kwargs={"token": token}
+                                "user_migration:migrate_user", kwargs={
+                                    "token": token
+                                }
                             )
                             return redirect(
                                 f"{url}?persist_query={querystring}"
                             )
-                    except TemporaryUserStore.DoesNotExist:
+                    except TemporaryMigrationUserStore.DoesNotExist:
                         # Let login fail as usual
                         pass
         return super(LoginView, self).post(*args, **kwargs)
@@ -510,106 +518,3 @@ ResetPasswordSecurityQuestionsView.dispatch = watch_login_method(
 
 class PasswordResetConfirmView(PasswordResetConfirmView):
     form_class = forms.SetPasswordForm
-
-
-migration_forms = (
-    ("userdata", forms.UserDataForm),
-    ("securityquestions", forms.SecurityQuestionFormSet),
-)
-class MigrateUserWizard(LanguageMixin, NamedUrlSessionWizardView):
-    form_list = migration_forms
-    instance_dict = {
-        "securityquestions": models.SecurityQuestion.objects.none()
-    }
-
-    def dispatch(self, *args, **kwargs):
-        # TODO should store data on session storeage not self.
-        self.token = self.kwargs["token"]
-        # TODO pass along and store on wizard session
-        # self.next = 
-
-        try:
-            self.temp_id = signing.loads(
-                self.token,
-                salt="ge-migration-user-registration",
-                max_age=900 # 15 min in seconds
-            )
-        except signing.SignatureExpired:
-            messages.error(
-                self.request,
-                _("Migration url has expired, please login again.")
-            )
-            # TODO pass next along and add next back in here.
-            return HttpResponseRedirect(reverse("login"))
-
-        # Super sets up storage.
-        dispatch = super(MigrateUserWizard, self).dispatch(*args, **kwargs)
-        query = self.request.GET.get("persist_query", None)
-
-        # Wizard querystrings get stripped, this will ovalidate true once.
-        # Change get_step_url to persist querystrings.
-        if query:
-            self.storage.extra_data["persist_query"] = query
-        return dispatch
-
-    def get_step_url(self, step):
-        return reverse(
-            self.url_name,
-            kwargs={
-                "token": self.token,
-                "step": step
-            }
-        )
-
-    def get_form_kwargs(self, step=None):
-        kwargs = {}
-        if step == "securityquestions":
-            kwargs["language"] = self.language
-        return kwargs
-
-    def get_form_initial(self, step):
-        if step == "userdata":
-            return {
-                "username": self.get_user_data.username
-            }
-        return self.initial_dict.get(step, {})
-
-    def done(self, form_list, **kwargs):
-        cleaned_data = self.get_all_cleaned_data()
-        user = get_user_model().objects.create_user(
-            username=cleaned_data["username"],
-            birth_date = date.today() - relativedelta(
-                years=cleaned_data["age"]
-            ),
-            password=cleaned_data["password2"],
-            migration_data = {
-                "app_id": self.get_user_data.app_id,
-                "site_id": self.get_user_data.site_id,
-                "user_id": self.get_user_data.user_id,
-                "username": self.get_user_data.username
-            }
-        )
-        for form_data in cleaned_data["formset-securityquestions"]:
-            # All fields on model are required, as such it requires the
-            # full set of data.
-            data = form_data
-            data["user_id"] = user.id
-            data["language_code"] = self.language
-            question = models.UserSecurityQuestion.objects.create(**data)
-        self.get_user_data.delete()
-        login(self.request, user)
-        query = self.storage.extra_data.get("persist_query", None)
-        next_query = f"?next={query}" if query is not None else ""
-        return HttpResponseRedirect(f"{reverse('login')}{next_query}")
-
-    @cached_property
-    def get_user_data(self):
-        try:
-            return TemporaryUserStore.objects.get(
-                id=self.temp_id
-            )
-        except TemporaryUserStore.DoesNotExist:
-            raise Http404(
-                f"Migrating user with id {self.temp_id} does not exist."
-            )
-

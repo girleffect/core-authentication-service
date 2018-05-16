@@ -1,8 +1,5 @@
 from django.contrib.auth.backends import ModelBackend
 
-#from authentication_service.models import TemporaryUserStore
-from authentication_service.tests.models import TemporaryUserStore
-
 
 class GirlEffectAuthBackend(ModelBackend):
 
