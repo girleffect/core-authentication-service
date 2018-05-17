@@ -174,12 +174,10 @@ class RegistrationView(LanguageRedirectMixin, CreateView):
         # Let the user model save.
         response = super(RegistrationView, self).form_valid(form)
 
-        # When we need to show the option to enable 2FA the newly created
-        # user must be logged in.
-        if self.security == "high" or self.request.GET.get("show2fa") == "true":
-            new_user = authenticate(username=form.cleaned_data['username'],
-                                    password=form.cleaned_data['password1'])
-            login(self.request, new_user)
+        # GE-1065 requires ALL users to be logged in
+        new_user = authenticate(username=form.cleaned_data["username"],
+                                password=form.cleaned_data["password1"])
+        login(self.request, new_user)
 
         # Do some work and assign questions to the user.
         for form in formset.forms:
