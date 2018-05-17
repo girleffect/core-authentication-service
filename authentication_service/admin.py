@@ -28,8 +28,15 @@ class SecurityQuestionForm(admin.ModelAdmin):
     ]
 
 
+class UserSiteAdmin(admin.ModelAdmin):
+    fields = ["user", "site_id", "consented_at", "created_at", "updated_at"]
+    readonly_fields = ["consented_at", "created_at", "updated_at"]
+    list_display = fields
+
+
 admin.site.register(models.Country, admin.ModelAdmin)
 admin.site.register(models.UserSecurityQuestion, admin.ModelAdmin)
 admin.site.register(models.SecurityQuestion, SecurityQuestionForm)
 admin.site.register(models.QuestionLanguageText, admin.ModelAdmin)
 admin.site.register(models.OrganisationalUnit, admin.ModelAdmin)
+admin.site.register(models.UserSite, UserSiteAdmin)
