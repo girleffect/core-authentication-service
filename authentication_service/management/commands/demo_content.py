@@ -151,7 +151,7 @@ class Command(BaseCommand):
                 schema = settings.USER_DATA_STORE_API.sitedataschema_create(
                     data={
                         "site_id": site.id,
-                        "schema": {"type": "data"}
+                        "schema": {"type": "object"}
                     })
                 self.stdout.write(
                     self.style.SUCCESS(f"Created schema for {site.name}..."))
