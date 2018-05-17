@@ -67,18 +67,23 @@ class TestLockout(TestCase):
     def setUpClass(cls):
         super(TestLockout, cls).setUpClass()
         cls.client = Client()
+        cls.user = get_user_model().objects.create_user(
+            username="user_{}".format(random.randint(0, 10000)),
+            password="password",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.save()
 
     def setUp(self):
         super(TestLockout, self).setUp()
         self.client = Client()
 
     def test_lockout(self):
-        username = "unknown_user_{}".format(random.randint(0, 10000))
         login_url = reverse("login")
         login_data = {
             "login_view-current_step": "auth",
-            "auth-username": username,
-            "auth-password": "anything"
+            "auth-username": self.user.username,
+            "auth-password": "wrongpassword"
         }
         allowed_attempts = settings.DEFENDER_LOGIN_FAILURE_LIMIT
         attempt = 0
@@ -97,14 +102,20 @@ class TestLockout(TestCase):
                          ["authentication_service/lockout.html",
                           "base.html"])
 
+        # Even using the proper password, the user will still be blocked.
+        login_data["auth-password"] = "password"
+        self.client.get(login_url)
+        response = self.client.post(login_url, login_data, follow=True)
+        self.assertEqual([template.name for template in response.templates],
+                         ["authentication_service/lockout.html",
+                          "base.html"])
+
         # Manually unblock the username. This allows the user to try again.
-        unblock_username(username)
+        unblock_username(self.user.username)
 
         self.client.get(login_url)
         response = self.client.post(login_url, login_data)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("authentication_service/login.html",
-                      response.template_name)
+        self.assertEqual(response.status_code, 302)
 
 
 class TestSecurityQuestionLockout(TestCase):
