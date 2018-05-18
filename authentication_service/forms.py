@@ -250,7 +250,7 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 
         # Question field, queryset.
         self.question_queryset = kwargs.pop(
-            "querstion_queryset", None
+            "question_queryset", None
         )
         self.language = language
         super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)

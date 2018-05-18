@@ -9,3 +9,4 @@ class AuthAppConfig(AppConfig):
 
     def ready(self):
         Field.register_lookup(lookups.Ilike)
+

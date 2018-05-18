@@ -16,6 +16,10 @@ from defender.utils import unblock_username
 from authentication_service.models import SecurityQuestion, \
     UserSecurityQuestion
 
+from authentication_service.user_migration.models import (
+    TemporaryMigrationUserStore
+)
+
 
 class TestLogin(TestCase):
 
@@ -59,6 +63,327 @@ class TestLogin(TestCase):
             follow=True
         )
         self.assertRedirects(response, "{}?next=%2Fen%2Fadmin%2F".format(reverse("login")))
+
+    def test_migrated_user_login(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="migrateduser",
+            app_id=1,
+            site_id=1,
+            user_id=1
+        )
+        temp_user.set_password("Qwer!234")
+
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+        response = self.client.post(
+            reverse("login"),
+            data=data,
+            follow=True
+        )
+        self.assertIn(
+            "/migrate/",
+            response.redirect_chain[-1][0],
+        )
+        self.assertIn(
+            "/userdata/",
+            response.redirect_chain[-1][0],
+        )
+        self.assertEqual(
+            response.redirect_chain[-1][1],
+            302,
+        )
+
+
+class TestMigration(TestCase):
+    """
+    Test urls can be handled a bit better, however this was the fastest way
+    to refactor the existing tests.
+    """
+
+    # Wizard helper methods
+    def do_login(self, data):
+        return self.client.post(
+            reverse("login"),
+            data=data,
+            follow=True
+        )
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestMigration, cls).setUpTestData()
+        cls.temp_user = TemporaryMigrationUserStore.objects.create(
+            username="coolmigrateduser",
+            app_id=3,
+            site_id=3,
+            user_id=3
+        )
+        cls.temp_user.set_password("Qwer!234")
+        cls.user = get_user_model().objects.create_user(
+            username="existinguser",
+            email="existing@email.com",
+            birth_date=datetime.date(2001, 1, 1),
+            password="Qwer!234"
+        )
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+    def test_userdata_step(self):
+        # Login and get the response url
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": self.temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+
+        response = self.do_login(data)
+        # Default required
+        data = {
+            "migrate_user_wizard-current_step": "userdata"
+        }
+
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            data=data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["wizard"]["steps"].current, "userdata"
+        )
+        self.assertEqual(
+            response.context["wizard"]["form"].errors,
+            {"username": ["This field is required."],
+            "age": ["This field is required."],
+            "password1": ["This field is required."],
+            "password2": ["This field is required."]
+            }
+        )
+
+        # Username unique
+        data = {
+            "migrate_user_wizard-current_step": "userdata",
+            "userdata-username": self.user.username,
+            "userdata-age": 20,
+            "userdata-password1": "asdasd",
+            "userdata-password2": "asdasd"
+        }
+        response = self.client.post(
+            response._request.path,
+            data=data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["wizard"]["steps"].current, "userdata"
+        )
+        self.assertEqual(
+            response.context["wizard"]["form"].errors,
+            {"username": ["A user with that username already exists."]}
+        )
+        self.assertContains(
+            response, "A user with that username already exists."
+        )
+
+    def test_securityquestion_step(self):
+        # Login and get the response url
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": self.temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+
+        response = self.do_login(data)
+        # Username unique
+        data = {
+            "migrate_user_wizard-current_step": "userdata",
+            "userdata-username": "newusername",
+            "userdata-age": 20,
+            "userdata-password1": "asdasd",
+            "userdata-password2": "asdasd"
+        }
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            data=data,
+        )
+        response = self.client.get(response.url)
+        data = {
+            "migrate_user_wizard-current_step": "securityquestions",
+            "securityquestions-TOTAL_FORMS": 2,
+            "securityquestions-INITIAL_FORMS": 0,
+            "securityquestions-MIN_NUM_FORMS": 0,
+            "securityquestions-MAX_NUM_FORMS": 1000,
+        }
+        response = self.client.post(
+            response._request.path,
+            data=data,
+        )
+
+        self.assertEqual(
+            response.context["wizard"]["form"].non_form_errors(),
+            ["Please fill in all Security Question fields."]
+        )
+        self.assertContains(
+            response, "Please fill in all Security Question fields."
+        )
+
+        data = {
+            "migrate_user_wizard-current_step": "securityquestions",
+            "securityquestions-TOTAL_FORMS": 2,
+            "securityquestions-INITIAL_FORMS": 0,
+            "securityquestions-MIN_NUM_FORMS": 0,
+            "securityquestions-MAX_NUM_FORMS": 1000,
+            "securityquestions-0-question": self.question_one.id,
+            "securityquestions-0-answer": "Answer1",
+            "securityquestions-1-question": self.question_one.id,
+            "securityquestions-1-answer": "Answer2"
+        }
+        response = self.client.post(
+            response._request.path,
+            data=data,
+        )
+        self.assertEqual(
+            response.context["wizard"]["form"].non_form_errors(),
+            ["Each question can only be picked once."]
+        )
+        self.assertContains(
+            response, "Each question can only be picked once."
+        )
+
+    def test_migration_step(self):
+        # Login and get the response url
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": self.temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+
+        response = self.do_login(data)
+        # Username unique
+        data = {
+            "migrate_user_wizard-current_step": "userdata",
+            "userdata-username": "newusername",
+            "userdata-age": 20,
+            "userdata-password1": "asdasd",
+            "userdata-password2": "asdasd"
+        }
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            data=data,
+            follow=True
+        )
+        data = {
+            "migrate_user_wizard-current_step": "securityquestions",
+            "securityquestions-TOTAL_FORMS": 2,
+            "securityquestions-INITIAL_FORMS": 0,
+            "securityquestions-MIN_NUM_FORMS": 0,
+            "securityquestions-MAX_NUM_FORMS": 1000,
+            "securityquestions-0-question": self.question_one.id,
+            "securityquestions-0-answer": "Answer1",
+            "securityquestions-1-question": self.question_two.id,
+            "securityquestions-1-answer": "Answer2"
+        }
+        self.assertEqual(get_user_model().objects.filter(
+            username=self.temp_user.username).count(), 0
+        )
+        response = self.client.post(
+            response._request.path,
+            data=data,
+            follow=True
+        )
+        self.assertRedirects(response, reverse("login"))
+        self.assertEqual(get_user_model().objects.filter(
+            username="newusername").count(), 1
+        )
+        self.assertEqual(
+            get_user_model().objects.get(
+                username="newusername").usersecurityquestion_set.all().count(),
+            2
+        )
+        self.assertEqual(
+            TemporaryMigrationUserStore.objects.filter(
+                username="coolmigrateduser").count(),
+            0
+        )
+        self.assertEqual(
+            response._request.user,
+            get_user_model().objects.get(username="newusername")
+        )
+        self.assertEqual(
+            get_user_model().objects.get(username="newusername").migration_data,
+            {
+                "app_id": 3,
+                "site_id": 3,
+                "user_id": 3,
+                "username": "coolmigrateduser"
+            }
+
+        )
+
+    def test_migration_redirect_persist(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="newmigratedsupercooluser",
+            app_id=2,
+            site_id=2,
+            user_id=2
+        )
+        temp_user.set_password("Qwer!234")
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+        response = self.client.post(
+            f"{reverse('login')}?next=http://awesomeredirect.com/?other=none",
+            data=data,
+            follow=True
+        )
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+        data = {
+            "migrate_user_wizard-current_step": "userdata",
+            "userdata-username": "newusername",
+            "userdata-age": 20,
+            "userdata-password1": "asdasd",
+            "userdata-password2": "asdasd"
+        }
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            data=data,
+            follow=True
+        )
+        data = {
+            "migrate_user_wizard-current_step": "securityquestions",
+            "securityquestions-TOTAL_FORMS": 2,
+            "securityquestions-INITIAL_FORMS": 0,
+            "securityquestions-MIN_NUM_FORMS": 0,
+            "securityquestions-MAX_NUM_FORMS": 1000,
+            "securityquestions-0-question": self.question_one.id,
+            "securityquestions-0-answer": "Answer1",
+            "securityquestions-1-question": self.question_two.id,
+            "securityquestions-1-answer": "Answer2"
+        }
+        self.assertEqual(get_user_model().objects.filter(
+            username=self.temp_user.username).count(), 0
+        )
+        response = self.client.post(
+            response._request.path,
+            data=data,
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next=http://awesomeredirect.com/?other=none",
+        )
 
 
 class TestLockout(TestCase):

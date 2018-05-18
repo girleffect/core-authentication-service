@@ -5,6 +5,7 @@ from partial_index import PartialIndex
 from django.conf import settings
 from django.contrib.auth import hashers
 from django.contrib.auth.models import AbstractUser
+from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -93,6 +94,7 @@ class CoreUser(AbstractUser):
         ],
         null=True
     )
+    migration_data = JSONField(blank=True, default={})
 
     def __init__(self, *args, **kwargs):
         super(CoreUser, self).__init__(*args, **kwargs)

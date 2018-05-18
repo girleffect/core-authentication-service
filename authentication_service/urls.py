@@ -27,6 +27,8 @@ from two_factor.urls import urlpatterns as two_factor_patterns
 from two_factor.views import ProfileView
 
 from authentication_service import views
+
+
 urlpatterns = [
     url(r'^i18n/', include('django.conf.urls.i18n')),
     # API URL's
@@ -35,24 +37,30 @@ urlpatterns = [
     ),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
 ]
+
 urlpatterns += i18n_patterns(
     url(
         r"^static/(?P<path>.*)$",
         serve,
         {"document_root": settings.STATIC_ROOT}
     ),
+
     # Login URLs
-    url(r"^login/", views.LoginView.as_view(), name="login"),
+    url(r"^login/$", views.LoginView.as_view(), name="login"),
     # Override the login URL implicitly defined by Django Admin to redirect
     # to our login view.
     url(
-        r"^admin/login/",
-        RedirectView.as_view(pattern_name="login", permanent=True,
-                             query_string=True)
+        r"^admin/login/$",
+        RedirectView.as_view(
+            pattern_name="login",
+            permanent=True,
+            query_string=True
+        )
     ),
+
     # Generic redirect issue
     url(
-        r"^redirect-issue/",
+        r"^redirect-issue/$",
         TemplateView.as_view(
             template_name="authentication_service/redirect_issue.html"),
         name="redirect_issue"
@@ -134,4 +142,11 @@ urlpatterns += i18n_patterns(
     ),
 
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
+
+    # Include the migration app
+    url(r"^user-migration/", include(
+            "authentication_service.user_migration.urls",
+            namespace="user_migration"
+        )
+    )
 )

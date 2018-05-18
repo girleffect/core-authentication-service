@@ -18,8 +18,15 @@ AUTH_PASSWORD_VALIDATORS += [
     },
 ]
 
-AUTHENTICATION_BACKENDS = \
-    ["authentication_service.backends.GirlEffectAuthBackend"]
+AUTHENTICATION_BACKENDS = [
+    "authentication_service.backends.GirlEffectAuthBackend"
+]
+
+LOCALE_PATHS = [
+    "locale"
+]
+
+LANGUAGE_CODE = "en"
 
 # Defender options
 DEFENDER_LOGIN_FAILURE_LIMIT = 3
@@ -65,7 +72,10 @@ ADDITIONAL_APPS = [
 ]
 
 # Project app has to be first in the list.
-INSTALLED_APPS = ["authentication_service.tests", "authentication_service"] + INSTALLED_APPS + ADDITIONAL_APPS
+INSTALLED_APPS = [
+    "authentication_service.tests",
+    "authentication_service",
+    "authentication_service.user_migration"] + INSTALLED_APPS + ADDITIONAL_APPS
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
