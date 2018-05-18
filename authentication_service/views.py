@@ -157,6 +157,14 @@ class LoginView(core.LoginView):
                         # migration wizard.
                         if user.check_password(password):
                             querystring = self.request.GET.get("next", "")
+                            # '/openid/authorize/?response_type=code'
+
+                            # self.request.GET
+                            # <QueryDict: {'next': ['/openid/authorize/?response_type=code'], 'scope': ['openid profile site roles'], 'client_id': ['client_id_1'], 'redirect_uri': ['http://example.com/']}>
+
+                            #self.request.get_raw_uri()
+                            #'http://testserver/en/login/?next=/openid/authorize/?response_type=code&scope=openid+profile+site+roles&client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F'
+
                             url = reverse(
                                 "user_migration:migrate_user", kwargs={
                                     "token": token

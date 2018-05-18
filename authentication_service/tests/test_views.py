@@ -340,7 +340,8 @@ class TestMigration(TestCase):
             "auth-password": "Qwer!234"
         }
         response = self.client.post(
-            f"{reverse('login')}?next=http://awesomeredirect.com/?other=none",
+            f"{reverse('login')}?next=/openid/authorize/?response_type=code&scope=openid+profile+site+roles&client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F",
+            #?next=http://awesomeredirect.com/?other=none&scope=openid+profile+site+roles&client_id=client_id_1",
             data=data,
             follow=True
         )
@@ -382,7 +383,8 @@ class TestMigration(TestCase):
         )
         self.assertRedirects(
             response,
-            f"{reverse('login')}?next=http://awesomeredirect.com/?other=none",
+            f"{reverse('login')}?next=/openid/authorize/?response_type=code&scope=openid+profile+site+roles&client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F"
+            #?next=http://awesomeredirect.com/?other=none&scope=openid+profile+site+roles&client_id=client_id_1",
         )
 
 
