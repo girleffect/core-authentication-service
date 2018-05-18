@@ -1,0 +1,8 @@
+{% extends "authentication_service/login.html" %}
+{% load i18n static %}
+
+{% block extrastyle-feature %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/zathu.feature.css" %}" />{% endblock %}
+
+{% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/zathu.enhanced.css" %}" />{% endblock %}
+
+{% block branding %}<img src="{% static "authentication_service/images/zathu.png" %}" class="Header-branding-image">{% endblock %}
