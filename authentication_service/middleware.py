@@ -54,6 +54,9 @@ class OIDCSessionManagementMiddleware(MiddlewareMixin):
 
                 # Clear theme cookie
                 response.delete_cookie(COOKIES["ge_theme_middleware_cookie"])
+                response.delete_cookie(COOKIES["redirect_cookie"])
+                response.delete_cookie(COOKIES["redirect_client_name"])
+                response.delete_cookie(COOKIES["redirect_client_terms"])
 
         return response
 
@@ -148,13 +151,18 @@ class RedirectManagementMiddleware(MiddlewareMixin):
         # checks if (1) this is a login request and (2) if the client_id provided is
         # linked to a disabled site. If so, login is prevented by rendering a custom
         # page explaining that the site has been disabled.
+
         response = self.create_disabled_site_response(request)
         if response:
             return response
 
         uri = request.GET.get("redirect_uri", None)
 
-        if uri and request.method != "POST":
+        # To cut down on client lookups AuthorizeEndpoint does
+        validator_uri = request.session.get(EXTRA_SESSION_KEY, {}).get(
+            "redirect_uri_validation", None
+        )
+        if uri and request.method != "POST" and uri != validator_uri:
             authorize = AuthorizeEndpoint(request)
             try:
                 authorize.validate_params()
@@ -174,11 +182,15 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                     raise e
 
             self.oidc_values = authorize
-            request.session[EXTRA_SESSION_KEY] = {
-                self.client_name_key: authorize.client.name
-            }
-            request.session[EXTRA_SESSION_KEY][
-                self.client_terms_key] = authorize.client.terms_url
+            if self.oidc_values:
+                request.session[EXTRA_SESSION_KEY] = {
+                    self.client_name_key: authorize.client.name
+                }
+                request.session[EXTRA_SESSION_KEY][
+                    self.client_terms_key] = authorize.client.terms_url
+                request.session[EXTRA_SESSION_KEY] = {
+                    "redirect_uri_validation": uri
+                }
 
     def process_response(self, request, response):
         if self.oidc_values:
