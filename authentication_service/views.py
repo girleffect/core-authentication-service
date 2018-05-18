@@ -36,7 +36,6 @@ from authentication_service import forms, models, tasks, constants
 from authentication_service.decorators import generic_deprecation
 from authentication_service.forms import LoginForm
 
-# TODO catch import error
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 

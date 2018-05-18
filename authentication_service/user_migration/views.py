@@ -42,7 +42,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
 
         # Check if token has expired
         try:
-            self.temp_id = signing.loads(
+            self.migration_user_id = signing.loads(
                 self.token,
                 salt="ge-migration-user-registration",
                 max_age=15*360 # 15 min in seconds
@@ -57,8 +57,10 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
         # Super sets up storage, needs to happen after token has been checked
         dispatch = super(MigrateUserWizard, self).dispatch(*args, **kwargs)
 
-        # Wizard querystrings get stripped, this will ovalidate true once.
-        # Change get_step_url to persist querystrings.
+        # Querystrings are not persisted on wizard urls, unless work is done in
+        # get_step_url to explicitly persist them. We opted to rather
+        # store it in the wizard storage. Under those default conditions, this
+        # if statement will only ever validate true once.
         if query:
             self.storage.extra_data["persist_query"] = query
         return dispatch
@@ -120,11 +122,11 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
     def get_user_data(self):
         try:
             return TemporaryMigrationUserStore.objects.get(
-                id=self.temp_id
+                id=self.migration_user_id
             )
         except TemporaryMigrationUserStore.DoesNotExist:
             raise Http404(
-                f"Migrating user with id {self.temp_id} does not exist."
+                f"Migrating user with id {self.migration_user_id} does not exist."
             )
 
     def get_login_url(self, query=None):

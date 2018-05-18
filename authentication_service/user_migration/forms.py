@@ -34,7 +34,7 @@ class UserDataForm(forms.Form):
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
-        if get_user_model().objects.filter(username=username).count() > 0:
+        if get_user_model().objects.filter(username=username).exists():
             raise forms.ValidationError(
                 _("A user with that username already exists.")
             )
