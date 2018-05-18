@@ -4,6 +4,8 @@ from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUserna
 from django.utils import six
 from django.utils.translation import ugettext as _
 
+from authentication_service.user_migration.models import TemporaryMigrationUserStore
+
 # Lifted from Django user model validator.
 USERNAME_VALIDATOR = (UnicodeUsernameValidator()
     if six.PY3 else ASCIIUsernameValidator()
@@ -53,3 +55,16 @@ class UserDataForm(forms.Form):
                 _("Password needs to be at least 4 characters long.")
             )
         return password2
+
+
+class CreateTempUserForm(forms.ModelForm):
+    class Meta:
+        model = TemporaryMigrationUserStore
+        fields = "__all__"
+
+    def save(self, *args, **kwargs):
+        instance = super().save(*args, **kwargs)
+
+        # Instance has clear text saved at this stage, hash it
+        instance.set_password(self.instance.pw_hash)
+        return instance
