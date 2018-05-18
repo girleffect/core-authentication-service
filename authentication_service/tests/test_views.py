@@ -340,7 +340,7 @@ class TestMigration(TestCase):
             "auth-password": "Qwer!234"
         }
         response = self.client.post(
-            f"{reverse('login')}?next=/openid/authorize/?response_type=code&scope=openid+profile+site+roles&client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F",
+            f"{reverse('login')}?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%2Bprofile%2Bsite%2Broles%26client_id%3D872786%26redirect_uri%3Dhttp%253A%252F%252Fspringster-example.qa-hub.ie.gehosting.org%252Foidc%252Fcallback%252F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO%26theme%3Dspringster%26insert%3Dcustom%26parameters%3Dhere%26nonce%3DJ2RCmbLO5Tp8DDPWO07eIc3pXOx4KG0H",
             #?next=http://awesomeredirect.com/?other=none&scope=openid+profile+site+roles&client_id=client_id_1",
             data=data,
             follow=True
@@ -383,7 +383,7 @@ class TestMigration(TestCase):
         )
         self.assertRedirects(
             response,
-            f"{reverse('login')}?next=/openid/authorize/?response_type=code&scope=openid+profile+site+roles&client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F"
+            f"{reverse('login')}?next=/openid/authorize/?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%2Bprofile%2Bsite%2Broles%26client_id%3D872786%26redirect_uri%3Dhttp%253A%252F%252Fspringster-example.qa-hub.ie.gehosting.org%252Foidc%252Fcallback%252F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO%26theme%3Dspringster%26insert%3Dcustom%26parameters%3Dhere%26nonce%3DJ2RCmbLO5Tp8DDPWO07eIc3pXOx4KG0H"
             #?next=http://awesomeredirect.com/?other=none&scope=openid+profile+site+roles&client_id=client_id_1",
         )
 
