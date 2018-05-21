@@ -90,12 +90,15 @@ class TestRedirectManagementMiddleware(TestCase):
             self.client_obj.name
         )
         self.assertEquals(
-            response.client.cookies[constants.COOKIES["redirect_cookie"]].value,
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.COOKIES["redirect_cookie"]],
             "http://example.com/"
         )
         self.assertEquals(
-            response.client.cookies[
-                constants.COOKIES["redirect_client_name"]].value,
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.COOKIES["redirect_client_name"]],
             self.client_obj.name
         )
 
@@ -108,14 +111,10 @@ class TestRedirectManagementMiddleware(TestCase):
             "redirect_uri=http%3A%2F%2Fexample.com%2F"
         )
         self.assertEquals(
-            response.context["ge_global_redirect_uri"], None
+            response.context["ge_global_redirect_uri"], "http://example.com/"
         )
         self.assertEquals(
             response.context["ge_global_client_name"], self.client_obj.name
-        )
-        self.client.cookies.load(
-            {"ge_redirect_cookie": "http://example.com/",
-            "ge_oidc_client_name": self.client_obj.name}
         )
         response = self.client.get(
             reverse(
