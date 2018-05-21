@@ -1,5 +1,6 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
+import urllib
 
 from defender.decorators import watch_login
 
@@ -156,7 +157,9 @@ class LoginView(core.LoginView):
                         # If the temp user password matches, redirect to
                         # migration wizard.
                         if user.check_password(password):
-                            querystring = self.request.GET.get("next", "")
+                            querystring =  urllib.parse.quote_plus(
+                                self.request.GET.get("next", "")
+                            )
                             url = reverse(
                                 "user_migration:migrate_user", kwargs={
                                     "token": token

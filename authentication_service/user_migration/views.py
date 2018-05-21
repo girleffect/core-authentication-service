@@ -1,5 +1,6 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
+import urllib
 
 from formtools.wizard.views import NamedUrlSessionWizardView
 
@@ -131,5 +132,4 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
 
     def get_login_url(self, query=None):
         query = self.storage.extra_data.get("persist_query", query)
-        next_query = f"?next={query}" if query is not None else ""
-        return redirect(f"{reverse('login')}{next_query}")
+        return redirect(query or reverse("login"))
