@@ -1,6 +1,5 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
-import logging
 import urllib
 
 from defender.decorators import watch_login
@@ -42,7 +41,6 @@ from authentication_service.user_migration.models import TemporaryMigrationUserS
 
 
 REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
-LOGGER = logging.getLogger(__name__)
 
 
 class LanguageMixin:
@@ -127,7 +125,6 @@ class LoginView(core.LoginView):
         " The app is temporary and will be removed."
     )
     def post(self, *args, **kwargs):
-        LOGGER.debug(f"Full path: {self.request.get_full_path()}")
         # Short circuit normal login flow as needed to migrate old existing
         # users.
 
@@ -163,8 +160,6 @@ class LoginView(core.LoginView):
                             querystring =  urllib.parse.quote_plus(
                                 self.request.GET.get("next", "")
                             )
-                            LOGGER.debug(f"next querystring: {querystring}")
-                            LOGGER.debug(f"full querydict: {self.request.GET}")
                             url = reverse(
                                 "user_migration:migrate_user", kwargs={
                                     "token": token

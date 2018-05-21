@@ -1,6 +1,5 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
-import logging
 import urllib
 
 from formtools.wizard.views import NamedUrlSessionWizardView
@@ -19,8 +18,6 @@ from authentication_service.user_migration.forms import UserDataForm
 from authentication_service.user_migration.models import (
     TemporaryMigrationUserStore
 )
-
-LOGGER = logging.getLogger(__name__)
 
 
 migration_forms = (
@@ -43,7 +40,6 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
 
         # Grab the query early, for use in the event the token has expired
         query = self.request.GET.get("persist_query", None)
-        LOGGER.debug(f"Recieved querystring: {query}")
 
         # Check if token has expired
         try:
@@ -137,5 +133,4 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
     def get_login_url(self, query=None):
         # DO NOT REDIRECT TO LOGIN, redirect to the NEXT
         query = self.storage.extra_data.get("persist_query", query)
-        next_query = f"?next={urllib.parse.quote_plus(query)}" if query is not None else ""
-        return redirect(f"{reverse('login')}{next_query}")
+        return redirect(query or reverse("login"))

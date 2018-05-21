@@ -5,17 +5,18 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth import hashers
 from django.core.urlresolvers import reverse
-from django.test import TestCase
-from django.test.client import Client
+from django.test import TestCase, override_settings
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.util import random_hex
 
-from unittest.mock import patch
+from oidc_provider.models import Client
+from unittest.mock import patch, MagicMock
 from defender.utils import unblock_username
 
-from authentication_service.models import SecurityQuestion, \
+from authentication_service.models import (
+    SecurityQuestion,
     UserSecurityQuestion
-
+)
 from authentication_service.user_migration.models import (
     TemporaryMigrationUserStore
 )
@@ -132,6 +133,14 @@ class TestMigration(TestCase):
         )
         cls.question_two = SecurityQuestion.objects.create(
             question_text="Some text for the other question"
+        )
+        Client.objects.create(
+            client_id="migration_client_id",
+            name= "MigrationCLient",
+            client_secret= "super_client_secret_1",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["http://example.com/"]
         )
 
     def test_userdata_step(self):
@@ -325,7 +334,7 @@ class TestMigration(TestCase):
             }
 
         )
-
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_migration_redirect_persist(self):
         temp_user = TemporaryMigrationUserStore.objects.create(
             username="newmigratedsupercooluser",
@@ -340,8 +349,7 @@ class TestMigration(TestCase):
             "auth-password": "Qwer!234"
         }
         response = self.client.post(
-            f"{reverse('login')}?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%2Bprofile%2Bsite%2Broles%26client_id%3D872786%26redirect_uri%3Dhttp%253A%252F%252Fspringster-example.qa-hub.ie.gehosting.org%252Foidc%252Fcallback%252F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO%26theme%3Dspringster%26insert%3Dcustom%26parameters%3Dhere%26nonce%3DJ2RCmbLO5Tp8DDPWO07eIc3pXOx4KG0H",
-            #?next=http://awesomeredirect.com/?other=none&scope=openid+profile+site+roles&client_id=client_id_1",
+            f"{reverse('login')}?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id%3Dmigration_client_id%26redirect_uri%3Dhttp%3A%2F%2Fexample.com%2F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
             data=data,
             follow=True
         )
@@ -383,8 +391,7 @@ class TestMigration(TestCase):
         )
         self.assertRedirects(
             response,
-            f"{reverse('login')}?next=/openid/authorize/?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%2Bprofile%2Bsite%2Broles%26client_id%3D872786%26redirect_uri%3Dhttp%253A%252F%252Fspringster-example.qa-hub.ie.gehosting.org%252Foidc%252Fcallback%252F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO%26theme%3Dspringster%26insert%3Dcustom%26parameters%3Dhere%26nonce%3DJ2RCmbLO5Tp8DDPWO07eIc3pXOx4KG0H"
-            #?next=http://awesomeredirect.com/?other=none&scope=openid+profile+site+roles&client_id=client_id_1",
+            f"/openid/authorize/?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http://example.com/&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO"
         )
 
 
@@ -393,7 +400,6 @@ class TestLockout(TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestLockout, cls).setUpClass()
-        cls.client = Client()
         cls.user = get_user_model().objects.create_user(
             username="user_{}".format(random.randint(0, 10000)),
             password="password",
@@ -403,7 +409,6 @@ class TestLockout(TestCase):
 
     def setUp(self):
         super(TestLockout, self).setUp()
-        self.client = Client()
 
     def test_lockout(self):
         login_url = reverse("login")
