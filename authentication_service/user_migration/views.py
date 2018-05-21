@@ -131,6 +131,5 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             )
 
     def get_login_url(self, query=None):
-        # DO NOT REDIRECT TO LOGIN, redirect to the NEXT
         query = self.storage.extra_data.get("persist_query", query)
         return redirect(query or reverse("login"))
