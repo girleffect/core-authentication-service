@@ -12,3 +12,15 @@ COOKIES = {
 }
 
 GE_TERMS_URL = "https://www.girleffect.org/terms-and-conditions/"
+
+THEME_NAME_MAP = {
+    "springster": "Springster"
+}
+
+def get_theme_client_name(request):
+    theme = request.META["X-Django-Layer"]
+    fallback_name = request.session.get(
+        EXTRA_SESSION_KEY,
+        {}
+    ).get(COOKIES["redirect_client_name"])
+    return THEME_NAME_MAP.get(theme, fallback_name)

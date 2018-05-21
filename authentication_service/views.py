@@ -1,3 +1,7 @@
+from datetime import date
+from dateutil.relativedelta import relativedelta
+import urllib
+
 from defender.decorators import watch_login
 
 from django.conf import settings
@@ -11,8 +15,12 @@ from django.contrib.auth.views import (
 )
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
+
+from django.contrib.auth import get_user_model
+from django.core import signing
+# NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -26,7 +34,11 @@ from two_factor.utils import default_device
 from two_factor.views import core
 
 from authentication_service import forms, models, tasks, constants
+from authentication_service.decorators import generic_deprecation
 from authentication_service.forms import LoginForm
+
+from authentication_service.user_migration.models import TemporaryMigrationUserStore
+
 
 REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
 
@@ -102,10 +114,64 @@ class LoginView(core.LoginView):
     template_name = "authentication_service/login.html"
 
     form_list = (
-        ('auth', LoginForm),
-        ('token', AuthenticationTokenForm),
-        ('backup', BackupTokenForm),
+        ("auth", LoginForm),
+        ("token", AuthenticationTokenForm),
+        ("backup", BackupTokenForm),
     )
+
+    @generic_deprecation(
+        "authentication_service.views.LoginView: def post(); makes use of" \
+        " models and urls found in 'authentication_service.user_migration'." \
+        " The app is temporary and will be removed."
+    )
+    def post(self, *args, **kwargs):
+        # Short circuit normal login flow as needed to migrate old existing
+        # users.
+
+        # Super can not be called first. The temporary user objects will break
+        # functionality in the base view. Only attempt on the first step.
+        if self.get_step_index() == 0:
+            form = self.get_form(
+                data=self.request.POST, files=self.request.FILES
+            )
+
+            # Is valid triggers authentication.
+            if not form.is_valid():
+                form_user = form.get_user()
+
+                # Only do these checks if no user was authenticated.
+                if form_user is None:
+                    username = form.cleaned_data["username"]
+                    password = form.cleaned_data["password"]
+
+                    # TODO Update get with app_id and site_id
+                    try:
+                        user = TemporaryMigrationUserStore.objects.get(
+                            username=username
+                        )
+
+                        token = signing.dumps(
+                            user.id, salt="ge-migration-user-registration"
+                        )
+
+                        # If the temp user password matches, redirect to
+                        # migration wizard.
+                        if user.check_password(password):
+                            querystring =  urllib.parse.quote_plus(
+                                self.request.GET.get("next", "")
+                            )
+                            url = reverse(
+                                "user_migration:migrate_user", kwargs={
+                                    "token": token
+                                }
+                            )
+                            return redirect(
+                                f"{url}?persist_query={querystring}"
+                            )
+                    except TemporaryMigrationUserStore.DoesNotExist:
+                        # Let login fail as usual
+                        pass
+        return super(LoginView, self).post(*args, **kwargs)
 
 
 # Protect the login view using Defender. Defender provides a method decorator

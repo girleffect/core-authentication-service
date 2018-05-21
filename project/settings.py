@@ -39,8 +39,9 @@ AUTH_PASSWORD_VALIDATORS += [
     },
 ]
 
-AUTHENTICATION_BACKENDS = \
-    ["authentication_service.backends.GirlEffectAuthBackend"]
+AUTHENTICATION_BACKENDS = [
+    "authentication_service.backends.GirlEffectAuthBackend"
+]
 
 DATABASES = {
     "default": env.dict("DB_DEFAULT", "ENGINE=django.db.backends.postgresql," \
@@ -77,7 +78,10 @@ ADDITIONAL_APPS = [
 ]
 
 # Project app has to be first in the list.
-INSTALLED_APPS = ["authentication_service"] + INSTALLED_APPS + ADDITIONAL_APPS
+INSTALLED_APPS = [
+    "authentication_service",
+    "authentication_service.user_migration"
+] + INSTALLED_APPS + ADDITIONAL_APPS
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
@@ -109,7 +113,7 @@ PASSWORD_RESET_TIMEOUT_DAYS = 3
 # Defender options
 DEFENDER_LOGIN_FAILURE_LIMIT = 5  # A maximum of 5 failed attempts to be allowed
 DEFENDER_BEHIND_REVERSE_PROXY = False
-DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
+DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = False
 DEFENDER_DISABLE_IP_LOCKOUT = True
 DEFENDER_DISABLE_USERNAME_LOCKOUT = False
 DEFENDER_COOLOFF_TIME = 600  # seconds that failures will be remembered

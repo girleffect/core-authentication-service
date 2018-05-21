@@ -99,7 +99,8 @@ class CustomScopeClaims(ScopeClaims):
             self.user.id, site_id).to_dict()["data"]
         now = timezone.now().astimezone(datetime.timezone.utc).isoformat()
         result = {
-            "site": {"retrieved_at": f"{now}", "data": data}
+            "site": {"retrieved_at": f"{now}", "data": data},
+            "migration_information": self.user.migration_data
         }
 
         return result
