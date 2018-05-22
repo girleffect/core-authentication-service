@@ -279,6 +279,11 @@ class CookieRedirectView(View):
     that the referrer will prompt them to login again so as to obtain the oidc
     tokens.
     """
+    # TODO Remove, seperate piece of work from GE-1048
+    @generic_deprecation(
+        "authentication_service.views.CookieRedirectView: This view should no" \
+        " longer be required and will be removed soon"
+    )
     def dispatch(self, request, *args, **kwargs):
         # No need for super, this view should at this stage not need any of its
         # http method functions.
