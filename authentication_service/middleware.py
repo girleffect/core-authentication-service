@@ -23,30 +23,6 @@ from authentication_service.utils import update_session, get_session_data
 LOGGER = logging.getLogger(__name__)
 
 
-class SessionManagementMiddleware(MiddlewareMixin):
-    """
-    NOTE: This Middleware should always be as near the end of the Middleware
-    list in settings. Middleware is evaluated in order and this needs to happen
-    as near the end as possible.
-    """
-    def process_response(self, request, response):
-        if response.status_code == 302:
-            current_host = request.get_host()
-            location = response.get("Location", "")
-            parsed_url = urlparse(location)
-            if parsed_url.netloc != "" and current_host != parsed_url.netloc:
-                LOGGER.warning(
-                    "User redirected off domain; " \
-                    "(%s) -> (%s)." % (
-                        current_host, parsed_url.netloc
-                    )
-                )
-                # Clear all extra session data
-                request.session.pop(EXTRA_SESSION_KEY, None)
-
-        return response
-
-
 def fetch_theme(request, key=None):
     # Set get theme from either request or cookie. Request always wins to
     # ensure stale theme is not used.
@@ -83,7 +59,12 @@ class ThemeManagementMiddleware(MiddlewareMixin):
         request.META["X-Django-Layer"] = theme
 
 
-class RedirectManagementMiddleware(MiddlewareMixin):
+class SessionDataManagementMiddleware(MiddlewareMixin):
+    """
+    NOTE: This Middleware should always be as near the end of the Middleware
+    list in settings. Middleware is evaluated in order and this needs to happen
+    as near the end as possible.
+    """
     cookie_key = COOKIES["redirect_cookie"]
     client_name_key = COOKIES["redirect_client_name"]
     client_terms_key = COOKIES["redirect_client_terms"]
@@ -124,7 +105,7 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                     status=403
                 )
 
-    def process_view(self, request, view_func, view_args, view_kwargs):
+    def process_request(self, request):
         # Before storing the redirect_uri, ensure it comes from a valid client.
         # This is to prevent urls on other parts of the site being misused to
         # redirect users to none client apps.
@@ -161,9 +142,7 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                 else:
                     raise e
 
-            self.oidc_values = authorize
-            if self.oidc_values:
-                # TODO refactor
+            if authorize:
                 update_session(
                     request,
                     self.client_name_key,
@@ -184,6 +163,25 @@ class RedirectManagementMiddleware(MiddlewareMixin):
                     "redirect_uri_validation",
                     uri
                 )
+
+    def process_response(self, request, response):
+        if response.status_code == 302:
+            current_host = request.get_host()
+            location = response.get("Location", "")
+            parsed_url = urlparse(location)
+            if parsed_url.netloc != "" and current_host != parsed_url.netloc:
+                LOGGER.warning(
+                    "User redirected off domain; " \
+                    "(%s) -> (%s)." % (
+                        current_host, parsed_url.netloc
+                    )
+                )
+                # Clear all extra session data
+                request.session.pop(EXTRA_SESSION_KEY, None)
+
+        return response
+
+
 
 
 class ErrorMiddleware(MiddlewareMixin):

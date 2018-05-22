@@ -33,19 +33,6 @@ class TestOIDCSessionMiddleware(TestCase):
         cls.user.save()
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
-    def test_redirect_view(self):
-        self.client.login(username=self.user.username, password="P0ppy")
-        # Ensure there is indeed auth data on the session.
-        self.assertIn("_auth_user_id", self.client.session.keys())
-        # Test with redirect cookie set.
-        self.client.cookies.load(
-            {"register_redirect": "http://somecoolsite.com/test-redirect/"})
-        response = self.client.get(reverse("redirect_view"))
-
-        # Make sure session is flushed.
-        self.assertEqual(len(self.client.session.items()), 0)
-
-    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_session_flush_logger(self):
         with self.assertLogs(level="WARNING") as cm:
             self.client.cookies.load(
@@ -71,7 +58,8 @@ class TestRedirectManagementMiddleware(TestCase):
             client_secret="super_client_secret_1",
             response_type="code",
             jwt_alg="HS256",
-            redirect_uris=["http://example.com/"]
+            redirect_uris=["http://example.com/"],
+            terms_url="http://example-terms.com"
         )
         cls.client_obj.save()
 
@@ -171,3 +159,46 @@ class TestRedirectManagementMiddleware(TestCase):
             "authentication_service/redirect_middleware_error.html"
         )
         self.assertEqual(response.status_code, 403)
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_login_session(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], "http://example.com/"
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
+        self.assertEquals(
+            response.context["ge_global_client_terms"],
+            self.client_obj.terms_url
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_registration_session(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F"
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], "http://example.com/"
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
+        self.assertEquals(
+            response.context["ge_global_client_terms"],
+            self.client_obj.terms_url
+        )
