@@ -105,7 +105,7 @@ MIDDLEWARE = MIDDLEWARE + [
 #)
 
 # django-layers-hr
-LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
+LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"], ["zathu"]]}
 
 # https://docs.djangoproject.com/en/1.11/ref/settings/#password-reset-timeout-days
 PASSWORD_RESET_TIMEOUT_DAYS = 3
