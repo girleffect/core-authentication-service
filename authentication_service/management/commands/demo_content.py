@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 "redirect_uris": [
                     os.environ.get("WAGTAIL_1_CALLBACK", 'http://example.com/'),
                     os.environ.get(
-                        "WAGTAIL_1_CALLBACK",
+                        "WAGTAIL_1_LOGOUT_REDIRECT",
                         'http://example.com/') + "register-redirect/",
                     os.environ.get("WAGTAIL_1_LOGOUT_REDIRECT", 'http://example.com/')
                 ],
@@ -65,7 +65,7 @@ class Command(BaseCommand):
                 "redirect_uris": [
                     os.environ.get("WAGTAIL_2_CALLBACK", 'http://example.com/'),
                     os.environ.get(
-                        "WAGTAIL_2_CALLBACK",
+                        "WAGTAIL_2_LOGOUT_REDIRECT",
                         'http://example.com/') + "register-redirect/",
                     os.environ.get("WAGTAIL_2_LOGOUT_REDIRECT", 'http://example.com/')
                 ],
@@ -88,7 +88,7 @@ class Command(BaseCommand):
                 "redirect_uris": [
                     os.environ.get("WAGTAIL_3_CALLBACK", 'http://example.com/'),
                     os.environ.get(
-                        "WAGTAIL_3_CALLBACK",
+                        "WAGTAIL_3_LOGOUT_REDIRECT",
                         'http://example.com/') + "register-redirect/",
                     os.environ.get("WAGTAIL_3_LOGOUT_REDIRECT", 'http://example.com/')
                     ],
