@@ -35,9 +35,20 @@ class TestOIDCSessionMiddleware(TestCase):
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_session_flush_logger(self):
         with self.assertLogs(level="WARNING") as cm:
-            self.client.cookies.load(
-                {"ge_redirect_cookie": "http://nuked-session.com/logging/test-redirect/"})
-            self.client.get(reverse("redirect_view"))
+            Client.objects.create(
+                client_id="nuker",
+                name= "CopiedRegistrationMigrationClient",
+                client_secret= "super_client_secret_9",
+                response_type= "code",
+                jwt_alg= "HS256",
+                redirect_uris= ["http://nuked-session.com/logging/test-redirect/"],
+                terms_url="http://registration-terms.com"
+            )
+            response = self.client.get(
+                reverse(
+                    "redirect_view"
+                ) + "?client_id=nuker&redirect_uri=http://nuked-session.com/logging/test-redirect/",
+            )
             test_output = [
                 "WARNING:authentication_service.middleware:" \
                 "User redirected off domain; " \
