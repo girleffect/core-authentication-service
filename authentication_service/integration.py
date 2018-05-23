@@ -262,7 +262,6 @@ class Implementation(AbstractStubClass):
             users = users.filter(**{"birth_date__%s" % k: v for k, v in ranges.items()})
         if date_joined:
             ranges = range_filter_parser(date_joined)
-            LOGGER.info(f"Range: {ranges}")
             users = users.filter(**{"date_joined__date__%s" % k: v for k, v in ranges.items()})
         if last_login:
             ranges = range_filter_parser(last_login)
