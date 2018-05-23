@@ -2,11 +2,26 @@ import datetime
 import json
 import logging
 
+import jsonschema
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.forms import HiddenInput
 
 from authentication_service import exceptions
+
+DATE_DATETIME_RANGE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "from": {
+            "type": "string",
+        },
+        "to": {
+            "type": "string",
+        }
+    },
+    "minProperties": 1,
+    "additionalProperties": False
+}
 
 
 def update_form_fields(form, required=None, hidden=None, validators=None, fields_data=None):
@@ -121,10 +136,10 @@ def to_dict_with_custom_fields(instance, custom_fields):
     return result
 
 
-def range_filter_parser(date_range):
+def range_filter_parser(date_range: str):
     parsed_range = {}
+
     if isinstance(date_range, str):
-        # Depending on the format of the dates inside, literal_eval will break.
         # Handle a string argument if JSON parse-able.
         try:
             date_range = json.loads(date_range, encoding="utf-8")
@@ -135,17 +150,17 @@ def range_filter_parser(date_range):
             f"Date range not an object or JSON string."
         )
 
-    # On the off chance there are more or less than 2 entries in the list.
-    if len(date_range) > 2:
+    try:
+        jsonschema.validate(date_range, DATE_DATETIME_RANGE_SCHEMA)
+    except jsonschema.ValidationError as ve:
         raise exceptions.BadRequestException(
-            f"Date range object with length:"
-            f"{len(date_range)}, exceeds max length of 2"
+            f"Invalid date range specified: {ve.message}"
         )
 
     for key, date in date_range.items():
         # Preferable to not mix date and datetime objects, make sure all are
         # date objects.
-        if isinstance(date, str) and date.lower() != "none":
+        if date.lower() != "none":
             # Assumptions are made about the date format, based on swagger spec.
             # 2018-04-26T10:44:47.021Z
             try:
@@ -156,33 +171,23 @@ def range_filter_parser(date_range):
                 else:
                     formatted_date = datetime.datetime.strptime(
                         date, "%Y-%m-%d"
-                    )
+                    ).date()
                 parsed_range[key] = formatted_date
             except ValueError:
                 raise exceptions.BadRequestException(
                     f"Date value({date}) does not have "
-                    f"correct format YYYY-MM-DD"
+                    f"correct format: YYYY-MM-DD or YYYY-MM-DDTHH:MI:SS(.000)Z"
                 )
-        elif isinstance(date, datetime.datetime) or isinstance(
-                date, datetime.date):
-            parsed_range[key] = date
-        else:
-            parsed_range[key] = None
 
-    # Should contain at least one not NoneType object.
-    parsed_values = [value for value in parsed_range.values()]
-    if any(parsed_values):
-        # We need to pass some hints along to the caller. __range does not
-        # support [,date]/[date,]
-        if not parsed_range.get("from"):
-            parsed_range = ("lte", parsed_range["to"])
-        elif not parsed_range.get("to"):
-            parsed_range = ("gte", parsed_range["from"])
-        else:
-            parsed_range = ("range", parsed_values)
-    else:
+    if not parsed_range:  # No limits specified
         raise exceptions.BadRequestException(
-            "Date range object does not contain any date object values"
+            f"At least one limit needs to be provided."
         )
 
-    return parsed_range
+    if "from" not in parsed_range:
+        return {"lte": parsed_range["to"]}
+
+    if "to" not in parsed_range:
+        return {"gte": parsed_range["from"]}
+
+    return {"gte": parsed_range["from"], "lte": parsed_range["to"]}

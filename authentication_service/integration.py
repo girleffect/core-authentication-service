@@ -259,16 +259,17 @@ class Implementation(AbstractStubClass):
         # Dates
         if birth_date:
             ranges = range_filter_parser(birth_date)
-            users = users.filter(**{"birth_date__%s" % ranges[0]: ranges[1]})
+            users = users.filter(**{"birth_date__%s" % k: v for k, v in ranges.items()})
         if date_joined:
             ranges = range_filter_parser(date_joined)
-            users = users.filter(**{"date_joined__%s" % ranges[0]: ranges[1]})
+            LOGGER.info(f"Range: {ranges}")
+            users = users.filter(**{"date_joined__date__%s" % k: v for k, v in ranges.items()})
         if last_login:
             ranges = range_filter_parser(last_login)
-            users = users.filter(**{"last_login__%s" % ranges[0]: ranges[1]})
+            users = users.filter(**{"last_login__date__%s" % k: v for k, v in ranges.items()})
         if updated_at:
             ranges = range_filter_parser(updated_at)
-            users = users.filter(**{"updated_at__%s" % ranges[0]: ranges[1]})
+            users = users.filter(**{"updated_at__date__%s" % k: v for k, v in ranges.items()})
 
         # Partial matches
         if email:
