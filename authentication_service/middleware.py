@@ -51,11 +51,11 @@ def fetch_theme(request, key=None):
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
-    cookie_key = SESSION_KEYS["ge_theme_middleware_cookie"]
+    session_theme_key = SESSION_KEYS["ge_theme_middleware_cookie"]
 
     def process_request(self, request):
-        theme = fetch_theme(request, self.cookie_key)
-        update_session(request, self.cookie_key, theme)
+        theme = fetch_theme(request, self.session_theme_key)
+        update_session(request, self.session_theme_key, theme)
         request.META["X-Django-Layer"] = theme
 
 
@@ -65,7 +65,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     list in settings. Middleware is evaluated in order and this needs to happen
     as near the end as possible.
     """
-    cookie_key = SESSION_KEYS["redirect_client_uri"]
+    client_uri_key = SESSION_KEYS["redirect_client_uri"]
     client_name_key = SESSION_KEYS["redirect_client_name"]
     client_terms_key = SESSION_KEYS["redirect_client_terms"]
     oidc_values = None
@@ -121,7 +121,10 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
 
         uri = request.GET.get("redirect_uri", None)
 
-        # To cut down on client lookups AuthorizeEndpoint does
+        # The authorization of a client does a lookup every time it gets
+        # called. Middleware, also fires off on each request. To guard against
+        # unneeded db queries, we added an extra key unique to this middleware
+        # that will not be effected if the redirect uri is changed elsewhere.
         validator_uri = get_session_data(request, "redirect_uri_validation")
         if uri and request.method != "POST" and uri != validator_uri:
             authorize = AuthorizeEndpoint(request)
@@ -150,7 +153,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                 )
                 update_session(
                     request,
-                    self.cookie_key,
+                    self.client_uri_key,
                     authorize.params["redirect_uri"]
                 )
                 update_session(
