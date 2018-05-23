@@ -80,12 +80,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.ThemeManagementMiddleware",
-    "authentication_service.middleware.OIDCSessionManagementMiddleware",
-    "authentication_service.middleware.RedirectManagementMiddleware",
+    "authentication_service.middleware.SessionDataManagementMiddleware",
     "crum.CurrentRequestUserMiddleware",
 ]
 

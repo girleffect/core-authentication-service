@@ -33,14 +33,14 @@ from two_factor.forms import BackupTokenForm
 from two_factor.utils import default_device
 from two_factor.views import core
 
-from authentication_service import forms, models, tasks, constants
+from authentication_service import forms, models, tasks, constants, utils
 from authentication_service.decorators import generic_deprecation
 from authentication_service.forms import LoginForm
 
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 
-REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
+REDIRECT_SESSION_KEY = constants.SESSION_KEYS["redirect_client_uri"]
 
 
 class LanguageMixin:
@@ -67,7 +67,9 @@ class RedirectMixin:
     success_url = None
 
     def dispatch(self, *args, **kwargs):
-        self.redirect_url = self.request.COOKIES.get(REDIRECT_COOKIE_KEY)
+        self.redirect_url = utils.get_session_data(
+            self.request, REDIRECT_SESSION_KEY
+        )
         return super(RedirectMixin, self).dispatch(*args, **kwargs)
 
     def get_success_url(self):
@@ -262,7 +264,7 @@ class RegistrationView(LanguageRedirectMixin, CreateView):
 
         if self.redirect_url:
             response.set_cookie(
-                REDIRECT_COOKIE_KEY, value=self.redirect_url, httponly=True
+                REDIRECT_SESSION_KEY, value=self.redirect_url, httponly=True
             )
         return response
 
@@ -277,18 +279,21 @@ class CookieRedirectView(View):
     that the referrer will prompt them to login again so as to obtain the oidc
     tokens.
     """
+    # TODO Remove, seperate piece of work from GE-1048
+    @generic_deprecation(
+        "authentication_service.views.CookieRedirectView: This view should no" \
+        " longer be required and will be removed soon"
+    )
     def dispatch(self, request, *args, **kwargs):
         # No need for super, this view should at this stage not need any of its
         # http method functions.
-        logout(request)
-        url = request.COOKIES.get(REDIRECT_COOKIE_KEY)
+        url = utils.get_session_data(request, REDIRECT_SESSION_KEY)
 
         # Default fallback if cookie was deleted or no url was set.
         response = HttpResponseRedirect(settings.LOGIN_URL)
         if url:
             response = HttpResponseRedirect(url)
 
-        response.delete_cookie(REDIRECT_COOKIE_KEY)
         return response
 
 

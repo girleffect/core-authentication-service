@@ -598,10 +598,21 @@ class TestRegistrationView(TestCase):
             }
         )
         self.assertIn(response.url, reverse("login"))
+        Client.objects.create(
+            client_id="redirect-tester",
+            name= "RedirectClient",
+            client_secret= "super_client_secret_4",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["/test-redirect-url/"],
+        )
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/"
+        )
 
         # Test redirect url, no 2fa
-        self.client.cookies.load(
-            {"ge_redirect_cookie": "/test-redirect-url/"})
         response = self.client.post(
             reverse("registration") + "?redirect_uri=/test-redirect-url/",
             {
@@ -728,10 +739,20 @@ class TestRegistrationView(TestCase):
         self.assertIn(response.url, reverse("login"))
 
         # Test with redirect cookie set.
-        self.client.cookies.load(
-            {"ge_redirect_cookie": "/test-redirect-after2fa/"})
-        response = self.client.get(reverse("redirect_view"))
-        self.assertIn(response.url, "/test-redirect-after2fa/")
+        Client.objects.create(
+            client_id="redirect-tester",
+            name= "RedirectClient",
+            client_secret= "super_client_secret_4",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["/test-redirect-url-something/"],
+        )
+        response = self.client.get(
+            reverse(
+                "redirect_view"
+            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url-something/"
+        )
+        self.assertIn(response.url, "/test-redirect-url-something/")
 
     def test_incorrect_required_field_logger(self):
         test_output = [
@@ -778,19 +799,27 @@ class TestRegistrationView(TestCase):
         self.assertListEqual(output, test_output)
 
     def test_view_terms_html(self):
+        Client.objects.create(
+            client_id="registraion_client_id",
+            name= "RegistrationMigrationCLient",
+            client_secret= "super_client_secret_1",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["http://exmpl.co/"],
+            terms_url="http://registration-terms.com"
+        )
         response = self.client.get(
             reverse("registration")
         )
         self.assertContains(response, '<a href="https://www.girleffect.org/'\
         'terms-and-conditions/">Click here to view the terms and conditions</a>'
         )
-        self.client.cookies.load(
-            {"ge_oidc_client_terms": "http://www.example.com"}
-        )
         response = self.client.get(
-            reverse("registration")
+            reverse(
+                "registration"
+            ) + "?client_id=registraion_client_id&redirect_uri=http://exmpl.co/"
         )
-        self.assertContains(response, '<a href="http://www.example.com">'\
+        self.assertContains(response, '<a href="http://registration-terms.com">'\
         'Click here to view the terms and conditions</a>'
         )
 
@@ -846,21 +875,34 @@ class EditProfileViewTestCase(TestCase):
         self.client.login(username="testuser", password="Qwer!234")
 
         # Get form
+        Client.objects.create(
+            client_id="postprofileedit",
+            name= "RegistrationMigrationCLient",
+            client_secret= "super_client_secret_1",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["/admin/"],
+            terms_url="http://registration-terms.com"
+        )
         response = self.client.get(
-            reverse("edit_profile"))
+            reverse(
+                "edit_profile"
+            ) + "?client_id=postprofileedit&redirect_uri=/admin/",
+        )
 
         # Check 2FA isn't enabled
         self.assertNotContains(response, "2fa")
 
         # Post form
-        self.client.cookies.load(
-            {"ge_redirect_cookie": reverse("admin:index")})
         response = self.client.post(
-            "%s?redirect_uri=/admin/" % reverse("edit_profile"),
+            reverse(
+                "edit_profile"
+            ),
             {
                 "email": "test@user.com",
                 "birth_date": "2001-01-01"
             },
+            follow=True
         )
         updated = get_user_model().objects.get(username="testuser")
 

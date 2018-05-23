@@ -1,23 +1,27 @@
 from django.conf import settings
 
+import logging
+
 from authentication_service.constants import (
-    COOKIES, EXTRA_SESSION_KEY, GE_TERMS_URL, get_theme_client_name
+    SESSION_KEYS, EXTRA_SESSION_KEY, GE_TERMS_URL, get_theme_client_name
 )
+from authentication_service import utils
+
+LOGGER = logging.getLogger(__name__)
 
 def global_context(request):
     session_client_name = get_theme_client_name(request)
-    session_client_terms = request.session.get(
-        EXTRA_SESSION_KEY,
-        {}
-    ).get(COOKIES["redirect_client_terms"], GE_TERMS_URL)
+    uri = utils.get_session_data(request, SESSION_KEYS["redirect_client_uri"])
+    session_client_terms = utils.get_session_data(
+        request,
+        SESSION_KEYS["redirect_client_terms"]
+    )
     return {
-        "ge_global_redirect_uri": request.COOKIES.get(
-            COOKIES["redirect_cookie"]
+        "ge_global_redirect_uri": utils.get_session_data(
+            request, SESSION_KEYS["redirect_client_uri"]
         ),
-        "ge_global_client_name": request.COOKIES.get(
-            COOKIES["redirect_client_name"], session_client_name
-        ),
-        "ge_global_client_terms": request.COOKIES.get(
-            COOKIES["redirect_client_terms"], session_client_terms
-        )
+        "ge_global_client_name":  session_client_name,
+        "ge_global_client_terms": session_client_terms or GE_TERMS_URL,
+        # Convenience value
+        "ge_global_theme": request.META.get("X-Django-Layer", None)
     }

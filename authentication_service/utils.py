@@ -7,6 +7,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.forms import HiddenInput
 
 from authentication_service import exceptions
+from authentication_service.constants import EXTRA_SESSION_KEY
 
 
 def update_form_fields(form, required=None, hidden=None, validators=None, fields_data=None):
@@ -186,3 +187,13 @@ def range_filter_parser(date_range):
         )
 
     return parsed_range
+
+
+def update_session(request, key, data):
+    if not request.session.get(EXTRA_SESSION_KEY, None):
+        request.session[EXTRA_SESSION_KEY] = {}
+    request.session[EXTRA_SESSION_KEY][key] = data
+
+
+def get_session_data(request, key):
+    return request.session.get(EXTRA_SESSION_KEY, {}).get(key, None)

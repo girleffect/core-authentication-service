@@ -7,6 +7,7 @@
 {% endcomment %}
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
     <head>
+        <div id="ge-template-theme" name="{{ ge_global_theme }}" />
         {% comment %}
             Only override the head block if there is no other way around it.
         {% endcomment %}
@@ -50,8 +51,8 @@
                 </div>
                 <div class="Header-links">
                     {% block links %}
-                        {% if ge_global_client_name %}
-                            {% trans "Back to " %}<a href="{% url "redirect_view" %}">{{ ge_global_client_name }}</a>
+                        {% if ge_global_client_name and ge_global_redirect_uri %}
+                            {% trans "Back to " %}<a href="{{ ge_global_redirect_uri }}">{{ ge_global_client_name }}</a>
                         {% endif %}
                     {% endblock %}
                 </div>
