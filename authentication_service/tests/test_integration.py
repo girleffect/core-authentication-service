@@ -527,28 +527,28 @@ class IntegrationTestCase(TestCase):
             '{"from":null,"to":null}'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b"Date range object does not contain any date object values")
+        self.assertEqual(response.content, b"Invalid date range specified: None is not of type 'string'")
 
         response = self.client.get(
             "/api/v1/users?birth_date="
             '{"from":1,"to":2,"too":3}'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b"Date range object with length:3, exceeds max length of 2")
+        self.assertEqual(response.content, b"Invalid date range specified: 1 is not of type 'string'")
 
         response = self.client.get(
             "/api/v1/users?birth_date="
-            '{"from":null,"to":null,"too":null}'
+            '{"from":"2001-01-01","too":"2001-01-01"}'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b"Date range object with length:3, exceeds max length of 2")
 
         response = self.client.get(
             "/api/v1/users?birth_date="
             '{"from":"1","to":"2"}'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b"Date value(1) does not have correct format YYYY-MM-DD")
+        self.assertEqual(response.content, b"Date value(1) does not have correct format: "
+                                           b"YYYY-MM-DD or YYYY-MM-DDTHH:MI:SS(.000)Z")
 
         response = self.client.get(
             "/api/v1/users?birth_date="

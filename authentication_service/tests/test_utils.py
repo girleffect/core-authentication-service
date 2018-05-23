@@ -56,86 +56,75 @@ class DateFilterTestCase(TestCase):
         value = utils.range_filter_parser(
             '{"from":"2007-01-01T10:44:47.021Z","to":"2018-04-26T10:44:47.021Z"}')
         self.assertEqual(
-            value,
-            ("range", [
-                datetime.datetime(2007, 1, 1, 10, 44, 47),
-                datetime.datetime(2018, 4, 26, 10, 44, 47)
-            ])
+            value, {
+                "gte": datetime.datetime(2007, 1, 1, 10, 44, 47),
+                "lte": datetime.datetime(2018, 4, 26, 10, 44, 47)
+            }
         )
         value = utils.range_filter_parser('{"from":"2007-01-01","to":"2018-04-26"}')
         self.assertEqual(
-            value,
-            ("range", [
-                datetime.datetime(2007, 1, 1, 0, 0),
-                datetime.datetime(2018, 4, 26, 0, 0)
-            ])
+            value, {
+                "gte": datetime.date(2007, 1, 1),
+                "lte": datetime.date(2018, 4, 26)
+            }
         )
         value = utils.range_filter_parser(
             '{"from":"2007-01-01T10:44:47.021Z"}')
         self.assertEqual(
-            value,
-            ("gte", datetime.datetime(2007, 1, 1, 10, 44, 47))
+            value, {"gte": datetime.datetime(2007, 1, 1, 10, 44, 47)}
         )
         value = utils.range_filter_parser(
             '{"to":"2018-04-26"}')
         self.assertEqual(
-            value,
-            ("lte", datetime.datetime(2018, 4, 26, 0, 0))
+            value, {"lte": datetime.date(2018, 4, 26)}
         )
         value = utils.range_filter_parser(
             '{"from":"2007-01-01","to":"2018-04-26T10:44:47.021Z"}')
         self.assertEqual(
-            value,
-            ("range", [
-                datetime.datetime(2007, 1, 1, 0, 0),
-                datetime.datetime(2018, 4, 26, 10, 44, 47)
-            ])
+            value, {
+                "gte": datetime.date(2007, 1, 1),
+                "lte": datetime.datetime(2018, 4, 26, 10, 44, 47)
+            }
         )
 
     def test_list_range(self):
-        value = utils.range_filter_parser(
-            {
-                "from": datetime.date(2007, 1, 1),
-                "to": datetime.date(2018, 1, 26)
+        value = utils.range_filter_parser("""{
+            "from": "2007-01-01",
+            "to": "2018-01-26"
+        }""")
+        self.assertEqual(
+            value, {
+                "gte": datetime.date(2007, 1, 1),
+                "lte": datetime.date(2018, 1, 26)
             }
         )
+        value = utils.range_filter_parser("""{
+            "from": "2007-01-01T05:20:10.000Z",
+            "to": "2018-01-26T05:20:10.000Z"
+        }""")
         self.assertEqual(
-            value,
-            ("range", [datetime.date(2007, 1, 1), datetime.date(2018, 1, 26)])
+            value, {
+                "gte": datetime.datetime(2007, 1, 1, 5, 20, 10),
+                "lte": datetime.datetime(2018, 1, 26, 5, 20, 10)
+            }
         )
-        value = utils.range_filter_parser({
-            "from": datetime.datetime(2007, 1, 1, 5, 20, 10),
-            "to": datetime.datetime(2018, 1, 26, 5, 20, 10)
-        })
+        value = utils.range_filter_parser('{"from": "2007-01-01"}')
         self.assertEqual(
-            value,
-            ("range", [
-                datetime.datetime(2007, 1, 1, 5, 20, 10),
-                datetime.datetime(2018, 1, 26, 5, 20, 10)
-            ])
+            value, {"gte": datetime.date(2007, 1, 1)}
         )
-        value = utils.range_filter_parser(
-            {"from": datetime.date(2007, 1, 1)})
+        value = utils.range_filter_parser('{"to": "2018-01-26"}')
         self.assertEqual(
-            value,
-            ("gte", datetime.date(2007, 1, 1))
+            value, {"lte": datetime.date(2018, 1, 26)}
         )
-        value = utils.range_filter_parser(
-            {"to": datetime.date(2018, 1, 26)})
+        value = utils.range_filter_parser("""{
+            "from": "2007-01-01",
+            "to": "2018-01-26T05:20:10.000Z"
+        }""")
         self.assertEqual(
-            value,
-            ("lte", datetime.date(2018, 1, 26))
-        )
-        value = utils.range_filter_parser({
-            "from": datetime.date(2007, 1, 1),
-            "to": datetime.datetime(2018, 1, 26, 5, 20, 10)
-        })
-        self.assertEqual(
-            value,
-            ("range", [
-                datetime.date(2007, 1, 1),
-                datetime.datetime(2018, 1, 26, 5, 20, 10)
-            ])
+            value, {
+                "gte": datetime.date(2007, 1, 1),
+                "lte": datetime.datetime(2018, 1, 26, 5, 20, 10)
+            }
         )
 
     def test_error_list_range(self):
