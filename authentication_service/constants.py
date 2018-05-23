@@ -8,7 +8,7 @@ MIN_NON_HIGH_PASSWORD_LENGTH = 4
 EXTRA_SESSION_KEY = "ge_session_extra_data"
 
 SESSION_KEYS = {
-    "redirect_client_uri": "ge_redirect_client_uri",
+    "redirect_client_uri": "ge_oidc_client_uri",
     "redirect_client_name": "ge_oidc_client_name",
     "redirect_client_terms": "ge_oidc_client_terms",
     "ge_theme_middleware_cookie": "ge_theme_middleware_cookie"
