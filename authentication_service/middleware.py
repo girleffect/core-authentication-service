@@ -185,8 +185,6 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         return response
 
 
-
-
 class ErrorMiddleware(MiddlewareMixin):
     def process_exception(self, request, exc):
         if isinstance(exc, exceptions.BadRequestException):
