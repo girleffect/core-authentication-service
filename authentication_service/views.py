@@ -40,7 +40,7 @@ from authentication_service.forms import LoginForm
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 
-REDIRECT_SESSION_KEY = constants.SESSION_KEYS["redirect_cookie"]
+REDIRECT_SESSION_KEY = constants.SESSION_KEYS["redirect_client_uri"]
 
 
 class LanguageMixin:

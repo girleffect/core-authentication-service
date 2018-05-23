@@ -65,7 +65,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     list in settings. Middleware is evaluated in order and this needs to happen
     as near the end as possible.
     """
-    cookie_key = SESSION_KEYS["redirect_cookie"]
+    cookie_key = SESSION_KEYS["redirect_client_uri"]
     client_name_key = SESSION_KEYS["redirect_client_name"]
     client_terms_key = SESSION_KEYS["redirect_client_terms"]
     oidc_values = None

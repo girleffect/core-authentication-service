@@ -11,14 +11,14 @@ LOGGER = logging.getLogger(__name__)
 
 def global_context(request):
     session_client_name = get_theme_client_name(request)
-    uri = utils.get_session_data(request, SESSION_KEYS["redirect_cookie"])
+    uri = utils.get_session_data(request, SESSION_KEYS["redirect_client_uri"])
     session_client_terms = utils.get_session_data(
         request,
         SESSION_KEYS["redirect_client_terms"]
     )
     return {
         "ge_global_redirect_uri": utils.get_session_data(
-            request, SESSION_KEYS["redirect_cookie"]
+            request, SESSION_KEYS["redirect_client_uri"]
         ),
         "ge_global_client_name":  session_client_name,
         "ge_global_client_terms": session_client_terms or GE_TERMS_URL,
