@@ -16,7 +16,7 @@ from django.http import HttpResponseBadRequest, HttpRequest, QueryDict
 from django.utils.translation import ugettext as _
 
 from authentication_service import exceptions, api_helpers
-from authentication_service.constants import COOKIES, EXTRA_SESSION_KEY
+from authentication_service.constants import SESSION_KEYS, EXTRA_SESSION_KEY
 from authentication_service.utils import update_session, get_session_data
 
 
@@ -51,7 +51,7 @@ def fetch_theme(request, key=None):
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
-    cookie_key = COOKIES["ge_theme_middleware_cookie"]
+    cookie_key = SESSION_KEYS["ge_theme_middleware_cookie"]
 
     def process_request(self, request):
         theme = fetch_theme(request, self.cookie_key)
@@ -65,9 +65,9 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     list in settings. Middleware is evaluated in order and this needs to happen
     as near the end as possible.
     """
-    cookie_key = COOKIES["redirect_cookie"]
-    client_name_key = COOKIES["redirect_client_name"]
-    client_terms_key = COOKIES["redirect_client_terms"]
+    cookie_key = SESSION_KEYS["redirect_cookie"]
+    client_name_key = SESSION_KEYS["redirect_client_name"]
+    client_terms_key = SESSION_KEYS["redirect_client_terms"]
     oidc_values = None
 
     @staticmethod

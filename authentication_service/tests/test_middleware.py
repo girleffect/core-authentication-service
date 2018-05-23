@@ -85,19 +85,19 @@ class TestRedirectManagementMiddleware(TestCase):
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.COOKIES["redirect_client_name"]],
+                    constants.SESSION_KEYS["redirect_client_name"]],
             self.client_obj.name
         )
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.COOKIES["redirect_cookie"]],
+                    constants.SESSION_KEYS["redirect_cookie"]],
             "http://example.com/"
         )
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.COOKIES["redirect_client_name"]],
+                    constants.SESSION_KEYS["redirect_client_name"]],
             self.client_obj.name
         )
 
