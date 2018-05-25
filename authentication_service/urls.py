@@ -111,7 +111,7 @@ urlpatterns += i18n_patterns(
     ),
     url(
         r"^redirect/$",
-        views.CookieRedirectView.as_view(),
+        views.SessionRedirectView.as_view(),
         name="redirect_view"
     ),
     # Profile Edit URLs

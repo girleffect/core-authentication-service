@@ -75,7 +75,7 @@ class TestRedirectManagementMiddleware(TestCase):
         cls.client_obj.save()
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
-    def test_cookie_and_session_values(self):
+    def test_session_values(self):
         response = self.client.get(
             reverse(
                 "login"

@@ -11,7 +11,7 @@ SESSION_KEYS = {
     "redirect_client_uri": "ge_oidc_client_uri",
     "redirect_client_name": "ge_oidc_client_name",
     "redirect_client_terms": "ge_oidc_client_terms",
-    "ge_theme_middleware_cookie": "ge_theme_middleware_cookie"
+    "theme": "theme"
 }
 
 GE_TERMS_URL = "https://www.girleffect.org/terms-and-conditions/"
@@ -19,6 +19,7 @@ GE_TERMS_URL = "https://www.girleffect.org/terms-and-conditions/"
 THEME_NAME_MAP = {
     "springster": "Springster"
 }
+
 
 def get_theme_client_name(request):
     theme = request.META["X-Django-Layer"]

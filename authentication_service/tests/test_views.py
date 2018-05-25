@@ -734,18 +734,18 @@ class TestRegistrationView(TestCase):
         self.assertEquals(question_two.user, user)
 
     def test_redirect_view(self):
-        # Test without redirect cookie set.
+        # Test without redirect URI set.
         response = self.client.get(reverse("redirect_view"))
         self.assertIn(response.url, reverse("login"))
 
-        # Test with redirect cookie set.
+        # Test with redirect URI set.
         Client.objects.create(
             client_id="redirect-tester",
-            name= "RedirectClient",
-            client_secret= "super_client_secret_4",
-            response_type= "code",
-            jwt_alg= "HS256",
-            redirect_uris= ["/test-redirect-url-something/"],
+            name="RedirectClient",
+            client_secret="super_client_secret_4",
+            response_type="code",
+            jwt_alg="HS256",
+            redirect_uris=["/test-redirect-url-something/"],
         )
         response = self.client.get(
             reverse(

@@ -1,4 +1,3 @@
-import copy
 from urllib.parse import urlparse, parse_qs
 import logging
 
@@ -12,7 +11,7 @@ from oidc_provider.lib.errors import (
 
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
-from django.http import HttpResponseBadRequest, HttpRequest, QueryDict
+from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext as _
 
 from authentication_service import exceptions, api_helpers
@@ -24,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def fetch_theme(request, key=None):
-    # Set get theme from either request or cookie. Request always wins to
+    # Set get theme from either request or session. Request always wins to
     # ensure stale theme is not used.
     theme = request.GET.get("theme")
 
@@ -51,7 +50,7 @@ def fetch_theme(request, key=None):
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
-    session_theme_key = SESSION_KEYS["ge_theme_middleware_cookie"]
+    session_theme_key = SESSION_KEYS["theme"]
 
     def process_request(self, request):
         theme = fetch_theme(request, self.session_theme_key)
