@@ -262,39 +262,24 @@ class RegistrationView(LanguageRedirectMixin, CreateView):
                 data["language_code"] = self.language
                 question = models.UserSecurityQuestion.objects.create(**data)
 
-        if self.redirect_url:
-            response.set_cookie(
-                REDIRECT_SESSION_KEY, value=self.redirect_url, httponly=True
-            )
         return response
 
 
-class CookieRedirectView(View):
+class SessionRedirectView(View):
     """
-    Simple view that redirects in the event the client passes a cookie
-    containing the correct key. In the event a cookie is not present, redirect
-    to the django default login url.
-
-    User is explicitly logged out to clear the user session. In anticipation
-    that the referrer will prompt them to login again so as to obtain the oidc
-    tokens.
+    Simple view that redirects to a URL stored on the session, if available.
+    If none was set, it will redirect to a default page.
     """
-    # TODO Remove, seperate piece of work from GE-1048
-    @generic_deprecation(
-        "authentication_service.views.CookieRedirectView: This view should no" \
-        " longer be required and will be removed soon"
-    )
     def dispatch(self, request, *args, **kwargs):
         # No need for super, this view should at this stage not need any of its
         # http method functions.
         url = utils.get_session_data(request, REDIRECT_SESSION_KEY)
 
-        # Default fallback if cookie was deleted or no url was set.
-        response = HttpResponseRedirect(settings.LOGIN_URL)
         if url:
-            response = HttpResponseRedirect(url)
+            return HttpResponseRedirect(url)
 
-        return response
+        # Default fallback if no url was set.
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
 
 class EditProfileView(LanguageRedirectMixin, UpdateView):
