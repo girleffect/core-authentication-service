@@ -30,6 +30,32 @@ SESSION_UPDATE_URL_WHITELIST = [
 ]
 
 
+def authorize_client(request):
+    """
+    Method to validate client values as supplied on request.
+
+    Returns a oidc AuthorizeEndpoint object or a Django HttpResponse
+    """
+    authorize = AuthorizeEndpoint(request)
+    try:
+        authorize.validate_params()
+    except (ClientIdError, RedirectUriError) as e:
+        return render(
+            request,
+            "authentication_service/redirect_middleware_error.html",
+            {"error": e.error, "message": e.description},
+            status=500
+        )
+    except AuthorizeError as e:
+        # Suppress one of the errors oidc raises. It is not required
+        # for pages beyond login.
+        if e.error == "unsupported_response_type":
+            pass
+        else:
+            raise e
+    return authorize
+
+
 def fetch_theme(request, key=None):
     # Set get theme from either request or session. Request always wins to
     # ensure stale theme is not used.
@@ -58,39 +84,21 @@ class ThemeManagementMiddleware(MiddlewareMixin):
     session_theme_key = SESSION_KEYS["theme"]
 
     def process_request(self, request):
-        query_theme = fetch_theme(request, self.session_theme_key)
         if request.path in SESSION_UPDATE_URL_WHITELIST:
+
+            # Grab theme value off of url if available
+            query_theme = fetch_theme(request, self.session_theme_key)
             if query_theme:
                 update_session_data(
                     request, self.session_theme_key, query_theme
                 )
             else:
+                # Cleanup session values stored by this middleware
                 delete_session_data(request, [self.session_theme_key])
 
         # Header still needs to be set PER request
         theme = get_session_data(request, self.session_theme_key)
         request.META["X-Django-Layer"] = theme
-
-
-def authorize_client(request):
-    authorize = AuthorizeEndpoint(request)
-    try:
-        authorize.validate_params()
-    except (ClientIdError, RedirectUriError) as e:
-        return render(
-            request,
-            "authentication_service/redirect_middleware_error.html",
-            {"error": e.error, "message": e.description},
-            status=500
-        )
-    except AuthorizeError as e:
-        # Suppress one of the errors oidc raises. It is not required
-        # for pages beyond login.
-        if e.error == "unsupported_response_type":
-            pass
-        else:
-            raise e
-    return authorize
 
 
 class SiteInactiveMiddleware(MiddlewareMixin):
@@ -177,6 +185,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
 
             # TODO the cleanup will change later, when website_url gets
             # introduced.
+            # Cleanup session values stored by this middleware
             if uri is None and request.method != "POST":
                 delete_session_data(
                     request,
