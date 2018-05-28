@@ -283,7 +283,6 @@ class TestThemeMiddleware(TestCase):
     @patch("authentication_service.api_helpers.is_site_active")
     def test_edit_theme(self, mocked_is_site_active):
         self.client.login(username=self.user.username, password="D4isy")
-        mocked_is_site_active.return_value = True
         response = self.client.get(
             reverse(
                 "edit_profile"
@@ -304,6 +303,13 @@ class TestThemeMiddleware(TestCase):
     @patch("authentication_service.api_helpers.is_site_active")
     def test_login_theme_clear(self, mocked_is_site_active):
         mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?theme=springster&response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
+        )
         response = self.client.get(
             reverse(
                 "oidc_provider:authorize"
@@ -329,6 +335,11 @@ class TestThemeMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
+            ) + "?theme=ninyampinga"
+        )
+        response = self.client.get(
+            reverse(
+                "registration"
             )
         )
         self.assertEquals(
@@ -346,7 +357,11 @@ class TestThemeMiddleware(TestCase):
     @patch("authentication_service.api_helpers.is_site_active")
     def test_edit_theme_clear(self, mocked_is_site_active):
         self.client.login(username=self.user.username, password="D4isy")
-        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "edit_profile"
+            ) + "?theme=zathu"
+        )
         response = self.client.get(
             reverse(
                 "edit_profile"
@@ -361,4 +376,29 @@ class TestThemeMiddleware(TestCase):
         self.assertContains(
             response,
             '<div id="ge-template-theme" name="None" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_registration_theme_override(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?theme=ninyampinga"
+        )
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?theme=springster"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SESSION_KEYS["theme"]],
+            "springster"
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="springster" />'
         )

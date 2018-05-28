@@ -23,7 +23,6 @@ from authentication_service.utils import (
 
 LOGGER = logging.getLogger(__name__)
 
-# TODO make use of whitelist
 SESSION_UPDATE_URL_WHITELIST = [
     reverse_lazy("registration"),
     reverse_lazy("oidc_provider:authorize"),
@@ -52,9 +51,6 @@ def fetch_theme(request, key=None):
             # list.
             theme = next_query_args.get("theme", [None])[0]
 
-    if theme is None:
-        theme = get_session_data(request, key)
-
     return theme.lower() if isinstance(theme, str) else theme
 
 
@@ -62,14 +58,17 @@ class ThemeManagementMiddleware(MiddlewareMixin):
     session_theme_key = SESSION_KEYS["theme"]
 
     def process_request(self, request):
-        theme = fetch_theme(request, self.session_theme_key)
+        query_theme = fetch_theme(request, self.session_theme_key)
         if request.path in SESSION_UPDATE_URL_WHITELIST:
-            if theme:
-                update_session_data(request, self.session_theme_key, theme)
+            if query_theme:
+                update_session_data(
+                    request, self.session_theme_key, query_theme
+                )
             else:
-               delete_session_data(request, self.session_theme_key)
+                delete_session_data(request, [self.session_theme_key])
 
         # Header still needs to be set PER request
+        theme = get_session_data(request, self.session_theme_key)
         request.META["X-Django-Layer"] = theme
 
 
