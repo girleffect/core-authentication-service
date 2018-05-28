@@ -97,9 +97,8 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             ),
             password=cleaned_data["password2"],
             migration_data = {
-                "app_id": self.get_user_data.app_id,
-                "site_id": self.get_user_data.site_id,
                 "user_id": self.get_user_data.user_id,
+                "client_id": self.get_user_data.client_id,
                 "username": self.get_user_data.username
             }
         )

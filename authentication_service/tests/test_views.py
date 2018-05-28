@@ -68,8 +68,7 @@ class TestLogin(TestCase):
     def test_migrated_user_login(self):
         temp_user = TemporaryMigrationUserStore.objects.create(
             username="migrateduser",
-            app_id=1,
-            site_id=1,
+            client_id=1,
             user_id=1
         )
         temp_user.set_password("Qwer!234")
@@ -117,8 +116,7 @@ class TestMigration(TestCase):
         super(TestMigration, cls).setUpTestData()
         cls.temp_user = TemporaryMigrationUserStore.objects.create(
             username="coolmigrateduser",
-            app_id=3,
-            site_id=3,
+            client_id=3,
             user_id=3
         )
         cls.temp_user.set_password("Qwer!234")
@@ -327,8 +325,7 @@ class TestMigration(TestCase):
         self.assertEqual(
             get_user_model().objects.get(username="newusername").migration_data,
             {
-                "app_id": 3,
-                "site_id": 3,
+                "client_id": 3,
                 "user_id": 3,
                 "username": "coolmigrateduser"
             }
@@ -338,8 +335,7 @@ class TestMigration(TestCase):
     def test_migration_redirect_persist(self):
         temp_user = TemporaryMigrationUserStore.objects.create(
             username="newmigratedsupercooluser",
-            app_id=2,
-            site_id=2,
+            client_id=2,
             user_id=2
         )
         temp_user.set_password("Qwer!234")

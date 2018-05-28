@@ -98,6 +98,7 @@ class CustomScopeClaims(ScopeClaims):
         data = api_helpers.get_user_site_data(
             self.user.id, site_id).to_dict()["data"]
         now = timezone.now().astimezone(datetime.timezone.utc).isoformat()
+        # TODO Only send migration_information along if client_ids match
         result = {
             "site": {"retrieved_at": f"{now}", "data": data},
             "migration_information": self.user.migration_data
