@@ -46,8 +46,13 @@ class TestSessionMiddleware(TestCase):
             )
             response = self.client.get(
                 reverse(
-                    "redirect_view"
+                    "registration"
                 ) + "?client_id=nuker&redirect_uri=http://nuked-session.com/logging/test-redirect/",
+            )
+            response = self.client.get(
+                reverse(
+                    "redirect_view"
+                )
             )
             test_output = [
                 "WARNING:authentication_service.middleware:" \
@@ -78,7 +83,7 @@ class TestRedirectManagementMiddleware(TestCase):
     def test_session_values(self):
         response = self.client.get(
             reverse(
-                "login"
+                "registration"
             ) + "?client_id=client_id_1&" \
             "redirect_uri=http%3A%2F%2Fexample.com%2F&response_type=code",
         )
@@ -105,7 +110,7 @@ class TestRedirectManagementMiddleware(TestCase):
     def test_context_values(self):
         response = self.client.get(
             reverse(
-                "login"
+                "registration"
             ) + "?client_id=client_id_1&" \
             "redirect_uri=http%3A%2F%2Fexample.com%2F"
         )
@@ -117,21 +122,21 @@ class TestRedirectManagementMiddleware(TestCase):
         )
         response = self.client.get(
             reverse(
-                "login"
+                "registration"
             )
         )
         self.assertEquals(
-            response.context["ge_global_redirect_uri"], "http://example.com/"
+            response.context["ge_global_redirect_uri"], None
         )
         self.assertEquals(
-            response.context["ge_global_client_name"], self.client_obj.name
+            response.context["ge_global_client_name"], None
         )
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_client_id_and_redirect_uri_validation(self):
         response = self.client.get(
             reverse(
-                "login"
+                "registration"
             ) + "?redirect_uri=http%3A%2F%2Fexample.com%2F"
         )
         self.assertEqual(response.status_code, 500)

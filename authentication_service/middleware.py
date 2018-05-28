@@ -147,34 +147,47 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         # unneeded db queries, we added an extra key unique to this middleware
         # that will not be effected if the redirect uri is changed elsewhere.
         validator_uri = get_session_data(request, "redirect_uri_validation")
-        if uri and request.method != "POST" and uri != validator_uri:
-            authorize = authorize_client(request)
-            if not isinstance(authorize, AuthorizeEndpoint):
-                return authorize
+        if request.path in SESSION_UPDATE_URL_WHITELIST:
+            if uri and request.method != "POST" and uri != validator_uri:
+                authorize = authorize_client(request)
+                if not isinstance(authorize, AuthorizeEndpoint):
+                    return authorize
 
-            if isinstance(authorize, AuthorizeEndpoint):
-                update_session_data(
+                if isinstance(authorize, AuthorizeEndpoint):
+                    update_session_data(
+                        request,
+                        self.client_name_key,
+                        authorize.client.name
+                    )
+                    update_session_data(
+                        request,
+                        self.client_uri_key,
+                        authorize.params["redirect_uri"]
+                    )
+                    update_session_data(
+                        request,
+                        self.client_terms_key,
+                        authorize.client.terms_url
+                    )
+                    update_session_data(
+                        request,
+                        "redirect_uri_validation",
+                        uri
+                    )
+
+            # TODO the cleanup will change later, when website_url gets
+            # introduced.
+            if uri is None and request.method != "POST":
+                delete_session_data(
                     request,
-                    self.client_name_key,
-                    authorize.client.name
-                )
-                update_session_data(
-                    request,
-                    self.client_uri_key,
-                    authorize.params["redirect_uri"]
-                )
-                update_session_data(
-                    request,
-                    self.client_terms_key,
-                    authorize.client.terms_url
-                )
-                update_session_data(
-                    request,
-                    "redirect_uri_validation",
-                    uri
+                    [
+                        self.client_uri_key, self.client_name_key,
+                        self.client_terms_key, "redirect_uri_validation"
+                    ]
                 )
 
     def process_response(self, request, response):
+        # Nice to have, extra cleanup hook
         if response.status_code == 302:
             current_host = request.get_host()
             location = response.get("Location", "")
