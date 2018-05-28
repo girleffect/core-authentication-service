@@ -107,7 +107,7 @@ class LoginView(core.LoginView):
                     username = form.cleaned_data["username"]
                     password = form.cleaned_data["password"]
 
-                    # TODO Update get with client_id
+                    # TODO Update get with client_id contained within ?next
                     try:
                         user = TemporaryMigrationUserStore.objects.get(
                             username=username
