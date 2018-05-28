@@ -22,7 +22,7 @@ THEME_NAME_MAP = {
 
 
 def get_theme_client_name(request):
-    theme = request.META["X-Django-Layer"]
+    theme = request.META.get("X-Django-Layer", None)
     fallback_name = request.session.get(
         EXTRA_SESSION_KEY,
         {}
