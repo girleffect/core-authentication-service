@@ -16,7 +16,9 @@ from django.utils.translation import ugettext as _
 
 from authentication_service import exceptions, api_helpers
 from authentication_service.constants import SESSION_KEYS, EXTRA_SESSION_KEY
-from authentication_service.utils import update_session_data, get_session_data
+from authentication_service.utils import (
+    update_session_data, get_session_data, delete_session_data
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -53,19 +55,22 @@ def fetch_theme(request, key=None):
     if theme is None:
         theme = get_session_data(request, key)
 
-    return theme
+    return theme.lower() if isinstance(theme, str) else theme
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
     session_theme_key = SESSION_KEYS["theme"]
 
     def process_request(self, request):
+        theme = fetch_theme(request, self.session_theme_key)
         if request.path in SESSION_UPDATE_URL_WHITELIST:
-            theme = fetch_theme(request, self.session_theme_key)
-            update_session_data(request, self.session_theme_key, theme)
-            request.META["X-Django-Layer"] = theme
-        else:
-            request.META.pop("X-Django-Layer", None)
+            if theme:
+                update_session_data(request, self.session_theme_key, theme)
+            else:
+               delete_session_data(request, self.session_theme_key)
+
+        # Header still needs to be set PER request
+        request.META["X-Django-Layer"] = theme
 
 
 def authorize_client(request):
@@ -100,7 +105,6 @@ class SiteInactiveMiddleware(MiddlewareMixin):
         # checks if (1) this is a login request and (2) if the client_id provided is
         # linked to a disabled site. If so, login is prevented by rendering a custom
         # page explaining that the site has been disabled.
-
         path_without_trailing_slash = request.path.rstrip("/")
         if path_without_trailing_slash == reverse("oidc_provider:authorize") and \
                 request.method != "POST":
