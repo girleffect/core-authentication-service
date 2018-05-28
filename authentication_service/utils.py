@@ -194,7 +194,7 @@ def range_filter_parser(date_range: str):
     return {"gte": parsed_range["from"], "lte": parsed_range["to"]}
 
 
-def update_session(request, key, data):
+def update_session_data(request, key, data):
     if not request.session.get(EXTRA_SESSION_KEY, None):
         request.session[EXTRA_SESSION_KEY] = {}
     request.session[EXTRA_SESSION_KEY][key] = data

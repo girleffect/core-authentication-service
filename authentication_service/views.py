@@ -54,45 +54,6 @@ class LanguageMixin:
         return super(LanguageMixin, self).dispatch(*args, **kwargs)
 
 
-class RedirectMixin:
-    """This mixin gets the redirect URL parameter from the request URL. This URL
-    is used as the success_url attribute. If no redirect_url is set, it will
-    default to the Login URL.
-
-    For registration, this mixin also checks the security level of the request.
-    If the security level is high, the success URL will redirect to 2FA setup.
-
-    TODO: Security should be moved out.
-    """
-    success_url = None
-
-    def dispatch(self, *args, **kwargs):
-        self.redirect_url = utils.get_session_data(
-            self.request, REDIRECT_SESSION_KEY
-        )
-        return super(RedirectMixin, self).dispatch(*args, **kwargs)
-
-    def get_success_url(self):
-        url = settings.LOGIN_URL
-        if hasattr(
-                self, "security"
-        ) and self.security == "high" or self.request.GET.get(
-                "show2fa") == "true":
-            url = reverse("two_factor_auth:setup")
-        elif self.success_url:
-            url = self.success_url
-        elif self.redirect_url:
-            url = self.redirect_url
-        return url
-
-
-class LanguageRedirectMixin(LanguageMixin, RedirectMixin):
-    """
-    Combined class for the frequently used Language and Redirect mixins.
-    Language can safely be set on views that make no use of it.
-    """
-
-
 class LockoutView(TemplateView):
     """
     A view used by Defender to inform the user that they have exceeded the
@@ -185,7 +146,7 @@ watch_login_method = method_decorator(defender_decorator)
 LoginView.dispatch = watch_login_method(LoginView.dispatch)
 
 
-class RegistrationView(LanguageRedirectMixin, CreateView):
+class RegistrationView(LanguageMixin, CreateView):
     template_name = "authentication_service/registration.html"
     form_class = forms.RegistrationForm
     security = None
@@ -264,6 +225,18 @@ class RegistrationView(LanguageRedirectMixin, CreateView):
 
         return response
 
+    def get_success_url(self):
+        key = constants.SESSION_KEYS["redirect_client_uri"]
+        uri = utils.get_session_data(self.request, key)
+        if hasattr(
+                self, "security"
+        ) and self.security == "high" or self.request.GET.get(
+                "show2fa") == "true":
+            return reverse("two_factor_auth:setup")
+        elif uri:
+            return uri
+        return reverse("login")
+
 
 class SessionRedirectView(View):
     """
@@ -282,7 +255,7 @@ class SessionRedirectView(View):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 
-class EditProfileView(LanguageRedirectMixin, UpdateView):
+class EditProfileView(LanguageMixin, UpdateView):
     template_name = "authentication_service/profile/edit_profile.html"
     form_class = forms.EditProfileForm
 
@@ -297,8 +270,15 @@ class EditProfileView(LanguageRedirectMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
+    def get_success_url(self):
+        key = constants.SESSION_KEYS["redirect_client_uri"]
+        uri = utils.get_session_data(self.request, key)
+        if uri:
+            return uri
+        return reverse("edit_profile")
 
-class UpdatePasswordView(LanguageRedirectMixin, PasswordChangeView):
+
+class UpdatePasswordView(LanguageMixin, PasswordChangeView):
     template_name = "authentication_service/profile/update_password.html"
     form_class = forms.PasswordChangeForm
     success_url = reverse_lazy("edit_profile")
@@ -312,7 +292,7 @@ class UpdatePasswordView(LanguageRedirectMixin, PasswordChangeView):
         return super(UpdatePasswordView, self).form_valid(form)
 
 
-class UpdateSecurityQuestionsView(LanguageRedirectMixin, TemplateView):
+class UpdateSecurityQuestionsView(LanguageMixin, TemplateView):
     template_name = \
         "authentication_service/profile/update_security_questions.html"
     success_url = reverse_lazy("edit_profile")
@@ -362,7 +342,7 @@ class UpdateSecurityQuestionsView(LanguageRedirectMixin, TemplateView):
         formset = self.get_formset
         if formset.is_valid():
             formset.save()
-            return HttpResponseRedirect(self.get_success_url())
+            return HttpResponseRedirect(self.success_url)
         else:
             return self.render(request, formset)
 

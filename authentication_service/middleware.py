@@ -16,7 +16,7 @@ from django.utils.translation import ugettext as _
 
 from authentication_service import exceptions, api_helpers
 from authentication_service.constants import SESSION_KEYS, EXTRA_SESSION_KEY
-from authentication_service.utils import update_session, get_session_data
+from authentication_service.utils import update_session_data, get_session_data
 
 
 LOGGER = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         theme = fetch_theme(request, self.session_theme_key)
-        update_session(request, self.session_theme_key, theme)
+        update_session_data(request, self.session_theme_key, theme)
         request.META["X-Django-Layer"] = theme
 
 
@@ -145,22 +145,22 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                     raise e
 
             if authorize:
-                update_session(
+                update_session_data(
                     request,
                     self.client_name_key,
                     authorize.client.name
                 )
-                update_session(
+                update_session_data(
                     request,
                     self.client_uri_key,
                     authorize.params["redirect_uri"]
                 )
-                update_session(
+                update_session_data(
                     request,
                     self.client_terms_key,
                     authorize.client.terms_url
                 )
-                update_session(
+                update_session_data(
                     request,
                     "redirect_uri_validation",
                     uri
