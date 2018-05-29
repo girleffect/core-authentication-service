@@ -36,6 +36,14 @@ class TestLogin(TestCase):
         )
         cls.user.is_active = False
         cls.user.save()
+        cls.client = Client.objects.create(
+            client_id="migration_client_id",
+            name= "MigrationCLient",
+            client_secret= "super_client_secret_1",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["http://example.com/"]
+        )
 
     def test_inactive_user_login(self):
         data = {

@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 import uuid
 
+import django
 from django.db import migrations, models
 from django.contrib.auth.hashers import make_password
 
@@ -37,9 +38,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='temporarymigrationuserstore',
-            name='client_id',
-            field=models.CharField(default='2147483647', max_length=255),
-            preserve_default=False,
+            name='client',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='oidc_provider.Client', to_field='client_id'),
         ),
         migrations.AddField(
             model_name='temporarymigrationuserstore',
@@ -55,11 +55,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='temporarymigrationuserstore',
-            unique_together=set([('username', 'client_id'), ('user_id', 'client_id')]),
+            unique_together=set([('username', 'client'), ('user_id', 'client')]),
         ),
         migrations.AddIndex(
             model_name='temporarymigrationuserstore',
-            index=models.Index(fields=['username', 'client_id'], name='user_migrat_usernam_c7b8d5_idx'),
+            index=models.Index(fields=['username', 'client'], name='user_migrat_usernam_c7b8d5_idx'),
         ),
         migrations.RemoveField(
             model_name='temporarymigrationuserstore',

@@ -1,6 +1,8 @@
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
 
+from oidc_provider.models import Client
+
 
 class TemporaryMigrationUserStore(models.Model):
     username = models.CharField(
@@ -10,7 +12,7 @@ class TemporaryMigrationUserStore(models.Model):
     )
     pw_hash = models.CharField("password", max_length=128)
     user_id = models.IntegerField()
-    client_id = models.CharField(max_length=255)
+    client = models.ForeignKey(Client, to_field="client_id", null=True)
     question_one = models.CharField(max_length=128)
     question_two = models.CharField(max_length=128)
     answer_one = models.CharField(max_length=128)
@@ -18,11 +20,11 @@ class TemporaryMigrationUserStore(models.Model):
 
     class Meta:
         unique_together = (
-            ("username", "client_id"),
-            ("user_id", "client_id")
+            ("username", "client"),
+            ("user_id", "client")
         )
         indexes = [
-            models.Index(fields=["username", "client_id"]),
+            models.Index(fields=["username", "client"]),
         ]
 
     def check_password(self, raw_password):
