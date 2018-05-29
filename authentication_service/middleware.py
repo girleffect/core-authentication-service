@@ -1,7 +1,7 @@
 from urllib.parse import urlparse, parse_qs
 import logging
 
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
 from oidc_provider.lib.errors import (
     AuthorizeError,
@@ -11,15 +11,49 @@ from oidc_provider.lib.errors import (
 
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from authentication_service import exceptions, api_helpers
-from authentication_service.constants import SESSION_KEYS, EXTRA_SESSION_KEY
-from authentication_service.utils import update_session_data, get_session_data
+from authentication_service.constants import SessionKeys, EXTRA_SESSION_KEY
+from authentication_service.utils import (
+    update_session_data, get_session_data, delete_session_data
+)
 
 
 LOGGER = logging.getLogger(__name__)
+
+SESSION_UPDATE_URL_WHITELIST = set([
+    reverse_lazy("registration"),
+    reverse_lazy("oidc_provider:authorize"),
+    reverse_lazy("edit_profile"),
+])
+
+
+def authorize_client(request):
+    """
+    Method to validate client values as supplied on request.
+
+    Returns a oidc AuthorizeEndpoint object or a Django HttpResponse
+    """
+    authorize = AuthorizeEndpoint(request)
+    try:
+        authorize.validate_params()
+    except (ClientIdError, RedirectUriError) as e:
+        return render(
+            request,
+            "authentication_service/redirect_middleware_error.html",
+            {"error": e.error, "message": e.description},
+            status=500
+        )
+    except AuthorizeError as e:
+        # Suppress one of the errors oidc raises. It is not required
+        # for pages beyond login.
+        if e.error == "unsupported_response_type":
+            pass
+        else:
+            raise e
+    return authorize
 
 
 def fetch_theme(request, key=None):
@@ -43,55 +77,47 @@ def fetch_theme(request, key=None):
             # list.
             theme = next_query_args.get("theme", [None])[0]
 
-    if theme is None:
-        theme = get_session_data(request, key)
-
-    return theme
+    return theme.lower() if isinstance(theme, str) else None
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
-    session_theme_key = SESSION_KEYS["theme"]
+    session_theme_key = SessionKeys.THEME
 
     def process_request(self, request):
-        theme = fetch_theme(request, self.session_theme_key)
-        update_session_data(request, self.session_theme_key, theme)
+        if request.path in SESSION_UPDATE_URL_WHITELIST:
+
+            # Grab theme value off of url if available
+            query_theme = fetch_theme(request, self.session_theme_key)
+            if query_theme:
+                update_session_data(
+                    request, self.session_theme_key, query_theme
+                )
+            else:
+                # Cleanup session values stored by this middleware
+                delete_session_data(request, [self.session_theme_key])
+
+        # Header still needs to be set PER request
+        theme = get_session_data(request, self.session_theme_key)
         request.META["X-Django-Layer"] = theme
 
 
-class SessionDataManagementMiddleware(MiddlewareMixin):
-    """
-    NOTE: This Middleware should always be as near the end of the Middleware
-    list in settings. Middleware is evaluated in order and this needs to happen
-    as near the end as possible.
-    """
-    client_uri_key = SESSION_KEYS["redirect_client_uri"]
-    client_name_key = SESSION_KEYS["redirect_client_name"]
-    client_terms_key = SESSION_KEYS["redirect_client_terms"]
-    oidc_values = None
+class SiteInactiveMiddleware(MiddlewareMixin):
 
-    @staticmethod
-    def create_disabled_site_response(request):
+    def process_request(self, request):
+        # Before storing the redirect_uri, ensure it comes from a valid client.
+        # This is to prevent urls on other parts of the site being misused to
+        # redirect users to none client apps.
+
+        # Should the site be disabled we need to prevent login. This helper function
+        # checks if (1) this is a login request and (2) if the client_id provided is
+        # linked to a disabled site. If so, login is prevented by rendering a custom
+        # page explaining that the site has been disabled.
         path_without_trailing_slash = request.path.rstrip("/")
         if path_without_trailing_slash == reverse("oidc_provider:authorize") and \
                 request.method != "POST":
-            authorize = AuthorizeEndpoint(request)
-            try:
-                authorize.validate_params()
-            except (ClientIdError, RedirectUriError) as e:
-                return render(
-                    request,
-                    "authentication_service/redirect_middleware_error.html",
-                    {"error": e.error, "message": e.description},
-                    status=500
-                )
-            except AuthorizeError as e:
-                # Suppress one of the errors oidc raises. It is not required
-                # for pages beyond login.
-                if e.error == "unsupported_response_type":
-                    pass
-                else:
-                    raise e
-
+            authorize = authorize_client(request)
+            if isinstance(authorize, HttpResponse):
+                return authorize
             site_is_active = api_helpers.is_site_active(authorize.client)
             if not site_is_active:
                 return render(
@@ -104,19 +130,23 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                     status=403
                 )
 
+
+class SessionDataManagementMiddleware(MiddlewareMixin):
+    """
+    NOTE: This Middleware should always be as near the end of the Middleware
+    list in settings. Middleware is evaluated in order and this needs to happen
+    as near the end as possible.
+    """
+    client_uri_key = SessionKeys.CLIENT_URI
+    client_name_key = SessionKeys.CLIENT_NAME
+    client_terms_key = SessionKeys.CLIENT_TERMS
+    oidc_values = None
+
+
     def process_request(self, request):
         # Before storing the redirect_uri, ensure it comes from a valid client.
         # This is to prevent urls on other parts of the site being misused to
         # redirect users to none client apps.
-
-        # Should the site be disabled we need to prevent login. This helper function
-        # checks if (1) this is a login request and (2) if the client_id provided is
-        # linked to a disabled site. If so, login is prevented by rendering a custom
-        # page explaining that the site has been disabled.
-
-        response = self.create_disabled_site_response(request)
-        if response:
-            return response
 
         uri = request.GET.get("redirect_uri", None)
 
@@ -125,48 +155,48 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         # unneeded db queries, we added an extra key unique to this middleware
         # that will not be effected if the redirect uri is changed elsewhere.
         validator_uri = get_session_data(request, "redirect_uri_validation")
-        if uri and request.method != "POST" and uri != validator_uri:
-            authorize = AuthorizeEndpoint(request)
-            try:
-                authorize.validate_params()
-            except (ClientIdError, RedirectUriError) as e:
-                return render(
-                    request,
-                    "authentication_service/redirect_middleware_error.html",
-                    {"error": e.error, "message": e.description},
-                    status=500
-                )
-            except AuthorizeError as e:
-                # Suppress one of the errors oidc raises. It is not required
-                # for pages beyond login.
-                if e.error == "unsupported_response_type":
-                    pass
-                else:
-                    raise e
+        if request.path in SESSION_UPDATE_URL_WHITELIST:
+            if uri and request.method != "POST" and uri != validator_uri:
+                authorize = authorize_client(request)
+                if isinstance(authorize, HttpResponse):
+                    return authorize
 
-            if authorize:
-                update_session_data(
+                if isinstance(authorize, AuthorizeEndpoint):
+                    update_session_data(
+                        request,
+                        self.client_name_key,
+                        authorize.client.name
+                    )
+                    update_session_data(
+                        request,
+                        self.client_uri_key,
+                        authorize.params["redirect_uri"]
+                    )
+                    update_session_data(
+                        request,
+                        self.client_terms_key,
+                        authorize.client.terms_url
+                    )
+                    update_session_data(
+                        request,
+                        "redirect_uri_validation",
+                        uri
+                    )
+
+            # TODO the cleanup will change later, when website_url gets
+            # introduced.
+            # Cleanup session values stored by this middleware
+            if uri is None and request.method != "POST":
+                delete_session_data(
                     request,
-                    self.client_name_key,
-                    authorize.client.name
-                )
-                update_session_data(
-                    request,
-                    self.client_uri_key,
-                    authorize.params["redirect_uri"]
-                )
-                update_session_data(
-                    request,
-                    self.client_terms_key,
-                    authorize.client.terms_url
-                )
-                update_session_data(
-                    request,
-                    "redirect_uri_validation",
-                    uri
+                    [
+                        self.client_uri_key, self.client_name_key,
+                        self.client_terms_key, "redirect_uri_validation"
+                    ]
                 )
 
     def process_response(self, request, response):
+        # Nice to have, extra cleanup hook
         if response.status_code == 302:
             current_host = request.get_host()
             location = response.get("Location", "")

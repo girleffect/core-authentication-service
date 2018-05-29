@@ -194,11 +194,18 @@ def range_filter_parser(date_range: str):
     return {"gte": parsed_range["from"], "lte": parsed_range["to"]}
 
 
-def update_session_data(request, key, data):
+def update_session_data(request, key: str, data):
     if not request.session.get(EXTRA_SESSION_KEY, None):
         request.session[EXTRA_SESSION_KEY] = {}
     request.session[EXTRA_SESSION_KEY][key] = data
+    request.session.modified = True
 
 
-def get_session_data(request, key):
+def get_session_data(request, key: str):
     return request.session.get(EXTRA_SESSION_KEY, {}).get(key, None)
+
+
+def delete_session_data(request, keys: [str]) -> None:
+    for key in keys:
+        request.session.get(EXTRA_SESSION_KEY, {}).pop(key, None)
+        request.session.modified = True
