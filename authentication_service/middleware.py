@@ -11,7 +11,7 @@ from oidc_provider.lib.errors import (
 
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from authentication_service import exceptions, api_helpers
@@ -23,11 +23,11 @@ from authentication_service.utils import (
 
 LOGGER = logging.getLogger(__name__)
 
-SESSION_UPDATE_URL_WHITELIST = [
+SESSION_UPDATE_URL_WHITELIST = set([
     reverse_lazy("registration"),
     reverse_lazy("oidc_provider:authorize"),
     reverse_lazy("edit_profile"),
-]
+])
 
 
 def authorize_client(request):
@@ -77,7 +77,7 @@ def fetch_theme(request, key=None):
             # list.
             theme = next_query_args.get("theme", [None])[0]
 
-    return theme.lower() if isinstance(theme, str) else theme
+    return theme.lower() if isinstance(theme, str) else None
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
@@ -116,7 +116,7 @@ class SiteInactiveMiddleware(MiddlewareMixin):
         if path_without_trailing_slash == reverse("oidc_provider:authorize") and \
                 request.method != "POST":
             authorize = authorize_client(request)
-            if not isinstance(authorize, AuthorizeEndpoint):
+            if isinstance(authorize, HttpResponse):
                 return authorize
             site_is_active = api_helpers.is_site_active(authorize.client)
             if not site_is_active:
@@ -158,7 +158,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         if request.path in SESSION_UPDATE_URL_WHITELIST:
             if uri and request.method != "POST" and uri != validator_uri:
                 authorize = authorize_client(request)
-                if not isinstance(authorize, AuthorizeEndpoint):
+                if isinstance(authorize, HttpResponse):
                     return authorize
 
                 if isinstance(authorize, AuthorizeEndpoint):
