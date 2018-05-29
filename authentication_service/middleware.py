@@ -15,7 +15,7 @@ from django.http import HttpResponseBadRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from authentication_service import exceptions, api_helpers
-from authentication_service.constants import SESSION_KEYS, EXTRA_SESSION_KEY
+from authentication_service.constants import SessionKeys, EXTRA_SESSION_KEY
 from authentication_service.utils import (
     update_session_data, get_session_data, delete_session_data
 )
@@ -81,7 +81,7 @@ def fetch_theme(request, key=None):
 
 
 class ThemeManagementMiddleware(MiddlewareMixin):
-    session_theme_key = SESSION_KEYS["theme"]
+    session_theme_key = SessionKeys.THEME
 
     def process_request(self, request):
         if request.path in SESSION_UPDATE_URL_WHITELIST:
@@ -137,9 +137,9 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     list in settings. Middleware is evaluated in order and this needs to happen
     as near the end as possible.
     """
-    client_uri_key = SESSION_KEYS["redirect_client_uri"]
-    client_name_key = SESSION_KEYS["redirect_client_name"]
-    client_terms_key = SESSION_KEYS["redirect_client_terms"]
+    client_uri_key = SessionKeys.CLIENT_URI
+    client_name_key = SessionKeys.CLIENT_NAME
+    client_terms_key = SessionKeys.CLIENT_TERMS
     oidc_values = None
 
 

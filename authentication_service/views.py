@@ -40,7 +40,7 @@ from authentication_service.forms import LoginForm
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 
-REDIRECT_SESSION_KEY = constants.SESSION_KEYS["redirect_client_uri"]
+REDIRECT_SESSION_KEY = constants.SessionKeys.CLIENT_URI
 
 
 class LanguageMixin:
@@ -226,7 +226,7 @@ class RegistrationView(LanguageMixin, CreateView):
         return response
 
     def get_success_url(self):
-        key = constants.SESSION_KEYS["redirect_client_uri"]
+        key = REDIRECT_SESSION_KEY
         uri = utils.get_session_data(self.request, key)
         if hasattr(
                 self, "security"
@@ -271,7 +271,7 @@ class EditProfileView(LanguageMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        key = constants.SESSION_KEYS["redirect_client_uri"]
+        key = REDIRECT_SESSION_KEY
         uri = utils.get_session_data(self.request, key)
         if uri:
             return uri

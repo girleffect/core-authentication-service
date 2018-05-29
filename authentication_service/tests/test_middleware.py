@@ -90,19 +90,19 @@ class TestRedirectManagementMiddleware(TestCase):
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.SESSION_KEYS["redirect_client_name"]],
+                    constants.SessionKeys.CLIENT_NAME],
             self.client_obj.name
         )
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.SESSION_KEYS["redirect_client_uri"]],
+                    constants.SessionKeys.CLIENT_URI],
             "http://example.com/"
         )
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.SESSION_KEYS["redirect_client_name"]],
+                    constants.SessionKeys.CLIENT_NAME],
             self.client_obj.name
         )
 
@@ -256,7 +256,7 @@ class TestThemeMiddleware(TestCase):
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.SESSION_KEYS["theme"]],
+                    constants.SessionKeys.THEME],
             "springster"
         )
         self.assertContains(
@@ -276,7 +276,7 @@ class TestThemeMiddleware(TestCase):
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.SESSION_KEYS["theme"]],
+                    constants.SessionKeys.THEME],
             "ninyampinga"
         )
         self.assertContains(
@@ -296,7 +296,7 @@ class TestThemeMiddleware(TestCase):
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.SESSION_KEYS["theme"]],
+                    constants.SessionKeys.THEME],
             "zathu"
         )
         self.assertContains(
@@ -325,7 +325,7 @@ class TestThemeMiddleware(TestCase):
         self.assertEquals(
             self.client.session.get(
                 constants.EXTRA_SESSION_KEY, {}).get(
-                    constants.SESSION_KEYS["theme"]),
+                    constants.SessionKeys.THEME),
             None
         )
         self.assertContains(
@@ -350,7 +350,7 @@ class TestThemeMiddleware(TestCase):
         self.assertEquals(
             self.client.session.get(
                 constants.EXTRA_SESSION_KEY, {}).get(
-                    constants.SESSION_KEYS["theme"]),
+                    constants.SessionKeys.THEME),
             None
         )
         self.assertContains(
@@ -375,7 +375,7 @@ class TestThemeMiddleware(TestCase):
         self.assertEquals(
             self.client.session.get(
                 constants.EXTRA_SESSION_KEY, {}).get(
-                    constants.SESSION_KEYS["theme"]),
+                    constants.SessionKeys.THEME),
             None
         )
         self.assertContains(
@@ -400,7 +400,7 @@ class TestThemeMiddleware(TestCase):
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.SESSION_KEYS["theme"]],
+                    constants.SessionKeys.THEME],
             "springster"
         )
         self.assertContains(
