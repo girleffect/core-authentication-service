@@ -751,8 +751,13 @@ class TestRegistrationView(TestCase):
         )
         response = self.client.get(
             reverse(
-                "redirect_view"
+                "registration"
             ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url-something/"
+        )
+        response = self.client.get(
+            reverse(
+                "redirect_view"
+            )
         )
         self.assertIn(response.url, "/test-redirect-url-something/")
 
