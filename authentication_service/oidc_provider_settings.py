@@ -101,7 +101,10 @@ class CustomScopeClaims(ScopeClaims):
         # TODO Only send migration_information along if client_ids match
         result = {
             "site": {"retrieved_at": f"{now}", "data": data},
-            "migration_information": self.user.migration_data
+            "migration_information": self.user.migration_data \
+                if str(self.client.client_id) == self.user.migration_data.get(
+                    "client_id") \
+                else {}
         }
 
         return result
