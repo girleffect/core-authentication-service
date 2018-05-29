@@ -2,6 +2,7 @@ import datetime
 import random
 
 from django.conf import settings
+from django.contrib import auth
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth import hashers
 from django.core.urlresolvers import reverse
@@ -35,6 +36,14 @@ class TestLogin(TestCase):
         )
         cls.user.is_active = False
         cls.user.save()
+        cls.client = Client.objects.create(
+            client_id="migration_client_id",
+            name= "MigrationCLient",
+            client_secret= "super_client_secret_1",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["http://example.com/"]
+        )
 
     def test_inactive_user_login(self):
         data = {
@@ -68,8 +77,7 @@ class TestLogin(TestCase):
     def test_migrated_user_login(self):
         temp_user = TemporaryMigrationUserStore.objects.create(
             username="migrateduser",
-            app_id=1,
-            site_id=1,
+            client_id="migration_client_id",
             user_id=1
         )
         temp_user.set_password("Qwer!234")
@@ -80,7 +88,7 @@ class TestLogin(TestCase):
             "auth-password": "Qwer!234"
         }
         response = self.client.post(
-            reverse("login"),
+            f"{reverse('login')}?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id%3Dmigration_client_id%26redirect_uri%3Dhttp%3A%2F%2Fexample.com%2F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
             data=data,
             follow=True
         )
@@ -107,7 +115,7 @@ class TestMigration(TestCase):
     # Wizard helper methods
     def do_login(self, data):
         return self.client.post(
-            reverse("login"),
+            f"{reverse('login')}?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id%3Dmigration_client_id%26redirect_uri%3Dhttp%3A%2F%2Fexample.com%2F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
             data=data,
             follow=True
         )
@@ -117,8 +125,7 @@ class TestMigration(TestCase):
         super(TestMigration, cls).setUpTestData()
         cls.temp_user = TemporaryMigrationUserStore.objects.create(
             username="coolmigrateduser",
-            app_id=3,
-            site_id=3,
+            client_id="migration_client_id",
             user_id=3
         )
         cls.temp_user.set_password("Qwer!234")
@@ -265,6 +272,7 @@ class TestMigration(TestCase):
             response, "Each question can only be picked once."
         )
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_migration_step(self):
         # Login and get the response url
         data = {
@@ -306,7 +314,10 @@ class TestMigration(TestCase):
             data=data,
             follow=True
         )
-        self.assertRedirects(response, reverse("login"))
+        self.assertRedirects(
+            response,
+            "/openid/authorize/?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http://example.com/&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO"
+        )
         self.assertEqual(get_user_model().objects.filter(
             username="newusername").count(), 1
         )
@@ -320,15 +331,15 @@ class TestMigration(TestCase):
                 username="coolmigrateduser").count(),
             0
         )
+        session_user = auth.get_user(self.client)
         self.assertEqual(
-            response._request.user,
+            session_user,
             get_user_model().objects.get(username="newusername")
         )
         self.assertEqual(
             get_user_model().objects.get(username="newusername").migration_data,
             {
-                "app_id": 3,
-                "site_id": 3,
+                "client_id": "migration_client_id",
                 "user_id": 3,
                 "username": "coolmigrateduser"
             }
@@ -338,8 +349,7 @@ class TestMigration(TestCase):
     def test_migration_redirect_persist(self):
         temp_user = TemporaryMigrationUserStore.objects.create(
             username="newmigratedsupercooluser",
-            app_id=2,
-            site_id=2,
+            client_id="migration_client_id",
             user_id=2
         )
         temp_user.set_password("Qwer!234")

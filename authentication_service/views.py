@@ -1,5 +1,6 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from urllib.parse import urlparse, parse_qs
 import urllib
 
 from defender.decorators import watch_login
@@ -102,38 +103,47 @@ class LoginView(core.LoginView):
             if not form.is_valid():
                 form_user = form.get_user()
 
-                # Only do these checks if no user was authenticated.
-                if form_user is None:
-                    username = form.cleaned_data["username"]
-                    password = form.cleaned_data["password"]
+                # Only to be triggered during oidc login, next containing
+                # client_id is expected
+                next_query = self.request.GET.get("next")
+                if next_query:
+                    next_query_args = parse_qs(urlparse(next_query).query)
 
-                    # TODO Update get with app_id and site_id
-                    try:
-                        user = TemporaryMigrationUserStore.objects.get(
-                            username=username
-                        )
+                    # Query values are in list form. Only grab the first value
+                    # from the list.
+                    client_id = next_query_args.get("client_id", [None])[0]
+                    # Only do these checks if no user was authenticated and
+                    # client_id is present
+                    if form_user is None and client_id:
+                        username = form.cleaned_data["username"]
+                        password = form.cleaned_data["password"]
 
-                        token = signing.dumps(
-                            user.id, salt="ge-migration-user-registration"
-                        )
+                        try:
+                            user = TemporaryMigrationUserStore.objects.get(
+                                username=username, client_id=client_id
+                            )
 
-                        # If the temp user password matches, redirect to
-                        # migration wizard.
-                        if user.check_password(password):
-                            querystring =  urllib.parse.quote_plus(
-                                self.request.GET.get("next", "")
+                            token = signing.dumps(
+                                user.id, salt="ge-migration-user-registration"
                             )
-                            url = reverse(
-                                "user_migration:migrate_user", kwargs={
-                                    "token": token
-                                }
-                            )
-                            return redirect(
-                                f"{url}?persist_query={querystring}"
-                            )
-                    except TemporaryMigrationUserStore.DoesNotExist:
-                        # Let login fail as usual
-                        pass
+
+                            # If the temp user password matches, redirect to
+                            # migration wizard.
+                            if user.check_password(password):
+                                querystring =  urllib.parse.quote_plus(
+                                    self.request.GET.get("next", "")
+                                )
+                                url = reverse(
+                                    "user_migration:migrate_user", kwargs={
+                                        "token": token
+                                    }
+                                )
+                                return redirect(
+                                    f"{url}?persist_query={querystring}"
+                                )
+                        except TemporaryMigrationUserStore.DoesNotExist:
+                            # Let login fail as usual
+                            pass
         return super(LoginView, self).post(*args, **kwargs)
 
 

@@ -100,8 +100,9 @@ class CustomScopeClaims(ScopeClaims):
         now = timezone.now().astimezone(datetime.timezone.utc).isoformat()
         result = {
             "site": {"retrieved_at": f"{now}", "data": data},
-            "migration_information": self.user.migration_data
         }
+        if self.client.client_id == self.user.migration_data.get("client_id"):
+            result["migration_information"] = self.user.migration_data
 
         return result
 
