@@ -10,7 +10,7 @@ class TemporaryMigrationUserStore(models.Model):
     )
     pw_hash = models.CharField("password", max_length=128)
     user_id = models.IntegerField()
-    client_id = models.IntegerField()
+    client_id = models.CharField(max_length=255)
     question_one = models.CharField(max_length=128)
     question_two = models.CharField(max_length=128)
     answer_one = models.CharField(max_length=128)

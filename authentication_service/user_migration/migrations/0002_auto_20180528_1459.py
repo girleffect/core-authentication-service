@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='temporarymigrationuserstore',
             name='client_id',
-            field=models.IntegerField(default=2147483647),
+            field=models.CharField(default='2147483647', max_length=255),
             preserve_default=False,
         ),
         migrations.AddField(
