@@ -297,9 +297,7 @@ if DEBUG:
         "",  # For the docker compose environment
         "127.0.0.1"  # Localhost
     ]
-    additional_internal_ips = env.list("INTERNAL_IPS", "")
-    if additional_internal_ips:
-        INTERNAL_IPS.extend(additional_internal_ips)
+    INTERNAL_IPS.extend(env.list("INTERNAL_IPS", ""))  # Add additional IPs passed in the env.
 
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
