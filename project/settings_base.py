@@ -48,7 +48,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    # None Django common middleware
+    # Non-Django common middleware
     'authentication_service.middleware.ThemeManagementMiddleware',
     'authentication_service.middleware.SiteInactiveMiddleware',
 ]
