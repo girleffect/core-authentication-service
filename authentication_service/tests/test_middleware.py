@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
+from django.utils.translation import activate
 
 from oidc_provider.models import Client
 
@@ -241,6 +242,7 @@ class TestThemeMiddleware(TestCase):
         )
         cls.user.set_password("D4isy")
         cls.user.save()
+        activate("fr")
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     @patch("authentication_service.api_helpers.is_site_active")

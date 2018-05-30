@@ -23,11 +23,15 @@ from authentication_service.utils import (
 
 LOGGER = logging.getLogger(__name__)
 
-SESSION_UPDATE_URL_WHITELIST = set([
+# `set()` seems to force the evaluation of the callables returned by
+# `reverse_lazy()`. This in turn causes issues with some comparisons, due to
+# Django locales also playing a role in the url structures.
+# TL;DR, keep this a list
+SESSION_UPDATE_URL_WHITELIST = [
     reverse_lazy("registration"),
     reverse_lazy("oidc_provider:authorize"),
     reverse_lazy("edit_profile"),
-])
+]
 
 
 def authorize_client(request):
