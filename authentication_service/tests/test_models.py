@@ -164,3 +164,8 @@ class TestQuestionLanguageModels(TestCase):
             question_text="Translation text",
             question=self.question_two
         )
+        QuestionLanguageText.objects.create(
+            language_code="af",
+            question_text="Slightly tweaked text",
+            question=self.question_two
+        )

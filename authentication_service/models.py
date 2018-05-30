@@ -204,6 +204,7 @@ class SecurityQuestion(models.Model):
 
 class QuestionLanguageText(models.Model):
     language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
+    # TODO:Created GE-1092
     question = models.ForeignKey(
         "SecurityQuestion", on_delete=models.CASCADE
     )
