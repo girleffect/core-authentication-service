@@ -88,7 +88,8 @@ class ThemeManagementMiddleware(MiddlewareMixin):
     session_theme_key = SessionKeys.THEME
 
     def process_request(self, request):
-        if request.path in SESSION_UPDATE_URL_WHITELIST:
+        if request.path.rstrip("/") in [
+                path.rstrip("/") for path in SESSION_UPDATE_URL_WHITELIST]:
 
             # Grab theme value off of url if available
             query_theme = fetch_theme(request, self.session_theme_key)
@@ -116,9 +117,9 @@ class SiteInactiveMiddleware(MiddlewareMixin):
         # checks if (1) this is a login request and (2) if the client_id provided is
         # linked to a disabled site. If so, login is prevented by rendering a custom
         # page explaining that the site has been disabled.
-        path_without_trailing_slash = request.path.rstrip("/")
-        if path_without_trailing_slash == reverse("oidc_provider:authorize") and \
-                request.method != "POST":
+        if request.path.rstrip("/") == \
+                reverse("oidc_provider:authorize").rstrip("/") and \
+                request.method == "GET":
             authorize = authorize_client(request)
             if isinstance(authorize, HttpResponse):
                 return authorize
@@ -159,8 +160,9 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         # unneeded db queries, we added an extra key unique to this middleware
         # that will not be effected if the redirect uri is changed elsewhere.
         validator_uri = get_session_data(request, "redirect_uri_validation")
-        if request.path in SESSION_UPDATE_URL_WHITELIST:
-            if uri and request.method != "POST" and uri != validator_uri:
+        if request.path.rstrip("/") in [
+                path.rstrip("/") for path in SESSION_UPDATE_URL_WHITELIST]:
+            if uri and request.method == "GET" and uri != validator_uri:
                 authorize = authorize_client(request)
                 if isinstance(authorize, HttpResponse):
                     return authorize
