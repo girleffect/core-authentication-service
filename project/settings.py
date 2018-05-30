@@ -81,12 +81,11 @@ ADDITIONAL_APPS = [
 INSTALLED_APPS = [
     "authentication_service",
     "authentication_service.user_migration"
-] + INSTALLED_APPS + ADDITIONAL_APPS + ["debug_toolbar"]
+] + INSTALLED_APPS + ADDITIONAL_APPS
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.SessionDataManagementMiddleware",
@@ -281,8 +280,26 @@ if not any([IS_WORKER, env.bool("BUILDER", False)]):
         )
     )
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env.bool("DEBUG", False)
+
 # Attempt to import local settings if present.
 try:
     from project.settings_local import *
 except ImportError:
     pass
+
+# The debug flag can be overwritten by settings_local, so we check it here
+# to determine whether to include
+if DEBUG:
+    # IPs that are considered "internal" by Django Debug Toolbar
+    INTERNAL_IPS = [
+        "",  # For the docker compose environment
+        "127.0.0.1"  # Localhost
+    ]
+    additional_internal_ips = env.str("INTERNAL_IPS", "")
+    if additional_internal_ips:
+        INTERNAL_IPS.extend(additional_internal_ips.split(","))
+
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
