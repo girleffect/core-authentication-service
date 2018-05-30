@@ -81,11 +81,12 @@ ADDITIONAL_APPS = [
 INSTALLED_APPS = [
     "authentication_service",
     "authentication_service.user_migration"
-] + INSTALLED_APPS + ADDITIONAL_APPS
+] + INSTALLED_APPS + ADDITIONAL_APPS + ["debug_toolbar"]
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.SessionDataManagementMiddleware",
