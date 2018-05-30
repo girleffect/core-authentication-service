@@ -4,9 +4,11 @@ import datetime
 from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth import get_user_model, hashers
+from django.core.exceptions import ValidationError
 
-from authentication_service.models import SecurityQuestion, \
-    UserSecurityQuestion, Country
+from authentication_service.models import (
+    SecurityQuestion, UserSecurityQuestion, Country, QuestionLanguageText
+)
 
 
 class TestRegistrationModels(TestCase):
@@ -125,4 +127,40 @@ class UserModelTestCase(TestCase):
         self.assertEquals(
             user.q,
             f"{uid}@email.com Altered AlteredLastName 0865412369 N1ckN4m3 {uid}"
+        )
+
+
+class TestQuestionLanguageModels(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestQuestionLanguageModels, cls).setUpTestData()
+        # Security questions
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+    def test_q_field(self):
+        QuestionLanguageText.objects.create(
+            language_code="fr",
+            question_text="Translation text",
+            question=self.question_one
+        )
+        with self.assertRaises(ValidationError) as e:
+            QuestionLanguageText.objects.create(
+                language_code="fr",
+                question_text="Translation text",
+                question=self.question_two
+            )
+            self.assertEqual(
+                e.message,
+                "Question text can not be assigned to more than one question."
+            )
+        QuestionLanguageText.objects.create(
+            language_code="af",
+            question_text="Translation text",
+            question=self.question_two
         )

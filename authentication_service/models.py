@@ -212,13 +212,21 @@ class QuestionLanguageText(models.Model):
     def validate_unique(self, *args, **kwargs):
         super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
         if SecurityQuestion.objects.filter(
-                questionlanguagetext__id=self.id).count() > 1:
+            questionlanguagetext__question_text=self.question_text,
+            questionlanguagetext__language_code=self.language_code
+        ).exists():
             raise ValidationError(
                 _("Question text can not be assigned to more than one question.")
             )
 
     def __str__(self):
         return "%s - %s" % (self.language_code, self.question.id)
+
+    def save(self, *args, **kwargs):
+        # Initial was too reliant on django admin forms calling
+        # validate_unique. This helps cover for api create/update calls too.
+        self.validate_unique()
+        super(QuestionLanguageText, self).save(*args, **kwargs)
 
 
 class OrganisationalUnit(models.Model):
