@@ -280,8 +280,24 @@ if not any([IS_WORKER, env.bool("BUILDER", False)]):
         )
     )
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env.bool("DEBUG", False)
+
 # Attempt to import local settings if present.
 try:
     from project.settings_local import *
 except ImportError:
     pass
+
+# The debug flag can be overwritten by settings_local, so we check it here
+# to determine whether to include
+if DEBUG:
+    # IPs that are considered "internal" by Django Debug Toolbar
+    INTERNAL_IPS = [
+        "",  # For the docker compose environment
+        "127.0.0.1"  # Localhost
+    ]
+    INTERNAL_IPS.extend(env.list("INTERNAL_IPS", ""))  # Add additional IPs passed in the env.
+
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
