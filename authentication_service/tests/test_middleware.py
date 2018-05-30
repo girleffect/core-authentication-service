@@ -274,6 +274,33 @@ class TestThemeMiddleware(TestCase):
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     @patch("authentication_service.api_helpers.is_site_active")
+    def test_login_theme_with_trailingslash(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            "/openid/authorize/" \
+            "?theme=springster&response_type=code&scope=openid&client_id=client_id_1&" \
+            "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
+        )
+        self.assertRedirects(
+            response, f"{reverse('login')}" \
+            "?next=/openid/authorize/%3Ftheme%3Dspringster%26response_type" \
+            "%3Dcode%26scope%3Dopenid%26client_id%3Dclient_id_1" \
+            "%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "springster"
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="springster" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
     def test_registration_theme(self, mocked_is_site_active):
         mocked_is_site_active.return_value = True
         response = self.client.get(
