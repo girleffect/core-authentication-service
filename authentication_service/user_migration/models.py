@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from oidc_provider.models import Client
@@ -13,8 +14,8 @@ class TemporaryMigrationUserStore(models.Model):
     pw_hash = models.CharField("password", max_length=128)
     user_id = models.IntegerField()
     client = models.ForeignKey(Client, to_field="client_id", null=True)
-    question_one = models.CharField(max_length=128)
-    question_two = models.CharField(max_length=128)
+    question_one = JSONField(blank=True, default={})
+    question_two = JSONField(blank=True, default={})
     answer_one = models.CharField(max_length=128)
     answer_two = models.CharField(max_length=128)
 
