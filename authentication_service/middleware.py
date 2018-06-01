@@ -9,10 +9,12 @@ from oidc_provider.lib.errors import (
     RedirectUriError
 )
 
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
-from django.http import HttpResponseBadRequest, HttpResponse
+from django.utils.translation import LANGUAGE_SESSION_KEY, check_for_language
 from django.utils.translation import ugettext as _
+from django.views.i18n import LANGUAGE_QUERY_PARAMETER
 
 from authentication_service import exceptions, api_helpers
 from authentication_service.constants import SessionKeys, EXTRA_SESSION_KEY
@@ -224,3 +226,11 @@ class ErrorMiddleware(MiddlewareMixin):
     def process_exception(self, request, exc):
         if isinstance(exc, exceptions.BadRequestException):
             return HttpResponseBadRequest(exc.args)
+
+
+class UpdateLanguageMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        language_code = request.GET.get(LANGUAGE_QUERY_PARAMETER, None)
+        import pdb; pdb.set_trace()
+        if language_code and check_for_language(language_code):
+            request.session[LANGUAGE_SESSION_KEY] = language_code

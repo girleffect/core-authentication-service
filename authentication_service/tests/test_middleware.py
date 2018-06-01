@@ -442,3 +442,13 @@ class TestThemeMiddleware(TestCase):
             response,
             '<div id="ge-template-theme" name="springster" />'
         )
+
+
+class TestLanguageUpdateMiddleware(TestCase):
+
+    def test_language_update(self):
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?language=prs"
+        )

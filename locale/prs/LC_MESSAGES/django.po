@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-01 11:55+0200\n"
+"POT-Creation-Date: 2018-06-01 12:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: authentication_service/forms.py:53
 msgid "Accept terms and conditions"
@@ -28,59 +27,59 @@ msgstr ""
 
 #: authentication_service/forms.py:130
 msgid "Display name"
-msgstr "Anzeigename"
+msgstr ""
 
 #: authentication_service/forms.py:135
 msgid "Mobile"
-msgstr "Mobiltelefon"
+msgstr ""
 
 #: authentication_service/forms.py:140 authentication_service/forms.py:371
 msgid "Age"
-msgstr "Alter"
+msgstr ""
 
 #: authentication_service/forms.py:191 authentication_service/forms.py:555
 msgid "Password not long enough."
-msgstr "Passwort nicht lang genug."
+msgstr ""
 
 #: authentication_service/forms.py:226
 msgid "Enter either email or msisdn"
-msgstr "Geben Sie entweder E-Mail oder Handynummer ein"
+msgstr ""
 
 #: authentication_service/forms.py:236
 msgid "Enter either birth date or age"
-msgstr "Geben Sie Geburtsdatum oder Alter ein"
+msgstr ""
 
 #: authentication_service/forms.py:281 authentication_service/forms.py:296
 msgid "Please fill in all Security Question fields."
-msgstr "Bitte füllen Sie alle Sicherheitsfragenfelder aus."
+msgstr ""
 
 #: authentication_service/forms.py:288
 msgid "Each question can only be picked once."
-msgstr "Jede Frage kann nur einmal ausgewählt werden."
+msgstr ""
 
 #: authentication_service/forms.py:303
 msgid "Select a question"
-msgstr "Wähle eine Frage"
+msgstr ""
 
 #: authentication_service/forms.py:304
 msgid "Question"
-msgstr "Frage"
+msgstr ""
 
 #: authentication_service/forms.py:424
 msgid "Username/email"
-msgstr "Benutzername / E-Mail"
+msgstr ""
 
 #: authentication_service/forms.py:431
 msgid "Please enter your username or email address."
-msgstr "Bitte geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein."
+msgstr ""
 
 #: authentication_service/forms.py:498
 msgid "Please enter your answer."
-msgstr "Bitte gib deine Antwort ein."
+msgstr ""
 
 #: authentication_service/forms.py:504
 msgid "Please tell us why you want your account deleted"
-msgstr "Bitte teilen Sie uns mit, warum Sie Ihr Konto löschen möchten"
+msgstr ""
 
 #: authentication_service/middleware.py:134
 msgid "Site access disabled"
@@ -92,15 +91,15 @@ msgstr ""
 
 #: authentication_service/models.py:16
 msgid "Female"
-msgstr "Weiblich"
+msgstr ""
 
 #: authentication_service/models.py:17
 msgid "Male"
-msgstr "Männlich"
+msgstr ""
 
 #: authentication_service/models.py:18
 msgid "Other"
-msgstr "Andere"
+msgstr ""
 
 #: authentication_service/models.py:73
 msgid "email address"
@@ -108,11 +107,11 @@ msgstr ""
 
 #: authentication_service/models.py:79
 msgid "gender"
-msgstr "Geschlecht"
+msgstr ""
 
 #: authentication_service/models.py:84
 msgid "country"
-msgstr "Land"
+msgstr ""
 
 #: authentication_service/models.py:173
 msgid "Countries"
@@ -120,7 +119,7 @@ msgstr ""
 
 #: authentication_service/models.py:181
 msgid "answer"
-msgstr "Antworten"
+msgstr ""
 
 #: authentication_service/models.py:199
 msgid "Default question text"
@@ -152,8 +151,6 @@ msgid ""
 "The password must contain at least one uppercase letter, one lowercase one, "
 "a digit and special character."
 msgstr ""
-"Das Passwort muss mindestens einen Großbuchstaben enthalten, einen "
-"Kleinbuchstabeneine Ziffer und ein Sonderzeichen."
 
 #: authentication_service/tasks.py:17
 msgid "Email from Girl Effect"
@@ -166,7 +163,7 @@ msgstr ""
 #: authentication_service/templates/authentication_service/lockout.html:5
 #: authentication_service/templates/authentication_service/lockout.html:9
 msgid "Oh no! You've been locked out"
-msgstr "Ach nein! Du bist ausgesperrt worden"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/lockout.html:14
 #, python-format
@@ -178,12 +175,6 @@ msgid ""
 "p>\n"
 "        "
 msgstr ""
-"\n"
-"        <p>Sie haben die maximale Anzahl zulässiger falscher Rücksetzungen "
-"überschritten. Versuche (%(failure_limit)s).\n"
-"        Warten Sie mal %(cooloff_time_minutes)s minuten bevor Sie es erneut "
-"versuchen.</p>\n"
-"        "
 
 #: authentication_service/templates/authentication_service/lockout.html:19
 #, python-format
@@ -218,16 +209,16 @@ msgstr ""
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Forgot password?"
-msgstr "Passwort vergessen?"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Click here to reset it."
-msgstr "Klicken Sie hier, um es zurückzusetzen."
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:5
 #: authentication_service/templates/authentication_service/profile/delete_account.html:9
 msgid "Delete Your Account"
-msgstr "Lösche deinen Account"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:14
 msgid "We're sad to see you go. Are you sure you want to delete your account?"
@@ -243,7 +234,7 @@ msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:36
 msgid "Delete account?"
-msgstr "Konto löschen?"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:40
 #: authentication_service/templates/authentication_service/profile/update_password.html:21
@@ -257,13 +248,13 @@ msgstr ""
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:5
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:9
 msgid "Edit Your Profile"
-msgstr "Bearbeite dein Profil"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:18
 #: authentication_service/templates/authentication_service/profile/update_password.html:17
 #: authentication_service/templates/authentication_service/profile/update_security_questions.html:21
 msgid "Update"
-msgstr "Aktualisieren"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:23
 msgid "Menu"
@@ -271,67 +262,65 @@ msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:26
 msgid "Password update"
-msgstr "Passwort aktualisieren"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:27
 msgid "Security questions update"
-msgstr "Sicherheitsfragen aktualisieren"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:28
 msgid "Delete account"
-msgstr "Konto löschen"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:30
 msgid "2FA settings"
-msgstr "2FA die Einstellungen"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:32
 msgid "Logout"
-msgstr "Ausloggen"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/update_password.html:5
 #: authentication_service/templates/authentication_service/profile/update_password.html:9
 msgid "Update Your Password"
-msgstr "Aktualisieren Sie Ihr Passwort"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/update_security_questions.html:5
 #: authentication_service/templates/authentication_service/profile/update_security_questions.html:9
 msgid "Update Security Questions"
-msgstr "Sicherheitsfragen aktualisieren"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/redirect_issue.html:5
 #: authentication_service/templates/authentication_service/redirect_issue.html:9
 msgid "Oops"
-msgstr "Hoppla"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/redirect_issue.html:13
 msgid "Oops! We don't seem to know what to do with you."
-msgstr "Hoppla! Wir scheinen nicht zu wissen, was wir mit dir machen sollen."
+msgstr ""
 
 #: authentication_service/templates/authentication_service/registration.html:5
 #: authentication_service/templates/authentication_service/registration.html:9
 msgid "Registration"
-msgstr "Anmeldung"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/registration.html:39
-#, fuzzy
-#| msgid "Click here to reset it."
 msgid "Click here to view the terms and conditions"
-msgstr "Klicken Sie hier, um es zurückzusetzen."
+msgstr ""
 
 #: authentication_service/templates/authentication_service/registration.html:44
 msgid "Register"
-msgstr "Registrieren"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/reset_password/reset_password.html:5
 #: authentication_service/templates/authentication_service/reset_password/reset_password.html:9
 msgid "Forgot your password?"
-msgstr "Haben Sie Ihr Passwort vergessen?"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/reset_password/reset_password.html:17
 #: authentication_service/templates/authentication_service/reset_password/security_questions.html:18
 msgid "Submit"
-msgstr "Einreichen"
+msgstr ""
 
 #: authentication_service/templates/authentication_service/reset_password/security_questions.html:5
 #: authentication_service/templates/authentication_service/reset_password/security_questions.html:9
@@ -340,7 +329,7 @@ msgstr ""
 
 #: authentication_service/templates/base.html:58
 msgid "Back to "
-msgstr "Zurück zu "
+msgstr ""
 
 #: authentication_service/templates/formtools/wizard/wizard_form.html:20
 msgid "first step"
@@ -351,10 +340,8 @@ msgid "prev step"
 msgstr ""
 
 #: authentication_service/templates/formtools/wizard/wizard_form.html:26
-#, fuzzy
-#| msgid "Submit"
 msgid "submit"
-msgstr "Einreichen"
+msgstr ""
 
 #: authentication_service/templates/oidc_provider/authorize.html:16
 #: authentication_service/templates/oidc_provider/authorize.html:20
@@ -406,14 +393,12 @@ msgstr ""
 
 #: authentication_service/templates/translation.html:7
 msgid "Token"
-msgstr "Zeichen"
+msgstr ""
 
 #: authentication_service/templates/translation.html:8
 #: authentication_service/user_migration/forms.py:31
-#, fuzzy
-#| msgid "Password update"
 msgid "Password confirmation"
-msgstr "Passwort aktualisieren"
+msgstr ""
 
 #: authentication_service/templates/translation.html:9
 #: authentication_service/user_migration/forms.py:18
@@ -421,10 +406,8 @@ msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
 msgstr ""
 
 #: authentication_service/templates/translation.html:10
-#, fuzzy
-#| msgid "Password update"
 msgid "New password confirmation"
-msgstr "Passwort aktualisieren"
+msgstr ""
 
 #: authentication_service/templates/translation.html:11
 msgid "Your password can't be too similar to your other personal information."
@@ -740,7 +723,7 @@ msgstr ""
 
 #: authentication_service/templates/two_factor/profile/profile.html:76
 msgid "Bye bye!"
-msgstr "Tschüss!"
+msgstr ""
 
 #: authentication_service/templates/two_factor/profile/profile.html:78
 msgid ""
@@ -748,13 +731,10 @@ msgid ""
 "            Continue from where you were before registration.\n"
 "        "
 msgstr ""
-"\n"
-"            Fahren Sie von dort fort, wo Sie vor der Registrierung waren.\n"
-"        "
 
 #: authentication_service/templates/two_factor/profile/profile.html:84
 msgid "Back from whence you came!"
-msgstr "Zurück, woher du kommst!"
+msgstr ""
 
 #: authentication_service/tests/settings/111.py:141 project/settings.py:207
 msgid "Your account has been deactivated. Please contact support."
@@ -768,10 +748,8 @@ msgid ""
 msgstr ""
 
 #: authentication_service/user_migration/forms.py:26
-#, fuzzy
-#| msgid "Password update"
 msgid "Password"
-msgstr "Passwort aktualisieren"
+msgstr ""
 
 #: authentication_service/user_migration/forms.py:41
 msgid "A user with that username already exists."
@@ -810,11 +788,30 @@ msgstr ""
 msgid "One or more answers are incorrect"
 msgstr ""
 
-#, fuzzy
-#~| msgid ""
-#~| "The password must contain at least one uppercase letter, one lowercase "
-#~| "one, a digit and special character."
-#~ msgid "Your password must contain at least (min_length)d character."
-#~ msgstr ""
-#~ "Das Passwort muss mindestens einen Großbuchstaben enthalten, einen "
-#~ "Kleinbuchstabeneine Ziffer und ein Sonderzeichen."
+#: project/settings.py:40
+msgid "Tagalog"
+msgstr ""
+
+#: project/settings.py:41
+msgid "Kinyarwanda"
+msgstr ""
+
+#: project/settings.py:42
+msgid "Hausa"
+msgstr ""
+
+#: project/settings.py:43
+msgid "Bengali"
+msgstr ""
+
+#: project/settings.py:44
+msgid "Burmese"
+msgstr ""
+
+#: project/settings.py:45
+msgid "Chichewa"
+msgstr ""
+
+#: project/settings.py:46
+msgid "Dari"
+msgstr ""
