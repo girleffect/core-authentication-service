@@ -1,10 +1,11 @@
 import datetime
+import copy
 
 from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from authentication_service.forms import (
     RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
@@ -13,6 +14,10 @@ from authentication_service.forms import (
 from authentication_service.models import SecurityQuestion, OrganisationalUnit
 
 
+@override_settings(
+    HIDE_FIELDS={"global_enable": False,
+    "global_fields": ["email", "msisdn", "birth_date"]}
+)
 class TestRegistrationForm(TestCase):
 
     def test_default_state(self):
@@ -22,6 +27,7 @@ class TestRegistrationForm(TestCase):
             "username": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "terms": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -32,6 +38,7 @@ class TestRegistrationForm(TestCase):
             "email": "email@email.com",
             "birth_date": datetime.date(2000, 1, 1),
             "password1": "password",
+            "terms": True,
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
@@ -43,6 +50,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "email": "email@email.com",
             "birth_date": datetime.date(2000, 1, 1),
+            "terms": True,
             "password1": "password",
             "password2": "password2"
         })
@@ -56,6 +64,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "email": "email@email.com",
             "birth_date": datetime.date(2000, 1, 1),
+            "terms": True,
             "password1": "123",
             "password2": "123"
         })
@@ -69,6 +78,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "email": "email@email.com",
             "birth_date": datetime.date(2000, 1, 1),
+            "terms": True,
             "password1": "1234",
             "password2": "1234"
         })
@@ -81,6 +91,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "password1": "password",
             "password2": "password",
+            "terms": True,
             "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertFalse(form.is_valid())
@@ -94,6 +105,7 @@ class TestRegistrationForm(TestCase):
             "password1": "password",
             "password2": "password",
             "email": "email@email.com",
+            "terms": True,
             "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
@@ -104,6 +116,7 @@ class TestRegistrationForm(TestCase):
             "password1": "password",
             "password2": "password",
             "msisdn": "0856545698",
+            "terms": True,
             "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
@@ -115,6 +128,7 @@ class TestRegistrationForm(TestCase):
             "password2": "password",
             "email": "email@email.com",
             "msisdn": "0856545698",
+            "terms": True,
             "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
@@ -138,7 +152,7 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
-            "birth_date": ["This field is required."],
+            "terms": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -156,6 +170,7 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "terms": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -167,6 +182,7 @@ class TestRegistrationForm(TestCase):
             "email": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "terms": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -177,6 +193,7 @@ class TestRegistrationForm(TestCase):
             "birth_date": datetime.date(2000, 1, 1),
             "email": "email@email.com",
             "password1": "password",
+            "terms": True,
         },
             security="high")
         self.assertFalse(form.is_valid())
@@ -189,6 +206,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "email": "email@email.com",
             "birth_date": datetime.date(2000, 1, 1),
+            "terms": True,
             "password1": "password",
             "password2": "password2"
         },
@@ -203,6 +221,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "email": "email@email.com",
             "birth_date": datetime.date(2001, 1, 1),
+            "terms": True,
             "password1": "123",
             "password2": "123"
         },
@@ -222,6 +241,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "email": "email@email.com",
             "birth_date": datetime.date(2000, 1, 1),
+            "terms": True,
             "password1": "asdasdasd",
             "password2": "asdasdasd"
         },
@@ -239,6 +259,7 @@ class TestRegistrationForm(TestCase):
             "username": "asdasd",
             "email": "email@email.com",
             "birth_date": datetime.date(2000, 1, 1),
+            "terms": True,
             "password1": "asdasdasd",
             "password2": "asdasdasd"
         },
@@ -257,6 +278,7 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "email": "email@email.com",
             "birth_date": datetime.date(2001, 1, 1),
+            "terms": True,
             "password1": "asdasdasdA@1",
             "password2": "asdasdasdA@1"
         },
@@ -275,6 +297,7 @@ class TestRegistrationForm(TestCase):
                     "username": "Username",
                     "email": "email@email.com",
                     "age": "16",
+                    "terms": True,
                     "password1": "asdasdasdA@1",
                     "password2": "asdasdasdA@1"
                 },
@@ -302,7 +325,7 @@ class TestRegistrationForm(TestCase):
             "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
-            "birth_date": ["This field is required."],
+            "terms": ["This field is required."],
             "__all__": ["Enter either email or msisdn"]
         })
 
@@ -318,12 +341,13 @@ class TestRegistrationForm(TestCase):
             "username": "Username",
             "email": "awesome@email.com",
             "birth_date": datetime.date(2000, 1, 1),
+            "terms": True,
             "password1": "password",
             "password2": "password",
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "email": ["User with this Email address already exists."],
+            "email": ["Core user with this Email address already exists."],
         })
 
         # Test users without emails do not cause validation errors.
@@ -338,6 +362,7 @@ class TestRegistrationForm(TestCase):
             "password1": "password",
             "password2": "password",
             "msisdn": "0856545698",
+            "terms": True,
             "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
@@ -346,24 +371,93 @@ class TestRegistrationForm(TestCase):
             "password1": "password",
             "password2": "password",
             "msisdn": "0856545698",
+            "terms": True,
             "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
 
 
-class TestSecurityQuestionForm(TestCase):
+class TestRegistrationFormHTML(TestCase):
 
     def test_default_state(self):
-        form = SecurityQuestionForm(
-            data={},
-            questions=SecurityQuestion.objects.all(),
-            language="en"
-        )
+        form = RegistrationForm(data={})
+        self.assertFalse(form.is_valid())
+        # TODO Update once end user has new copy
+        self.assertNotIn("<li>Your password can&#39;t be too similar to your " \
+        "other personal information.</li><li>Your password must contain at " \
+        "least 8 characters.</li><li>Your password can&#39;t be a commonly " \
+        "used password.</li><li>Your password can&#39;t be entirely numeric." \
+        "</li><li>The password must contain at least one uppercase letter, " \
+        "one lowercase one, a digit and special character.</li>", form.as_div())
+
+    def test_high_security_state(self):
+        form = RegistrationForm(data={}, security="high")
+        self.assertFalse(form.is_valid())
+        self.assertIn("<li>Your password can&#39;t be too similar to your " \
+        "other personal information.</li><li>Your password must contain at " \
+        "least 8 characters.</li><li>Your password can&#39;t be a commonly " \
+        "used password.</li><li>Your password can&#39;t be entirely numeric." \
+        "</li><li>The password must contain at least one uppercase letter, " \
+        "one lowercase one, a digit and special character.</li>", form.as_div())
+
+
+class TestRegistrationFormWithHideSetting(TestCase):
+
+    def test_default_state(self):
+        form = RegistrationForm(data={})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "question": ["This field is required."],
-            "answer": ["This field is required."],
+            "username": ["This field is required."],
+            "password1": ["This field is required."],
+            "password2": ["This field is required."],
+            "age": ["This field is required."],
+            "terms": ["This field is required."],
         })
+
+    def test_default_settings(self):
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "age": "16",
+            "terms": True,
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with email
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "email": "email@email.com",
+            "age": "16",
+            "terms": True,
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with msisdn
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "msisdn": "0856545698",
+            "age": "16",
+            "terms": True,
+        })
+        self.assertTrue(form.is_valid())
+
+        # Test valid with both
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "email": "email@email.com",
+            "msisdn": "0856545698",
+            "birth_date": datetime.date(2000, 1, 1),
+            "age": "16",
+            "terms": True,
+        })
+        self.assertTrue(form.is_valid())
 
 
 class TestSecurityQuestionFormSet(TestCase):
@@ -563,7 +657,7 @@ class EditProfileFormTestCase(TestCase):
         data = {
             "email": "right@email.com",
             "msisdn": "+27821234567",
-            "birth_date": datetime.date(2005, 1, 1)
+            "age": 34
         }
 
         form = EditProfileForm(instance=self.user, data=data)
@@ -573,7 +667,7 @@ class EditProfileFormTestCase(TestCase):
     def test_nothing_updated(self):
         data = model_to_dict(self.user)
 
-        form = EditProfileForm(data, instance=self.user)
+        form = EditProfileForm(instance=self.user, data=data)
         self.assertFalse(form.has_changed())
         self.assertTrue(form.is_valid())
 
@@ -597,8 +691,6 @@ class EditProfileFormTestCase(TestCase):
                 "country":
                     ["Select a valid choice. That choice is not one of the "
                      "available choices."],
-                "birth_date":
-                    ["This field is required."]
             }
         )
 

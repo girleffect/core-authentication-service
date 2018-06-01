@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block metatitle %}
+    {% trans "Temp user creation" %}
+{% endblock %}
+
+{% block title %}
+    <h1>{% trans "Temp user creation" %}</h1>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post" class="Form">
+        {% csrf_token %}
+        {{ form.as_div }}
+        <div class="Form-buttons">
+            <input type="submit" value="{% trans "Create" %}" class="Button" />
+        </div>
+    </form>
+{% endblock %}

@@ -1,10 +1,15 @@
+import datetime
 import logging
 
-from django.utils.translation import ugettext as _
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
 from oidc_provider.lib.claims import ScopeClaims
 
+from authentication_service import api_helpers
+from authentication_service.models import UserSite
 
 USER_MODEL = get_user_model()
 
@@ -83,20 +88,21 @@ class CustomScopeClaims(ScopeClaims):
         * self.client: The Client requesting this claim.
         :return: A dictionary containing the claims for the custom Site scope
         """
+        # Find the Site ID associated with this Client
+        site_id = api_helpers.get_site_for_client(self.client.id)
+        # Make sure we have a UserSite entry, otherwise create one.
+        UserSite.objects.get_or_create({}, user=self.user, site_id=site_id)
+
         LOGGER.debug("Looking up site {} data for user {}".format(
             self.client.client_id, self.user))
-        # TODO:
-        # 1. Use the client id to query the Access Control component for the site id linked to it
-        #  this client.
-        # 2. Use the site id and user id to query the User Data Store component for the
-        #  site-specific data for the user.
+        data = api_helpers.get_user_site_data(
+            self.user.id, site_id).to_dict()["data"]
+        now = timezone.now().astimezone(datetime.timezone.utc).isoformat()
         result = {
-            "site": {
-                "id": self.client.client_id,
-                "mocked": True,
-                "status": "This is demo data"
-            }
+            "site": {"retrieved_at": f"{now}", "data": data},
         }
+        if self.client.client_id == self.user.migration_data.get("client_id"):
+            result["migration_information"] = self.user.migration_data
 
         return result
 
@@ -112,7 +118,8 @@ class CustomScopeClaims(ScopeClaims):
         LOGGER.debug("Requesting roles for user: %s/%s, on site: %s" % (
             self.user.username, self.user.id, self.client))
 
-        roles = ["Not", "Implemented", "Yet"]
+        roles = api_helpers.get_user_site_role_labels_aggregated(
+            self.user.id, self.client.id)
         result = {"roles": roles}
 
         return result

@@ -1,15 +1,17 @@
 import itertools
 import logging
-from datetime import date  # Required because we patch it in the tests (test_forms.py)
+from datetime import date, \
+    timedelta  # Required because we patch it in the tests (test_forms.py)
 from dateutil.relativedelta import relativedelta
 
 from django import forms
-from django.contrib.admin.widgets import AdminDateWidget
-from django.contrib.auth import get_user_model, hashers
+from django.conf import settings
+from django.forms.widgets import Textarea
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import (
     UserCreationForm,
     PasswordResetForm,
-)
+    AuthenticationForm)
 from django.contrib.auth.forms import SetPasswordForm as DjangoSetPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
 from django.contrib.auth.tokens import default_token_generator
@@ -21,10 +23,9 @@ from django.forms import modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
-from authentication_service.models import UserSecurityQuestion
 from authentication_service.utils import update_form_fields
 from authentication_service.constants import SECURITY_QUESTION_COUNT, \
     MIN_NON_HIGH_PASSWORD_LENGTH
@@ -41,26 +42,31 @@ REQUIREMENT_DEFINITION = {
 
 # Groupings of form fields which can be used to simplify specifying sets of hidden fields.
 HIDDEN_DEFINITION = {
-    "end-user": ["first_name", "last_name", "country", "gender", "avatar"]
+    "end-user": ["first_name", "last_name", "country", "msisdn"]
 }
 
 
 class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
+    terms = forms.BooleanField(
+        label=_("Accept terms and conditions")
+    )
     # Helper field that user's who don't know their birth date can use instead.
-    age = forms.IntegerField(min_value=1, max_value=100, required=False)
-    # The birth_date is required on the model, but not on the form since it can be indirectly
-    # populated if the age is provided.
-    birth_date = forms.DateField(widget=AdminDateWidget(attrs={"required": False}), required=False)
+    age = forms.IntegerField(
+        min_value=1,
+        max_value=100,
+        required=False
+    )
 
     class Meta:
         model = get_user_model()
         fields = [
             "username", "first_name", "last_name", "email",
             "nickname", "msisdn", "gender", "birth_date", "age",
-            "country", "avatar"
+            "country", "avatar", "password1", "password2"
         ]
+        exclude = ["terms",]
 
     def __init__(self, security=None, required=None, hidden=None, *args, **kwargs):
         # Super needed before we can actually update the form.
@@ -113,11 +119,40 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
-        fields_data["birth_date"] = {
-            "attributes": {
-                "help_text": _("Please use dd/mm/yyyy format")
+        fields_data.update({
+            "birth_date": {
+                "attributes": {
+                    "help_text": _("Please use dd/mm/yyyy format")
+                }
+            },
+            "nickname": {
+                "attributes": {
+                    "label": _("Display name")
+                }
+            },
+            "msisdn": {
+                "attributes": {
+                    "label": _("Mobile")
+                }
+            },
+            "age": {
+                "attributes": {
+                    "label": _("Age")
+                }
             }
-        }
+        })
+
+        # Final overrides from settings
+        if settings.HIDE_FIELDS["global_enable"]:
+            required_fields.update(["age"])
+            for field in settings.HIDE_FIELDS["global_fields"]:
+                if field in required_fields:
+                    continue  # Required field cannot be hidden
+
+                self.fields[field].required = False
+                self.fields[field].widget.is_required = False
+                hidden_fields.update([field])
+
         # Update the actual fields and widgets.
         update_form_fields(
             self,
@@ -125,6 +160,16 @@ class RegistrationForm(UserCreationForm):
             required=required_fields,
             hidden=hidden_fields
         )
+
+        # Manual overrides:
+
+        # NOTE: These will then also ignore all other overrides set up till
+        # this point.
+
+        # The birth_date is required on the model, but not on the form since it
+        # can be indirectly populated if the age is provided.
+        self.fields["birth_date"].required = False
+        self.fields["birth_date"].widget.is_required = False
 
     def clean_password2(self):
         # Short circuit normal validation if not high security.
@@ -157,6 +202,17 @@ class RegistrationForm(UserCreationForm):
             exclude.append("email")
         return exclude
 
+    def _html_output(self, *args, **kwargs):
+        # Django does not allow the exclusion of fields on none ModelForm forms.
+
+        # Remove the field from the form during the html output creation.
+        original_fields = self.fields.copy()
+        self.fields.pop("terms")
+        html = super(RegistrationForm, self)._html_output(*args, **kwargs)
+
+        # Replace the original fields.
+        self.fields = original_fields
+        return html
 
     def clean(self):
         cleaned_data = super(RegistrationForm, self).clean()
@@ -165,7 +221,8 @@ class RegistrationForm(UserCreationForm):
         email = cleaned_data.get("email")
         msisdn = cleaned_data.get("msisdn")
 
-        if not email and not msisdn:
+        if not email and not msisdn and not \
+                settings.HIDE_FIELDS["global_enable"]:
             raise ValidationError(_("Enter either email or msisdn"))
 
         # Check that either the birth date or age is provided. If the birth date is provided, we
@@ -175,7 +232,7 @@ class RegistrationForm(UserCreationForm):
             age = cleaned_data.get("age")
             if age:
                 cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
-            else:
+            elif not settings.HIDE_FIELDS["global_enable"]:
                 raise ValidationError(_("Enter either birth date or age"))
 
         return cleaned_data
@@ -193,7 +250,7 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 
         # Question field, queryset.
         self.question_queryset = kwargs.pop(
-            "querstion_queryset", None
+            "question_queryset", None
         )
         self.language = language
         super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
@@ -243,7 +300,8 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 class SecurityQuestionForm(forms.ModelForm):
     question = forms.ModelChoiceField(
         queryset=QuerySet(),
-        empty_label="Select a question"
+        empty_label=_("Select a question"),
+        label=_("Question")
     )
 
     class Meta:
@@ -294,6 +352,13 @@ class EditProfileForm(forms.ModelForm):
     error_css_class = "error"
     required_css_class = "required"
 
+    # Helper field that user's who don't know their birth date can use instead.
+    age = forms.IntegerField(
+        min_value=13,
+        max_value=100,
+        required=False
+    )
+
     def __init__(self, *args, **kwargs):
         super(EditProfileForm, self).__init__(*args, **kwargs)
         fields_data= {"birth_date": {
@@ -301,19 +366,54 @@ class EditProfileForm(forms.ModelForm):
                     "help_text": _("Please use dd/mm/yyyy format")
                 }
             },
+            "age": {
+                "attributes": {
+                    "label": _("Age")
+                }
+            }
         }
+        hidden_fields = []
 
+        # Final overrides from settings
+        if settings.HIDE_FIELDS["global_enable"]:
+            for field in settings.HIDE_FIELDS["global_fields"]:
+                self.fields[field].required = False
+                self.fields[field].widget.is_required = False
+                hidden_fields.append(field)
+
+        if self.instance.organisational_unit:
+            # Show email address explicitly since it is hidden in the
+            # global hidden fields.
+            hidden_fields.remove("email")
+        else:
+            for field in HIDDEN_DEFINITION["end-user"]:
+                hidden_fields.append(field)
+
+        # Init age field
+        birth_date = self.instance.birth_date
+        if birth_date:
+            self.fields["age"].initial = \
+                date.today().year - birth_date.year
         # Update the actual fields and widgets.
         update_form_fields(
             self,
             fields_data=fields_data,
+            hidden=hidden_fields
         )
+
     class Meta:
         model = get_user_model()
         fields = [
             "first_name", "last_name", "nickname", "email", "msisdn", "gender",
-            "birth_date", "country", "avatar"
+            "birth_date", "age", "country", "avatar"
         ]
+
+    def clean(self):
+        cleaned_data = super(EditProfileForm, self).clean()
+        age = cleaned_data.get("age")
+        if age:
+            cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
+        return cleaned_data
 
 
 class ResetPasswordForm(PasswordResetForm):
@@ -321,7 +421,7 @@ class ResetPasswordForm(PasswordResetForm):
     required_css_class = "required"
 
     email = forms.CharField(
-        label="Username/email"
+        label=_("Username/email")
     )
 
     def clean(self):
@@ -401,7 +501,8 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
 class DeleteAccountForm(forms.Form):
     reason = forms.CharField(
         required=False,
-        label=_("Please tell use why you want your account deleted")
+        label=_("Please tell us why you want your account deleted"),
+        widget=Textarea()
     )
 
 
@@ -458,3 +559,10 @@ class SetPasswordForm(DjangoSetPasswordForm):
 
 class PasswordChangeForm(SetPasswordForm, DjangoPasswordChangeForm):
     pass
+
+
+class LoginForm(AuthenticationForm):
+    error_messages = {
+        "invalid_login": settings.INCORRECT_CREDENTIALS_MESSAGE,
+        "inactive": settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
+    }

@@ -1,11 +1,15 @@
 import uuid
 
+from partial_index import PartialIndex
+
 from django.conf import settings
 from django.contrib.auth import hashers
 from django.contrib.auth.models import AbstractUser
+from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 
 GENDER_CHOICES = (
@@ -15,26 +19,82 @@ GENDER_CHOICES = (
 )
 
 
+class AutoQueryField(models.TextField):
+    """
+    Custom field to populate concatenated query field.
+
+    Should work for more scenarios than just save() or create()
+    """
+    def __init__(self, query_fields=None, *args, **kwargs):
+        self.query_fields = query_fields or []
+        super(AutoQueryField, self).__init__(*args, **kwargs)
+
+    def pre_save(self, model_instance, add):
+        value = " ".join(
+            getattr(
+                model_instance, field, "") or "" for field in self.query_fields
+        )
+
+        # Default will be an empty string. DB value will be the default set to
+        # the field or the value after data migration.
+        if value != "":
+            setattr(model_instance, self.attname, value)
+            return value
+        else:
+            return super(AutoQueryField, self).pre_save(model_instance, add)
+
+
+class TrigramIndex(GinIndex):
+    """
+    Inspired by solution on:
+    https://stackoverflow.com/questions/44820345/
+
+    Should perform a sql action similar to:
+    CREATE INDEX trgm_idx ON <table>_<column> USING gin (<column> gin_trgm_ops);
+    """
+    def get_sql_create_template_values(self, model, schema_editor, using):
+        sql_values = super(TrigramIndex, self).get_sql_create_template_values(
+            model, schema_editor, using)
+
+        # Replace existing column values with gin_trgm_ops appended ones.
+        columns = sql_values["columns"].split(", ")
+        new_columns = []
+        for column in columns:
+            new_columns.append(f"{column} gin_trgm_ops")
+        sql_values["columns"] = ", ".join(new_columns)
+        return sql_values
+
+
 # NOTE: Changing AUTH_USER_MODEL will cause migration 0001 from otp_totp to
 # break once migrations have already been run once.
 class CoreUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid1, editable=False)
-    email = models.EmailField(_('email address'), blank=True, null=True, unique=True)
+    email = models.EmailField(
+        _("email address"), blank=True, null=True, unique=True)
     email_verified = models.BooleanField(default=False)
     nickname = models.CharField(blank=True, null=True, max_length=30)
     msisdn = models.CharField(blank=True, null=True, max_length=16)
     msisdn_verified = models.BooleanField(default=False)
     gender = models.CharField(
-        max_length=10, blank=True, null=True, choices=GENDER_CHOICES
+        _("gender"), max_length=10, blank=True, null=True,
+        choices=GENDER_CHOICES
     )
     birth_date = models.DateField()
-    country = models.ForeignKey(_("Country"), blank=True, null=True)
+    country = models.ForeignKey("Country", blank=True, null=True,
+        verbose_name=_("country"))
     avatar = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     organisational_unit = models.ForeignKey(
         "OrganisationalUnit", blank=True, null=True
     )
+    q = AutoQueryField(
+        query_fields=[
+            "email", "first_name", "last_name", "msisdn", "nickname", "username"
+        ],
+        null=True
+    )
+    migration_data = JSONField(blank=True, default={})
 
     def __init__(self, *args, **kwargs):
         super(CoreUser, self).__init__(*args, **kwargs)
@@ -60,6 +120,50 @@ class CoreUser(AbstractUser):
     def has_security_questions(self):
         return self.usersecurityquestion_set.all() or None
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["date_joined",]),
+            models.Index(fields=["gender",]),
+            models.Index(fields=["last_login",]),
+            models.Index(fields=["updated_at",]),
+            PartialIndex(
+                fields=["is_active",], unique=False,
+                where_postgresql="is_active = false"
+            ),
+            PartialIndex(
+                fields=["email_verified",], unique=False,
+                where_postgresql="email_verified = true"
+            ),
+            PartialIndex(
+                fields=["msisdn_verified",], unique=False,
+                where_postgresql="msisdn_verified = true"
+            ),
+            TrigramIndex(fields=["username"],),
+            TrigramIndex(fields=["msisdn"],),
+            TrigramIndex(fields=["email"],),
+            TrigramIndex(fields=["first_name"],),
+            TrigramIndex(fields=["last_name"],),
+            TrigramIndex(fields=["nickname"],),
+            TrigramIndex(fields=["q"],),
+        ]
+
+
+class UserSite(models.Model):
+    user = models.ForeignKey("CoreUser")
+    site_id = models.IntegerField()
+    consented_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["user", "site_id"]
+        indexes = [
+            models.Index(fields=["site_id"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.site_id}"
+
 
 class Country(models.Model):
     code = models.CharField(max_length=2, primary_key=True)
@@ -69,12 +173,12 @@ class Country(models.Model):
         verbose_name_plural = _("Countries")
 
     def __str__(self):
-        return "%s - %s" % (self.code, self.name)
+        return self.name
 
 
 class UserSecurityQuestion(models.Model):
     user = models.ForeignKey("CoreUser")
-    answer = models.TextField()
+    answer = models.TextField(_("answer"))
     language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
     question = models.ForeignKey("SecurityQuestion")
 
@@ -100,6 +204,7 @@ class SecurityQuestion(models.Model):
 
 class QuestionLanguageText(models.Model):
     language_code = models.CharField(max_length=7, choices=settings.LANGUAGES)
+    # TODO:Created GE-1092
     question = models.ForeignKey(
         "SecurityQuestion", on_delete=models.CASCADE
     )
@@ -108,7 +213,9 @@ class QuestionLanguageText(models.Model):
     def validate_unique(self, *args, **kwargs):
         super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
         if SecurityQuestion.objects.filter(
-                questionlanguagetext__id=self.id).count() > 1:
+            questionlanguagetext__question_text=self.question_text,
+            questionlanguagetext__language_code=self.language_code
+        ).exists():
             raise ValidationError(
                 _("Question text can not be assigned to more than one question.")
             )
@@ -116,9 +223,18 @@ class QuestionLanguageText(models.Model):
     def __str__(self):
         return "%s - %s" % (self.language_code, self.question.id)
 
+    def save(self, *args, **kwargs):
+        # Initial was too reliant on django admin forms calling
+        # validate_unique. This helps cover for api create/update calls too.
+        self.validate_unique()
+        super(QuestionLanguageText, self).save(*args, **kwargs)
+
 
 class OrganisationalUnit(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name

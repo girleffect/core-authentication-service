@@ -1,15 +1,20 @@
+-e git+https://github.com/praekelt/swagger-django-generator@master#egg=swagger-django-generator
+-e git+https://github.com/praekelt/apitools@master#egg=apitools
+
 # Main Django requirement.
-django>=1.11,<2.0
+#django>=1.11,<2.0
+django==1.11.12
 
 # Database connector.
-psycopg2==2.7.3.2
+psycopg2>=2.7.4,<2.8
+django-partial-index>=0.4.0,<0.5
 
 # API requirements.
 djangorestframework-extras==0.2.1
 djangorestframework==3.7.3
 
 # 3rd party auth packages.
-django-oidc-provider==0.5.2
+django-oidc-provider>=0.6.0,<0.7
 django-two-factor-auth==1.7.0
 
 # 3rd Pary form tools.
@@ -28,9 +33,12 @@ django-cors-headers>=2.1.0,<3.0
 django-layers-hr==1.11.1
 
 # Test specific packages.
-testfixtures==5.3.1
+testfixtures>=6.0.0,<7.0.0
 mock==2.0.0
 
+environs>=2.1.0,<3.0
 jsonschema==2.6.0
--e git+https://github.com/praekelt/apitools@master#egg=apitools
 rstr==2.2.6 # For mock class in generated server code.
+raven==6.6.0
+
+django-debug-toolbar<=1.9.1,<2.0

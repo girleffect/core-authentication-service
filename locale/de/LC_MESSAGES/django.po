@@ -1,0 +1,748 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-04-18 11:50+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: authentication_service/forms.py:121 authentication_service/forms.py:344
+msgid "Please use dd/mm/yyyy format"
+msgstr ""
+
+#: authentication_service/forms.py:126
+msgid "Display name"
+msgstr "Anzeigename"
+
+#: authentication_service/forms.py:131
+msgid "Mobile"
+msgstr "Mobiltelefon"
+
+#: authentication_service/forms.py:136
+msgid "Age"
+msgstr "Alter"
+
+#: authentication_service/forms.py:187 authentication_service/forms.py:514
+msgid "Password not long enough."
+msgstr "Passwort nicht lang genug."
+
+#: authentication_service/forms.py:211
+msgid "Enter either email or msisdn"
+msgstr "Geben Sie entweder E-Mail oder Handynummer ein"
+
+#: authentication_service/forms.py:221
+msgid "Enter either birth date or age"
+msgstr "Geben Sie Geburtsdatum oder Alter ein"
+
+#: authentication_service/forms.py:266 authentication_service/forms.py:281
+msgid "Please fill in all Security Question fields."
+msgstr "Bitte füllen Sie alle Sicherheitsfragenfelder aus."
+
+#: authentication_service/forms.py:273
+msgid "Each question can only be picked once."
+msgstr "Jede Frage kann nur einmal ausgewählt werden."
+
+#: authentication_service/forms.py:288
+msgid "Select a question"
+msgstr "Wähle eine Frage"
+
+#: authentication_service/forms.py:289
+msgid "Question"
+msgstr "Frage"
+
+#: authentication_service/forms.py:384
+msgid "Username/email"
+msgstr "Benutzername / E-Mail"
+
+#: authentication_service/forms.py:391
+msgid "Please enter your username or email address."
+msgstr "Bitte geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein."
+
+#: authentication_service/forms.py:458
+msgid "Please enter your answer."
+msgstr "Bitte gib deine Antwort ein."
+
+#: authentication_service/forms.py:464
+msgid "Please tell us why you want your account deleted"
+msgstr "Bitte teilen Sie uns mit, warum Sie Ihr Konto löschen möchten"
+
+#: authentication_service/models.py:12
+msgid "Female"
+msgstr "Weiblich"
+
+#: authentication_service/models.py:13
+msgid "Male"
+msgstr "Männlich"
+
+#: authentication_service/models.py:14
+msgid "Other"
+msgstr "Andere"
+
+#: authentication_service/models.py:22
+msgid "email address"
+msgstr ""
+
+#: authentication_service/models.py:28
+msgid "gender"
+msgstr "Geschlecht"
+
+#: authentication_service/models.py:32
+msgid "country"
+msgstr "Land"
+
+#: authentication_service/models.py:70
+msgid "Countries"
+msgstr ""
+
+#: authentication_service/models.py:78
+msgid "answer"
+msgstr "Antworten"
+
+#: authentication_service/models.py:96
+msgid "Default question text"
+msgstr ""
+
+#: authentication_service/models.py:114
+msgid "Question text can not be assigned to more than one question."
+msgstr ""
+
+#: authentication_service/oidc_provider_settings.py:73
+msgid "Site"
+msgstr ""
+
+#: authentication_service/oidc_provider_settings.py:73
+msgid "Data for the requesting site"
+msgstr ""
+
+#: authentication_service/oidc_provider_settings.py:77
+msgid "Roles"
+msgstr ""
+
+#: authentication_service/oidc_provider_settings.py:77
+msgid "Roles for the requesting site"
+msgstr ""
+
+#: authentication_service/password_validation.py:26
+#: authentication_service/password_validation.py:34
+msgid ""
+"The password must contain at least one uppercase letter, one lowercase one, "
+"a digit and special character."
+msgstr ""
+"Das Passwort muss mindestens einen Großbuchstaben enthalten, einen "
+"Kleinbuchstabeneine Ziffer und ein Sonderzeichen."
+
+#: authentication_service/tasks.py:17
+msgid "Email from Girl Effect"
+msgstr ""
+
+#: authentication_service/tasks.py:21
+msgid "Password reset for Girl Effect account"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/lockout.html:5
+#: authentication_service/templates/authentication_service/lockout.html:9
+msgid "Oh no! You've been locked out"
+msgstr "Ach nein! Du bist ausgesperrt worden"
+
+#: authentication_service/templates/authentication_service/lockout.html:14
+#, python-format
+msgid ""
+"\n"
+"        <p>You have exceeded the maximum number of allowed incorrect reset "
+"attempts (%(failure_limit)s).\n"
+"        Please wait %(cooloff_time_minutes)s minutes before trying again.</"
+"p>\n"
+"        "
+msgstr ""
+"\n"
+"        <p>Sie haben die maximale Anzahl zulässiger falscher Rücksetzungen "
+"überschritten. Versuche (%(failure_limit)s).\n"
+"        Warten Sie mal %(cooloff_time_minutes)s minuten bevor Sie es erneut "
+"versuchen.</p>\n"
+"        "
+
+#: authentication_service/templates/authentication_service/lockout.html:19
+#, python-format
+msgid ""
+"\n"
+"        <p>You have exceeded the maximum number of allowed incorrect login "
+"attempts (%(failure_limit)s).\n"
+"        Please wait %(cooloff_time_minutes)s minutes before trying again.</"
+"p>\n"
+"        "
+msgstr ""
+
+#: authentication_service/templates/authentication_service/lockout.html:24
+#: authentication_service/templates/authentication_service/login.html:5
+#: authentication_service/templates/authentication_service/login.html:9
+#: authentication_service/templates/authentication_service/login.html:18
+#: authentication_service/templates/registration/password_reset_done.html:15
+#: authentication_service/templates/two_factor/core/login.html:5
+#: authentication_service/templates/two_factor/core/login.html:9
+msgid "Login"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/login.html:22
+#: authentication_service/templates/two_factor/core/login.html:49
+msgid "As a last resort, you can use a backup token:"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/login.html:23
+#: authentication_service/templates/two_factor/core/login.html:52
+msgid "Use Backup Token"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/login.html:27
+msgid "Forgot password?"
+msgstr "Passwort vergessen?"
+
+#: authentication_service/templates/authentication_service/login.html:27
+msgid "Click here to reset it."
+msgstr "Klicken Sie hier, um es zurückzusetzen."
+
+#: authentication_service/templates/authentication_service/profile/delete_account.html:5
+#: authentication_service/templates/authentication_service/profile/delete_account.html:9
+msgid "Delete Your Account"
+msgstr "Lösche deinen Account"
+
+#: authentication_service/templates/authentication_service/profile/delete_account.html:14
+msgid "We're sad to see you go. Are you sure you want to delete your account?"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/profile/delete_account.html:25
+msgid "Yes"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/profile/delete_account.html:29
+msgid "No, I've changed my mind"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/profile/delete_account.html:36
+msgid "Delete account?"
+msgstr "Konto löschen?"
+
+#: authentication_service/templates/authentication_service/profile/delete_account.html:40
+#: authentication_service/templates/authentication_service/profile/update_password.html:21
+#: authentication_service/templates/authentication_service/profile/update_security_questions.html:25
+#: authentication_service/templates/two_factor/_wizard_actions.html:8
+#: authentication_service/templates/two_factor/_wizard_actions.html:11
+#: authentication_service/templates/two_factor/core/otp_required.html:24
+msgid "Back"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:5
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:9
+msgid "Edit Your Profile"
+msgstr "Bearbeite dein Profil"
+
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:18
+#: authentication_service/templates/authentication_service/profile/update_password.html:17
+#: authentication_service/templates/authentication_service/profile/update_security_questions.html:21
+msgid "Update"
+msgstr "Aktualisieren"
+
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:23
+msgid "Menu"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:26
+msgid "Password update"
+msgstr "Passwort aktualisieren"
+
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:27
+msgid "Security questions update"
+msgstr "Sicherheitsfragen aktualisieren"
+
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:28
+msgid "Delete account"
+msgstr "Konto löschen"
+
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:30
+msgid "2FA settings"
+msgstr "2FA die Einstellungen"
+
+#: authentication_service/templates/authentication_service/profile/edit_profile.html:32
+msgid "Logout"
+msgstr "Ausloggen"
+
+#: authentication_service/templates/authentication_service/profile/update_password.html:5
+#: authentication_service/templates/authentication_service/profile/update_password.html:9
+msgid "Update Your Password"
+msgstr "Aktualisieren Sie Ihr Passwort"
+
+#: authentication_service/templates/authentication_service/profile/update_security_questions.html:5
+#: authentication_service/templates/authentication_service/profile/update_security_questions.html:9
+msgid "Update Security Questions"
+msgstr "Sicherheitsfragen aktualisieren"
+
+#: authentication_service/templates/authentication_service/redirect_issue.html:5
+#: authentication_service/templates/authentication_service/redirect_issue.html:9
+msgid "Oops"
+msgstr "Hoppla"
+
+#: authentication_service/templates/authentication_service/redirect_issue.html:13
+msgid "Oops! We don't seem to know what to do with you."
+msgstr "Hoppla! Wir scheinen nicht zu wissen, was wir mit dir machen sollen."
+
+#: authentication_service/templates/authentication_service/registration.html:5
+#: authentication_service/templates/authentication_service/registration.html:9
+msgid "Registration"
+msgstr "Anmeldung"
+
+#: authentication_service/templates/authentication_service/registration.html:25
+msgid "Register"
+msgstr "Registrieren"
+
+#: authentication_service/templates/authentication_service/reset_password/reset_password.html:5
+#: authentication_service/templates/authentication_service/reset_password/reset_password.html:9
+msgid "Forgot your password?"
+msgstr "Haben Sie Ihr Passwort vergessen?"
+
+#: authentication_service/templates/authentication_service/reset_password/reset_password.html:17
+#: authentication_service/templates/authentication_service/reset_password/security_questions.html:18
+msgid "Submit"
+msgstr "Einreichen"
+
+#: authentication_service/templates/authentication_service/reset_password/security_questions.html:5
+#: authentication_service/templates/authentication_service/reset_password/security_questions.html:9
+msgid "Security Questions"
+msgstr ""
+
+#: authentication_service/templates/base.html:56
+msgid "Back to "
+msgstr "Zurück zu "
+
+#: authentication_service/templates/oidc_provider/authorize.html:16
+#: authentication_service/templates/oidc_provider/authorize.html:20
+msgid "Request for Permission"
+msgstr ""
+
+#: authentication_service/templates/oidc_provider/authorize.html:24
+#, python-format
+msgid ""
+"\n"
+"        <p class=\"Intro\">You recently logged in to <strong>"
+"%(client_name)s</strong>, and they would like to access this information of "
+"you:</p>\n"
+"    "
+msgstr ""
+
+#: authentication_service/templates/registration/password_reset_confirm.html:5
+#: authentication_service/templates/registration/password_reset_confirm.html:9
+#: authentication_service/templates/registration/password_reset_done.html:5
+#: authentication_service/templates/registration/password_reset_done.html:9
+msgid "Password Reset"
+msgstr ""
+
+#: authentication_service/templates/registration/password_reset_confirm.html:13
+msgid ""
+"Please enter your new password twice so we can verify you typed it in "
+"correctly."
+msgstr ""
+
+#: authentication_service/templates/registration/password_reset_confirm.html:18
+msgid "Change my password"
+msgstr ""
+
+#: authentication_service/templates/registration/password_reset_done.html:13
+msgid ""
+"We've emailed you instructions for setting your password, if an account "
+"exists with the email you entered. You should receive them shortly."
+msgstr ""
+
+#: authentication_service/templates/registration/password_reset_done.html:14
+msgid ""
+"If you don't receive an email, please make sure you've entered the address "
+"you registered with, and check your spam folder."
+msgstr ""
+
+#: authentication_service/templates/translation.html:6
+msgid "username"
+msgstr ""
+
+#: authentication_service/templates/translation.html:7
+msgid "Token"
+msgstr "Zeichen"
+
+#: authentication_service/templates/translation.html:8
+#, fuzzy
+#| msgid "Password update"
+msgid "Password confirmation"
+msgstr "Passwort aktualisieren"
+
+#: authentication_service/templates/translation.html:9
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr ""
+
+#: authentication_service/templates/translation.html:10
+#, fuzzy
+#| msgid "Password update"
+msgid "New password confirmation"
+msgstr "Passwort aktualisieren"
+
+#: authentication_service/templates/translation.html:11
+msgid "Your password can't be too similar to your other personal information."
+msgstr ""
+
+#: authentication_service/templates/translation.html:12
+#, fuzzy
+#| msgid ""
+#| "The password must contain at least one uppercase letter, one lowercase "
+#| "one, a digit and special character."
+msgid "Your password must contain at least (min_length)d character."
+msgstr ""
+"Das Passwort muss mindestens einen Großbuchstaben enthalten, einen "
+"Kleinbuchstabeneine Ziffer und ein Sonderzeichen."
+
+#: authentication_service/templates/translation.html:13
+msgid "Your password can't be a commonly used password."
+msgstr ""
+
+#: authentication_service/templates/translation.html:14
+msgid "Your password can't be entirely numeric."
+msgstr ""
+
+#: authentication_service/templates/translation.html:15
+msgid "Enter the same password as before, for verification."
+msgstr ""
+
+#: authentication_service/templates/two_factor/_wizard_actions.html:3
+msgid "Next"
+msgstr ""
+
+#: authentication_service/templates/two_factor/_wizard_actions.html:16
+msgid "Cancel"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/backup_tokens.html:5
+#: authentication_service/templates/two_factor/core/backup_tokens.html:9
+#: authentication_service/templates/two_factor/profile/profile.html:43
+msgid "Backup Tokens"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/backup_tokens.html:13
+msgid ""
+"Backup tokens can be used when your primary and backup\n"
+"      phone numbers aren't available. The backup tokens below can be used\n"
+"      for login verification. If you've used up all your backup tokens, you\n"
+"      can generate a new set of backup tokens. Only the backup tokens shown\n"
+"      below will be valid."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/backup_tokens.html:25
+msgid "Print these tokens and keep them somewhere safe."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/backup_tokens.html:27
+msgid "You don't have any backup codes yet."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/backup_tokens.html:31
+msgid "Generate Tokens"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/backup_tokens.html:35
+msgid "Back to Account Security"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/login.html:14
+msgid "Enter your credentials."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/login.html:17
+msgid ""
+"We are calling your phone right now, please enter the\n"
+"        digits you hear."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/login.html:20
+msgid ""
+"We sent you a text message, please enter the tokens we\n"
+"        sent."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/login.html:23
+msgid ""
+"Please enter the tokens generated by your token\n"
+"        generator."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/login.html:27
+msgid ""
+"Use this form for entering backup tokens for logging in.\n"
+"      These tokens have been generated for you to print and keep safe. "
+"Please\n"
+"      enter one of these backup tokens to login to your account."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/login.html:39
+msgid "Or, alternatively, use one of your backup phones:"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/otp_required.html:5
+#: authentication_service/templates/two_factor/core/otp_required.html:9
+msgid "Permission Denied"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/otp_required.html:13
+msgid ""
+"The page you requested, enforces users to verify using\n"
+"    two-factor authentication for security reasons. You need to enable "
+"these\n"
+"    security features in order to access this page."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/otp_required.html:17
+msgid ""
+"Two-factor authentication is not enabled for your\n"
+"    account. Enable two-factor authentication for enhanced account\n"
+"    security."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/otp_required.html:22
+#: authentication_service/templates/two_factor/core/setup.html:5
+#: authentication_service/templates/two_factor/core/setup.html:9
+#: authentication_service/templates/two_factor/core/setup_complete.html:5
+#: authentication_service/templates/two_factor/core/setup_complete.html:9
+#: authentication_service/templates/two_factor/profile/profile.html:66
+msgid "Enable Two-Factor Authentication"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/phone_register.html:5
+#: authentication_service/templates/two_factor/core/phone_register.html:9
+msgid "Add Backup Phone"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/phone_register.html:14
+msgid ""
+"You'll be adding a backup phone number to your\n"
+"        account. This number will be used if your primary method of\n"
+"        registration is not available."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/phone_register.html:18
+msgid ""
+"We've sent a token to your phone number. Please\n"
+"        enter the token you've received."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:14
+msgid ""
+"You are about to take your account security to the\n"
+"        next level. Follow the steps in this wizard to enable two-factor\n"
+"        authentication."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:18
+msgid ""
+"Please select which authentication method you would\n"
+"        like to use."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:21
+msgid ""
+"To start using a token generator, please use your\n"
+"        smartphone to scan the QR code below. For example, use Google\n"
+"        Authenticator. Then, enter the token generated by the app.\n"
+"        "
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:27
+msgid ""
+"Please enter the phone number you wish to receive the\n"
+"      text messages on. This number will be validated in the next step.\n"
+"      "
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:31
+msgid ""
+"Please enter the phone number you wish to be called on.\n"
+"      This number will be validated in the next step. "
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:36
+msgid ""
+"We are calling your phone right now, please enter the\n"
+"          digits you hear."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:39
+msgid ""
+"We sent you a text message, please enter the tokens we\n"
+"          sent."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:43
+msgid ""
+"We've\n"
+"        encountered an issue with the selected authentication method. "
+"Please\n"
+"        go back and verify that you entered your information correctly, try\n"
+"        again, or use a different authentication method instead. If the "
+"issue\n"
+"        persists, contact the site administrator."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup.html:50
+msgid ""
+"To identify and verify your YubiKey, please insert a\n"
+"      token in the field below. Your YubiKey will be linked to your\n"
+"      account."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup_complete.html:13
+msgid ""
+"Congratulations, you've successfully enabled two-factor\n"
+"      authentication."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup_complete.html:18
+#: authentication_service/templates/two_factor/core/setup_complete.html:25
+msgid "Back to Profile"
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup_complete.html:20
+msgid ""
+"However, it might happen that you don't have access to\n"
+"      your primary token device. To enable account recovery, add a phone \n"
+"      number."
+msgstr ""
+
+#: authentication_service/templates/two_factor/core/setup_complete.html:27
+#: authentication_service/templates/two_factor/profile/profile.html:40
+msgid "Add Phone Number"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/disable.html:5
+#: authentication_service/templates/two_factor/profile/disable.html:9
+msgid "Disable Two-factor Authentication"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/disable.html:13
+msgid ""
+"You are about to disable two-factor authentication. This\n"
+"    compromises your account security, are you sure?"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/disable.html:19
+msgid "Disable"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:5
+#: authentication_service/templates/two_factor/profile/profile.html:9
+msgid "Account Security"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:15
+msgid "Tokens will be generated by your token generator."
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:17
+#, python-format
+msgid "Primary method: %(primary)s"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:19
+msgid "Tokens will be generated by your YubiKey."
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:23
+msgid "Backup Phone Numbers"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:24
+msgid ""
+"If your primary method is not available, we are able to\n"
+"        send backup tokens to the phone numbers listed below."
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:34
+msgid "Unregister"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:45
+msgid ""
+"If you don't have any device with you, you can access\n"
+"        your account using backup tokens."
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:47
+#, python-format
+msgid ""
+"\n"
+"        You have only one backup token remaining.\n"
+"      "
+msgid_plural ""
+"\n"
+"        You have %(counter)s backup tokens remaining.\n"
+"      "
+msgstr[0] ""
+msgstr[1] ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:54
+msgid "Show Codes"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:56
+#: authentication_service/templates/two_factor/profile/profile.html:60
+msgid "Disable Two-Factor Authentication"
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:57
+msgid ""
+"However we strongly discourage you to do so, you can\n"
+"      also disable two-factor authentication for your account."
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:62
+msgid ""
+"Two-factor authentication is not enabled for your\n"
+"      account. Enable two-factor authentication for enhanced account\n"
+"      security."
+msgstr ""
+
+#: authentication_service/templates/two_factor/profile/profile.html:76
+msgid "Bye bye!"
+msgstr "Tschüss!"
+
+#: authentication_service/templates/two_factor/profile/profile.html:78
+msgid ""
+"\n"
+"            Continue from where you were before registration.\n"
+"        "
+msgstr ""
+"\n"
+"            Fahren Sie von dort fort, wo Sie vor der Registrierung waren.\n"
+"        "
+
+#: authentication_service/templates/two_factor/profile/profile.html:84
+msgid "Back from whence you came!"
+msgstr "Zurück, woher du kommst!"
+
+#: authentication_service/views.py:270
+msgid "Successfully updated password."
+msgstr ""
+
+#: authentication_service/views.py:338
+msgid "You require either an email or msisdn to request an account deletion"
+msgstr ""
+
+#: authentication_service/views.py:371
+msgid "Successfully requested account deletion."
+msgstr ""
+
+#: authentication_service/views.py:446
+msgid "One or more answers are incorrect"
+msgstr ""

@@ -1,15 +1,21 @@
+import random
 import json
 import os
-
+import jsonschema
 import datetime
 import uuid
 
-import jsonschema
+from oidc_provider.models import Client
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.util import random_hex
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from oidc_provider.models import Client
 
+from authentication_service import models
 from authentication_service.api import schemas
+from authentication_service.models import UserSite
 
 
 class IntegrationTestCase(TestCase):
@@ -68,6 +74,115 @@ class IntegrationTestCase(TestCase):
             ]
         )
 
+        # Create countries
+        cls.total_countries = 0
+        for language in settings.LANGUAGES:
+            if not len(language[0]) > 2:
+                models.Country.objects.create(
+                    code=language[0], name=language[1]
+                )
+                cls.total_countries += 1
+
+        # Organisational units
+        cls.MAX_ORG_UNITS = 5
+        cls.org_units = [
+            models.OrganisationalUnit.objects.create(
+                id=i,
+                name=f"test_unit_{i}",
+                description="Desc"
+            )
+            for i in range(0, 5)
+        ]
+
+    def test_organisational_unit_list(self):
+        # Authorize user
+        self.client.login(username="test_user_1", password="password")
+
+        # Test complete list
+        response = self.client.get("/api/v1/organisational_units")
+        self.assertEqual(len(response.json()),
+                         min(self.MAX_ORG_UNITS, settings.DEFAULT_LISTING_LIMIT))
+        self.assertEqual(int(response["X-Total-Count"]), self.MAX_ORG_UNITS)
+
+        # Test limit
+        response = self.client.get("/api/v1/organisational_units?limit=1")
+        self.assertEqual(len(response.json()), 1)
+        self.assertContains(response, "%s" % self.org_units[0].name)
+        self.assertEqual(int(response["X-Total-Count"]), self.MAX_ORG_UNITS)
+
+        # Test offset
+        response = self.client.get("/api/v1/organisational_units?offset=1")
+        self.assertEqual(len(response.json()),
+                         min(self.MAX_ORG_UNITS - 1, settings.DEFAULT_LISTING_LIMIT))
+        self.assertContains(response, "%s" % self.org_units[1].name)
+        self.assertEqual(int(response["X-Total-Count"]), self.MAX_ORG_UNITS)
+
+        # Test bad request
+        response = self.client.get("/api/v1/organisational_units?limit=500")
+        self.assertEqual(response.status_code, 400)
+
+    def test_organisational_unit_read(self):
+        # Authorize user
+        self.client.login(username="test_user_2", password="password")
+
+        # Test read
+        response = self.client.get("/api/v1/organisational_units/1")
+        self.assertContains(response, self.org_units[1].name)
+
+        # Validate returned data
+        jsonschema.validate(response.json(), schema=schemas.organisational_unit)
+
+        # Test non-existent organisational_unit
+        response = self.client.get("/api/v1/organisational_units/999999")
+        self.assertEqual(response.status_code, 404)
+
+    def test_country_list(self):
+        # Authorize user
+        self.client.login(username="test_user_1", password="password")
+
+        # Test complete list
+        response = self.client.get("/api/v1/countries")
+        self.assertEqual(len(response.json()),
+                         min(self.total_countries, settings.DEFAULT_LISTING_LIMIT))
+        self.assertEqual(int(response["X-Total-Count"]), self.total_countries)
+
+        # Test limit
+        response = self.client.get("/api/v1/countries?limit=1")
+        self.assertEqual(len(response.json()), 1)
+        self.assertContains(response, "%s" % settings.LANGUAGES[0][0])
+        self.assertEqual(int(response["X-Total-Count"]), self.total_countries)
+
+        # Test offset
+        response = self.client.get("/api/v1/countries?offset=1")
+        self.assertEqual(len(response.json()),
+                         min(self.total_countries, settings.DEFAULT_LISTING_LIMIT))
+        self.assertContains(response, "%s" % settings.LANGUAGES[1][0])
+        self.assertEqual(int(response["X-Total-Count"]), self.total_countries)
+
+        # Test list using country code
+        response = self.client.get("/api/v1/countries?country_codes=de,en")
+        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
+
+        # Test bad request
+        response = self.client.get("/api/v1/countries?limit=500")
+        self.assertEqual(response.status_code, 400)
+
+    def test_country_read(self):
+        # Authorize user
+        self.client.login(username="test_user_2", password="password")
+
+        # Test read
+        response = self.client.get("/api/v1/countries/en")
+        self.assertContains(response, "English")
+
+        # Validate returned data
+        jsonschema.validate(response.json(), schema=schemas.country)
+
+        # Test non-existent country
+        response = self.client.get("/api/v1/countries/zz")
+        self.assertEqual(response.status_code, 404)
+
     def test_client_list(self):
         # Authorize user
         self.client.login(username="test_user_1", password="password")
@@ -75,29 +190,34 @@ class IntegrationTestCase(TestCase):
         # Test complete list
         response = self.client.get("/api/v1/clients")
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test limit
         response = self.client.get("/api/v1/clients?limit=1")
         self.assertEqual(len(response.json()), 1)
         self.assertContains(response, "%s" % self.client_1.id)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test offset
         response = self.client.get("/api/v1/clients?offset=1")
         self.assertEqual(len(response.json()), 1)
         self.assertContains(response, "%s" % self.client_2.id)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test list using client.id
         response = self.client.get(
-            "/api/v1/clients?client_ids=%s&client_ids=%s" % (
+            "/api/v1/clients?client_ids=%s,%s" % (
                 self.client_1.id, self.client_2.id)
         )
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test list using client.client_id
         response = self.client.get(
             "/api/v1/clients?client_token_id=%s" % self.client_1.client_id
         )
         self.assertContains(response, "test_client_id_1")
+        self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test list using combination
         response = self.client.get(
@@ -105,6 +225,7 @@ class IntegrationTestCase(TestCase):
                 self.client_1.id, self.client_1.client_id)
         )
         self.assertEqual(len(response.json()), 1)
+        self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test bad request
         response = self.client.get("/api/v1/clients?limit=500")
@@ -116,7 +237,7 @@ class IntegrationTestCase(TestCase):
 
         # Test read
         response = self.client.get(
-            "/api/v1/clients/%s" % self.client_1.client_id)
+            "/api/v1/clients/%s" % self.client_1.id)
         self.assertContains(response, "test_client_id_1")
 
         # Validate returned data
@@ -133,34 +254,41 @@ class IntegrationTestCase(TestCase):
         # Test complete list
         response = self.client.get("/api/v1/users")
         self.assertEqual(len(response.json()), 3)
+        self.assertEqual(int(response["X-Total-Count"]), 3)
 
         # Test limit
         response = self.client.get("/api/v1/users?limit=1")
         self.assertEqual(len(response.json()), 1)
+        self.assertEqual(int(response["X-Total-Count"]), 3)
 
         # Test offset
         response = self.client.get("/api/v1/users?offset=1")
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 3)
 
         # Test list using email
         response = self.client.get("/api/v1/users?email=test@user.com")
         self.assertContains(response, "test_user_3")
+        self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test list using username_prefix
-        response = self.client.get("/api/v1/users?username_prefix=test")
+        response = self.client.get("/api/v1/users?username=test")
         self.assertEqual(len(response.json()), 3)
+        self.assertEqual(int(response["X-Total-Count"]), 3)
 
         # Test list using multiple user id's
         response = self.client.get(
-            "/api/v1/users?user_ids=%s&user_ids=%s" % (
+            "/api/v1/users?user_ids=%s,%s" % (
                 self.user_1.id, self.user_3.id))
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(int(response["X-Total-Count"]), 2)
 
         # Test combination
         response = self.client.get(
             "/api/v1/users?email=%s&username_prefix=test&user_ids=%s" % (
                 self.user_3.email, self.user_3.id))
         self.assertEqual(len(response.json()), 1)
+        self.assertEqual(int(response["X-Total-Count"]), 1)
 
         # Test bad request
         response = self.client.get("/api/v1/users?limit=500")
@@ -236,3 +364,194 @@ class IntegrationTestCase(TestCase):
         # Test non-existent user
         response = self.client.delete("/api/v1/users/%s" % self.user_2.id)
         self.assertEqual(response.status_code, 404)
+
+    def test_user_list_filter(self):
+        self.client.login(username="test_user_1", password="password")
+        users = []
+        for index in range(1, random.randint(12, 20)):
+            uuid_val = uuid.uuid4()
+            user = get_user_model().objects.create(
+                username=f"username_{uuid_val}",
+                email=f"{uuid_val}@email.com",
+                birth_date=datetime.date(2007, 1, 1)
+            )
+            users.append((user, uuid_val))
+
+        # Test list using username
+        print ("\nusername")
+        response = self.client.get("/api/v1/users?username=SerNAme")
+
+        # SQL
+        """SELECT "authentication_service_coreuser"."id",
+        "authentication_service_coreuser"."username",
+        "authentication_service_coreuser"."first_name",
+        "authentication_service_coreuser"."last_name",
+        "authentication_service_coreuser"."email",
+        "authentication_service_coreuser"."is_active",
+        "authentication_service_coreuser"."date_joined",
+        "authentication_service_coreuser"."last_login",
+        "authentication_service_coreuser"."email_verified",
+        "authentication_service_coreuser"."msisdn_verified",
+        "authentication_service_coreuser"."msisdn",
+        "authentication_service_coreuser"."gender",
+        "authentication_service_coreuser"."birth_date",
+        "authentication_service_coreuser"."avatar",
+        "authentication_service_coreuser"."country_id",
+        "authentication_service_coreuser"."created_at",
+        "authentication_service_coreuser"."updated_at", (COUNT(*) OVER ()) AS
+        "x_total_count" FROM "authentication_service_coreuser" WHERE
+        "authentication_service_coreuser"."username" ILIKE %SerNAme% ORDER BY
+        "authentication_service_coreuser"."id" ASC LIMIT 20"""
+
+        self.assertEqual(len(response.json()), len(users))
+        print ("\n" + "-"*20)
+
+        # Test list on last_name
+        count = 0
+        for index in range(1, 9):
+            count += 1
+            user = users[index][0]
+            user.last_name = f"last_{index}"
+            user.save()
+            users[index] = (user, users[index][1])
+        response = self.client.get("/api/v1/users?last_name=ASt")
+        self.assertEqual(len(response.json()), count)
+
+        # Test list on first_name
+        count = 0
+        for index in range(1, 10):
+            count += 1
+            user = users[index][0]
+            user.first_name = f"first_{index}"
+            user.save()
+            users[index] = (user, users[index][1])
+        response = self.client.get("/api/v1/users?first_name=IrsT")
+        self.assertEqual(len(response.json()), count)
+
+        # DOB
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":"2007-01-01T10:44:47.021Z","to":"2018-04-26T10:44:47.021Z]"}'
+        )
+        self.assertEqual(len(response.json()), len(users))
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":"2007-01-01","to":"2018-04-26"}'
+        )
+        self.assertEqual(len(response.json()), len(users))
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":"2006-01-01T10:44:47.021Z"}'
+        )
+        self.assertEqual(len(response.json()), len(users))
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"to":"1980-01-01T10:44:47.021Z"}'
+        )
+        self.assertEqual(len(response.json()), 0)
+
+        # Country
+        user = users[0][0]
+        user.country = models.Country.objects.get(code="de")
+        user.save()
+        users[0] = (user, users[0][1])
+        user = users[3][0]
+        user.country = models.Country.objects.get(code="de")
+        user.save()
+        users[3] = (user, users[3][1])
+        response = self.client.get("/api/v1/users?country=de")
+        self.assertEqual(len(response.json()), 2)
+
+        # has organisational unit
+        response = self.client.get(
+            "/api/v1/users?has_organisational_unit=true")
+        self.assertEqual(len(response.json()), 0)
+        user = users[0][0]
+        user.organisational_unit = self.org_units[0]
+        user.save()
+        response = self.client.get(
+            "/api/v1/users?has_organisational_unit=true")
+        self.assertEqual(len(response.json()), 1)
+
+        # organisational_unit
+        response = self.client.get(
+            f"/api/v1/users?organisational_unit_id={self.org_units[0].id}")
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(
+            f"/api/v1/users?tfa_enabled=false")
+        self.assertTrue(len(response.json()) > 0)
+
+        totp_device = TOTPDevice.objects.create(
+            user=users[0][0],
+            name="default",
+            confirmed=True,
+            key=random_hex().decode()
+        )
+
+        response = self.client.get(
+            f"/api/v1/users?tfa_enabled=true")
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(
+            f"/api/v1/users?site_ids=1,2")
+        self.assertEqual(len(response.json()), 0)
+
+        # Link one user to 2 sites
+        UserSite.objects.create(user=users[0][0], site_id=1)
+        UserSite.objects.create(user=users[0][0], site_id=2)
+
+        response = self.client.get(
+            f"/api/v1/users?site_ids=1,2")
+        print(response.json())
+        self.assertEqual(len(response.json()), 1)
+
+        # Link another user to site 2
+        UserSite.objects.create(user=users[1][0], site_id=2)
+
+        # Querying both sites now results in 2 users...
+        response = self.client.get(
+            f"/api/v1/users?site_ids=1,2")
+        self.assertEqual(len(response.json()), 2)
+
+        # ...while querying only site 1 results in 1 user.
+        response = self.client.get(
+            f"/api/v1/users?site_ids=1")
+        self.assertEqual(len(response.json()), 1)
+
+
+    def test_user_list_filter_errors(self):
+        self.client.login(username="test_user_3", password="password")
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":null,"to":null}'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b"Invalid date range specified: None is not of type 'string'")
+
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":1,"to":2,"too":3}'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b"Invalid date range specified: 1 is not of type 'string'")
+
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":"2001-01-01","too":"2001-01-01"}'
+        )
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":"1","to":"2"}'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b"Date value(1) does not have correct format: "
+                                           b"YYYY-MM-DD or YYYY-MM-DDTHH:MI:SS(.000)Z")
+
+        response = self.client.get(
+            "/api/v1/users?birth_date="
+            '{"from":"1","to"}'
+        )
+        self.assertEqual(response.status_code, 400)

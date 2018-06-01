@@ -41,10 +41,10 @@ Module = importlib.import_module(module_name)
 Stubs = getattr(Module, class_name)
 
 
-def maybe_validate_result(result, schema):
+def maybe_validate_result(result_string, schema):
     if VALIDATE_RESPONSES:
         try:
-            jsonschema.validate(result, schema)
+            jsonschema.validate(json.loads(result_string, encoding="utf8"), schema)
         except ValidationError as e:
             LOGGER.error(e.message)
 
@@ -129,13 +129,29 @@ class Clients(View):
         # limit (optional): integer An optional query parameter to limit the number of results returned.
         limit = request.GET.get("limit", None)
         # client_ids (optional): array An optional list of client ids
-        client_ids = request.GET.getlist("client_ids", None)
+        client_ids = request.GET.get("client_ids", None)
+        if client_ids is not None:
+            client_ids = client_ids.split(",")
         # client_token_id (optional): string An optional client id to filter on. This is not the primary key.
         client_token_id = request.GET.get("client_token_id", None)
         result = Stubs.client_list(request, offset, limit, client_ids, client_token_id, )
-        maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -151,9 +167,224 @@ class ClientsClientId(View):
         :param client_id: string A string value identifying the client
         """
         result = Stubs.client_read(request, client_id, )
-        maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="get")
+class Countries(View):
+
+    GET_RESPONSE_SCHEMA = json.loads("""{
+    "items": {
+        "properties": {
+            "code": {
+                "maxLength": 2,
+                "minLength": 2,
+                "type": "string"
+            },
+            "name": {
+                "maxLength": 100,
+                "type": "string"
+            }
+        },
+        "required": [
+            "code",
+            "name"
+        ],
+        "type": "object",
+        "x-scope": [
+            ""
+        ]
+    },
+    "type": "array"
+}""")
+
+    def get(self, request, *args, **kwargs):
+        """
+        :param self: A Countries instance
+        :param request: An HttpRequest
+        """
+        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
+        offset = request.GET.get("offset", None)
+        # limit (optional): integer An optional query parameter to limit the number of results returned.
+        limit = request.GET.get("limit", None)
+        # country_codes (optional): array An optional list of country codes
+        country_codes = request.GET.get("country_codes", None)
+        if country_codes is not None:
+            country_codes = country_codes.split(",")
+        result = Stubs.country_list(request, offset, limit, country_codes, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="get")
+class CountriesCountryCode(View):
+
+    GET_RESPONSE_SCHEMA = schemas.country
+
+    def get(self, request, country_code, *args, **kwargs):
+        """
+        :param self: A CountriesCountryCode instance
+        :param request: An HttpRequest
+        :param country_code: string A string value identifying the country
+        """
+        result = Stubs.country_read(request, country_code, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="get")
+class OrganisationalUnits(View):
+
+    GET_RESPONSE_SCHEMA = json.loads("""{
+    "items": {
+        "properties": {
+            "created_at": {
+                "format": "date-time",
+                "readOnly": true,
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "id": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "updated_at": {
+                "format": "date-time",
+                "readOnly": true,
+                "type": "string"
+            }
+        },
+        "required": [
+            "id",
+            "name",
+            "description",
+            "created_at",
+            "updated_at"
+        ],
+        "type": "object",
+        "x-scope": [
+            ""
+        ]
+    },
+    "type": "array"
+}""")
+
+    def get(self, request, *args, **kwargs):
+        """
+        :param self: A OrganisationalUnits instance
+        :param request: An HttpRequest
+        """
+        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
+        offset = request.GET.get("offset", None)
+        # limit (optional): integer An optional query parameter to limit the number of results returned.
+        limit = request.GET.get("limit", None)
+        # organisational_unit_ids (optional): array An optional list of organisational unit ids
+        organisational_unit_ids = request.GET.get("organisational_unit_ids", None)
+        if organisational_unit_ids is not None:
+            organisational_unit_ids = organisational_unit_ids.split(",")
+        result = Stubs.organisational_unit_list(request, offset, limit, organisational_unit_ids, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="get")
+class OrganisationalUnitsOrganisationalUnitId(View):
+
+    GET_RESPONSE_SCHEMA = schemas.organisational_unit
+
+    def get(self, request, organisational_unit_id, *args, **kwargs):
+        """
+        :param self: A OrganisationalUnitsOrganisationalUnitId instance
+        :param request: An HttpRequest
+        :param organisational_unit_id: integer An integer identifying an organisational unit
+        """
+        result = Stubs.organisational_unit_read(request, organisational_unit_id, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -229,6 +460,10 @@ class Users(View):
             "msisdn_verified": {
                 "type": "boolean"
             },
+            "organisational_unit_id": {
+                "readOnly": true,
+                "type": "integer"
+            },
             "updated_at": {
                 "format": "date-time",
                 "readOnly": true,
@@ -265,16 +500,74 @@ class Users(View):
         offset = request.GET.get("offset", None)
         # limit (optional): integer An optional query parameter to limit the number of results returned.
         limit = request.GET.get("limit", None)
-        # email (optional): string An optional email filter
+        # birth_date (optional): string An optional birth_date range filter
+        birth_date = request.GET.get("birth_date", None)
+        # country (optional): string An optional country filter
+        country = request.GET.get("country", None)
+        # date_joined (optional): string An optional date joined range filter
+        date_joined = request.GET.get("date_joined", None)
+        # email (optional): string An optional case insensitive email inner match filter
         email = request.GET.get("email", None)
-        # username_prefix (optional): string An optional username prefix filter
-        username_prefix = request.GET.get("username_prefix", None)
+        # email_verified (optional): boolean An optional email verified filter
+        email_verified = request.GET.get("email_verified", None)
+        # first_name (optional): string An optional case insensitive first name inner match filter
+        first_name = request.GET.get("first_name", None)
+        # gender (optional): string An optional gender filter
+        gender = request.GET.get("gender", None)
+        # is_active (optional): boolean An optional is_active filter
+        is_active = request.GET.get("is_active", None)
+        # last_login (optional): string An optional last login range filter
+        last_login = request.GET.get("last_login", None)
+        # last_name (optional): string An optional case insensitive last name inner match filter
+        last_name = request.GET.get("last_name", None)
+        # msisdn (optional): string An optional case insensitive MSISDN inner match filter
+        msisdn = request.GET.get("msisdn", None)
+        # msisdn_verified (optional): boolean An optional MSISDN verified filter
+        msisdn_verified = request.GET.get("msisdn_verified", None)
+        # nickname (optional): string An optional case insensitive nickname inner match filter
+        nickname = request.GET.get("nickname", None)
+        # organisational_unit_id (optional): integer An optional filter on the organisational unit id
+        organisational_unit_id = request.GET.get("organisational_unit_id", None)
+        # updated_at (optional): string An optional updated_at range filter
+        updated_at = request.GET.get("updated_at", None)
+        # username (optional): string An optional case insensitive username inner match filter
+        username = request.GET.get("username", None)
+        # q (optional): string An optional case insensitive inner match filter across all searchable text fields
+        q = request.GET.get("q", None)
+        # tfa_enabled (optional): boolean An optional filter based on whether a user has 2FA enabled or not
+        tfa_enabled = request.GET.get("tfa_enabled", None)
+        # has_organisational_unit (optional): boolean An optional filter based on whether a user has an organisational unit or not
+        has_organisational_unit = request.GET.get("has_organisational_unit", None)
+        # order_by (optional): array Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
+        order_by = request.GET.get("order_by", None)
+        if order_by is not None:
+            order_by = order_by.split(",")
         # user_ids (optional): array An optional list of user ids
-        user_ids = request.GET.getlist("user_ids", None)
-        result = Stubs.user_list(request, offset, limit, email, username_prefix, user_ids, )
-        maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
+        user_ids = request.GET.get("user_ids", None)
+        if user_ids is not None:
+            user_ids = user_ids.split(",")
+        # site_ids (optional): array An optional list of site ids
+        site_ids = request.GET.get("site_ids", None)
+        if site_ids is not None:
+            site_ids = site_ids.split(",")
+        result = Stubs.user_list(request, offset, limit, birth_date, country, date_joined, email, email_verified, first_name, gender, is_active, last_login, last_name, msisdn, msisdn_verified, nickname, organisational_unit_id, updated_at, username, q, tfa_enabled, has_organisational_unit, order_by, user_ids, site_ids, )
 
-        return JsonResponse(result, safe=False)
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -295,9 +588,23 @@ class UsersUserId(View):
         :param user_id: string A UUID value identifying the user.
         """
         result = Stubs.user_delete(request, user_id, )
-        maybe_validate_result(result, self.DELETE_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.DELETE_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
 
     def get(self, request, user_id, *args, **kwargs):
         """
@@ -306,9 +613,23 @@ class UsersUserId(View):
         :param user_id: string A UUID value identifying the user.
         """
         result = Stubs.user_read(request, user_id, )
-        maybe_validate_result(result, self.GET_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
 
     def put(self, request, user_id, *args, **kwargs):
         """
@@ -321,9 +642,23 @@ class UsersUserId(View):
             return HttpResponseBadRequest("Body required")
 
         result = Stubs.user_update(request, body, user_id, )
-        maybe_validate_result(result, self.PUT_RESPONSE_SCHEMA)
 
-        return JsonResponse(result, safe=False)
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.PUT_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
 
 
 class __SWAGGER_SPEC__(View):
@@ -388,6 +723,55 @@ class __SWAGGER_SPEC__(View):
                 "id",
                 "client_id",
                 "response_type"
+            ],
+            "type": "object"
+        },
+        "country": {
+            "properties": {
+                "code": {
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string"
+                },
+                "name": {
+                    "maxLength": 100,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "code",
+                "name"
+            ],
+            "type": "object"
+        },
+        "organisational_unit": {
+            "properties": {
+                "created_at": {
+                    "format": "date-time",
+                    "readOnly": true,
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "format": "date-time",
+                    "readOnly": true,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "created_at",
+                "updated_at"
             ],
             "type": "object"
         },
@@ -459,6 +843,10 @@ class __SWAGGER_SPEC__(View):
                 "msisdn_verified": {
                     "type": "boolean"
                 },
+                "organisational_unit_id": {
+                    "readOnly": true,
+                    "type": "integer"
+                },
                 "updated_at": {
                     "format": "date-time",
                     "readOnly": true,
@@ -475,6 +863,43 @@ class __SWAGGER_SPEC__(View):
                 "username",
                 "is_active",
                 "date_joined",
+                "created_at",
+                "updated_at"
+            ],
+            "type": "object"
+        },
+        "user_site": {
+            "properties": {
+                "consented_at": {
+                    "format": "date-time",
+                    "type": "string"
+                },
+                "created_at": {
+                    "format": "date-time",
+                    "readOnly": true,
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "site_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "format": "date-time",
+                    "readOnly": true,
+                    "type": "string"
+                },
+                "user_id": {
+                    "format": "uuid",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "user_id",
+                "site_id",
+                "consented_at",
                 "created_at",
                 "updated_at"
             ],
@@ -543,9 +968,17 @@ class __SWAGGER_SPEC__(View):
     "parameters": {
         "client_id": {
             "description": "A string value identifying the client",
-            "format": "string",
             "in": "path",
             "name": "client_id",
+            "required": true,
+            "type": "string"
+        },
+        "country_code": {
+            "description": "A string value identifying the country",
+            "in": "path",
+            "maxLength": 2,
+            "minLength": 2,
+            "name": "country_code",
             "required": true,
             "type": "string"
         },
@@ -566,6 +999,13 @@ class __SWAGGER_SPEC__(View):
             "minimum": 0,
             "name": "offset",
             "required": false,
+            "type": "integer"
+        },
+        "organisational_unit_id": {
+            "description": "An integer identifying an organisational unit",
+            "in": "path",
+            "name": "organisational_unit_id",
+            "required": true,
             "type": "integer"
         },
         "user_id": {
@@ -595,13 +1035,13 @@ class __SWAGGER_SPEC__(View):
                         ]
                     },
                     {
-                        "collectionFormat": "multi",
+                        "collectionFormat": "csv",
                         "description": "An optional list of client ids",
                         "in": "query",
                         "items": {
                             "type": "integer"
                         },
-                        "minItems": 0,
+                        "minItems": 1,
                         "name": "client_ids",
                         "required": false,
                         "type": "array",
@@ -621,6 +1061,12 @@ class __SWAGGER_SPEC__(View):
                 "responses": {
                     "200": {
                         "description": "",
+                        "headers": {
+                            "X-Total-Count": {
+                                "description": "The total number of results matching the query",
+                                "type": "integer"
+                            }
+                        },
                         "schema": {
                             "items": {
                                 "$ref": "#/definitions/client",
@@ -667,6 +1113,184 @@ class __SWAGGER_SPEC__(View):
                 }
             ]
         },
+        "/countries": {
+            "get": {
+                "operationId": "country_list",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/optional_offset",
+                        "x-scope": [
+                            ""
+                        ]
+                    },
+                    {
+                        "$ref": "#/parameters/optional_limit",
+                        "x-scope": [
+                            ""
+                        ]
+                    },
+                    {
+                        "collectionFormat": "csv",
+                        "description": "An optional list of country codes",
+                        "in": "query",
+                        "items": {
+                            "maxLength": 2,
+                            "minLength": 2,
+                            "type": "string"
+                        },
+                        "minItems": 1,
+                        "name": "country_codes",
+                        "required": false,
+                        "type": "array",
+                        "uniqueItems": true
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "headers": {
+                            "X-Total-Count": {
+                                "description": "The total number of results matching the query",
+                                "type": "integer"
+                            }
+                        },
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/country",
+                                "x-scope": [
+                                    ""
+                                ]
+                            },
+                            "type": "array"
+                        }
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            }
+        },
+        "/countries/{country_code}": {
+            "get": {
+                "operationId": "country_read",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/country",
+                            "x-scope": [
+                                ""
+                            ]
+                        }
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/country_code",
+                    "x-scope": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        "/organisational_units": {
+            "get": {
+                "operationId": "organisational_unit_list",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/optional_offset",
+                        "x-scope": [
+                            ""
+                        ]
+                    },
+                    {
+                        "$ref": "#/parameters/optional_limit",
+                        "x-scope": [
+                            ""
+                        ]
+                    },
+                    {
+                        "collectionFormat": "csv",
+                        "description": "An optional list of organisational unit ids",
+                        "in": "query",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "minItems": 1,
+                        "name": "organisational_unit_ids",
+                        "required": false,
+                        "type": "array",
+                        "uniqueItems": true
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "headers": {
+                            "X-Total-Count": {
+                                "description": "The total number of results matching the query",
+                                "type": "integer"
+                            }
+                        },
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/organisational_unit",
+                                "x-scope": [
+                                    ""
+                                ]
+                            },
+                            "type": "array"
+                        }
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            }
+        },
+        "/organisational_units/{organisational_unit_id}": {
+            "get": {
+                "operationId": "organisational_unit_read",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/organisational_unit",
+                            "x-scope": [
+                                ""
+                            ]
+                        }
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/organisational_unit_id",
+                    "x-scope": [
+                        ""
+                    ]
+                }
+            ]
+        },
         "/users": {
             "get": {
                 "operationId": "user_list",
@@ -684,30 +1308,182 @@ class __SWAGGER_SPEC__(View):
                         ]
                     },
                     {
-                        "description": "An optional email filter",
-                        "format": "email",
+                        "description": "An optional birth_date range filter",
                         "in": "query",
+                        "name": "birth_date",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional country filter",
+                        "in": "query",
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "name": "country",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional date joined range filter",
+                        "in": "query",
+                        "name": "date_joined",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive email inner match filter",
+                        "in": "query",
+                        "minLength": 3,
                         "name": "email",
                         "required": false,
                         "type": "string"
                     },
                     {
-                        "description": "An optional username prefix filter",
+                        "description": "An optional email verified filter",
                         "in": "query",
-                        "name": "username_prefix",
+                        "name": "email_verified",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "description": "An optional case insensitive first name inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "first_name",
                         "required": false,
                         "type": "string"
                     },
                     {
-                        "collectionFormat": "multi",
+                        "description": "An optional gender filter",
+                        "in": "query",
+                        "name": "gender",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional is_active filter",
+                        "in": "query",
+                        "name": "is_active",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "description": "An optional last login range filter",
+                        "in": "query",
+                        "name": "last_login",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive last name inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "last_name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive MSISDN inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "msisdn",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional MSISDN verified filter",
+                        "in": "query",
+                        "name": "msisdn_verified",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "description": "An optional case insensitive nickname inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "nickname",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional filter on the organisational unit id",
+                        "in": "query",
+                        "name": "organisational_unit_id",
+                        "required": false,
+                        "type": "integer"
+                    },
+                    {
+                        "description": "An optional updated_at range filter",
+                        "in": "query",
+                        "name": "updated_at",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive username inner match filter",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "username",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional case insensitive inner match filter across all searchable text fields",
+                        "in": "query",
+                        "minLength": 3,
+                        "name": "q",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "description": "An optional filter based on whether a user has 2FA enabled or not",
+                        "in": "query",
+                        "name": "tfa_enabled",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "description": "An optional filter based on whether a user has an organisational unit or not",
+                        "in": "query",
+                        "name": "has_organisational_unit",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "collectionFormat": "csv",
+                        "description": "Fields and directions to order by, e.g. \\"-created_at,username\\". Add \\"-\\" in front of a field name to indicate descending order.",
+                        "in": "query",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "order_by",
+                        "required": false,
+                        "type": "array",
+                        "uniqueItems": true
+                    },
+                    {
+                        "collectionFormat": "csv",
                         "description": "An optional list of user ids",
                         "in": "query",
                         "items": {
                             "format": "uuid",
                             "type": "string"
                         },
-                        "minItems": 0,
+                        "minItems": 1,
                         "name": "user_ids",
+                        "required": false,
+                        "type": "array",
+                        "uniqueItems": true
+                    },
+                    {
+                        "collectionFormat": "csv",
+                        "description": "An optional list of site ids",
+                        "in": "query",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "minItems": 1,
+                        "name": "site_ids",
                         "required": false,
                         "type": "array",
                         "uniqueItems": true
@@ -719,6 +1495,12 @@ class __SWAGGER_SPEC__(View):
                 "responses": {
                     "200": {
                         "description": "",
+                        "headers": {
+                            "X-Total-Count": {
+                                "description": "The total number of results matching the query",
+                                "type": "integer"
+                            }
+                        },
                         "schema": {
                             "items": {
                                 "$ref": "#/definitions/user",

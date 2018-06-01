@@ -12,50 +12,165 @@ class AbstractStubClass(object):
     Implementations need to be derived from this class.
     """
 
+    # client_list -- Synchronisation point for meld
     @staticmethod
     def client_list(request, offset=None, limit=None, client_ids=None, client_token_id=None, *args, **kwargs):
         """
         :param request: An HttpRequest
+        :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
+        :type offset: integer
+        :param limit: (optional) An optional query parameter to limit the number of results returned.
+        :type limit: integer
+        :param client_ids: (optional) An optional list of client ids
+        :type client_ids: array
+        :param client_token_id: (optional) An optional client id to filter on. This is not the primary key.
+        :type client_token_id: string
         """
         raise NotImplementedError()
 
+    # client_read -- Synchronisation point for meld
     @staticmethod
     def client_read(request, client_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param client_id: string A string value identifying the client
+        :param client_id: A string value identifying the client
+        :type client_id: string
         """
         raise NotImplementedError()
 
+    # country_list -- Synchronisation point for meld
     @staticmethod
-    def user_list(request, offset=None, limit=None, email=None, username_prefix=None, user_ids=None, *args, **kwargs):
+    def country_list(request, offset=None, limit=None, country_codes=None, *args, **kwargs):
         """
         :param request: An HttpRequest
+        :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
+        :type offset: integer
+        :param limit: (optional) An optional query parameter to limit the number of results returned.
+        :type limit: integer
+        :param country_codes: (optional) An optional list of country codes
+        :type country_codes: array
         """
         raise NotImplementedError()
 
+    # country_read -- Synchronisation point for meld
+    @staticmethod
+    def country_read(request, country_code, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param country_code: A string value identifying the country
+        :type country_code: string
+        """
+        raise NotImplementedError()
+
+    # organisational_unit_list -- Synchronisation point for meld
+    @staticmethod
+    def organisational_unit_list(request, offset=None, limit=None, organisational_unit_ids=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
+        :type offset: integer
+        :param limit: (optional) An optional query parameter to limit the number of results returned.
+        :type limit: integer
+        :param organisational_unit_ids: (optional) An optional list of organisational unit ids
+        :type organisational_unit_ids: array
+        """
+        raise NotImplementedError()
+
+    # organisational_unit_read -- Synchronisation point for meld
+    @staticmethod
+    def organisational_unit_read(request, organisational_unit_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisational_unit_id: An integer identifying an organisational unit
+        :type organisational_unit_id: integer
+        """
+        raise NotImplementedError()
+
+    # user_list -- Synchronisation point for meld
+    @staticmethod
+    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisational_unit_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
+        :type offset: integer
+        :param limit: (optional) An optional query parameter to limit the number of results returned.
+        :type limit: integer
+        :param birth_date: (optional) An optional birth_date range filter
+        :type birth_date: string
+        :param country: (optional) An optional country filter
+        :type country: string
+        :param date_joined: (optional) An optional date joined range filter
+        :type date_joined: string
+        :param email: (optional) An optional case insensitive email inner match filter
+        :type email: string
+        :param email_verified: (optional) An optional email verified filter
+        :type email_verified: boolean
+        :param first_name: (optional) An optional case insensitive first name inner match filter
+        :type first_name: string
+        :param gender: (optional) An optional gender filter
+        :type gender: string
+        :param is_active: (optional) An optional is_active filter
+        :type is_active: boolean
+        :param last_login: (optional) An optional last login range filter
+        :type last_login: string
+        :param last_name: (optional) An optional case insensitive last name inner match filter
+        :type last_name: string
+        :param msisdn: (optional) An optional case insensitive MSISDN inner match filter
+        :type msisdn: string
+        :param msisdn_verified: (optional) An optional MSISDN verified filter
+        :type msisdn_verified: boolean
+        :param nickname: (optional) An optional case insensitive nickname inner match filter
+        :type nickname: string
+        :param organisational_unit_id: (optional) An optional filter on the organisational unit id
+        :type organisational_unit_id: integer
+        :param updated_at: (optional) An optional updated_at range filter
+        :type updated_at: string
+        :param username: (optional) An optional case insensitive username inner match filter
+        :type username: string
+        :param q: (optional) An optional case insensitive inner match filter across all searchable text fields
+        :type q: string
+        :param tfa_enabled: (optional) An optional filter based on whether a user has 2FA enabled or not
+        :type tfa_enabled: boolean
+        :param has_organisational_unit: (optional) An optional filter based on whether a user has an organisational unit or not
+        :type has_organisational_unit: boolean
+        :param order_by: (optional) Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
+        :type order_by: array
+        :param user_ids: (optional) An optional list of user ids
+        :type user_ids: array
+        :param site_ids: (optional) An optional list of site ids
+        :type site_ids: array
+        """
+        raise NotImplementedError()
+
+    # user_delete -- Synchronisation point for meld
     @staticmethod
     def user_delete(request, user_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param user_id: string A UUID value identifying the user.
+        :param user_id: A UUID value identifying the user.
+        :type user_id: string
         """
         raise NotImplementedError()
 
+    # user_read -- Synchronisation point for meld
     @staticmethod
     def user_read(request, user_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param user_id: string A UUID value identifying the user.
+        :param user_id: A UUID value identifying the user.
+        :type user_id: string
         """
         raise NotImplementedError()
 
+    # user_update -- Synchronisation point for meld
     @staticmethod
     def user_update(request, body, user_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param body: dict A dictionary containing the parsed and validated body
-        :param user_id: string A UUID value identifying the user.
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        :param user_id: A UUID value identifying the user.
+        :type user_id: string
         """
         raise NotImplementedError()
 
@@ -70,6 +185,14 @@ class MockedStubClass(AbstractStubClass):
     def client_list(request, offset=None, limit=None, client_ids=None, client_token_id=None, *args, **kwargs):
         """
         :param request: An HttpRequest
+        :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
+        :type offset: integer
+        :param limit: (optional) An optional query parameter to limit the number of results returned.
+        :type limit: integer
+        :param client_ids: (optional) An optional list of client ids
+        :type client_ids: array
+        :param client_token_id: (optional) An optional client id to filter on. This is not the primary key.
+        :type client_token_id: string
         """
         response_schema = json.loads("""{
     "items": {
@@ -148,7 +271,8 @@ class MockedStubClass(AbstractStubClass):
     def client_read(request, client_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param client_id: string A string value identifying the client
+        :param client_id: A string value identifying the client
+        :type client_id: string
         """
         response_schema = schemas.client
         if "type" not in response_schema:
@@ -160,9 +284,188 @@ class MockedStubClass(AbstractStubClass):
         return MockedStubClass.GENERATOR.random_value(response_schema)
 
     @staticmethod
-    def user_list(request, offset=None, limit=None, email=None, username_prefix=None, user_ids=None, *args, **kwargs):
+    def country_list(request, offset=None, limit=None, country_codes=None, *args, **kwargs):
         """
         :param request: An HttpRequest
+        :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
+        :type offset: integer
+        :param limit: (optional) An optional query parameter to limit the number of results returned.
+        :type limit: integer
+        :param country_codes: (optional) An optional list of country codes
+        :type country_codes: array
+        """
+        response_schema = json.loads("""{
+    "items": {
+        "properties": {
+            "code": {
+                "maxLength": 2,
+                "minLength": 2,
+                "type": "string"
+            },
+            "name": {
+                "maxLength": 100,
+                "type": "string"
+            }
+        },
+        "required": [
+            "code",
+            "name"
+        ],
+        "type": "object",
+        "x-scope": [
+            ""
+        ]
+    },
+    "type": "array"
+}""")
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def country_read(request, country_code, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param country_code: A string value identifying the country
+        :type country_code: string
+        """
+        response_schema = schemas.country
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def organisational_unit_list(request, offset=None, limit=None, organisational_unit_ids=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
+        :type offset: integer
+        :param limit: (optional) An optional query parameter to limit the number of results returned.
+        :type limit: integer
+        :param organisational_unit_ids: (optional) An optional list of organisational unit ids
+        :type organisational_unit_ids: array
+        """
+        response_schema = json.loads("""{
+    "items": {
+        "properties": {
+            "created_at": {
+                "format": "date-time",
+                "readOnly": true,
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "id": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "updated_at": {
+                "format": "date-time",
+                "readOnly": true,
+                "type": "string"
+            }
+        },
+        "required": [
+            "id",
+            "name",
+            "description",
+            "created_at",
+            "updated_at"
+        ],
+        "type": "object",
+        "x-scope": [
+            ""
+        ]
+    },
+    "type": "array"
+}""")
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def organisational_unit_read(request, organisational_unit_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisational_unit_id: An integer identifying an organisational unit
+        :type organisational_unit_id: integer
+        """
+        response_schema = schemas.organisational_unit
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisational_unit_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
+        :type offset: integer
+        :param limit: (optional) An optional query parameter to limit the number of results returned.
+        :type limit: integer
+        :param birth_date: (optional) An optional birth_date range filter
+        :type birth_date: string
+        :param country: (optional) An optional country filter
+        :type country: string
+        :param date_joined: (optional) An optional date joined range filter
+        :type date_joined: string
+        :param email: (optional) An optional case insensitive email inner match filter
+        :type email: string
+        :param email_verified: (optional) An optional email verified filter
+        :type email_verified: boolean
+        :param first_name: (optional) An optional case insensitive first name inner match filter
+        :type first_name: string
+        :param gender: (optional) An optional gender filter
+        :type gender: string
+        :param is_active: (optional) An optional is_active filter
+        :type is_active: boolean
+        :param last_login: (optional) An optional last login range filter
+        :type last_login: string
+        :param last_name: (optional) An optional case insensitive last name inner match filter
+        :type last_name: string
+        :param msisdn: (optional) An optional case insensitive MSISDN inner match filter
+        :type msisdn: string
+        :param msisdn_verified: (optional) An optional MSISDN verified filter
+        :type msisdn_verified: boolean
+        :param nickname: (optional) An optional case insensitive nickname inner match filter
+        :type nickname: string
+        :param organisational_unit_id: (optional) An optional filter on the organisational unit id
+        :type organisational_unit_id: integer
+        :param updated_at: (optional) An optional updated_at range filter
+        :type updated_at: string
+        :param username: (optional) An optional case insensitive username inner match filter
+        :type username: string
+        :param q: (optional) An optional case insensitive inner match filter across all searchable text fields
+        :type q: string
+        :param tfa_enabled: (optional) An optional filter based on whether a user has 2FA enabled or not
+        :type tfa_enabled: boolean
+        :param has_organisational_unit: (optional) An optional filter based on whether a user has an organisational unit or not
+        :type has_organisational_unit: boolean
+        :param order_by: (optional) Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
+        :type order_by: array
+        :param user_ids: (optional) An optional list of user ids
+        :type user_ids: array
+        :param site_ids: (optional) An optional list of site ids
+        :type site_ids: array
         """
         response_schema = json.loads("""{
     "items": {
@@ -233,6 +536,10 @@ class MockedStubClass(AbstractStubClass):
             "msisdn_verified": {
                 "type": "boolean"
             },
+            "organisational_unit_id": {
+                "readOnly": true,
+                "type": "integer"
+            },
             "updated_at": {
                 "format": "date-time",
                 "readOnly": true,
@@ -271,7 +578,8 @@ class MockedStubClass(AbstractStubClass):
     def user_delete(request, user_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param user_id: string A UUID value identifying the user.
+        :param user_id: A UUID value identifying the user.
+        :type user_id: string
         """
         response_schema = schemas.__UNSPECIFIED__
         if "type" not in response_schema:
@@ -286,7 +594,8 @@ class MockedStubClass(AbstractStubClass):
     def user_read(request, user_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param user_id: string A UUID value identifying the user.
+        :param user_id: A UUID value identifying the user.
+        :type user_id: string
         """
         response_schema = schemas.user
         if "type" not in response_schema:
@@ -301,8 +610,10 @@ class MockedStubClass(AbstractStubClass):
     def user_update(request, body, user_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param body: dict A dictionary containing the parsed and validated body
-        :param user_id: string A UUID value identifying the user.
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        :param user_id: A UUID value identifying the user.
+        :type user_id: string
         """
         response_schema = schemas.user
         if "type" not in response_schema:

@@ -74,6 +74,61 @@ client = json.loads("""
 }
 """)
 
+country = json.loads("""
+{
+    "properties": {
+        "code": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+        },
+        "name": {
+            "maxLength": 100,
+            "type": "string"
+        }
+    },
+    "required": [
+        "code",
+        "name"
+    ],
+    "type": "object"
+}
+""")
+
+organisational_unit = json.loads("""
+{
+    "properties": {
+        "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "id": {
+            "type": "integer"
+        },
+        "name": {
+            "type": "string"
+        },
+        "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "description",
+        "created_at",
+        "updated_at"
+    ],
+    "type": "object"
+}
+""")
+
 user = json.loads("""
 {
     "properties": {
@@ -143,6 +198,10 @@ user = json.loads("""
         "msisdn_verified": {
             "type": "boolean"
         },
+        "organisational_unit_id": {
+            "readOnly": true,
+            "type": "integer"
+        },
         "updated_at": {
             "format": "date-time",
             "readOnly": true,
@@ -159,6 +218,46 @@ user = json.loads("""
         "username",
         "is_active",
         "date_joined",
+        "created_at",
+        "updated_at"
+    ],
+    "type": "object"
+}
+""")
+
+user_site = json.loads("""
+{
+    "properties": {
+        "consented_at": {
+            "format": "date-time",
+            "type": "string"
+        },
+        "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+        },
+        "id": {
+            "type": "integer"
+        },
+        "site_id": {
+            "type": "integer"
+        },
+        "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+        },
+        "user_id": {
+            "format": "uuid",
+            "type": "string"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "site_id",
+        "consented_at",
         "created_at",
         "updated_at"
     ],

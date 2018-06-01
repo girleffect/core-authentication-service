@@ -85,6 +85,20 @@ host: 'localhost:8000'
 basePath: /api/v1
 
 definitions:
+  country:
+    type: object
+    properties:
+      code:
+        type: string
+        minLength: 2
+        maxLength: 2
+      name:
+        type: string
+        maxLength: 100
+    required:
+      - code
+      - name
+
   client:
     type: object
     properties:
@@ -132,6 +146,30 @@ definitions:
       - id
       - client_id
       - response_type
+
+  organisational_unit:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      description:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        readOnly: true
+    required:
+      - id
+      - name
+      - description
+      - created_at
+      - updated_at
 
   user:
     type: object
@@ -191,6 +229,9 @@ definitions:
         type: string
         minLength: 2
         maxLength: 2
+      organisational_unit_id:
+        type: integer
+        readOnly: true
       created_at:
         type: string
         format: date-time
@@ -245,6 +286,35 @@ definitions:
         minLength: 2
         maxLength: 2
     minProperties: 1
+
+  user_site:
+    type: object
+    properties:
+      id:
+        type: integer
+      user_id:
+        type: string
+        format: uuid
+      site_id:
+        type: integer
+      consented_at:
+        type: string
+        format: 'date-time'
+      created_at:
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        readOnly: true
+    required:
+      - id
+      - user_id
+      - site_id
+      - consented_at
+      - created_at
+      - updated_at
 
 #  Token:
 #    description: |
@@ -494,7 +564,20 @@ parameters:
     name: client_id
     required: true
     type: string
-    format: string
+  country_code:
+    description: A string value identifying the country
+    in: path
+    name: country_code
+    required: true
+    type: string
+    minLength: 2
+    maxLength: 2
+  organisational_unit_id:
+    description: An integer identifying an organisational unit
+    in: path
+    name: organisational_unit_id
+    required: true
+    type: integer
   user_id:
     description: A UUID value identifying the user.
     in: path
@@ -517,8 +600,8 @@ paths:
           items:
             type: integer
           required: false
-          minItems: 0
-          collectionFormat: multi
+          minItems: 1
+          collectionFormat: csv
           uniqueItems: true
         - description: An optional client id to filter on. This is not the primary key.
           in: query
@@ -534,7 +617,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/client'
-
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
       tags:
         - authentication
 
@@ -553,23 +639,224 @@ paths:
       tags:
         - authentication
 
+  /countries:
+    get:
+      operationId: country_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+        - name: country_codes
+          description: An optional list of country codes
+          in: query
+          type: array
+          items:
+            type: string
+            minLength: 2
+            maxLength: 2
+          required: false
+          minItems: 1
+          collectionFormat: csv
+          uniqueItems: true
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/country'
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
+
+      tags:
+        - authentication
+
+  /countries/{country_code}:
+    parameters:
+      - $ref: '#/parameters/country_code'
+    get:
+      operationId: country_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/country'
+      tags:
+        - authentication
+
+  /organisational_units:
+    get:
+      operationId: organisational_unit_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+        - name: organisational_unit_ids
+          description: An optional list of organisational unit ids
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+          minItems: 1
+          collectionFormat: csv
+          uniqueItems: true
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/organisational_unit'
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
+
+      tags:
+        - authentication
+
+  /organisational_units/{organisational_unit_id}:
+    parameters:
+      - $ref: '#/parameters/organisational_unit_id'
+    get:
+      operationId: organisational_unit_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/organisational_unit'
+      tags:
+        - authentication
+
   /users:
     get:
       operationId: user_list
       parameters:
         - $ref: '#/parameters/optional_offset'
         - $ref: '#/parameters/optional_limit'
+        - name: birth_date
+          description: An optional birth_date range filter
+          in: query
+          required: false
+          type: string
+        - name: country
+          description: An optional country filter
+          in: query
+          required: false
+          type: string
+          minLength: 2
+          maxLength: 2
+        - name: date_joined
+          description: An optional date joined range filter
+          in: query
+          required: false
+          type: string
         - name: email
-          description: An optional email filter
+          description: An optional case insensitive email inner match filter
           in: query
           required: false
           type: string
-          format: email
-        - name: username_prefix
-          description: An optional username prefix filter
+          minLength: 3
+        - name: email_verified
+          description: An optional email verified filter
+          in: query
+          required: false
+          type: boolean
+        - name: first_name
+          description: An optional case insensitive first name inner match filter
           in: query
           required: false
           type: string
+          minLength: 3
+        - name: gender
+          description: An optional gender filter
+          in: query
+          required: false
+          type: string
+        - name: is_active
+          description: An optional is_active filter
+          in: query
+          required: false
+          type: boolean
+        - name: last_login
+          description: An optional last login range filter
+          in: query
+          required: false
+          type: string
+        - name: last_name
+          description: An optional case insensitive last name inner match filter
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: msisdn
+          description: An optional case insensitive MSISDN inner match filter
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: msisdn_verified
+          description: An optional MSISDN verified filter
+          in: query
+          required: false
+          type: boolean
+        - name: nickname
+          description: An optional case insensitive nickname inner match filter
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: organisational_unit_id
+          description: An optional filter on the organisational unit id
+          in: query
+          required: false
+          type: integer
+        - name: updated_at
+          description: An optional updated_at range filter
+          in: query
+          required: false
+          type: string
+        - name: username
+          description: An optional case insensitive username inner match filter
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: q
+          description: An optional case insensitive inner match filter across all searchable text fields
+          in: query
+          required: false
+          type: string
+          minLength: 3
+        - name: tfa_enabled
+          description: An optional filter based on whether a user has 2FA enabled or not
+          in: query
+          required: false
+          type: boolean
+        - name: has_organisational_unit
+          description: An optional filter based on whether a user has an organisational unit or not
+          in: query
+          required: false
+          type: boolean
+        - name: order_by
+          description: Fields and directions to order by, e.g. "-created_at,username". Add "-" in front
+            of a field name to indicate descending order.
+          in: query
+          required: false
+          type: array
+          collectionFormat: csv
+          items:
+            type: string
+          uniqueItems: true
         - name: user_ids
           description: An optional list of user ids
           in: query
@@ -578,14 +865,28 @@ paths:
             type: string
             format: uuid
           required: false
-          minItems: 0
-          collectionFormat: multi
+          minItems: 1
+          collectionFormat: csv
+          uniqueItems: true
+        - name: site_ids
+          description: An optional list of site ids
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+          minItems: 1
+          collectionFormat: csv
           uniqueItems: true
       produces:
         - application/json
       responses:
         '200':
           description: ''
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
           schema:
             type: array
             items:

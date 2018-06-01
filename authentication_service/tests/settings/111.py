@@ -1,6 +1,12 @@
 from django.core.urlresolvers import reverse_lazy
+from django.utils.translation import ugettext_lazy as _
+
 from project.settings_base import *
 
+HIDE_FIELDS = {
+    "global_enable": True,
+    "global_fields": ["email", "msisdn", "birth_date"]
+}
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
 
@@ -12,13 +18,20 @@ AUTH_PASSWORD_VALIDATORS += [
     },
 ]
 
-AUTHENTICATION_BACKENDS = \
-    ["authentication_service.backends.GirlEffectAuthBackend"]
+AUTHENTICATION_BACKENDS = [
+    "authentication_service.backends.GirlEffectAuthBackend"
+]
+
+LOCALE_PATHS = [
+    "locale"
+]
+
+LANGUAGE_CODE = "en"
 
 # Defender options
 DEFENDER_LOGIN_FAILURE_LIMIT = 3
 DEFENDER_BEHIND_REVERSE_PROXY = False
-DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
+DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = False
 DEFENDER_DISABLE_IP_LOCKOUT = True
 DEFENDER_DISABLE_USERNAME_LOCKOUT = False
 DEFENDER_COOLOFF_TIME = 300  # seconds
@@ -59,16 +72,17 @@ ADDITIONAL_APPS = [
 ]
 
 # Project app has to be first in the list.
-INSTALLED_APPS = ["authentication_service"] + INSTALLED_APPS + ADDITIONAL_APPS
+INSTALLED_APPS = [
+    "authentication_service.tests",
+    "authentication_service",
+    "authentication_service.user_migration"] + INSTALLED_APPS + ADDITIONAL_APPS
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django_otp.middleware.OTPMiddleware",
-    "authentication_service.middleware.ThemeManagementMiddleware",
-    "authentication_service.middleware.OIDCSessionManagementMiddleware",
-    "authentication_service.middleware.RedirectManagementMiddleware",
+    "authentication_service.middleware.ErrorMiddleware",
+    "authentication_service.middleware.SessionDataManagementMiddleware",
     "crum.CurrentRequestUserMiddleware",
 ]
 
@@ -77,6 +91,12 @@ LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"]]}
 # Only change this once custom login flow has been decided on and the need
 # arises to bypass two factor for certain users.
 LOGIN_URL = reverse_lazy("login")
+
+INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
+    _("Your account has been deactivated. Please contact support.")
+INCORRECT_CREDENTIALS_MESSAGE = \
+    _("Please enter a correct %(username)s and password. Note that both "
+      "fields may be case-sensitive.")
 
 LOGIN_REDIRECT_URL = "admin:index"
 

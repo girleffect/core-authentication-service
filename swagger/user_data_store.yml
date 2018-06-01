@@ -1,0 +1,493 @@
+swagger: '2.0'
+
+schemes:
+  - https
+  - http
+
+securityDefinitions:
+  APIKeyHeader:
+    type: apiKey
+    in: header
+    name: X-API-Key
+
+security:
+  - APIKeyHeader: []
+
+host: 'localhost:8080'
+
+info:
+  description: ''
+  title: User Data API
+  version: ''
+
+basePath: /api/v1
+
+parameters:
+  optional_limit:
+    description: An optional query parameter to limit the number of results returned.
+    in: query
+    name: limit
+    required: false
+    type: integer
+    minimum: 1
+    maximum: 100
+    default: 20
+
+  optional_offset:
+    description: >-
+      An optional query parameter specifying the offset in the result set to
+      start from.
+    in: query
+    name: offset
+    required: false
+    type: integer
+    default: 0
+    minimum: 0
+
+  optional_site_filter:
+    description: An optional query parameter to filter by site_id
+    in: query
+    name: site_id
+    required: false
+    type: integer
+
+  optional_user_filter:
+    description: An optional query parameter to filter by user_id
+    in: query
+    name: user_id
+    required: false
+    type: string
+    format: uuid
+
+  admin_note_id:
+    description: A unique integer value identifying the admin note.
+    in: path
+    name: admin_note_id
+    required: true
+    type: integer
+
+  site_id:
+    description: A unique integer value identifying the site.
+    in: path
+    name: site_id
+    required: true
+    type: integer
+
+  user_id:
+    description: A UUID value identifying the user.
+    in: path
+    name: user_id
+    required: true
+    type: string
+    format: uuid
+
+definitions:
+  admin_note:
+    type: object
+    properties:
+      id:
+        type: integer
+        readOnly: true
+      user_id:
+        type: string
+        format: uuid
+      creator_id:
+        type: string
+        format: uuid
+      note:
+        type: string
+      created_at:
+        type: string
+        format: 'date-time'
+        readOnly: true
+      updated_at:
+        type: string
+        format: 'date-time'
+        readOnly: true
+    required:
+      - id
+      - user_id
+      - creator_id
+      - note
+      - created_at
+      - updated_at
+
+  admin_note_create:
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: uuid
+      creator_id:
+        type: string
+        format: uuid
+      note:
+        type: string
+    required:
+      - user_id
+      - creator_id
+      - note
+
+  admin_note_update:
+    type: object
+    properties:
+      note:
+        type: string
+    minProperties: 1
+
+  site_data_schema:
+    type: object
+    properties:
+      site_id:
+        type: integer
+      schema:
+        type: object
+      created_at:
+        type: string
+        format: 'date-time'
+        readOnly: true
+      updated_at:
+        type: string
+        format: 'date-time'
+        readOnly: true
+    required:
+      - site_id
+      - schema
+      - created_at
+      - updated_at
+
+  site_data_schema_create:
+    type: object
+    properties:
+      site_id:
+        type: integer
+      schema:
+        type: object
+    required:
+      - site_id
+      - schema
+
+  site_data_schema_update:
+    type: object
+    properties:
+      schema:
+        type: object
+    minProperties: 1
+
+  user_site_data:
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: uuid
+      site_id:
+        type: integer
+      data:
+        type: object
+      created_at:
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        readOnly: true
+    required:
+      - user_id
+      - site_id
+      - data
+      - created_at
+      - updated_at
+
+  user_site_data_create:
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: uuid
+      site_id:
+        type: integer
+      data:
+        type: object
+    required:
+      - user_id
+      - site_id
+      - data
+
+  user_site_data_update:
+    type: object
+    properties:
+      data:
+        type: object
+    minProperties: 1
+
+paths:
+  /adminnotes:
+    get:
+      operationId: adminnote_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+        - $ref: '#/parameters/optional_user_filter'
+        - description: An optional query parameter to filter by creator (a user_id)
+          in: query
+          name: creator_id
+          required: false
+          type: string
+          format: uuid
+        - name: admin_note_ids
+          description: An optional list of adminnote ids
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+          minItems: 0
+          collectionFormat: multi
+          uniqueItems: true
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          headers:
+            X-Total-Count:
+                type: integer
+                description: The total number of results matching the query
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/admin_note'
+        403:
+          description: 'Forbidden'
+      tags:
+        - user_data
+    post:
+      consumes:
+        - application/json
+      operationId: adminnote_create
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/admin_note_create'
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/admin_note'
+        403:
+          description: 'Forbidden'
+      tags:
+        - user_data
+
+  /adminnotes/{admin_note_id}:
+    parameters:
+      - $ref: '#/parameters/admin_note_id'
+    delete:
+      operationId: adminnote_delete
+      responses:
+        '204':
+          description: 'Deleted'
+        403:
+          description: 'Forbidden'
+      tags:
+        - user_data
+    get:
+      operationId: adminnote_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/admin_note'
+        403:
+          description: 'Forbidden'
+      tags:
+        - user_data
+    put:
+      consumes:
+        - application/json
+      operationId: adminnote_update
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/admin_note_update'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/admin_note'
+        403:
+          description: 'Forbidden'
+      tags:
+        - user_data
+
+  /sitedataschemas:
+    get:
+      operationId: sitedataschema_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          headers:
+            X-Total-Count:
+                type: integer
+                description: The total number of results matching the query
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/site_data_schema'
+      tags:
+        - user_data
+    post:
+      consumes:
+        - application/json
+      operationId: sitedataschema_create
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/site_data_schema_create'
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/site_data_schema'
+      tags:
+        - user_data
+
+  /sitedataschemas/{site_id}:
+    parameters:
+      - $ref: '#/parameters/site_id'
+    delete:
+      operationId: sitedataschema_delete
+      responses:
+        '204':
+          description: ''
+      tags:
+        - user_data
+    get:
+      operationId: sitedataschema_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/site_data_schema'
+      tags:
+        - user_data
+    put:
+      operationId: sitedataschema_update
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/site_data_schema_update'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/site_data_schema'
+      tags:
+        - user_data
+
+  /usersitedata:
+    get:
+      operationId: usersitedata_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+        - $ref: '#/parameters/optional_user_filter'
+        - $ref: '#/parameters/optional_site_filter'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          headers:
+            X-Total-Count:
+                type: integer
+                description: The total number of results matching the query
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/user_site_data'
+      tags:
+        - user_data
+    post:
+      operationId: usersitedata_create
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/user_site_data_create'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/user_site_data'
+      tags:
+        - user_data
+
+  /usersitedata/{user_id}/{site_id}:
+    parameters:
+      - $ref: '#/parameters/user_id'
+      - $ref: '#/parameters/site_id'
+    delete:
+      operationId: usersitedata_delete
+      responses:
+        '204':
+          description: ''
+      tags:
+        - user_data
+    get:
+      operationId: usersitedata_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/user_site_data'
+      tags:
+        - user_data
+    put:
+      operationId: usersitedata_update
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/user_site_data_update'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/user_site_data'
+      tags:
+        - user_data

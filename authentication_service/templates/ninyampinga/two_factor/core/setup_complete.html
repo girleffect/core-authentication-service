@@ -1,8 +1,8 @@
 {% extends "two_factor/core/setup_complete.html" %}
 {% load i18n static %}
 
-{% block extrastyle-basic %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/ninyampinga.basic.css" %}" />{% endblock %}
+{% block extrastyle-feature %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/ninyampinga.feature.css" %}" />{% endblock %}
 
 {% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/ninyampinga.enhanced.css" %}" />{% endblock %}
 
-{% block branding %}<img width="70px" src="http://ninyampinga.com/static/img/logos/logo_rwanda.a61da5b16fba.png" class="Header-branding-image">{% endblock %}
+{% block branding %}<img src="{% static "authentication_service/images/logo_rwanda.png" %}" class="Header-branding-image">{% endblock %}

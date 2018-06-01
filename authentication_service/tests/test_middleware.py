@@ -1,19 +1,21 @@
 import datetime
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.utils.translation import activate
 
 from oidc_provider.models import Client
 
 from authentication_service import constants
 
 
-class TestOIDCSessionMiddleware(TestCase):
+class TestSessionMiddleware(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super(TestOIDCSessionMiddleware, cls).setUpTestData()
+        super(TestSessionMiddleware, cls).setUpTestData()
         cls.client = Client(
             name="test_client",
             client_id="client_id_1",
@@ -31,58 +33,32 @@ class TestOIDCSessionMiddleware(TestCase):
         cls.user.set_password("P0ppy")
         cls.user.save()
 
-    def test_session_flush(self):
-        # Log user in to bypass need for extra login form post.
-        self.client.login(username=self.user.username, password="P0ppy")
-        response = self.client.get(
-            reverse(
-                "oidc_provider:authorize"
-            ) + "?client_id=client_id_1&redirect_uri=http%3A%2F%2Fexample.com%2F&response_type=code",
-            follow=True
-        )
-
-        # Ensure its a 200 response.
-        self.assertEqual(response.status_code, 200)
-
-        # Ensure there is indeed auth data on the session.
-        self.assertIn("_auth_user_id", self.client.session.keys())
-        response = self.client.post(
-            reverse(
-                "oidc_provider:authorize"
-            ),
-            {
-                "allow": "Authorize",
-                "client_id": "client_id_1",
-                "redirect_uri": "http://example.com/",
-                "scope": "openid+email",
-                "response_type": "code"
-            },
-        )
-
-        # Make sure session is flushed.
-        self.assertEqual(len(self.client.session.items()), 0)
-
-    def test_redirect_view(self):
-        self.client.login(username=self.user.username, password="P0ppy")
-       # Ensure there is indeed auth data on the session.
-        self.assertIn("_auth_user_id", self.client.session.keys())
-        # Test with redirect cookie set.
-        self.client.cookies.load(
-            {"register_redirect": "http://somecoolsite.com/test-redirect/"})
-        response = self.client.get(reverse("redirect_view"))
-
-        # Make sure session is flushed.
-        self.assertEqual(len(self.client.session.items()), 0)
-
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_session_flush_logger(self):
         with self.assertLogs(level="WARNING") as cm:
-            self.client.cookies.load(
-                {"ge_redirect_cookie": "http://nuked-session.com/logging/test-redirect/"})
-            self.client.get(reverse("redirect_view"))
+            Client.objects.create(
+                client_id="nuker",
+                name= "CopiedRegistrationMigrationClient",
+                client_secret= "super_client_secret_9",
+                response_type= "code",
+                jwt_alg= "HS256",
+                redirect_uris= ["http://nuked-session.com/logging/test-redirect/"],
+                terms_url="http://registration-terms.com"
+            )
+            response = self.client.get(
+                reverse(
+                    "registration"
+                ) + "?client_id=nuker&redirect_uri=http://nuked-session.com/logging/test-redirect/",
+            )
+            response = self.client.get(
+                reverse(
+                    "redirect_view"
+                )
+            )
             test_output = [
                 "WARNING:authentication_service.middleware:" \
                 "User redirected off domain; " \
-                "(testserver) -> (nuked-session.com). Session flushed."
+                "(testserver) -> (nuked-session.com)."
             ]
             output = cm.output
             self.assertListEqual(output, test_output)
@@ -99,54 +75,45 @@ class TestRedirectManagementMiddleware(TestCase):
             client_secret="super_client_secret_1",
             response_type="code",
             jwt_alg="HS256",
-            redirect_uris=["http://example.com/"]
+            redirect_uris=["http://example.com/"],
+            terms_url="http://example-terms.com"
         )
         cls.client_obj.save()
 
-    def test_cookie_and_session_values(self):
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_session_values(self):
         response = self.client.get(
             reverse(
-                "login"
+                "registration"
             ) + "?client_id=client_id_1&" \
             "redirect_uri=http%3A%2F%2Fexample.com%2F&response_type=code",
         )
         self.assertEquals(
             self.client.session[
                 constants.EXTRA_SESSION_KEY][
-                    constants.COOKIES["redirect_client_name"]],
+                    constants.SessionKeys.CLIENT_NAME],
             self.client_obj.name
         )
         self.assertEquals(
-            response.client.cookies[constants.COOKIES["redirect_cookie"]].value,
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_URI],
             "http://example.com/"
         )
         self.assertEquals(
-            response.client.cookies[
-                constants.COOKIES["redirect_client_name"]].value,
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_NAME],
             self.client_obj.name
         )
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_context_values(self):
         response = self.client.get(
             reverse(
-                "login"
+                "registration"
             ) + "?client_id=client_id_1&" \
             "redirect_uri=http%3A%2F%2Fexample.com%2F"
-        )
-        self.assertEquals(
-            response.context["ge_global_redirect_uri"], None
-        )
-        self.assertEquals(
-            response.context["ge_global_client_name"], self.client_obj.name
-        )
-        self.client.cookies.load(
-            {"ge_redirect_cookie": "http://example.com/",
-            "ge_oidc_client_name": self.client_obj.name}
-        )
-        response = self.client.get(
-            reverse(
-                "login"
-            )
         )
         self.assertEquals(
             response.context["ge_global_redirect_uri"], "http://example.com/"
@@ -154,11 +121,23 @@ class TestRedirectManagementMiddleware(TestCase):
         self.assertEquals(
             response.context["ge_global_client_name"], self.client_obj.name
         )
+        response = self.client.get(
+            reverse(
+                "registration"
+            )
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], None
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], None
+        )
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_client_id_and_redirect_uri_validation(self):
         response = self.client.get(
             reverse(
-                "login"
+                "registration"
             ) + "?redirect_uri=http%3A%2F%2Fexample.com%2F"
         )
         self.assertEqual(response.status_code, 500)
@@ -170,4 +149,296 @@ class TestRedirectManagementMiddleware(TestCase):
         self.assertEqual(
             response.templates[0].name,
             "authentication_service/redirect_middleware_error.html"
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_disabled_site(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F"
+        )
+        self.assertEqual(response.status_code, 302)
+
+        # When the site matching the client_id is inactive, access is forbidden.
+        mocked_is_site_active.return_value = False
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F"
+        )
+        self.assertEqual(
+            response.templates[0].name,
+            "authentication_service/redirect_middleware_error.html"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_login_session(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], "http://example.com/"
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
+        self.assertEquals(
+            response.context["ge_global_client_terms"],
+            self.client_obj.terms_url
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_registration_session(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F"
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], "http://example.com/"
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
+        self.assertEquals(
+            response.context["ge_global_client_terms"],
+            self.client_obj.terms_url
+        )
+
+
+class TestThemeMiddleware(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestThemeMiddleware, cls).setUpTestData()
+        cls.client = Client(
+            name="test_client",
+            client_id="client_id_1",
+            client_secret="super_client_secret_1",
+            response_type="code",
+            jwt_alg="HS256",
+            redirect_uris=["http://example.com/"]
+        )
+        cls.client.save()
+
+        cls.user = get_user_model().objects.create(
+            username="Lilly",
+            birth_date=datetime.date(2000, 1, 1)
+        )
+        cls.user.set_password("D4isy")
+        cls.user.save()
+        activate("fr")
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_login_theme(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?theme=springster&response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
+        )
+        self.assertRedirects(
+            response, f"{reverse('login')}" \
+            "?next=/openid/authorize%3Ftheme%3Dspringster%26response_type" \
+            "%3Dcode%26scope%3Dopenid%26client_id%3Dclient_id_1" \
+            "%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "springster"
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="springster" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_login_theme_with_trailingslash(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            "/openid/authorize/" \
+            "?theme=springster&response_type=code&scope=openid&client_id=client_id_1&" \
+            "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
+        )
+        self.assertRedirects(
+            response, f"{reverse('login')}" \
+            "?next=/openid/authorize/%3Ftheme%3Dspringster%26response_type" \
+            "%3Dcode%26scope%3Dopenid%26client_id%3Dclient_id_1" \
+            "%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "springster"
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="springster" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_registration_theme(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?theme=ninyampinga"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "ninyampinga"
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="ninyampinga" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_edit_theme(self, mocked_is_site_active):
+        self.client.login(username=self.user.username, password="D4isy")
+        response = self.client.get(
+            reverse(
+                "edit_profile"
+            ) + "?theme=zathu"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "zathu"
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="zathu" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_login_theme_clear(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?theme=springster&response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
+        )
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_1&"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
+        )
+        self.assertEquals(
+            self.client.session.get(
+                constants.EXTRA_SESSION_KEY, {}).get(
+                    constants.SessionKeys.THEME),
+            None
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="None" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_registration_theme_clear(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?theme=ninyampinga"
+        )
+        response = self.client.get(
+            reverse(
+                "registration"
+            )
+        )
+        self.assertEquals(
+            self.client.session.get(
+                constants.EXTRA_SESSION_KEY, {}).get(
+                    constants.SessionKeys.THEME),
+            None
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="None" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_edit_theme_clear(self, mocked_is_site_active):
+        self.client.login(username=self.user.username, password="D4isy")
+        response = self.client.get(
+            reverse(
+                "edit_profile"
+            ) + "?theme=zathu"
+        )
+        response = self.client.get(
+            reverse(
+                "edit_profile"
+            )
+        )
+        self.assertEquals(
+            self.client.session.get(
+                constants.EXTRA_SESSION_KEY, {}).get(
+                    constants.SessionKeys.THEME),
+            None
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="None" />'
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.is_site_active")
+    def test_registration_theme_override(self, mocked_is_site_active):
+        mocked_is_site_active.return_value = True
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?theme=ninyampinga"
+        )
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?theme=springster"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "springster"
+        )
+        self.assertContains(
+            response,
+            '<div id="ge-template-theme" name="springster" />'
         )

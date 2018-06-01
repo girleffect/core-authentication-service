@@ -1,14 +1,13 @@
-import json
+from datetime import date
+from dateutil.relativedelta import relativedelta
+from urllib.parse import urlparse, parse_qs
+import urllib
 
 from defender.decorators import watch_login
-from defender.utils import REDIS_SERVER, get_username_attempt_cache_key, \
-    get_username_blocked_cache_key
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, update_session_auth_hash, \
-    hashers, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, authenticate, hashers, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import (
     PasswordResetView,
@@ -17,9 +16,12 @@ from django.contrib.auth.views import (
 )
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.forms.utils import ErrorList
+
+from django.contrib.auth import get_user_model
+from django.core import signing
+# NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -32,10 +34,15 @@ from two_factor.forms import BackupTokenForm
 from two_factor.utils import default_device
 from two_factor.views import core
 
-from authentication_service import forms, models, tasks, constants
+from authentication_service import forms, models, tasks, constants, utils
+from authentication_service.decorators import generic_deprecation
+from authentication_service.forms import LoginForm
+
+from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 
-REDIRECT_COOKIE_KEY = constants.COOKIES["redirect_cookie"]
+CLIENT_URI_SESSION_KEY = constants.SessionKeys.CLIENT_URI
+
 
 class LanguageMixin:
     """This mixin sets an instance variable called self.language, value is
@@ -46,43 +53,6 @@ class LanguageMixin:
         self.language = self.request.GET.get("language") \
             if self.request.GET.get("language") else self.request.LANGUAGE_CODE
         return super(LanguageMixin, self).dispatch(*args, **kwargs)
-
-
-class RedirectMixin:
-    """This mixin gets the redirect URL parameter from the request URL. This URL
-    is used as the success_url attribute. If no redirect_url is set, it will
-    default to the Login URL.
-
-    For registration, this mixin also checks the security level of the request.
-    If the security level is high, the success URL will redirect to 2FA setup.
-
-    TODO: Security should be moved out.
-    """
-    success_url = None
-
-    def dispatch(self, *args, **kwargs):
-        self.redirect_url = self.request.COOKIES.get(REDIRECT_COOKIE_KEY)
-        return super(RedirectMixin, self).dispatch(*args, **kwargs)
-
-    def get_success_url(self):
-        url = settings.LOGIN_URL
-        if hasattr(
-                self, "security"
-        ) and self.security == "high" or self.request.GET.get(
-                "show2fa") == "true":
-            url = reverse("two_factor_auth:setup")
-        elif self.success_url:
-            url = self.success_url
-        elif self.redirect_url:
-            url = self.redirect_url
-        return url
-
-
-class LanguageRedirectMixin(LanguageMixin, RedirectMixin):
-    """
-    Combined class for the frequently used Language and Redirect mixins.
-    Language can safely be set on views that make no use of it.
-    """
 
 
 class LockoutView(TemplateView):
@@ -108,10 +78,73 @@ class LoginView(core.LoginView):
     template_name = "authentication_service/login.html"
 
     form_list = (
-        ('auth', AuthenticationForm),
-        ('token', AuthenticationTokenForm),
-        ('backup', BackupTokenForm),
+        ("auth", LoginForm),
+        ("token", AuthenticationTokenForm),
+        ("backup", BackupTokenForm),
     )
+
+    @generic_deprecation(
+        "authentication_service.views.LoginView: def post(); makes use of" \
+        " models and urls found in 'authentication_service.user_migration'." \
+        " The app is temporary and will be removed."
+    )
+    def post(self, *args, **kwargs):
+        # Short circuit normal login flow as needed to migrate old existing
+        # users.
+
+        # Super can not be called first. The temporary user objects will break
+        # functionality in the base view. Only attempt on the first step.
+        if self.get_step_index() == 0:
+            form = self.get_form(
+                data=self.request.POST, files=self.request.FILES
+            )
+
+            # Is valid triggers authentication.
+            if not form.is_valid():
+                form_user = form.get_user()
+
+                # Only to be triggered during oidc login, next containing
+                # client_id is expected
+                next_query = self.request.GET.get("next")
+                if next_query:
+                    next_query_args = parse_qs(urlparse(next_query).query)
+
+                    # Query values are in list form. Only grab the first value
+                    # from the list.
+                    client_id = next_query_args.get("client_id", [None])[0]
+                    # Only do these checks if no user was authenticated and
+                    # client_id is present
+                    if form_user is None and client_id:
+                        username = form.cleaned_data["username"]
+                        password = form.cleaned_data["password"]
+
+                        try:
+                            user = TemporaryMigrationUserStore.objects.get(
+                                username=username, client_id=client_id
+                            )
+
+                            token = signing.dumps(
+                                user.id, salt="ge-migration-user-registration"
+                            )
+
+                            # If the temp user password matches, redirect to
+                            # migration wizard.
+                            if user.check_password(password):
+                                querystring =  urllib.parse.quote_plus(
+                                    self.request.GET.get("next", "")
+                                )
+                                url = reverse(
+                                    "user_migration:migrate_user", kwargs={
+                                        "token": token
+                                    }
+                                )
+                                return redirect(
+                                    f"{url}?persist_query={querystring}"
+                                )
+                        except TemporaryMigrationUserStore.DoesNotExist:
+                            # Let login fail as usual
+                            pass
+        return super(LoginView, self).post(*args, **kwargs)
 
 
 # Protect the login view using Defender. Defender provides a method decorator
@@ -121,20 +154,12 @@ class LoginView(core.LoginView):
 defender_decorator = watch_login()
 watch_login_method = method_decorator(defender_decorator)
 LoginView.dispatch = watch_login_method(LoginView.dispatch)
-# TODO: Do something similar to the password reset view when it is implemented.
 
 
-class RegistrationView(LanguageRedirectMixin, CreateView):
+class RegistrationView(LanguageMixin, CreateView):
     template_name = "authentication_service/registration.html"
     form_class = forms.RegistrationForm
     security = None
-
-    def dispatch(self, *args, **kwargs):
-        # Grab language off of querystring first. Otherwise default to django
-        # middleware set one.
-        self.language = self.request.GET.get("language") \
-            if self.request.GET.get("language") else self.request.LANGUAGE_CODE
-        return super(RegistrationView, self).dispatch(*args, **kwargs)
 
     @property
     def get_formset(self):
@@ -188,12 +213,10 @@ class RegistrationView(LanguageRedirectMixin, CreateView):
         # Let the user model save.
         response = super(RegistrationView, self).form_valid(form)
 
-        # When we need to show the option to enable 2FA the newly created
-        # user must be logged in.
-        if self.security == "high" or self.request.GET.get("show2fa") == "true":
-            new_user = authenticate(username=form.cleaned_data['username'],
-                                    password=form.cleaned_data['password1'])
-            login(self.request, new_user)
+        # GE-1065 requires ALL users to be logged in
+        new_user = authenticate(username=form.cleaned_data["username"],
+                                password=form.cleaned_data["password1"])
+        login(self.request, new_user)
 
         # Do some work and assign questions to the user.
         for form in formset.forms:
@@ -210,39 +233,39 @@ class RegistrationView(LanguageRedirectMixin, CreateView):
                 data["language_code"] = self.language
                 question = models.UserSecurityQuestion.objects.create(**data)
 
-        if self.redirect_url:
-            response.set_cookie(
-                REDIRECT_COOKIE_KEY, value=self.redirect_url, httponly=True
-            )
         return response
 
+    def get_success_url(self):
+        key = CLIENT_URI_SESSION_KEY
+        uri = utils.get_session_data(self.request, key)
+        if hasattr(
+                self, "security"
+        ) and self.security == "high" or self.request.GET.get(
+                "show2fa") == "true":
+            return reverse("two_factor_auth:setup")
+        elif uri:
+            return uri
+        return reverse("login")
 
-class CookieRedirectView(View):
+
+class SessionRedirectView(View):
     """
-    Simple view that redirects in the event the client passes a cookie
-    containing the correct key. In the event a cookie is not present, redirect
-    to the django default login url.
-
-    User is explicitly logged out to clear the user session. In anticipation
-    that the referrer will prompt them to login again so as to obtain the oidc
-    tokens.
+    Simple view that redirects to a URL stored on the session, if available.
+    If none was set, it will redirect to a default page.
     """
     def dispatch(self, request, *args, **kwargs):
         # No need for super, this view should at this stage not need any of its
         # http method functions.
-        logout(request)
-        url = request.COOKIES.get(REDIRECT_COOKIE_KEY)
+        url = utils.get_session_data(request, CLIENT_URI_SESSION_KEY)
 
-        # Default fallback if cookie was deleted or no url was set.
-        response = HttpResponseRedirect(settings.LOGIN_URL)
         if url:
-            response = HttpResponseRedirect(url)
+            return HttpResponseRedirect(url)
 
-        response.delete_cookie(REDIRECT_COOKIE_KEY)
-        return response
+        # Default fallback if no url was set.
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
 
-class EditProfileView(LanguageRedirectMixin, UpdateView):
+class EditProfileView(LanguageMixin, UpdateView):
     template_name = "authentication_service/profile/edit_profile.html"
     form_class = forms.EditProfileForm
 
@@ -257,8 +280,15 @@ class EditProfileView(LanguageRedirectMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
+    def get_success_url(self):
+        key = CLIENT_URI_SESSION_KEY
+        uri = utils.get_session_data(self.request, key)
+        if uri:
+            return uri
+        return reverse("edit_profile")
 
-class UpdatePasswordView(LanguageRedirectMixin, PasswordChangeView):
+
+class UpdatePasswordView(LanguageMixin, PasswordChangeView):
     template_name = "authentication_service/profile/update_password.html"
     form_class = forms.PasswordChangeForm
     success_url = reverse_lazy("edit_profile")
@@ -272,7 +302,7 @@ class UpdatePasswordView(LanguageRedirectMixin, PasswordChangeView):
         return super(UpdatePasswordView, self).form_valid(form)
 
 
-class UpdateSecurityQuestionsView(LanguageRedirectMixin, TemplateView):
+class UpdateSecurityQuestionsView(LanguageMixin, TemplateView):
     template_name = \
         "authentication_service/profile/update_security_questions.html"
     success_url = reverse_lazy("edit_profile")
@@ -322,7 +352,7 @@ class UpdateSecurityQuestionsView(LanguageRedirectMixin, TemplateView):
         formset = self.get_formset
         if formset.is_valid():
             formset.save()
-            return HttpResponseRedirect(self.get_success_url())
+            return HttpResponseRedirect(self.success_url)
         else:
             return self.render(request, formset)
 

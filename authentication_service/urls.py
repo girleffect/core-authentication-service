@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
+from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import logout, PasswordResetDoneView, \
@@ -27,24 +28,39 @@ from two_factor.views import ProfileView
 
 from authentication_service import views
 
+
 urlpatterns = [
+    url(r'^i18n/', include('django.conf.urls.i18n')),
+    # API URL's
+    url(
+        r"^api/v1/", include("authentication_service.api.urls"), name="api"
+    ),
+    url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
+]
+
+urlpatterns += i18n_patterns(
     url(
         r"^static/(?P<path>.*)$",
         serve,
         {"document_root": settings.STATIC_ROOT}
     ),
+
     # Login URLs
-    url(r"^login/", views.LoginView.as_view(), name="login"),
+    url(r"^login/$", views.LoginView.as_view(), name="login"),
     # Override the login URL implicitly defined by Django Admin to redirect
     # to our login view.
     url(
-        r"^admin/login/",
-        RedirectView.as_view(pattern_name="login", permanent=True,
-                             query_string=True)
+        r"^admin/login/$",
+        RedirectView.as_view(
+            pattern_name="login",
+            permanent=True,
+            query_string=True
+        )
     ),
+
     # Generic redirect issue
     url(
-        r"^redirect-issue/",
+        r"^redirect-issue/$",
         TemplateView.as_view(
             template_name="authentication_service/redirect_issue.html"),
         name="redirect_issue"
@@ -78,7 +94,6 @@ urlpatterns = [
 
     url(r"^admin/", admin.site.urls),
     url(r'^admin/defender/', include('defender.urls')),  # defender admin
-    url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
     # Override the login URL implicitly defined by Two Factor Auth to redirect
     # to our login view (which is derived from theirs).
     url(r"^two-factor-auth/account/login/",
@@ -96,7 +111,7 @@ urlpatterns = [
     ),
     url(
         r"^redirect/$",
-        views.CookieRedirectView.as_view(),
+        views.SessionRedirectView.as_view(),
         name="redirect_view"
     ),
     # Profile Edit URLs
@@ -127,8 +142,17 @@ urlpatterns = [
     ),
 
     url(r"^lockout/$", views.LockoutView.as_view(), name="lockout_view"),
-    # API URL's
-    url(
-        r"api/v1/", include("authentication_service.api.urls"), name="api"
+
+    # Include the migration app
+    url(r"^user-migration/", include(
+            "authentication_service.user_migration.urls",
+            namespace="user_migration"
+        )
     )
-]
+)
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

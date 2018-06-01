@@ -17,5 +17,8 @@ TEMPLATE template0;
 
 CREATE USER ${DB_USER} PASSWORD 'password';
 GRANT ALL ON DATABASE ${DB} TO ${DB_USER};
+
+\c ${DB};
+CREATE EXTENSION pg_trgm;
 EOF
 

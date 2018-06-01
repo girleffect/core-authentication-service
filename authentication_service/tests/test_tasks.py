@@ -58,7 +58,7 @@ class SendMailCase(TestCase):
             "\nusername: %s"
             "\nemail: %s"\
             "\nmsisdn: %s"\
-            "\nreason :The theme is ugly\n" % (
+            "\nreason: The theme is ugly\n" % (
                 self.user.id,
                 self.user.username,
                 self.user.email,
@@ -103,7 +103,7 @@ class SendMailCase(TestCase):
             "\nYou're receiving this email because you requested a password "\
             "reset for your user account at test_site.\n\nPlease go to the "\
             "following page and choose a new password:\n\n"\
-            "http://test:8000/reset/"\
+            "http://test:8000/en/reset/"\
             "%s/"\
             "%s/\n\n"\
             "Your username, in case you've forgotten: %s\n\n"\
