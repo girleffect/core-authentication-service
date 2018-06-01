@@ -19,7 +19,7 @@ msgstr ""
 
 #: authentication_service/forms.py:53
 msgid "Accept terms and conditions"
-msgstr ""
+msgstr "RIGHT NOW IM JUST FOR UNIT TESTS"
 
 #: authentication_service/forms.py:125 authentication_service/forms.py:366
 msgid "Please use dd/mm/yyyy format"
@@ -209,7 +209,7 @@ msgstr ""
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Forgot password?"
-msgstr ""
+msgstr "THIS IS JUST FOR UNITTESTS ATM"
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Click here to reset it."

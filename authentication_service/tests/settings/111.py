@@ -27,7 +27,7 @@ AUTHENTICATION_BACKENDS = [
 # TODO point this to tox ve not base project.
 # TODO compile messages when running tox
 LOCALE_PATHS = [
-    "locale"
+    f"{BASE_DIR}/locale"
 ]
 
 LANGUAGE_CODE = "en"
@@ -125,8 +125,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
-    "authentication_service.middleware.UpdateLanguageMiddleware",
+    # Subclasses django locale.LocaleMiddleware
+    "authentication_service.middleware.GELocaleMiddleware",
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.SessionDataManagementMiddleware",

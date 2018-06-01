@@ -145,8 +145,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
-    "authentication_service.middleware.UpdateLanguageMiddleware",
+    # Subclasses django locale.LocaleMiddleware
+    "authentication_service.middleware.GELocaleMiddleware",
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.SessionDataManagementMiddleware",

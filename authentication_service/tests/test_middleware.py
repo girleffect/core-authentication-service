@@ -449,6 +449,8 @@ class TestLanguageUpdateMiddleware(TestCase):
     def test_language_update(self):
         response = self.client.get(
             reverse(
-                "registration"
-            ) + "?language=prs"
+                "login"
+            ) + "?language=prs",
+            follow=True
         )
+        self.assertContains(response, "THIS IS JUST FOR UNITTESTS ATM")

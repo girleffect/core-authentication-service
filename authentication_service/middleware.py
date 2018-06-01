@@ -1,7 +1,7 @@
+import re
 from urllib.parse import urlparse, parse_qs
 import logging
 
-from django.urls import reverse, reverse_lazy
 from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
 from oidc_provider.lib.errors import (
     AuthorizeError,
@@ -9,11 +9,16 @@ from oidc_provider.lib.errors import (
     RedirectUriError
 )
 
+from django.conf import settings
+from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.http import HttpResponseBadRequest, HttpResponse
+from django.middleware.locale import LocaleMiddleware
 from django.shortcuts import render
+from django.urls import reverse, reverse_lazy
+from django.utils import translation
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.translation import LANGUAGE_SESSION_KEY, check_for_language
 from django.utils.translation import ugettext as _
+from django.utils.translation.trans_real import language_code_prefix_re
 from django.views.i18n import LANGUAGE_QUERY_PARAMETER
 
 from authentication_service import exceptions, api_helpers
@@ -228,9 +233,15 @@ class ErrorMiddleware(MiddlewareMixin):
             return HttpResponseBadRequest(exc.args)
 
 
-class UpdateLanguageMiddleware(MiddlewareMixin):
+class GELocaleMiddleware(LocaleMiddleware):
     def process_request(self, request):
-        language_code = request.GET.get(LANGUAGE_QUERY_PARAMETER, None)
-        import pdb; pdb.set_trace()
-        if language_code and check_for_language(language_code):
-            request.session[LANGUAGE_SESSION_KEY] = language_code
+        super(GELocaleMiddleware, self).process_request(request)
+        language_code = request.GET.get(
+            LANGUAGE_QUERY_PARAMETER, None
+        )
+        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
+        i18n_patterns_used, prefixed_default_language = is_language_prefix_patterns_used(urlconf)
+        if language_code and language_code != translation.get_language() and i18n_patterns_used:
+            regex_match = language_code_prefix_re.match(request.get_full_path())
+            new_language_url = request.get_full_path().replace(regex_match.group(1), language_code, 1)
+            return self.response_redirect_class(new_language_url)
