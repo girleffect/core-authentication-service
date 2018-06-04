@@ -24,10 +24,8 @@ AUTHENTICATION_BACKENDS = [
     "authentication_service.backends.GirlEffectAuthBackend"
 ]
 
-# TODO point this to tox ve not base project.
-# TODO compile messages when running tox
 LOCALE_PATHS = [
-    f"{BASE_DIR}/locale"
+    "authentication_service/tests/locale"
 ]
 
 LANGUAGE_CODE = "en"

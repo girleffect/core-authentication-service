@@ -1,5 +1,5 @@
 import re
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, urlencode
 import logging
 
 from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
@@ -234,14 +234,56 @@ class ErrorMiddleware(MiddlewareMixin):
 
 
 class GELocaleMiddleware(LocaleMiddleware):
+    """
+    Subclasses Django LocaleMiddleware
+
+    Overrides the default logic to ALWAYS attempt to switch to the language
+    provided via querystring.
+
+    Most of this code was inspired by
+    django.middleware.locales.LocaleMiddleware itself.
+    """
+
     def process_request(self, request):
         super(GELocaleMiddleware, self).process_request(request)
+
+        # Get the language code to use
         language_code = request.GET.get(
             LANGUAGE_QUERY_PARAMETER, None
         )
+
+
         urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
-        i18n_patterns_used, prefixed_default_language = is_language_prefix_patterns_used(urlconf)
-        if language_code and language_code != translation.get_language() and i18n_patterns_used:
+
+        # Useful check from django.conf.urls.i18n, subclass middleware only
+        # cares about the first value
+        i18n_patterns_used, prefix_default = is_language_prefix_patterns_used(
+            urlconf)
+
+        # Only if language code was provided, it is not the currently active
+        # language and the url we are currently on makes use of the i18n
+        # structure.
+        if (language_code and
+            language_code != translation.get_language() and
+            i18n_patterns_used):
+
+            # Make use of the locales regex that is traditionally used to
+            # attempt to get the language from the url
             regex_match = language_code_prefix_re.match(request.get_full_path())
-            new_language_url = request.get_full_path().replace(regex_match.group(1), language_code, 1)
-            return self.response_redirect_class(new_language_url)
+
+            # Ensure a language code is present, should not get here if not.
+            # However check again for safety.
+            if regex_match.group(1):
+
+                # Replace the current language code in the full path with the
+                # querystring one and redirect to it.
+                path = request.path_info.replace(regex_match.group(1), language_code, 1)
+
+                # Remove the language parameter, can cause a infinite redirect
+                # loop if the language is not found. Due to the base local
+                # middleware also attempting redirects back to the default
+                # language on 404s.
+                get_query = request.GET.copy()
+                del get_query["language"]
+                new_params = f"?{urlencode(get_query)}" if get_query else ""
+                return self.response_redirect_class(f"{path}{new_params}")
