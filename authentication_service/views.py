@@ -443,6 +443,34 @@ class ResetPasswordView(PasswordResetView):
             else:  # This should never be the case.
                 print("User %s cannot reset their password." % identifier)
         elif not user:
+            client_id = utils.get_session_data(
+                self.request, constants.SessionKeys.CLIENT_ID
+            )
+            if client_id:
+                try:
+                    user = TemporaryMigrationUserStore.objects.get(
+                        username=identifier, client_id=client_id
+                    )
+
+                    token = signing.dumps(
+                        user.id, salt="ge-migration-user-pwd-reset"
+                    )
+                    # TODO: Client will raise eventually, after pwd reset there
+                    # is no way to enter back into login flow. Outside the
+                    # scope of GE-1085 to add. That is the current expected
+                    # behaviour.
+                    #querystring =  urllib.parse.quote_plus(
+                    #    self.request.GET.get("persist_query", "")
+                    #)
+                    url = reverse(
+                        "user_migration:password_reset", kwargs={
+                            "token": token
+                        }
+                    )
+                    return redirect(url)
+                except TemporaryMigrationUserStore.DoesNotExist:
+                    pass
+
             return HttpResponseRedirect(reverse("password_reset_done"))
         return super(ResetPasswordView, self).form_valid(form)
 
