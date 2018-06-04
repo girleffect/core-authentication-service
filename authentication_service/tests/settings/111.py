@@ -1,5 +1,7 @@
+from django.conf import global_settings
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
+import django.conf.locale
 
 from project.settings_base import *
 
@@ -23,10 +25,52 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 LOCALE_PATHS = [
-    "locale"
+    "authentication_service/tests/locale"
 ]
 
 LANGUAGE_CODE = "en"
+
+LANGUAGES = global_settings.LANGUAGES + [
+    ("tl", "Tagalog"),
+    ("rw", "Kinyarwanda"),
+    ("ha", "Hausa"),
+    ("ny", "Chichewa"),
+    ("prs", "Dari"),
+]
+
+EXTRA_LANG_INFO = {
+    "tl": {
+        "bidi": False,
+        "code": "tl",
+        "name": "Tagalog",
+        "name_local": "Tagalog"
+    },
+    "rw": {
+        "bidi": False,
+        "code": "rw",
+        "name": "Kinyarwanda",
+        "name_local": "Kinyarwanda"
+    },
+    "ha": {
+        "bidi": False,
+        "code": "ha",
+        "name": "Hausa",
+        "name_local": "Hausa"
+    },
+    "ny": {
+        "bidi": False,
+        "code": "ny",
+        "name": "Chichewa",
+        "name_local": "Chichewa",
+    },
+    "prs": {
+        "bidi": False,
+        "code": "prs",
+        "name": "Dari",
+        "name_local": u"دری",
+    },
+}
+django.conf.locale.LANG_INFO.update(EXTRA_LANG_INFO)
 
 # Defender options
 DEFENDER_LOGIN_FAILURE_LIMIT = 3
@@ -79,7 +123,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
+    # Subclasses django locale.LocaleMiddleware
+    "authentication_service.middleware.GELocaleMiddleware",
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.SessionDataManagementMiddleware",

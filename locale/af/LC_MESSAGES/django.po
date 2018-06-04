@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: test\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-18 11:50+0200\n"
+"POT-Creation-Date: 2018-06-01 11:55+0200\n"
 "Language: af\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -10,121 +10,133 @@ msgstr ""
 "X-Generator: POEditor.com\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: authentication_service/forms.py:121 authentication_service/forms.py:344
+#: authentication_service/forms.py:53
+msgid "Accept terms and conditions"
+msgstr ""
+
+#: authentication_service/forms.py:125 authentication_service/forms.py:366
 msgid "Please use dd/mm/yyyy format"
 msgstr "Gebruik asseblief dd/mm/jjjj formaat"
 
-#: authentication_service/forms.py:126
+#: authentication_service/forms.py:130
 msgid "Display name"
 msgstr ""
 
-#: authentication_service/forms.py:131
+#: authentication_service/forms.py:135
 msgid "Mobile"
 msgstr "Telefoon nommer"
 
-#: authentication_service/forms.py:136
+#: authentication_service/forms.py:140 authentication_service/forms.py:371
 msgid "Age"
 msgstr "Ouderdom"
 
-#: authentication_service/forms.py:187 authentication_service/forms.py:514
+#: authentication_service/forms.py:191 authentication_service/forms.py:555
 msgid "Password not long enough."
 msgstr "Wagwoord nie lank genoeg nie."
 
-#: authentication_service/forms.py:211
+#: authentication_service/forms.py:226
 msgid "Enter either email or msisdn"
 msgstr "Tik e-pos of msisdn in"
 
-#: authentication_service/forms.py:221
+#: authentication_service/forms.py:236
 msgid "Enter either birth date or age"
 msgstr "Voer óf geboortedatum of ouderdom in"
 
-#: authentication_service/forms.py:266 authentication_service/forms.py:281
+#: authentication_service/forms.py:281 authentication_service/forms.py:296
 msgid "Please fill in all Security Question fields."
 msgstr "Vul asseblief alle Veiligheidsvraag velde in."
 
-#: authentication_service/forms.py:273
+#: authentication_service/forms.py:288
 msgid "Each question can only be picked once."
 msgstr "Elke vraag kan net een keer gekies word."
 
-#: authentication_service/forms.py:288
+#: authentication_service/forms.py:303
 msgid "Select a question"
 msgstr "Kies 'n vraag"
 
-#: authentication_service/forms.py:289
+#: authentication_service/forms.py:304
 msgid "Question"
 msgstr "Vraag"
 
-#: authentication_service/forms.py:384
+#: authentication_service/forms.py:424
 #, fuzzy
 #| msgid "username"
 msgid "Username/email"
 msgstr "gebruikersnaam"
 
-#: authentication_service/forms.py:391
+#: authentication_service/forms.py:431
 msgid "Please enter your username or email address."
 msgstr "Voer asseblief u gebruikersnaam of e-posadres in."
 
-#: authentication_service/forms.py:458
+#: authentication_service/forms.py:498
 msgid "Please enter your answer."
 msgstr "Sleutel asseblief u antwoord in."
 
-#: authentication_service/forms.py:464
+#: authentication_service/forms.py:504
 msgid "Please tell us why you want your account deleted"
 msgstr "Vertel asseblief waarom jy wil hê jou rekening moet verwyder word"
 
-#: authentication_service/models.py:12
+#: authentication_service/middleware.py:134
+msgid "Site access disabled"
+msgstr ""
+
+#: authentication_service/middleware.py:135
+msgid "The site you are trying to log in to has been disabled."
+msgstr ""
+
+#: authentication_service/models.py:16
 msgid "Female"
 msgstr "Vroulik"
 
-#: authentication_service/models.py:13
+#: authentication_service/models.py:17
 msgid "Male"
 msgstr "Manlik"
 
-#: authentication_service/models.py:14
+#: authentication_service/models.py:18
 msgid "Other"
 msgstr "Ander"
 
-#: authentication_service/models.py:22
+#: authentication_service/models.py:73
 msgid "email address"
 msgstr "e-pos adres"
 
-#: authentication_service/models.py:28
+#: authentication_service/models.py:79
 msgid "gender"
 msgstr "Geslag:"
 
-#: authentication_service/models.py:32
+#: authentication_service/models.py:84
 msgid "country"
 msgstr "Land"
 
-#: authentication_service/models.py:70
+#: authentication_service/models.py:173
 msgid "Countries"
 msgstr "lande"
 
-#: authentication_service/models.py:78
+#: authentication_service/models.py:181
 msgid "answer"
 msgstr "Antwoord"
 
-#: authentication_service/models.py:96
+#: authentication_service/models.py:199
 msgid "Default question text"
 msgstr "Verstekvraestel"
 
-#: authentication_service/models.py:114
+#: authentication_service/models.py:220
 msgid "Question text can not be assigned to more than one question."
 msgstr "Vraagtekst kan nie aan meer as een vraag toegeken word nie."
 
-#: authentication_service/oidc_provider_settings.py:73
+#: authentication_service/oidc_provider_settings.py:75
 msgid "Site"
 msgstr "Werf"
 
-#: authentication_service/oidc_provider_settings.py:73
+#: authentication_service/oidc_provider_settings.py:75
 msgid "Data for the requesting site"
 msgstr "Data vir die versoekende webwerf"
 
-#: authentication_service/oidc_provider_settings.py:77
+#: authentication_service/oidc_provider_settings.py:79
 msgid "Roles"
 msgstr "rolle"
 
-#: authentication_service/oidc_provider_settings.py:77
+#: authentication_service/oidc_provider_settings.py:79
 msgid "Roles for the requesting site"
 msgstr "Rolle vir die versoekende webwerf"
 
@@ -316,7 +328,13 @@ msgstr "Oeps! Ons wil nie weet wat om met u te doen nie."
 msgid "Registration"
 msgstr "Registrasie"
 
-#: authentication_service/templates/authentication_service/registration.html:25
+#: authentication_service/templates/authentication_service/registration.html:39
+#, fuzzy
+#| msgid "Click here to reset it."
+msgid "Click here to view the terms and conditions"
+msgstr "Klik hier om dit te herstel."
+
+#: authentication_service/templates/authentication_service/registration.html:44
 msgid "Register"
 msgstr "Registreer"
 
@@ -335,9 +353,23 @@ msgstr "Indien"
 msgid "Security Questions"
 msgstr "Sekuriteitsvrae"
 
-#: authentication_service/templates/base.html:56
+#: authentication_service/templates/base.html:58
 msgid "Back to "
 msgstr "Terug na "
+
+#: authentication_service/templates/formtools/wizard/wizard_form.html:20
+msgid "first step"
+msgstr ""
+
+#: authentication_service/templates/formtools/wizard/wizard_form.html:23
+msgid "prev step"
+msgstr ""
+
+#: authentication_service/templates/formtools/wizard/wizard_form.html:26
+#, fuzzy
+#| msgid "Submit"
+msgid "submit"
+msgstr "Indien"
 
 #: authentication_service/templates/oidc_provider/authorize.html:16
 #: authentication_service/templates/oidc_provider/authorize.html:20
@@ -405,10 +437,12 @@ msgid "Token"
 msgstr "Teken"
 
 #: authentication_service/templates/translation.html:8
+#: authentication_service/user_migration/forms.py:31
 msgid "Password confirmation"
 msgstr "Wagwoord bevestiging"
 
 #: authentication_service/templates/translation.html:9
+#: authentication_service/user_migration/forms.py:18
 msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
 msgstr "Vereis. 150 karakters of minder. Slegs letters, nommers en @/./+/-/_."
 
@@ -421,20 +455,16 @@ msgid "Your password can't be too similar to your other personal information."
 msgstr ""
 "Jou wagwoord kan nie te gelyk wees aan jou ander persoonlike inligting nie."
 
-msgid "Your password must contain at least %(min_length)d character."
-msgid_plural "Your password must contain at least %(min_length)d characters."
-msgstr[0] "Jou wagwoord moet ten minste %(min_length)d karakter bevat."
-msgstr[1] "Jou wagwoord moet ten minste %(min_length)d karakters bevat."
-
-#: authentication_service/templates/translation.html:13
+#: authentication_service/templates/translation.html:12
 msgid "Your password can't be a commonly used password."
 msgstr "Jou wagwoord kan nie 'n algemeen gebruikte wagwoord wees nie."
 
-#: authentication_service/templates/translation.html:14
+#: authentication_service/templates/translation.html:13
 msgid "Your password can't be entirely numeric."
 msgstr "Jou wagwoord kan nie heeltemal numeriese wees nie."
 
-#: authentication_service/templates/translation.html:15
+#: authentication_service/templates/translation.html:14
+#: authentication_service/user_migration/forms.py:34
 msgid "Enter the same password as before, for verification."
 msgstr "Gee dieselfde wagwoord as voorheen vir verifikasie."
 
@@ -835,18 +865,62 @@ msgstr ""
 msgid "Back from whence you came!"
 msgstr "Terug waarvandaan jy gekom het!"
 
-#: authentication_service/views.py:270
+#: authentication_service/tests/settings/111.py:141 project/settings.py:207
+msgid "Your account has been deactivated. Please contact support."
+msgstr ""
+
+#: authentication_service/tests/settings/111.py:143 project/settings.py:209
+#, python-format
+msgid ""
+"Please enter a correct %(username)s and password. Note that both fields may "
+"be case-sensitive."
+msgstr ""
+
+#: authentication_service/user_migration/forms.py:26
+#, fuzzy
+#| msgid "Password Reset"
+msgid "Password"
+msgstr "Wagwoord Herstel"
+
+#: authentication_service/user_migration/forms.py:41
+msgid "A user with that username already exists."
+msgstr ""
+
+#: authentication_service/user_migration/forms.py:55
+msgid "Password needs to be at least 4 characters long."
+msgstr ""
+
+#: authentication_service/user_migration/templates/user_migration/creation_form.html:5
+#: authentication_service/user_migration/templates/user_migration/creation_form.html:9
+msgid "Temp user creation"
+msgstr ""
+
+#: authentication_service/user_migration/templates/user_migration/creation_form.html:17
+msgid "Create"
+msgstr ""
+
+#: authentication_service/user_migration/views.py:54
+msgid "Migration url has expired, please login again."
+msgstr ""
+
+#: authentication_service/views.py:300
 msgid "Successfully updated password."
 msgstr "Suksesvolle wagwoord opgedateer."
 
-#: authentication_service/views.py:338
+#: authentication_service/views.py:368
 msgid "You require either an email or msisdn to request an account deletion"
 msgstr "U het 'n e-pos of msisdn nodig om 'n rekening te verwyder"
 
-#: authentication_service/views.py:371
+#: authentication_service/views.py:401
 msgid "Successfully requested account deletion."
 msgstr "Suksesvolle rekeningverwydering aangevra."
 
-#: authentication_service/views.py:446
+#: authentication_service/views.py:476
 msgid "One or more answers are incorrect"
 msgstr "Een of meer antwoorde is verkeerd"
+
+#~ msgid "Your password must contain at least %(min_length)d character."
+#~ msgid_plural ""
+#~ "Your password must contain at least %(min_length)d characters."
+#~ msgstr[0] "Jou wagwoord moet ten minste %(min_length)d karakter bevat."
+#~ msgstr[1] "Jou wagwoord moet ten minste %(min_length)d karakters bevat."

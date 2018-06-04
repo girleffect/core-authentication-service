@@ -1,8 +1,11 @@
 from environs import Env
 from corsheaders.defaults import default_headers
 
+from django.conf import global_settings
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
+import django.conf.locale
+
 
 from project.settings_base import *
 import access_control
@@ -32,6 +35,63 @@ LOCALE_PATHS = [
 ]
 
 LANGUAGE_CODE = "en"
+
+LANGUAGES = global_settings.LANGUAGES + [
+    ("tl", _("Tagalog")),
+    ("rw", _("Kinyarwanda")),
+    ("ha", _("Hausa")),
+    ("bn", _("Bengali")),
+    ("my", _("Burmese")),
+    ("ny", _("Chichewa")),
+    ("prs", _("Dari")),
+]
+
+EXTRA_LANG_INFO = {
+    "tl": {
+        "bidi": False,
+        "code": "tl",
+        "name": "Tagalog",
+        "name_local": "Tagalog"
+    },
+    "rw": {
+        "bidi": False,
+        "code": "rw",
+        "name": "Kinyarwanda",
+        "name_local": "Kinyarwanda"
+    },
+    "ha": {
+        "bidi": False,
+        "code": "ha",
+        "name": "Hausa",
+        "name_local": "Hausa"
+    },
+    "bn": {
+        "bidi": False,
+        "code": "bn",
+        "name": "Bengali",
+        "name_local": u"বাংলা"
+    },
+    "my": {
+        "bidi": False,
+        "code": "bur_MM",
+        "name": "Burmese",
+        "name_local": "Burmese"
+    },
+    "ny": {
+        "bidi": False,
+        "code": "ny",
+        "name": "Chichewa",
+        "name_local": "Chichewa",
+    },
+    "prs": {
+        "bidi": False,
+        "code": "prs",
+        "name": "Dari",
+        "name_local": u"دری",
+    },
+}
+django.conf.locale.LANG_INFO.update(EXTRA_LANG_INFO)
+
 
 AUTH_PASSWORD_VALIDATORS += [
     {
@@ -85,7 +145,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
+    # Subclasses django locale.LocaleMiddleware
+    "authentication_service.middleware.GELocaleMiddleware",
     "django_otp.middleware.OTPMiddleware",
     "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.SessionDataManagementMiddleware",
