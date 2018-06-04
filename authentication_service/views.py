@@ -4,6 +4,7 @@ from urllib.parse import urlparse, parse_qs
 import urllib
 
 from defender.decorators import watch_login
+from oidc_provider.models import Client
 
 from django.conf import settings
 from django.contrib import messages
@@ -447,9 +448,12 @@ class ResetPasswordView(PasswordResetView):
                 self.request, constants.SessionKeys.CLIENT_ID
             )
             if client_id:
+                # Let it raise an DoesNotExist error. Something is very wrong
+                # if that is the case.
+                client = Client.objects.get(id=client_id)
                 try:
                     user = TemporaryMigrationUserStore.objects.get(
-                        username=identifier, client_id=client_id
+                        username=identifier, client_id=client.client_id
                     )
 
                     token = signing.dumps(
