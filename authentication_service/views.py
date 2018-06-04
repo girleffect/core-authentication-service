@@ -459,6 +459,7 @@ class ResetPasswordView(PasswordResetView):
                     token = signing.dumps(
                         user.id, salt="ge-migration-user-pwd-reset"
                     )
+
                     # TODO: Client will raise eventually, after pwd reset there
                     # is no way to enter back into login flow. Outside the
                     # scope of GE-1085 to add. That is the current expected
@@ -467,7 +468,7 @@ class ResetPasswordView(PasswordResetView):
                     #    self.request.GET.get("persist_query", "")
                     #)
                     url = reverse(
-                        "user_migration:password_reset", kwargs={
+                        "user_migration:question_gate", kwargs={
                             "token": token
                         }
                     )

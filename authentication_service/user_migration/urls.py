@@ -19,6 +19,16 @@ urlpatterns = [
         name="migrate_user_step"
     ),
     url(r"^migrate/(?P<token>[\w:-]+)/$", migration_wizard, name="migrate_user"),
+    url(
+        r"^question-gate/(?P<token>[\w:-]+)/$",
+        views.QuestionGateView.as_view(),
+        name="question_gate"
+    ),
+    url(
+        r"^password-reset/(?P<token>[\w:-]+)/$",
+        views.PasswordResetView.as_view(),
+        name="password_reset"
+    ),
 
     # TODO remove after integration work is done
     url(
