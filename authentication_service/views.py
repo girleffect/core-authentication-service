@@ -448,7 +448,7 @@ class ResetPasswordView(PasswordResetView):
                 self.request, constants.SessionKeys.CLIENT_ID
             )
             if client_id:
-                # Let it raise an DoesNotExist error. Something is very wrong
+                # Let it raise a DoesNotExist error. Something is very wrong
                 # if that is the case.
                 client = Client.objects.get(id=client_id)
                 try:
