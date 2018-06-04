@@ -40,7 +40,6 @@ SESSION_UPDATE_URL_WHITELIST = [
     reverse_lazy("edit_profile"),
 ]
 
-
 def authorize_client(request):
     """
     Method to validate client values as supplied on request.
