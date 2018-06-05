@@ -106,11 +106,13 @@ class PasswordResetForm(forms.Form):
     required_css_class = "required"
     password_one = forms.CharField(
         label=_("Password"),
-        max_length=128
+        max_length=128,
+        widget=forms.PasswordInput
     )
     password_two = forms.CharField(
         label=_("Confirm password"),
-        max_length=128
+        max_length=128,
+        widget=forms.PasswordInput
     )
     def __init__(self, user, *args, **kwargs):
         self._user = user
