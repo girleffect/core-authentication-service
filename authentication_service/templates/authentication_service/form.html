@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block metatitle %}
+    {% trans "Registration" %}
+{% endblock %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post" class="Form">
+        {% csrf_token %}
+        {{ form.as_div }}
+
+        <div>
+            {{ question_formset.management_form }}
+            {{ question_formset.non_form_errors }}
+            {% for qform in question_formset %}
+                {{ qform.as_div }}
+            {% endfor %}
+        </div>
+
+        <div class="Form-buttons">
+            <input type="submit" value="{% trans "Submit" %}" class="Button" />
+        </div>
+    </form>
+{% endblock %}

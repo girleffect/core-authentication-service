@@ -16,7 +16,9 @@ from django.views.generic.edit import FormView
 
 from authentication_service import forms, models, views
 from authentication_service.decorators import generic_deprecation
-from authentication_service.user_migration.forms import UserDataForm
+from authentication_service.user_migration.forms import (
+    UserDataForm, SecurityQuestionGateForm, PasswordResetForm
+)
 from authentication_service.user_migration.models import (
     TemporaryMigrationUserStore
 )
@@ -78,7 +80,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
         )
 
     def get_form_kwargs(self, step=None):
-        kwargs = {}
+        kwargs = super(MigrateUserWizard, self).get_form_kwargs(step)
         if step == "securityquestions":
             kwargs["language"] = self.language
         return kwargs
@@ -137,6 +139,8 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
 
 
 class QuestionGateView(FormView):
+    form_class = SecurityQuestionGateForm
+    template_name = "authentication_service/form.html"
 
     @generic_deprecation(
         "authentication_service.user_migration.QuestionGate:" \
@@ -151,7 +155,7 @@ class QuestionGateView(FormView):
             self.migration_user_id = signing.loads(
                 self.token,
                 salt="ge-migration-user-pwd-reset",
-                max_age=15*360 # 15 min in seconds
+                max_age=10*360 # 10 min in seconds
             )
         except signing.SignatureExpired:
             messages.error(
@@ -159,13 +163,14 @@ class QuestionGateView(FormView):
                 _("Password reset url has expired, please login again.")
             )
             return redirect(self.get_login_url())
-        return super(MigrateUserWizard, self).dispatch(*args, **kwargs)
+        return super(QuestionGateView, self).dispatch(*args, **kwargs)
 
-    def get_form_kwargs(self, step=None):
+    def get_form_kwargs(self):
+        kwargs = super(QuestionGateView, self).get_form_kwargs()
         language = translation.get_language()
         user = self.get_user_data
-        kwargs["question_one"] = user.question_one[language]
-        kwargs["question_two"] = user.question_two[language]
+        kwargs["user"] = user
+        kwargs["language"] = language
         return kwargs
 
     def form_valid(self, form):
@@ -183,10 +188,6 @@ class QuestionGateView(FormView):
             )
 
     def get_success_url(self, query=None):
-        user = TemporaryMigrationUserStore.objects.get(
-            username=identifier, client_id=client.client_id
-        )
-
         token = signing.dumps(
             self.get_user_data.id, salt="ge-migration-user-pwd-gate-passed"
         )
@@ -202,6 +203,8 @@ class QuestionGateView(FormView):
 
 
 class PasswordResetView(FormView):
+    form_class = PasswordResetForm
+    template_name = "authentication_service/form.html"
 
     @generic_deprecation(
         "authentication_service.user_migration.PasswordReset:" \
@@ -216,7 +219,7 @@ class PasswordResetView(FormView):
             self.migration_user_id = signing.loads(
                 self.token,
                 salt="ge-migration-user-pwd-gate-passed",
-                max_age=15*360 # 15 min in seconds
+                max_age=5*360 # 5 min in seconds
             )
         except signing.SignatureExpired:
             messages.error(
@@ -224,7 +227,7 @@ class PasswordResetView(FormView):
                 _("Password reset url has expired, please login again.")
             )
             return redirect(self.get_login_url())
-        return super(MigrateUserWizard, self).dispatch(*args, **kwargs)
+        return super(PasswordResetView, self).dispatch(*args, **kwargs)
 
     def form_valid(self, form):
         return self.get_login_url()

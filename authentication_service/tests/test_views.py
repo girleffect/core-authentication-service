@@ -1126,3 +1126,89 @@ class DeleteAccountTestCase(TestCase):
                     "context_key": "user"}]
             }
         )
+
+
+class TestMigrationPasswordReset(TestCase):
+
+    def goto_login(self):
+        return self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestMigrationPasswordReset, cls).setUpTestData()
+        cls.temp_user = TemporaryMigrationUserStore.objects.create(
+            username="forgetfulmigrateduser",
+            client_id="migration_client_id",
+            user_id=4,
+            answer_one="a",
+            answer_two="b",
+            question_one={'en': 'Some awesome question'},
+            question_two={'en': 'Another secure question'}
+        )
+        cls.temp_user.set_password("Qwer!234")
+        cls.temp_user.set_anwers("Answer1", "Answer2")
+        Client.objects.create(
+            client_id="migration_client_id",
+            name= "MigrationCLient",
+            client_secret= "super_client_secret_1",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["http://example.com/"]
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_question_gate_view(self):
+        response = self.goto_login()
+        self.assertRedirects(
+            response,
+            "/en/login/?next=/openid/authorize%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id%3Dmigration_client_id%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO"
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "forgetfulmigrateduser"
+            },
+            follow=True
+        )
+
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/question-gate/",
+            token_url
+        )
+        self.assertContains(
+            response,
+            "Some awesome question"
+        )
+        self.assertContains(
+            response,
+            "Another secure question"
+        )
+        response = self.client.post(
+            token_url,
+            data={
+                "answer_one": "forgetfulmigrateduser",
+                "answer_two": "forgetfulmigrateduser"
+            },
+        )
+        # response.context["form"].non_field_errors()
+        self.assertEqual(
+            response.context["form"].non_field_errors(),
+            ["Incorrect answers provided"]
+        )
+        response = self.client.post(
+            token_url,
+            data={
+                "answer_one": "Answer1",
+                "answer_two": "Answer2"
+            },
+            follow=True
+        )
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/password-reset/",
+            token_url
+        )

@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUsernameValidator
 from django.utils import six
 from django.utils.translation import ugettext as _
+from django.core.exceptions import ValidationError
 
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
@@ -68,3 +69,46 @@ class CreateTempUserForm(forms.ModelForm):
         # Instance has clear text saved at this stage, hash it
         instance.set_password(self.instance.pw_hash)
         return instance
+
+
+class SecurityQuestionGateForm(forms.Form):
+    error_css_class = "error"
+    required_css_class = "required"
+    answer_one = forms.CharField(
+        label="",
+        max_length=128
+    )
+    answer_two = forms.CharField(
+        label="",
+        max_length=128
+    )
+
+    def __init__(self, user, language, *args, **kwargs):
+        self._user = user
+        language = language
+        question_one = self._user.question_one[language]
+        question_two = self._user.question_two[language]
+        super(SecurityQuestionGateForm, self).__init__(*args, **kwargs)
+        self.fields["answer_one"].label = question_one
+        self.fields["answer_two"].label = question_two
+
+    def clean(self):
+        cleaned_data = super(SecurityQuestionGateForm, self).clean()
+        answer_one = cleaned_data.get("answer_one")
+        answer_two = cleaned_data.get("answer_two")
+        if not self._user.check_answers(answer_one, answer_two):
+            raise ValidationError(_("Incorrect answers provided"))
+        return cleaned_data
+
+
+class PasswordResetForm(forms.Form):
+    error_css_class = "error"
+    required_css_class = "required"
+    password_one = forms.CharField(
+        label=_("Password"),
+        max_length=128
+    )
+    password_two = forms.CharField(
+        label=_("Confirm password"),
+        max_length=128
+    )
