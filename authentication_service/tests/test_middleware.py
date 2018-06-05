@@ -442,3 +442,29 @@ class TestThemeMiddleware(TestCase):
             response,
             '<div id="ge-template-theme" name="springster" />'
         )
+
+
+class TestLanguageUpdateMiddleware(TestCase):
+
+    def test_language_update(self):
+        response = self.client.get(
+            reverse(
+                "login"
+            ) + "?language=prs&theme=zathu&required=username",
+            follow=True
+        )
+        self.assertRedirects(
+            response, "/prs/login/?theme=zathu&required=username"
+        )
+        self.assertContains(response, "THIS IS JUST FOR UNITTESTS ATM")
+
+    def test_missing_language_update(self):
+        response = self.client.get(
+            reverse(
+                "login"
+            ) + "?language=rts&theme=zathu&required=username",
+            follow=True
+        )
+        self.assertEquals(
+            response.status_code, 404
+        )

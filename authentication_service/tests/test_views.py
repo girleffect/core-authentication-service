@@ -1076,6 +1076,7 @@ class ResetPasswordTestCase(TestCase):
         # Redirects to password reset confirm view
         self.assertEquals(response.status_code, 302)
 
+
 class DeleteAccountTestCase(TestCase):
 
     @classmethod
@@ -1126,3 +1127,14 @@ class DeleteAccountTestCase(TestCase):
                     "context_key": "user"}]
             }
         )
+
+
+class HealthCheckTestCase(TestCase):
+
+    def test_healthcheck(self):
+        response = self.client.get(reverse("healthcheck"))
+        self.assertContains(response, "host")
+        self.assertContains(response, "server_timestamp")
+        self.assertContains(response, "db_timestamp")
+        self.assertContains(response, "version")
+

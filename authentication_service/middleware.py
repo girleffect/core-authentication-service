@@ -1,7 +1,7 @@
-from urllib.parse import urlparse, parse_qs
+import re
+from urllib.parse import urlparse, parse_qs, urlencode
 import logging
 
-from django.urls import reverse, reverse_lazy
 from oidc_provider.lib.endpoints.authorize import AuthorizeEndpoint
 from oidc_provider.lib.errors import (
     AuthorizeError,
@@ -9,10 +9,17 @@ from oidc_provider.lib.errors import (
     RedirectUriError
 )
 
-from django.shortcuts import render
-from django.utils.deprecation import MiddlewareMixin
+from django.conf import settings
+from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.http import HttpResponseBadRequest, HttpResponse
+from django.middleware.locale import LocaleMiddleware
+from django.shortcuts import render
+from django.urls import reverse, reverse_lazy
+from django.utils import translation
+from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext as _
+from django.utils.translation.trans_real import language_code_prefix_re
+from django.views.i18n import LANGUAGE_QUERY_PARAMETER
 
 from authentication_service import exceptions, api_helpers
 from authentication_service.constants import SessionKeys, EXTRA_SESSION_KEY
@@ -32,7 +39,6 @@ SESSION_UPDATE_URL_WHITELIST = [
     reverse_lazy("oidc_provider:authorize"),
     reverse_lazy("edit_profile"),
 ]
-
 
 def authorize_client(request):
     """
@@ -224,3 +230,59 @@ class ErrorMiddleware(MiddlewareMixin):
     def process_exception(self, request, exc):
         if isinstance(exc, exceptions.BadRequestException):
             return HttpResponseBadRequest(exc.args)
+
+
+class GELocaleMiddleware(LocaleMiddleware):
+    """
+    Subclasses Django LocaleMiddleware
+
+    Overrides the default logic to ALWAYS attempt to switch to the language
+    provided via querystring.
+
+    Most of this code was inspired by
+    django.middleware.locales.LocaleMiddleware itself.
+    """
+
+    def process_request(self, request):
+        super(GELocaleMiddleware, self).process_request(request)
+
+        # Get the language code to use
+        language_code = request.GET.get(
+            LANGUAGE_QUERY_PARAMETER, None
+        )
+
+
+        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
+
+        # Useful check from django.conf.urls.i18n, subclass middleware only
+        # cares about the first value
+        i18n_patterns_used, prefix_default = is_language_prefix_patterns_used(
+            urlconf)
+
+        # Only if language code was provided, it is not the currently active
+        # language and the url we are currently on makes use of the i18n
+        # structure.
+        if (language_code and
+            language_code != translation.get_language() and
+            i18n_patterns_used):
+
+            # Make use of the locales regex that is traditionally used to
+            # attempt to get the language from the url
+            regex_match = language_code_prefix_re.match(request.get_full_path())
+
+            # Ensure a language code is present, should not get here if not.
+            # However check again for safety.
+            if regex_match.group(1):
+
+                # Replace the current language code in the full path with the
+                # querystring one and redirect to it.
+                path = request.path_info.replace(regex_match.group(1), language_code, 1)
+
+                # Remove the language parameter, can cause a infinite redirect
+                # loop if the language is not found. Due to the base local
+                # middleware also attempting redirects back to the default
+                # language on 404s.
+                get_query = request.GET.copy()
+                del get_query["language"]
+                new_params = f"?{urlencode(get_query)}" if get_query else ""
+                return self.response_redirect_class(f"{path}{new_params}")
