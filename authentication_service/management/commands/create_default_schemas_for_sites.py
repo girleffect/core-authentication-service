@@ -16,7 +16,7 @@ class Command(BaseCommand):
             result, _, headers = settings.ACCESS_CONTROL_API.site_list_with_http_info(
                 limit=100, offset=offset
             )
-            if int(headers["X-Total-Count"]):
+            if int(headers["X-Total-Count"]) == 0:
                 break
             sites.extend(result)
             offset += len(result)
