@@ -16,8 +16,8 @@ class TemporaryMigrationUserStore(models.Model):
     client = models.ForeignKey(Client, to_field="client_id", null=True)
     question_one = JSONField(blank=True, default={})
     question_two = JSONField(blank=True, default={})
-    answer_one = models.CharField(max_length=128)
-    answer_two = models.CharField(max_length=128)
+    answer_one = models.CharField(max_length=128, null=True, blank=True)
+    answer_two = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta:
         unique_together = (
@@ -31,11 +31,11 @@ class TemporaryMigrationUserStore(models.Model):
     def check_password(self, raw_password):
         return check_password(raw_password, self.pw_hash)
 
-    def check_answers(self, answer_one, answer_two):
-        return all([
-            check_password(answer_one, self.answer_one),
-            check_password(answer_two, self.answer_two)
-        ])
+    def check_answer_one(self, answer):
+        return check_password(answer, self.answer_one),
+
+    def check_answer_two(self, answer):
+        return check_password(answer, self.answer_two),
 
     def set_password(self, raw_password):
         self.pw_hash = make_password(raw_password)
