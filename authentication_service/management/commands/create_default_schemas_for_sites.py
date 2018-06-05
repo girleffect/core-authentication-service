@@ -9,12 +9,23 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Creating SiteDataSchemas..."))
-        sites = settings.ACCESS_CONTROL_API.site_list()
+        # Fetch all sites until X-Total-Count is reached.
+        done = False
+        sites = []
+        while not done:
+            response = settings.ACCESS_CONTROL_API.site_list_with_http_info(limit=100)
+            sites.extend(response[0])
+            if len(sites) >= int(response[2]["X-Total-Count"]):
+                done = True
         if sites:
             for site in sites:
                 try:
-                    schemas = settings.USER_DATA_STORE_API.sitedataschema_list(site_id=site.id)
-                    if not schemas:
+                    settings.USER_DATA_STORE_API.sitedataschema_read(site_id=site.id)
+                    self.stdout.write(
+                        self.style.SUCCESS("Schema for site %s exists!" % site.name)
+                    )
+                except ApiException as e:
+                    if e.status == 404:
                         self.stdout.write(
                             self.style.SUCCESS("Creating Schema for site %s..." % site.name)
                         )
@@ -24,12 +35,10 @@ class Command(BaseCommand):
                                 "schema": {"type": "object"}
                             }
                         )
-                    else:
                         self.stdout.write(
-                            self.style.SUCCESS("Schema for site %s exists!" % site.name)
-                        )
-                except ApiException as e:
-                    raise e
+                            self.style.SUCCESS("Created schema for %s...") % site.name)
+                    else:
+                        raise
 
         else:
             self.stdout.write(self.style.SUCCESS("No sites found on Access Control!"))
