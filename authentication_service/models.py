@@ -109,11 +109,12 @@ class CoreUser(AbstractUser):
         if self.msisdn != self._original_msisdn:
             self.msisdn_verified = False
 
-        # To prevent unique constaint issues that are not db related, if the
+        # To prevent unique constraint issues that are not db related, if the
         # email is an empty string make it None. A None value on forms gets
         # converted to an empty string somewhere along the line.
         if self.email == "":
             self.email = None
+
         super(CoreUser, self).save(*args, **kwargs)
 
     @property
