@@ -12,11 +12,16 @@ class Command(BaseCommand):
         # Fetch all sites until X-Total-Count is reached.
         done = False
         sites = []
+        offset = 0
         while not done:
-            response = settings.ACCESS_CONTROL_API.site_list_with_http_info(limit=100)
+            response = settings.ACCESS_CONTROL_API.site_list_with_http_info(
+                limit=100, offset=offset
+            )
             sites.extend(response[0])
             if len(sites) >= int(response[2]["X-Total-Count"]):
                 done = True
+            else:
+                offset += 1
         if sites:
             for site in sites:
                 try:
