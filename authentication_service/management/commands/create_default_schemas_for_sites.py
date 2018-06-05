@@ -10,18 +10,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Creating SiteDataSchemas..."))
         # Fetch all sites until X-Total-Count is reached.
-        done = False
-        sites = []
         offset = 0
-        while not done:
-            response = settings.ACCESS_CONTROL_API.site_list_with_http_info(
+        sites = []
+        while True:
+            result, _, headers = settings.ACCESS_CONTROL_API.site_list_with_http_info(
                 limit=100, offset=offset
             )
-            sites.extend(response[0])
-            if len(sites) >= int(response[2]["X-Total-Count"]):
-                done = True
-            else:
-                offset += 1
+            if int(headers["X-Total-Count"]):
+                break
+            sites.extend(result)
+            offset += len(result)
         if sites:
             for site in sites:
                 try:
