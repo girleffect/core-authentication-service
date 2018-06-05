@@ -1,9 +1,10 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
+from django.forms import HiddenInput
 from django.utils import six
 from django.utils.translation import ugettext as _
-from django.core.exceptions import ValidationError
 
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
@@ -72,6 +73,9 @@ class CreateTempUserForm(forms.ModelForm):
 
 
 class SecurityQuestionGateForm(forms.Form):
+    """
+    NOTE agreed upon, if user only has one answer, it must be answer_one
+    """
     error_css_class = "error"
     required_css_class = "required"
     answer_one = forms.CharField(
@@ -87,16 +91,28 @@ class SecurityQuestionGateForm(forms.Form):
         self._user = user
         language = language
         question_one = self._user.question_one[language]
-        question_two = self._user.question_two[language]
         super(SecurityQuestionGateForm, self).__init__(*args, **kwargs)
         self.fields["answer_one"].label = question_one
-        self.fields["answer_two"].label = question_two
+        if not self._user.answer_two:
+            self.fields["answer_two"].required = False
+            self.fields["answer_two"].widget.is_required = False
+            self.fields["answer_two"].widget = HiddenInput()
+            self.fields["answer_two"].disabled = True
+        else:
+            question_two = self._user.question_two[language]
+            self.fields["answer_two"].label = question_two
 
     def clean(self):
         cleaned_data = super(SecurityQuestionGateForm, self).clean()
         answer_one = cleaned_data.get("answer_one")
         answer_two = cleaned_data.get("answer_two")
-        if not self._user.check_answers(answer_one, answer_two):
+
+        if not self._user.answer_two:
+            if not self._user.check_answer_one(answer_one):
+                raise ValidationError(_("Incorrect answer provided"))
+        elif not all([
+                self._user.check_answer_one(answer_one),
+                self._user.check_answer_two(answer_two)]):
             raise ValidationError(_("Incorrect answers provided"))
         return cleaned_data
 

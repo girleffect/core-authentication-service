@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth import hashers
+from django.contrib.messages import get_messages
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -1131,6 +1132,7 @@ class DeleteAccountTestCase(TestCase):
 class TestMigrationPasswordReset(TestCase):
 
     def goto_login(self):
+        # Setup session values
         return self.client.get(
             f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
             follow=True
@@ -1157,6 +1159,93 @@ class TestMigrationPasswordReset(TestCase):
             response_type= "code",
             jwt_alg= "HS256",
             redirect_uris= ["http://example.com/"]
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_no_answers(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="reallyforgetfulmigrateduser",
+            client_id="migration_client_id",
+            user_id=6,
+            question_one={},
+            question_two={}
+        )
+        # Setup session values
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "reallyforgetfulmigrateduser"
+            },
+            follow=True
+        )
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            messages[0].message,
+            "We are sorry, your account can not perform this action"
+        )
+        self.assertEqual(
+            messages[0].level_tag,
+            "warning"
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_one_answer(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="slightlyforgetfulmigrateduser",
+            client_id="migration_client_id",
+            user_id=6,
+            question_one={'en': 'Some awesome question'},
+            question_two={}
+        )
+        temp_user.set_anwers("Answer1")
+        # Setup session values
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "slightlyforgetfulmigrateduser"
+            },
+            follow=True
+        )
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/question-gate/",
+            token_url
+        )
+        self.assertContains(
+            response,
+            '<input type="hidden" name="answer_two" disabled id="id_answer_two" class=" HiddenInput " />'
+        )
+        response = self.client.post(
+            token_url,
+            data={
+                "answer_one": "slightlyforgetfulmigrateduser"
+            },
+            follow=True
+        )
+        self.assertEqual(
+            response.context["form"].non_field_errors(),
+            ["Incorrect answer provided"]
+        )
+        response = self.client.post(
+            token_url,
+            data={
+                "answer_one": "Answer1"
+            },
+            follow=True
+        )
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/password-reset/",
+            token_url
         )
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())

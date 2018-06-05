@@ -455,7 +455,17 @@ class ResetPasswordView(PasswordResetView):
                     user = TemporaryMigrationUserStore.objects.get(
                         username=identifier, client_id=client.client_id
                     )
+                    if not user.answer_one and not user.answer_two:
+                        # If the user does not have a single answer, add a
+                        # message and redirect back to the current view.
+                        messages.warning(
+                            self.request,
+                            _("We are sorry, your account can not perform this action")
+                        )
 
+                        # Redirect to current url with entire querystring
+                        # present.
+                        return redirect(self.request.get_full_path())
                     token = signing.dumps(
                         user.id, salt="ge-migration-user-pwd-reset"
                     )

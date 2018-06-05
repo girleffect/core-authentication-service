@@ -32,16 +32,18 @@ class TemporaryMigrationUserStore(models.Model):
         return check_password(raw_password, self.pw_hash)
 
     def check_answer_one(self, answer):
-        return check_password(answer, self.answer_one),
+        return check_password(answer.lower(), self.answer_one)
 
     def check_answer_two(self, answer):
-        return check_password(answer, self.answer_two),
+        return check_password(answer.lower(), self.answer_two)
 
     def set_password(self, raw_password):
         self.pw_hash = make_password(raw_password)
         self.save()
 
-    def set_anwers(self, answer_one, answer_two):
-        self.answer_one = make_password(answer_one)
-        self.answer_two = make_password(answer_two)
+    def set_anwers(self, answer_one=None, answer_two=None):
+        if answer_one:
+            self.answer_one = make_password(answer_one.lower())
+        if answer_two:
+            self.answer_two = make_password(answer_two.lower())
         self.save()
