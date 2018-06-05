@@ -229,8 +229,15 @@ class PasswordResetView(FormView):
             return redirect(self.get_login_url())
         return super(PasswordResetView, self).dispatch(*args, **kwargs)
 
+    def get_form_kwargs(self):
+        kwargs = super(PasswordResetView, self).get_form_kwargs()
+        user = self.get_user_data
+        kwargs["user"] = user
+        return kwargs
+
     def form_valid(self, form):
-        return self.get_login_url()
+        form.update_password()
+        return self.get_success_url()
 
     @cached_property
     def get_user_data(self):
@@ -243,5 +250,5 @@ class PasswordResetView(FormView):
                 f"Migrating user with id {self.migration_user_id} does not exist."
             )
 
-    def get_login_url(self, query=None):
-        return redirect(reverse("login"))
+    def get_success_url(self, query=None):
+        return redirect(reverse("password_reset_done"))

@@ -112,3 +112,23 @@ class PasswordResetForm(forms.Form):
         label=_("Confirm password"),
         max_length=128
     )
+    def __init__(self, user, *args, **kwargs):
+        self._user = user
+        super(PasswordResetForm, self).__init__(*args, **kwargs)
+
+    def clean_password_two(self):
+        password_one = self.cleaned_data.get("password_one")
+        password_two = self.cleaned_data.get("password_two")
+        if password_one and password_two and password_one != password_two:
+            raise forms.ValidationError(
+                _("Passwords do not match.")
+            )
+
+        if not len(password_two) >= 4:
+            raise forms.ValidationError(
+                _("Password not long enough.")
+            )
+        return password_two
+
+    def update_password(self):
+        self._user.set_password(self.cleaned_data["password_two"])

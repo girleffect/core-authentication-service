@@ -1194,7 +1194,6 @@ class TestMigrationPasswordReset(TestCase):
                 "answer_two": "forgetfulmigrateduser"
             },
         )
-        # response.context["form"].non_field_errors()
         self.assertEqual(
             response.context["form"].non_field_errors(),
             ["Incorrect answers provided"]
@@ -1212,3 +1211,49 @@ class TestMigrationPasswordReset(TestCase):
             "/en/user-migration/password-reset/",
             token_url
         )
+        return token_url
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_password_reset_view(self):
+        url = self.test_question_gate_view()
+
+        response = self.client.post(
+            url,
+            data={
+                "password_one": "aaaaaa",
+                "password_two": "bbbbbb"
+            }
+        )
+        self.assertEqual(
+            response.context["form"].errors,
+            {"password_two": ["Passwords do not match."]}
+        )
+        response = self.client.post(
+            url,
+            data={
+                "password_one": "aa",
+                "password_two": "aa"
+            }
+        )
+        self.assertEqual(
+            response.context["form"].errors,
+            {"password_two": ["Password not long enough."]}
+        )
+        response = self.client.post(
+            url,
+            data={
+                "password_one": "CoolNew",
+                "password_two": "CoolNew"
+            },
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            "/en/reset-password/done/"
+        )
+        user = TemporaryMigrationUserStore.objects.get(
+            username=self.temp_user.username,
+            client_id=self.temp_user.client_id,
+            user_id=self.temp_user.user_id,
+        )
+        self.assertTrue(user.check_password("CoolNew"))
