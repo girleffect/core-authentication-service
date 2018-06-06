@@ -1,4 +1,8 @@
+import datetime
+import socket
 from datetime import date
+
+import pkg_resources
 from dateutil.relativedelta import relativedelta
 from urllib.parse import urlparse, parse_qs
 import urllib
@@ -21,7 +25,8 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth import get_user_model
 from django.core import signing
 # NOTE: Can be refactored, both redirect import perform more or less the same.
-from django.http import HttpResponseRedirect
+from django.db import connection
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -541,3 +546,21 @@ ResetPasswordSecurityQuestionsView.dispatch = watch_login_method(
 
 class PasswordResetConfirmView(PasswordResetConfirmView):
     form_class = forms.SetPasswordForm
+
+
+class HealthCheckView(View):
+
+    def get(self, request, *args, **kwargs):
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT LOCALTIMESTAMP")
+            db_timestamp = cursor.fetchone()[0]
+
+        data = {
+            "host": socket.getfqdn(),
+            "server_timestamp": datetime.datetime.now(),
+            "db_timestamp": db_timestamp,
+            "version": pkg_resources.require("authentication_service")[0].version
+        }
+
+        return JsonResponse(data)
