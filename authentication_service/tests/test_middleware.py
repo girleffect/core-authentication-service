@@ -8,7 +8,7 @@ from django.utils.translation import activate
 
 from oidc_provider.models import Client
 
-from authentication_service import constants
+from authentication_service import constants, exceptions
 
 
 class TestSessionMiddleware(TestCase):
@@ -135,21 +135,12 @@ class TestRedirectManagementMiddleware(TestCase):
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_client_id_and_redirect_uri_validation(self):
-        response = self.client.get(
-            reverse(
-                "registration"
-            ) + "?redirect_uri=http%3A%2F%2Fexample.com%2F"
-        )
-        self.assertEqual(response.status_code, 503)
-        self.assertEqual(response.context["error"], "Client ID Error")
-        self.assertEqual(
-            response.context["message"],
-            "The client identifier (client_id) is missing or invalid."
-        )
-        self.assertEqual(
-            response.templates[0].name,
-            "authentication_service/redirect_middleware_error.html"
-        )
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            response = self.client.get(
+                reverse(
+                    "registration"
+                ) + "?redirect_uri=http%3A%2F%2Fexample.com%2F"
+            )
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     @patch("authentication_service.api_helpers.is_site_active")
