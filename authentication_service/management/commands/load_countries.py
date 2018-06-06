@@ -265,6 +265,6 @@ class Command(BaseCommand):
             country, created = Country.objects.update_or_create(
                 code=code, defaults={"name": name}
             )
-            if created:
+            if not created:
                 self.stdout.write(
                     self.style.SUCCESS("Country %s already exists" % name))
