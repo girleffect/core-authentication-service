@@ -250,7 +250,19 @@ class RegistrationView(LanguageMixin, CreateView):
             return reverse("two_factor_auth:setup")
         elif uri:
             return uri
-        return reverse("login")
+        return render(
+            self.request,
+            "authentication_service/message.html",
+            context={
+                "page_meta_title": _("Registration success"),
+                "page_title": _("Registration success"),
+                "page_message": _(
+                    "Congratulations," \
+                    " you have successfully registered" \
+                    " for a Girl Effect account."
+                ),
+            }
+        )
 
 
 class SessionRedirectView(View):
@@ -290,6 +302,10 @@ class EditProfileView(LanguageMixin, UpdateView):
         uri = utils.get_session_data(self.request, key)
         if uri:
             return uri
+        messages.success(
+            self.request,
+            _("Successfully updated profile.")
+        )
         return reverse("edit_profile")
 
 

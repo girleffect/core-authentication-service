@@ -554,60 +554,60 @@ class TestRegistrationView(TestCase):
 
     def test_view_success_redirects(self):
         # Test most basic iteration
-        response = self.client.post(
-            reverse("registration"),
-            {
-                "username": "Username",
-                "password1": "password",
-                "password2": "password",
-                "age": "18",
-                "birth_date": "2000-01-01",
-                "terms": True,
-                "email": "email@email.com",
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-            }
-        )
-        self.assertIn(response.url, reverse("login"))
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.post(
+                reverse("registration"),
+                {
+                    "username": "Username",
+                    "password1": "password",
+                    "password2": "password",
+                    "age": "18",
+                    "birth_date": "2000-01-01",
+                    "terms": True,
+                    "email": "email@email.com",
+                    "form-TOTAL_FORMS": "2",
+                    "form-INITIAL_FORMS": "0",
+                    "form-MIN_NUM_FORMS": "0",
+                    "form-MAX_NUM_FORMS": "1000",
+                }
+            )
 
-        # Test most basic registration with age instead of birth_date
-        response = self.client.post(
-            reverse("registration"),
-            {
-                "username": "Username0",
-                "password1": "password",
-                "password2": "password",
-                "age": "16",
-                "terms": True,
-                "email": "email1@email.com",
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-            }
-        )
-        self.assertIn(response.url, reverse("login"))
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            # Test most basic registration with age instead of birth_date
+            response = self.client.post(
+                reverse("registration"),
+                {
+                    "username": "Username0",
+                    "password1": "password",
+                    "password2": "password",
+                    "age": "16",
+                    "terms": True,
+                    "email": "email1@email.com",
+                    "form-TOTAL_FORMS": "2",
+                    "form-INITIAL_FORMS": "0",
+                    "form-MIN_NUM_FORMS": "0",
+                    "form-MAX_NUM_FORMS": "1000",
+                }
+            )
 
-        # Test most basic registration with age and birth_date. Birth_date takes precedence.
-        response = self.client.post(
-            reverse("registration"),
-            {
-                "username": "Username0a",
-                "password1": "password",
-                "password2": "password",
-                "birth_date": "1999-01-01",
-                "age": "16",
-                "terms": True,
-                "email": "email1a@email.com",
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-            }
-        )
-        self.assertIn(response.url, reverse("login"))
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            # Test most basic registration with age and birth_date. Birth_date takes precedence.
+            response = self.client.post(
+                reverse("registration"),
+                {
+                    "username": "Username0a",
+                    "password1": "password",
+                    "password2": "password",
+                    "birth_date": "1999-01-01",
+                    "age": "16",
+                    "terms": True,
+                    "email": "email1a@email.com",
+                    "form-TOTAL_FORMS": "2",
+                    "form-INITIAL_FORMS": "0",
+                    "form-MIN_NUM_FORMS": "0",
+                    "form-MAX_NUM_FORMS": "1000",
+                }
+            )
         Client.objects.create(
             client_id="redirect-tester",
             name= "RedirectClient",

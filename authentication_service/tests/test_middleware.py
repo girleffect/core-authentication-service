@@ -140,7 +140,7 @@ class TestRedirectManagementMiddleware(TestCase):
                 "registration"
             ) + "?redirect_uri=http%3A%2F%2Fexample.com%2F"
         )
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 503)
         self.assertEqual(response.context["error"], "Client ID Error")
         self.assertEqual(
             response.context["message"],

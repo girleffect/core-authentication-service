@@ -8,6 +8,7 @@ class SessionKeys:
     CLIENT_URI = "ge_oidc_client_uri"
     CLIENT_NAME = "ge_oidc_client_name"
     CLIENT_TERMS = "ge_oidc_client_terms"
+    CLIENT_WEBSITE = "ge_oidc_client_website_url"
     THEME = "theme"
 
 SECURITY_QUESTION_COUNT = 2

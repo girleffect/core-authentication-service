@@ -51,8 +51,8 @@
                 </div>
                 <div class="Header-links">
                     {% block links %}
-                        {% if ge_global_client_name and ge_global_redirect_uri %}
-                            {% trans "Back to " %}<a href="{{ ge_global_redirect_uri }}">{{ ge_global_client_name }}</a>
+                        {% if ge_global_client_name and ge_global_client_website %}
+                            {% trans "Back to " %}<a href="{{ ge_global_client_website }}">{{ ge_global_client_name }}</a>
                         {% endif %}
                     {% endblock %}
                 </div>

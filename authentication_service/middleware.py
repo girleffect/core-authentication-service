@@ -151,6 +151,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     client_uri_key = SessionKeys.CLIENT_URI
     client_name_key = SessionKeys.CLIENT_NAME
     client_terms_key = SessionKeys.CLIENT_TERMS
+    client_website = SessionKeys.CLIENT_WEBSITE
     oidc_values = None
 
 
@@ -160,6 +161,17 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         # redirect users to none client apps.
 
         uri = request.GET.get("redirect_uri", None)
+        client_id = request.GET.get("client_id", None)
+        if uri and not client_id:
+            current_host = request.get_host()
+            parsed_url = urlparse(uri)
+            if parsed_url.netloc != "" and current_host != parsed_url.netloc:
+                # TODO Find out whether to raie or render error template
+                raise exceptions.BadRequestException(
+                    "client_id paramater is missing." \
+                    " redirect_uri found that is not a" \
+                    " relative path or on the authentication service domain."
+                )
 
         # The authorization of a client does a lookup every time it gets
         # called. Middleware, also fires off on each request. To guard against
@@ -168,7 +180,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         validator_uri = get_session_data(request, "redirect_uri_validation")
         if request.path.rstrip("/") in [
                 path.rstrip("/") for path in SESSION_UPDATE_URL_WHITELIST]:
-            if uri and request.method == "GET" and uri != validator_uri:
+            if uri and request.method == "GET" and uri != validator_uri and client_id:
                 authorize = authorize_client(request)
                 if isinstance(authorize, HttpResponse):
                     return authorize
@@ -181,19 +193,27 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                     )
                     update_session_data(
                         request,
-                        self.client_uri_key,
-                        authorize.params["redirect_uri"]
-                    )
-                    update_session_data(
-                        request,
                         self.client_terms_key,
                         authorize.client.terms_url
                     )
                     update_session_data(
                         request,
-                        "redirect_uri_validation",
-                        uri
+                        self.client_website,
+                        authorize.client.website_url
                     )
+
+            # Set uri if it got to this point
+            if uri:
+                update_session_data(
+                    request,
+                    self.client_uri_key,
+                    uri
+                )
+                update_session_data(
+                    request,
+                    "redirect_uri_validation",
+                    uri
+                )
 
             # TODO the cleanup will change later, when website_url gets
             # introduced.
