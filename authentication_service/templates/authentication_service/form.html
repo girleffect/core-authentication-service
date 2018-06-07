@@ -23,5 +23,16 @@
         <div class="Form-buttons">
             <input type="submit" value="{% trans "Submit" %}" class="Button" />
         </div>
+
+        {% comment %}
+            Useful if the form needs to use django defender, it expects a field
+            with a specific name and value.
+
+            Suggest adding extra validation to ensure username is not tampered
+            with when possible.
+        {% endcomment %}
+        {% if auth_username and defender_field_name %}
+            <input type="hidden" value="{{ auth_username }}" name="{{ defender_field_name }}">
+        {% endif %}
     </form>
 {% endblock %}

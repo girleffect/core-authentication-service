@@ -2,8 +2,10 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 import urllib
 
+from defender.decorators import watch_login
 from formtools.wizard.views import NamedUrlSessionWizardView
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import login
 from django.core import signing
@@ -11,6 +13,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.utils import translation
+from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.views.generic.edit import FormView
 
@@ -172,6 +175,14 @@ class QuestionGateView(FormView):
         kwargs["language"] = translation.get_language()
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super(QuestionGateView, self).get_context_data(**kwargs)
+
+        # Added context for django defender, needs correct template
+        context["auth_username"] = self.migration_user.username
+        context["defender_field_name"] = settings.DEFENDER_USERNAME_FORM_FIELD
+        return context
+
     def form_valid(self, form):
         return self.get_success_url()
 
@@ -199,6 +210,11 @@ class QuestionGateView(FormView):
 
     def get_login_url(self, query=None):
         return redirect(reverse("login"))
+
+
+defender_decorator = watch_login()
+watch_login_method = method_decorator(defender_decorator)
+QuestionGateView.dispatch = watch_login_method(QuestionGateView.dispatch)
 
 
 class PasswordResetView(FormView):
