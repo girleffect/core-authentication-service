@@ -167,10 +167,8 @@ class QuestionGateView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(QuestionGateView, self).get_form_kwargs()
-        language = translation.get_language()
-        user = self.migration_user
-        kwargs["user"] = user
-        kwargs["language"] = language
+        kwargs["user"] = self.migration_user
+        kwargs["language"] = translation.get_language(
         return kwargs
 
     def form_valid(self, form):
