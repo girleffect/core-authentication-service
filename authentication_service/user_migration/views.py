@@ -160,7 +160,8 @@ class QuestionGateView(FormView):
         except signing.SignatureExpired:
             messages.error(
                 self.request,
-                _("Password reset url has expired, please login again.")
+                _("Password reset url has expired," \
+                " please restart the password reset proces.")
             )
             return redirect(self.get_login_url())
         return super(QuestionGateView, self).dispatch(*args, **kwargs)
@@ -168,7 +169,7 @@ class QuestionGateView(FormView):
     def get_form_kwargs(self):
         kwargs = super(QuestionGateView, self).get_form_kwargs()
         kwargs["user"] = self.migration_user
-        kwargs["language"] = translation.get_language(
+        kwargs["language"] = translation.get_language()
         return kwargs
 
     def form_valid(self, form):
