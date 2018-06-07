@@ -88,7 +88,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
     def get_form_initial(self, step):
         if step == "userdata":
             return {
-                "username": self.get_user_data.username
+                "username": self.migration_user.username
             }
         return self.initial_dict.get(step, {})
 
@@ -101,9 +101,9 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             ),
             password=cleaned_data["password2"],
             migration_data = {
-                "user_id": self.get_user_data.user_id,
-                "client_id": self.get_user_data.client_id,
-                "username": self.get_user_data.username
+                "user_id": self.migration_user.user_id,
+                "client_id": self.migration_user.client_id,
+                "username": self.migration_user.username
             }
         )
         for form_data in cleaned_data["formset-securityquestions"]:
@@ -115,7 +115,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             question = models.UserSecurityQuestion.objects.create(**data)
 
         # Delete temporary migration data
-        self.get_user_data.delete()
+        self.migration_user.delete()
 
         # Log new user in, allows for normal login flow to continue after
         # redirect
@@ -123,7 +123,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
         return self.get_login_url()
 
     @cached_property
-    def get_user_data(self):
+    def migration_user(self):
         try:
             return TemporaryMigrationUserStore.objects.get(
                 id=self.migration_user_id
@@ -168,7 +168,7 @@ class QuestionGateView(FormView):
     def get_form_kwargs(self):
         kwargs = super(QuestionGateView, self).get_form_kwargs()
         language = translation.get_language()
-        user = self.get_user_data
+        user = self.migration_user
         kwargs["user"] = user
         kwargs["language"] = language
         return kwargs
@@ -177,7 +177,7 @@ class QuestionGateView(FormView):
         return self.get_success_url()
 
     @cached_property
-    def get_user_data(self):
+    def migration_user(self):
         try:
             return TemporaryMigrationUserStore.objects.get(
                 id=self.migration_user_id
@@ -189,7 +189,7 @@ class QuestionGateView(FormView):
 
     def get_success_url(self, query=None):
         token = signing.dumps(
-            self.get_user_data.id, salt="ge-migration-user-pwd-gate-passed"
+            self.migration_user.id, salt="ge-migration-user-pwd-gate-passed"
         )
         url = reverse(
             "user_migration:password_reset", kwargs={
@@ -231,7 +231,7 @@ class PasswordResetView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(PasswordResetView, self).get_form_kwargs()
-        user = self.get_user_data
+        user = self.migration_user
         kwargs["user"] = user
         return kwargs
 
@@ -240,7 +240,7 @@ class PasswordResetView(FormView):
         return self.get_success_url()
 
     @cached_property
-    def get_user_data(self):
+    def migration_user(self):
         try:
             return TemporaryMigrationUserStore.objects.get(
                 id=self.migration_user_id
