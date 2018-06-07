@@ -8,7 +8,7 @@ class SessionKeys:
     CLIENT_URI = "ge_oidc_client_uri"
     CLIENT_NAME = "ge_oidc_client_name"
     CLIENT_TERMS = "ge_oidc_client_terms"
-    CLIENT_ID = "ge_client_django_id"
+    CLIENT_ID = "ge_oidc_client_django_id"
     THEME = "theme"
 
 SECURITY_QUESTION_COUNT = 2
