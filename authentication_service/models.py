@@ -95,6 +95,7 @@ class CoreUser(AbstractUser):
         null=True
     )
     migration_data = JSONField(blank=True, default={})
+    REQUIRED_FIELDS = ["birth_date", "email"]
 
     def __init__(self, *args, **kwargs):
         super(CoreUser, self).__init__(*args, **kwargs)
