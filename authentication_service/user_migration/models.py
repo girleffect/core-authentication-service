@@ -41,7 +41,7 @@ class TemporaryMigrationUserStore(models.Model):
         self.pw_hash = make_password(raw_password)
         self.save()
 
-    def set_anwers(self, answer_one=None, answer_two=None):
+    def set_answers(self, answer_one=None, answer_two=None):
         if answer_one:
             self.answer_one = make_password(answer_one.strip().lower())
         if answer_two:

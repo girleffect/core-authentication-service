@@ -69,6 +69,10 @@ class CreateTempUserForm(forms.ModelForm):
 
         # Instance has clear text saved at this stage, hash it
         instance.set_password(self.instance.pw_hash)
+        instance.set_answers(
+            answer_one=self.instance.answer_one,
+            answer_two=self.instance.answer_two
+        )
         return instance
 
 
