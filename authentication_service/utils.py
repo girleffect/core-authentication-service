@@ -1,6 +1,5 @@
 import datetime
 import json
-import logging
 
 import jsonschema
 from django.conf import settings
