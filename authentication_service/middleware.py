@@ -151,6 +151,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     client_uri_key = SessionKeys.CLIENT_URI
     client_name_key = SessionKeys.CLIENT_NAME
     client_terms_key = SessionKeys.CLIENT_TERMS
+    client_id_key = SessionKeys.CLIENT_ID
     oidc_values = None
 
 
@@ -194,6 +195,11 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                         "redirect_uri_validation",
                         uri
                     )
+                    update_session_data(
+                        request,
+                        self.client_id_key,
+                        authorize.client.id
+                    )
 
             # TODO the cleanup will change later, when website_url gets
             # introduced.
@@ -203,7 +209,8 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                     request,
                     [
                         self.client_uri_key, self.client_name_key,
-                        self.client_terms_key, "redirect_uri_validation"
+                        self.client_terms_key, "redirect_uri_validation",
+                        self.client_id_key
                     ]
                 )
 

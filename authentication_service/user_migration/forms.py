@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
+from django.forms import HiddenInput
 from django.utils import six
 from django.utils.translation import ugettext as _
 
@@ -68,3 +70,83 @@ class CreateTempUserForm(forms.ModelForm):
         # Instance has clear text saved at this stage, hash it
         instance.set_password(self.instance.pw_hash)
         return instance
+
+
+class SecurityQuestionGateForm(forms.Form):
+    """
+    NOTE agreed upon, if user only has one answer, it must be answer_one
+    """
+    error_css_class = "error"
+    required_css_class = "required"
+    answer_one = forms.CharField(
+        label="",
+        max_length=128
+    )
+    answer_two = forms.CharField(
+        label="",
+        max_length=128
+    )
+
+    def __init__(self, user, language, *args, **kwargs):
+        self._user = user
+        language = language
+        question_one = self._user.question_one[language]
+        super(SecurityQuestionGateForm, self).__init__(*args, **kwargs)
+        self.fields["answer_one"].label = question_one
+        if not self._user.answer_two:
+            self.fields["answer_two"].required = False
+            self.fields["answer_two"].widget.is_required = False
+            self.fields["answer_two"].widget = HiddenInput()
+            self.fields["answer_two"].disabled = True
+        else:
+            question_two = self._user.question_two[language]
+            self.fields["answer_two"].label = question_two
+
+    def clean(self):
+        cleaned_data = super(SecurityQuestionGateForm, self).clean()
+        answer_one = cleaned_data.get("answer_one")
+        answer_two = cleaned_data.get("answer_two")
+
+        if not self._user.answer_two:
+            if not self._user.check_answer_one(answer_one):
+                raise ValidationError(_("Incorrect answer provided"))
+        elif not all([
+                self._user.check_answer_one(answer_one),
+                self._user.check_answer_two(answer_two)]):
+            raise ValidationError(_("Incorrect answers provided"))
+        return cleaned_data
+
+
+class PasswordResetForm(forms.Form):
+    error_css_class = "error"
+    required_css_class = "required"
+    password_one = forms.CharField(
+        label=_("Password"),
+        max_length=128,
+        widget=forms.PasswordInput
+    )
+    password_two = forms.CharField(
+        label=_("Confirm password"),
+        max_length=128,
+        widget=forms.PasswordInput
+    )
+    def __init__(self, user, *args, **kwargs):
+        self._user = user
+        super(PasswordResetForm, self).__init__(*args, **kwargs)
+
+    def clean_password_two(self):
+        password_one = self.cleaned_data.get("password_one")
+        password_two = self.cleaned_data.get("password_two")
+        if password_one and password_two and password_one != password_two:
+            raise forms.ValidationError(
+                _("Passwords do not match.")
+            )
+
+        if not len(password_two) >= 4:
+            raise forms.ValidationError(
+                _("Password not long enough.")
+            )
+        return password_two
+
+    def update_password(self):
+        self._user.set_password(self.cleaned_data["password_two"])
