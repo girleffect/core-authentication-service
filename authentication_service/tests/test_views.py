@@ -1152,7 +1152,7 @@ class TestMigrationPasswordReset(TestCase):
             question_two={'en': 'Another secure question'}
         )
         cls.temp_user.set_password("Qwer!234")
-        cls.temp_user.set_anwers("Answer1", "Answer2")
+        cls.temp_user.set_answers("Answer1", "Answer2")
         Client.objects.create(
             client_id="migration_client_id",
             name= "MigrationCLient",
@@ -1203,7 +1203,7 @@ class TestMigrationPasswordReset(TestCase):
             question_one={'en': 'Some awesome question'},
             question_two={}
         )
-        temp_user.set_anwers("Answer1")
+        temp_user.set_answers("Answer1")
         # Setup session values
         self.client.get(
             f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
@@ -1375,7 +1375,7 @@ class TestMigrationPasswordResetLockout(TestCase):
             question_two={'en': 'Another secure question'}
         )
         cls.temp_user.set_password("Qwer!234")
-        cls.temp_user.set_anwers("Answer1", "Answer2")
+        cls.temp_user.set_answers("Answer1", "Answer2")
         Client.objects.create(
             client_id="migration_client_id",
             name= "MigrationCLient",
