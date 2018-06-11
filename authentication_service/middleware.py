@@ -152,6 +152,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     client_name_key = SessionKeys.CLIENT_NAME
     client_terms_key = SessionKeys.CLIENT_TERMS
     client_website = SessionKeys.CLIENT_WEBSITE
+    client_id_key = SessionKeys.CLIENT_ID
     oidc_values = None
 
 
@@ -177,7 +178,8 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                     request,
                     [
                         self.client_uri_key, self.client_name_key,
-                        self.client_terms_key, "redirect_uri_validation"
+                        self.client_terms_key, "redirect_uri_validation",
+                        self.client_id_key
                     ]
                 )
 
@@ -211,6 +213,11 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                         request,
                         self.client_website,
                         authorize.client.website_url
+                    )
+                    update_session_data(
+                        request,
+                        self.client_id_key,
+                        authorize.client.id
                     )
 
             # Set uri if it got to this point

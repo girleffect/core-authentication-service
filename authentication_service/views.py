@@ -8,6 +8,7 @@ from urllib.parse import urlparse, parse_qs
 import urllib
 
 from defender.decorators import watch_login
+from oidc_provider.models import Client
 
 from django.conf import settings
 from django.contrib import messages
@@ -464,6 +465,48 @@ class ResetPasswordView(PasswordResetView):
             else:  # This should never be the case.
                 print("User %s cannot reset their password." % identifier)
         elif not user:
+            client_id = utils.get_session_data(
+                self.request, constants.SessionKeys.CLIENT_ID
+            )
+            if client_id:
+                # Let it raise a DoesNotExist error. Something is very wrong
+                # if that is the case.
+                client = Client.objects.get(id=client_id)
+                try:
+                    user = TemporaryMigrationUserStore.objects.get(
+                        username=identifier, client_id=client.client_id
+                    )
+                    if not user.answer_one and not user.answer_two:
+                        # If the user does not have a single answer, add a
+                        # message and redirect back to the current view.
+                        messages.warning(
+                            self.request,
+                            _("We are sorry, your account can not perform this action")
+                        )
+
+                        # Redirect to current url with entire querystring
+                        # present.
+                        return redirect(self.request.get_full_path())
+                    token = signing.dumps(
+                        user.id, salt="ge-migration-user-pwd-reset"
+                    )
+
+                    # TODO: Client will raise eventually, after pwd reset there
+                    # is no way to enter back into login flow. Outside the
+                    # scope of GE-1085 to add. That is the current expected
+                    # behaviour.
+                    #querystring =  urllib.parse.quote_plus(
+                    #    self.request.GET.get("persist_query", "")
+                    #)
+                    url = reverse(
+                        "user_migration:question_gate", kwargs={
+                            "token": token
+                        }
+                    )
+                    return redirect(url)
+                except TemporaryMigrationUserStore.DoesNotExist:
+                    pass
+
             return HttpResponseRedirect(reverse("password_reset_done"))
         return super(ResetPasswordView, self).form_valid(form)
 

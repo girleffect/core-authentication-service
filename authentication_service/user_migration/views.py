@@ -2,19 +2,26 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 import urllib
 
+from defender.decorators import watch_login
 from formtools.wizard.views import NamedUrlSessionWizardView
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth import login
 from django.core import signing
 from django.core.urlresolvers import reverse
-from django.shortcuts import render
-from django.utils.functional import cached_property
-from django.contrib.auth import login
 from django.shortcuts import redirect
+from django.shortcuts import render
+from django.utils import translation
+from django.utils.decorators import method_decorator
+from django.utils.functional import cached_property
+from django.views.generic.edit import FormView
 
 from authentication_service import forms, models, views
 from authentication_service.decorators import generic_deprecation
-from authentication_service.user_migration.forms import UserDataForm
+from authentication_service.user_migration.forms import (
+    UserDataForm, SecurityQuestionGateForm, PasswordResetForm
+)
 from authentication_service.user_migration.models import (
     TemporaryMigrationUserStore
 )
@@ -76,7 +83,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
         )
 
     def get_form_kwargs(self, step=None):
-        kwargs = {}
+        kwargs = super(MigrateUserWizard, self).get_form_kwargs(step)
         if step == "securityquestions":
             kwargs["language"] = self.language
         return kwargs
@@ -84,7 +91,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
     def get_form_initial(self, step):
         if step == "userdata":
             return {
-                "username": self.get_user_data.username
+                "username": self.migration_user.username
             }
         return self.initial_dict.get(step, {})
 
@@ -97,9 +104,9 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             ),
             password=cleaned_data["password2"],
             migration_data = {
-                "user_id": self.get_user_data.user_id,
-                "client_id": self.get_user_data.client_id,
-                "username": self.get_user_data.username
+                "user_id": self.migration_user.user_id,
+                "client_id": self.migration_user.client_id,
+                "username": self.migration_user.username
             }
         )
         for form_data in cleaned_data["formset-securityquestions"]:
@@ -111,7 +118,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             question = models.UserSecurityQuestion.objects.create(**data)
 
         # Delete temporary migration data
-        self.get_user_data.delete()
+        self.migration_user.delete()
 
         # Log new user in, allows for normal login flow to continue after
         # redirect
@@ -119,7 +126,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
         return self.get_login_url()
 
     @cached_property
-    def get_user_data(self):
+    def migration_user(self):
         try:
             return TemporaryMigrationUserStore.objects.get(
                 id=self.migration_user_id
@@ -132,3 +139,131 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
     def get_login_url(self, query=None):
         query = self.storage.extra_data.get("persist_query", query)
         return redirect(query or reverse("login"))
+
+
+class QuestionGateView(FormView):
+    form_class = SecurityQuestionGateForm
+    template_name = "authentication_service/form.html"
+
+    @generic_deprecation(
+        "authentication_service.user_migration.QuestionGate:" \
+        " This view is temporary and should not be used or" \
+        " subclassed."
+    )
+    def dispatch(self, *args, **kwargs):
+        self.token = self.kwargs["token"]
+
+        # Check if token has expired
+        try:
+            self.migration_user_id = signing.loads(
+                self.token,
+                salt="ge-migration-user-pwd-reset",
+                max_age=10*360 # 10 min in seconds
+            )
+        except signing.SignatureExpired:
+            messages.error(
+                self.request,
+                _("Password reset url has expired," \
+                " please restart the password reset proces.")
+            )
+            return redirect(self.get_login_url())
+        return super(QuestionGateView, self).dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(QuestionGateView, self).get_form_kwargs()
+        kwargs["user"] = self.migration_user
+        kwargs["language"] = translation.get_language()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(QuestionGateView, self).get_context_data(**kwargs)
+
+        # Added context for django defender, needs correct template
+        context["auth_username"] = self.migration_user.username
+        context["defender_field_name"] = settings.DEFENDER_USERNAME_FORM_FIELD
+        return context
+
+    def form_valid(self, form):
+        return self.get_success_url()
+
+    @cached_property
+    def migration_user(self):
+        try:
+            return TemporaryMigrationUserStore.objects.get(
+                id=self.migration_user_id
+            )
+        except TemporaryMigrationUserStore.DoesNotExist:
+            raise Http404(
+                f"Migrating user with id {self.migration_user_id} does not exist."
+            )
+
+    def get_success_url(self, query=None):
+        token = signing.dumps(
+            self.migration_user.id, salt="ge-migration-user-pwd-gate-passed"
+        )
+        url = reverse(
+            "user_migration:password_reset", kwargs={
+                "token": token
+            }
+        )
+        return redirect(url)
+
+    def get_login_url(self, query=None):
+        return redirect(reverse("login"))
+
+
+defender_decorator = watch_login()
+watch_login_method = method_decorator(defender_decorator)
+QuestionGateView.dispatch = watch_login_method(QuestionGateView.dispatch)
+
+
+class PasswordResetView(FormView):
+    form_class = PasswordResetForm
+    template_name = "authentication_service/form.html"
+
+    @generic_deprecation(
+        "authentication_service.user_migration.PasswordReset:" \
+        " This view is temporary and should not be used or" \
+        " subclassed."
+    )
+    def dispatch(self, *args, **kwargs):
+        self.token = self.kwargs["token"]
+
+        # Check if token has expired
+        try:
+            self.migration_user_id = signing.loads(
+                self.token,
+                salt="ge-migration-user-pwd-gate-passed",
+                max_age=5*360 # 5 min in seconds
+            )
+        except signing.SignatureExpired:
+            messages.error(
+                self.request,
+                _("Password reset url has expired, please login again.")
+            )
+            return redirect(self.get_login_url())
+        return super(PasswordResetView, self).dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(PasswordResetView, self).get_form_kwargs()
+        user = self.migration_user
+        kwargs["user"] = user
+        return kwargs
+
+    def form_valid(self, form):
+        form.update_password()
+        return self.get_success_url()
+
+    @cached_property
+    def migration_user(self):
+        try:
+            return TemporaryMigrationUserStore.objects.get(
+                id=self.migration_user_id
+            )
+        except TemporaryMigrationUserStore.DoesNotExist:
+            raise Http404(
+                f"Migrating user with id {self.migration_user_id} does not exist."
+            )
+
+    def get_success_url(self, query=None):
+        return redirect(reverse("password_reset_done"))

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth import hashers
+from django.contrib.messages import get_messages
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -1129,6 +1130,338 @@ class DeleteAccountTestCase(TestCase):
         )
 
 
+class TestMigrationPasswordReset(TestCase):
+
+    def goto_login(self):
+        # Setup session values
+        return self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestMigrationPasswordReset, cls).setUpTestData()
+        cls.temp_user = TemporaryMigrationUserStore.objects.create(
+            username="forgetfulmigrateduser",
+            client_id="migration_client_id",
+            user_id=4,
+            answer_one="a",
+            answer_two="b",
+            question_one={'en': 'Some awesome question'},
+            question_two={'en': 'Another secure question'}
+        )
+        cls.temp_user.set_password("Qwer!234")
+        cls.temp_user.set_answers("Answer1", "Answer2")
+        Client.objects.create(
+            client_id="migration_client_id",
+            name= "MigrationCLient",
+            client_secret= "super_client_secret_1",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["http://example.com/"]
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_no_answers(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="reallyforgetfulmigrateduser",
+            client_id="migration_client_id",
+            user_id=6,
+            question_one={},
+            question_two={}
+        )
+        # Setup session values
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "reallyforgetfulmigrateduser"
+            },
+            follow=True
+        )
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            messages[0].message,
+            "We are sorry, your account can not perform this action"
+        )
+        self.assertEqual(
+            messages[0].level_tag,
+            "warning"
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_one_answer(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="slightlyforgetfulmigrateduser",
+            client_id="migration_client_id",
+            user_id=6,
+            question_one={'en': 'Some awesome question'},
+            question_two={}
+        )
+        temp_user.set_answers("Answer1")
+        # Setup session values
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "slightlyforgetfulmigrateduser"
+            },
+            follow=True
+        )
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/question-gate/",
+            token_url
+        )
+        self.assertContains(
+            response,
+            '<input type="hidden" name="answer_two" disabled id="id_answer_two" class=" HiddenInput " />'
+        )
+        self.assertContains(
+            response,
+            f'<input type="hidden" value="{temp_user.username}" name="auth-username">'
+        )
+        response = self.client.post(
+            token_url,
+            data={
+                "answer_one": "slightlyforgetfulmigrateduser"
+            },
+            follow=True
+        )
+        self.assertEqual(
+            response.context["form"].non_field_errors(),
+            ["Incorrect answer provided"]
+        )
+        response = self.client.post(
+            token_url,
+            data={
+                "answer_one": "Answer1"
+            },
+            follow=True
+        )
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/password-reset/",
+            token_url
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_question_gate_view(self):
+        response = self.goto_login()
+        self.assertRedirects(
+            response,
+            "/en/login/?next=/openid/authorize%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id%3Dmigration_client_id%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO"
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "forgetfulmigrateduser"
+            },
+            follow=True
+        )
+
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/question-gate/",
+            token_url
+        )
+        self.assertContains(
+            response,
+            "Some awesome question"
+        )
+        self.assertContains(
+            response,
+            "Another secure question"
+        )
+        response = self.client.post(
+            token_url,
+            data={
+                "answer_one": "forgetfulmigrateduser",
+                "answer_two": "forgetfulmigrateduser"
+            },
+        )
+        self.assertEqual(
+            response.context["form"].non_field_errors(),
+            ["Incorrect answers provided"]
+        )
+        response = self.client.post(
+            token_url,
+            data={
+                "answer_one": "Answer1",
+                "answer_two": "Answer2"
+            },
+            follow=True
+        )
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/password-reset/",
+            token_url
+        )
+        return token_url
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_password_reset_view(self):
+        url = self.test_question_gate_view()
+
+        response = self.client.post(
+            url,
+            data={
+                "password_one": "aaaaaa",
+                "password_two": "bbbbbb"
+            }
+        )
+        self.assertEqual(
+            response.context["form"].errors,
+            {"password_two": ["Passwords do not match."]}
+        )
+        response = self.client.post(
+            url,
+            data={
+                "password_one": "aa",
+                "password_two": "aa"
+            }
+        )
+        self.assertEqual(
+            response.context["form"].errors,
+            {"password_two": ["Password not long enough."]}
+        )
+        response = self.client.post(
+            url,
+            data={
+                "password_one": "CoolNew",
+                "password_two": "CoolNew"
+            },
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            "/en/reset-password/done/"
+        )
+        user = TemporaryMigrationUserStore.objects.get(
+            username=self.temp_user.username,
+            client_id=self.temp_user.client_id,
+            user_id=self.temp_user.user_id,
+        )
+        self.assertTrue(user.check_password("CoolNew"))
+
+
+class TestMigrationPasswordResetLockout(TestCase):
+
+    def goto_login(self):
+        # Setup session values
+        return self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestMigrationPasswordResetLockout, cls).setUpTestData()
+        cls.temp_user = TemporaryMigrationUserStore.objects.create(
+            username="forgetfulmigrateduser",
+            client_id="migration_client_id",
+            user_id=4,
+            answer_one="a",
+            answer_two="b",
+            question_one={'en': 'Some awesome question'},
+            question_two={'en': 'Another secure question'}
+        )
+        cls.temp_user.set_password("Qwer!234")
+        cls.temp_user.set_answers("Answer1", "Answer2")
+        Client.objects.create(
+            client_id="migration_client_id",
+            name= "MigrationCLient",
+            client_secret= "super_client_secret_1",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["http://example.com/"]
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_lockout(self):
+        response = self.goto_login()
+        self.assertRedirects(
+            response,
+            "/en/login/?next=/openid/authorize%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id%3Dmigration_client_id%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO"
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "forgetfulmigrateduser"
+            },
+            follow=True
+        )
+
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/question-gate/",
+            token_url
+        )
+        self.assertContains(
+            response,
+            "Some awesome question"
+        )
+        self.assertContains(
+            response,
+            "Another secure question"
+        )
+
+        unblock_username(self.temp_user.username)
+        allowed_attempts = settings.DEFENDER_LOGIN_FAILURE_LIMIT
+        attempt = 0
+        while attempt < allowed_attempts:
+            attempt += 1
+            response = self.client.post(
+                token_url,
+                data={
+                    "auth-username": self.temp_user.username,
+                    "answer_one": "forgetfulmigrateduser",
+                    "answer_two": "forgetfulmigrateduser"
+                },
+            )
+            self.assertEqual(
+                response.context["form"].non_field_errors(),
+                ["Incorrect answers provided"]
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("authentication_service/form.html",
+                          response.template_name)
+
+        # The next (failed) attempt needs to prevent further attempts
+        with self.assertTemplateUsed("authentication_service/lockout.html"):
+            response = self.client.post(
+                token_url,
+                data={
+                    "auth-username": self.temp_user.username,
+                    "answer_one": "forgetfulmigrateduser",
+                    "answer_two": "forgetfulmigrateduser"
+                },
+                follow=True
+            )
+
+        with self.assertTemplateUsed("authentication_service/lockout.html"):
+            response = self.client.post(
+                token_url,
+                data={
+                    "auth-username": self.temp_user.username,
+                    "answer_one": "Answer1",
+                    "answer_two": "Answer2"
+                },
+                follow=True
+            )
+
+        # Manually unblock the username. This allows the user to try again.
+        unblock_username(self.temp_user.username)
+
+
 class HealthCheckTestCase(TestCase):
 
     def test_healthcheck(self):
@@ -1137,4 +1470,3 @@ class HealthCheckTestCase(TestCase):
         self.assertContains(response, "server_timestamp")
         self.assertContains(response, "db_timestamp")
         self.assertContains(response, "version")
-

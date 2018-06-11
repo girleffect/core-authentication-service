@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block metatitle %}
+{% endblock %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post" class="Form">
+        {% csrf_token %}
+        {{ form.as_div }}
+
+        <div>
+            {{ question_formset.management_form }}
+            {{ question_formset.non_form_errors }}
+            {% for qform in question_formset %}
+                {{ qform.as_div }}
+            {% endfor %}
+        </div>
+
+        <div class="Form-buttons">
+            <input type="submit" value="{% trans "Submit" %}" class="Button" />
+        </div>
+
+        {% comment %}
+            Useful if the form needs to use django defender, it expects a field
+            with a specific name and value.
+
+            Suggest adding extra validation to ensure username is not tampered
+            with when possible.
+        {% endcomment %}
+        {% if auth_username and defender_field_name %}
+            <input type="hidden" value="{{ auth_username }}" name="{{ defender_field_name }}">
+        {% endif %}
+    </form>
+{% endblock %}
