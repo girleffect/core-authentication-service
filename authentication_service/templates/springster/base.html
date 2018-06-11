@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block footer %}
     <div id="footer" class="Footer">
@@ -7,16 +8,18 @@
                 <h1>Menu</h1>
             </div>
             <ul class="Menu-list Menu-list--left">
-                <li class="Menu-item"><a href="{{ ge_oidc_client_website_url }}">Home</a></li>
+                {% if ge_global_client_name and ge_global_client_website %}
+                    <li class="Menu-item"><a href="{{ ge_oidc_client_website_url }}">{% trans "Home" %}</a></li>
+                {% endif %}
             </ul>
             {% if request.user.is_authenticated %}
                 <ul class="Menu-list Menu-list--right">
-                    <li class="Menu-item"><a href="{% url 'update_password' %}">Password update</a></li>
-                    <li class="Menu-item"><a href="{% url 'update_security_questions' %}">Security questions update</a></li>
-                    <li class="Menu-item"><a href="{% url 'delete_account' %}">Delete account</a></li>
-                    <li class="Menu-item"><a href="{% url 'admin:logout' %}">Logout</a></li>
+                    <li class="Menu-item"><a href="{% url 'update_password' %}">{% trans "Password update" %}</a></li>
+                    <li class="Menu-item"><a href="{% url 'update_security_questions' %}">{% trans "Security questions update" %}</a></li>
+                    <li class="Menu-item"><a href="{% url 'delete_account' %}">{% trans "Delete account" %}</a></li>
+                    <li class="Menu-item"><a href="{% url 'admin:logout' %}">{% trans "Logout" %}</a></li>
                 </ul>
             {% endif %}
         </div>
-    </div> 
+    </div>
 {% endblock %}

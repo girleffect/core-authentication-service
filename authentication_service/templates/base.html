@@ -1,4 +1,4 @@
-{% load i18n static %}
+{% load i18n static string_filters %}
 
 <!DOCTYPE html>
 
@@ -39,7 +39,7 @@
     </head>
 
     <body>
-        <div id="wrap" class="">
+        <div id="wrap" class="{{ ge_global_theme|title }}{{ request.path_info|classify:"/" }}">
             <div id="container" class="Container">
 
                 <!-- Header -->
