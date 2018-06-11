@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block footer %}
+    <div id="footer" class="Footer">
+        <div class="Menu">
+            <div class="Menu-title">
+                <h1>Menu</h1>
+            </div>
+            <ul class="Menu-list Menu-list--left">
+                <li class="Menu-item"><a href="{{ ge_oidc_client_website_url }}">Home</a></li>
+            </ul>
+            {% if request.user.is_authenticated %}
+                <ul class="Menu-list Menu-list--right">
+                    <li class="Menu-item"><a href="{% url 'update_password' %}">Password update</a></li>
+                    <li class="Menu-item"><a href="{% url 'update_security_questions' %}">Security questions update</a></li>
+                    <li class="Menu-item"><a href="{% url 'delete_account' %}">Delete account</a></li>
+                    <li class="Menu-item"><a href="{% url 'admin:logout' %}">Logout</a></li>
+                </ul>
+            {% endif %}
+        </div>
+    </div> 
+{% endblock %}
