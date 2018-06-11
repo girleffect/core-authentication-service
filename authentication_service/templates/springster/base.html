@@ -17,7 +17,7 @@
                     <li class="Menu-item"><a href="{% url 'update_password' %}">{% trans "Password update" %}</a></li>
                     <li class="Menu-item"><a href="{% url 'update_security_questions' %}">{% trans "Security questions update" %}</a></li>
                     <li class="Menu-item"><a href="{% url 'delete_account' %}">{% trans "Delete account" %}</a></li>
-                    <li class="Menu-item"><a href="{% url 'admin:logout' %}">{% trans "Logout" %}</a></li>
+                    <li class="Menu-item"><a href="{% url 'oidc_provider:end-session' %}">{% trans "Logout" %}</a></li>
                 </ul>
             {% endif %}
         </div>
