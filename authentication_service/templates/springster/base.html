@@ -9,7 +9,7 @@
             </div>
             <ul class="Menu-list Menu-list--left">
                 {% if ge_global_client_name and ge_global_client_website %}
-                    <li class="Menu-item"><a href="{{ ge_oidc_client_website_url }}">{% trans "Home" %}</a></li>
+                    <li class="Menu-item"><a href="{{ ge_global_client_website }}">{% trans "Home" %}</a></li>
                 {% endif %}
             </ul>
             {% if request.user.is_authenticated %}
