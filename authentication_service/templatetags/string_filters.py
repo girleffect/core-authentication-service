@@ -7,4 +7,4 @@ register = template.Library()
 @register.filter(name="classify")
 @stringfilter
 def classify(value, arg):
-    return value.replace(arg, " ").title()
+    return value.replace(arg, " ").replace("_", "-").title()
