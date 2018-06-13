@@ -1380,6 +1380,30 @@ class TestMigrationPasswordReset(TestCase):
         return token_url
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_question_gate_language_404(self):
+        response = self.goto_login()
+        self.assertRedirects(
+            response,
+            "/en/login/?next=/openid/authorize%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id%3Dmigration_client_id%26redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO"
+        )
+
+        # Change language
+        response = self.client.get(
+            f"{reverse('reset_password')}?language=prs",
+            follow=True
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "forgetfulmigrateduser"
+            },
+            follow=True
+        )
+        self.assertEquals(response.status_code, 404)
+        self.assertIn(b"<p>No question translation matching the current language could be found.</p>", response.content)
+
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_password_reset_view(self):
         url = self.test_question_gate_view()
 
