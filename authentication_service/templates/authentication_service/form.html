@@ -7,6 +7,13 @@
 {% block title %}
 {% endblock %}
 
+{% comment %}
+    All current use cases support this back solution just fine.
+{% endcomment %}
+{% block links %}
+    <a href="{{ request.META.HTTP_REFERER }}">{% trans "Back"%}</a>
+{% endblock %}
+
 {% block content %}
     <form action="" method="post" class="Form">
         {% csrf_token %}

@@ -9,6 +9,10 @@
     <h1>{% trans "Update Security Questions" %}</h1>
 {% endblock %}
 
+{% block links %}
+    <a href="{{ request.META.HTTP_REFERER }}">{% trans "Back"%}</a>
+{% endblock %}
+
 {% block content %}
     <form method="post" class="Form">
         {% csrf_token %}
@@ -21,7 +25,4 @@
             <input type="submit" value="{% trans "Update" %}" class="Button" />
         </div>
     </form>
-    <p class="Additional-text">
-        <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
-    </p>
 {% endblock %}

@@ -9,6 +9,10 @@
     <h1>{% trans "Delete Your Account" %}</h1>
 {% endblock %}
 
+{% block links %}
+    <a href="{{ request.META.HTTP_REFERER }}">{% trans "Back"%}</a>
+{% endblock %}
+
 {% block content %}
     {% if confirm %}
         <p class="Intro">{% trans "We're sad to see you go. Are you sure you want to delete your account?" %}
@@ -35,8 +39,5 @@
                 <input type="submit" value="{% trans "Delete account?" %}" class="Button" />
             </div>
         </form>
-        <p class="Additional-text">
-            <a href="{% url "edit_profile" %}">{% trans "Back" %}</a>
-        </p>
     {% endif %}
 {% endblock %}
