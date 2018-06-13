@@ -2,6 +2,7 @@ import datetime
 import random
 
 from django.conf import settings
+from django.core import signing
 from django.contrib import auth
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth import hashers
@@ -1193,6 +1194,77 @@ class TestMigrationPasswordReset(TestCase):
             messages[0].level_tag,
             "warning"
         )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_securityquestion_step_404(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="404migrateduser",
+            client_id="migration_client_id",
+            question_one={"en": "Some awesome question"},
+            question_two={"en": "Another secure question"},
+            user_id=7
+        )
+        temp_user.set_password("Qwer!234")
+        temp_user.set_answers("Answer1", "Answer2")
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "404migrateduser"
+            },
+            follow=True
+        )
+        url = response.redirect_chain[-1][0]
+        TemporaryMigrationUserStore.objects.filter(
+            username="404migrateduser",
+            client_id="migration_client_id",
+            user_id=7
+        ).delete()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("django.core.signing.loads")
+    def test_securityquestion_step_expired_token(self, expire_mock):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="404migrateduser",
+            client_id="migration_client_id",
+            question_one={"en": "Some awesome question"},
+            question_two={"en": "Another secure question"},
+            user_id=50
+        )
+        temp_user.set_password("Qwer!234")
+        temp_user.set_answers("Answer1", "Answer2")
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+        expire_mock.side_effect = signing.SignatureExpired("Expired")
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "404migrateduser"
+            },
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            "/en/login/"
+        )
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            messages[0].message,
+            "Password reset url has expired, please restart the password reset proces."
+        )
+        self.assertEqual(
+            messages[0].level_tag,
+            "error"
+        )
+
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_one_answer(self):
