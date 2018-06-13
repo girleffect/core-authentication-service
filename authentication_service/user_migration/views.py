@@ -173,29 +173,22 @@ class QuestionGateView(FormView):
 
         user = self.migration_user
         language = translation.get_language()
-        four_oh_four_response = TemplateResponse(
-            self.request,
-            "authentication_service/message.html",
-            context={
-                "page_class": "Page-Not-Found",
-                "page_meta_title": _("Language not found"),
-                "page_title": _("Language not found"),
-                "page_message": _(
-                    "No question translation matching the"
-                    " current language could be found."
-                )
-            },
-            status=404
-        )
-
-        # There is no guarantee both questions are present, check both
-        # separately.
-        if user.question_one:
-            if not user.question_one.get(language, None):
-                return four_oh_four_response
-        if user.question_two:
-            if not user.question_two.get(language, None):
-                return four_oh_four_response
+        if user.question_one and not user.question_one.get(language, None) \
+                or user.question_two and not user.question_two.get(language, None):
+            return TemplateResponse(
+                self.request,
+                "authentication_service/message.html",
+                context={
+                    "page_class": "Page-Not-Found",
+                    "page_meta_title": _("Language not found"),
+                    "page_title": _("Language not found"),
+                    "page_message": _(
+                        "No question translation matching the"
+                        " current language could be found."
+                    )
+                },
+                status=404
+            )
         return super(QuestionGateView, self).dispatch(*args, **kwargs)
 
     def get_form_kwargs(self):
