@@ -210,6 +210,8 @@ class QuestionGateView(FormView):
         )
         return redirect(url)
 
+    # TODO query argument added in preperation for persisting the login
+    # querystring and directing the user back into the proper login flow.
     def get_login_url(self, query=None):
         return reverse("login")
 
@@ -271,5 +273,7 @@ class PasswordResetView(FormView):
     def get_success_url(self, query=None):
         return redirect(reverse("password_reset_done"))
 
+    # TODO query argument added in preperation for persisting the login
+    # querystring and directing the user back into the proper login flow.
     def get_login_url(self, query=None):
         return reverse("login")
