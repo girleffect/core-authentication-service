@@ -11,6 +11,7 @@ from django.core import signing
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import redirect
+from django.template.response import TemplateResponse
 from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
@@ -169,6 +170,25 @@ class QuestionGateView(FormView):
                     " please restart the password reset proces.")
             )
             return redirect(self.get_login_url())
+
+        user = self.migration_user
+        language = translation.get_language()
+        if user.question_one and not user.question_one.get(language, None) \
+                or user.question_two and not user.question_two.get(language, None):
+            return TemplateResponse(
+                self.request,
+                "authentication_service/message.html",
+                context={
+                    "page_class": "Page-Not-Found",
+                    "page_meta_title": _("Language not found"),
+                    "page_title": _("Language not found"),
+                    "page_message": _(
+                        "No question translation matching the"
+                        " current language could be found."
+                    )
+                },
+                status=404
+            )
         return super(QuestionGateView, self).dispatch(*args, **kwargs)
 
     def get_form_kwargs(self):

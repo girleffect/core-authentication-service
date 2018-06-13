@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block custom-class %}
+    {{ page_class }}
+{% endblock %}
+
 {% block metatitle %}
     {{ page_meta_title }}
 {% endblock %}
