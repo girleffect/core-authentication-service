@@ -39,7 +39,7 @@
     </head>
 
     <body>
-        <div id="wrap" class="{% block custom-class-override %}{{ ge_global_theme|title }}{{ request.path_info|classify:"/" }}{% endblock %}">
+        <div id="wrap" class="{{ ge_global_theme|title }}{{ request.path_info|classify:"/" }}{% block custom-class-override %}{% endblock %}">
             <div id="container" class="Container">
 
                 <!-- Header -->
