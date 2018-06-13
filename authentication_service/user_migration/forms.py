@@ -9,8 +9,8 @@ from django.utils.translation import ugettext as _
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 # Lifted from Django user model validator.
-USERNAME_VALIDATOR = (UnicodeUsernameValidator()
-    if six.PY3 else ASCIIUsernameValidator()
+USERNAME_VALIDATOR = (
+    UnicodeUsernameValidator() if six.PY3 else ASCIIUsernameValidator()
 )
 
 
@@ -134,6 +134,7 @@ class PasswordResetForm(forms.Form):
         max_length=128,
         widget=forms.PasswordInput
     )
+
     def __init__(self, user, *args, **kwargs):
         self._user = user
         super(PasswordResetForm, self).__init__(*args, **kwargs)

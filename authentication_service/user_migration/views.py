@@ -1,20 +1,20 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
-import urllib
 
 from defender.decorators import watch_login
 from formtools.wizard.views import NamedUrlSessionWizardView
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth import login
+from django.contrib import messages
+from django.contrib.auth import get_user_model, login
 from django.core import signing
 from django.core.urlresolvers import reverse
+from django.http import Http404
 from django.shortcuts import redirect
-from django.shortcuts import render
 from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
+from django.utils.translation import ugettext as _
 from django.views.generic.edit import FormView
 
 from authentication_service import forms, models, views
@@ -31,6 +31,8 @@ migration_forms = (
     ("userdata", UserDataForm),
     ("securityquestions", forms.SecurityQuestionFormSet),
 )
+
+
 class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
     form_list = migration_forms
     instance_dict = {
@@ -38,8 +40,8 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
     }
 
     @generic_deprecation(
-        "authentication_service.user_migration.MigrateUserWizard:" \
-        " This view is temporary and should not be used or" \
+        "authentication_service.user_migration.MigrateUserWizard:"
+        " This view is temporary and should not be used or"
         " subclassed."
     )
     def dispatch(self, *args, **kwargs):
@@ -53,7 +55,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             self.migration_user_id = signing.loads(
                 self.token,
                 salt="ge-migration-user-registration",
-                max_age=15*360 # 15 min in seconds
+                max_age=15*360  # 15 min in seconds
             )
         except signing.SignatureExpired:
             messages.error(
@@ -99,11 +101,11 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
         cleaned_data = self.get_all_cleaned_data()
         user = get_user_model().objects.create_user(
             username=cleaned_data["username"],
-            birth_date = date.today() - relativedelta(
+            birth_date=date.today() - relativedelta(
                 years=cleaned_data["age"]
             ),
             password=cleaned_data["password2"],
-            migration_data = {
+            migration_data={
                 "user_id": self.migration_user.user_id,
                 "client_id": self.migration_user.client_id,
                 "username": self.migration_user.username
@@ -115,7 +117,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             data = form_data
             data["user_id"] = user.id
             data["language_code"] = self.language
-            question = models.UserSecurityQuestion.objects.create(**data)
+            models.UserSecurityQuestion.objects.create(**data)
 
         # Delete temporary migration data
         self.migration_user.delete()
@@ -123,7 +125,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
         # Log new user in, allows for normal login flow to continue after
         # redirect
         login(self.request, user)
-        return self.get_login_url()
+        return redirect(self.get_login_url())
 
     @cached_property
     def migration_user(self):
@@ -138,7 +140,7 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
 
     def get_login_url(self, query=None):
         query = self.storage.extra_data.get("persist_query", query)
-        return redirect(query or reverse("login"))
+        return query or reverse("login")
 
 
 class QuestionGateView(FormView):
@@ -146,8 +148,8 @@ class QuestionGateView(FormView):
     template_name = "authentication_service/form.html"
 
     @generic_deprecation(
-        "authentication_service.user_migration.QuestionGate:" \
-        " This view is temporary and should not be used or" \
+        "authentication_service.user_migration.QuestionGate:"
+        " This view is temporary and should not be used or"
         " subclassed."
     )
     def dispatch(self, *args, **kwargs):
@@ -158,13 +160,13 @@ class QuestionGateView(FormView):
             self.migration_user_id = signing.loads(
                 self.token,
                 salt="ge-migration-user-pwd-reset",
-                max_age=10*360 # 10 min in seconds
+                max_age=10*360  # 10 min in seconds
             )
         except signing.SignatureExpired:
             messages.error(
                 self.request,
-                _("Password reset url has expired," \
-                " please restart the password reset proces.")
+                _("Password reset url has expired,"
+                    " please restart the password reset proces.")
             )
             return redirect(self.get_login_url())
         return super(QuestionGateView, self).dispatch(*args, **kwargs)
@@ -209,7 +211,7 @@ class QuestionGateView(FormView):
         return redirect(url)
 
     def get_login_url(self, query=None):
-        return redirect(reverse("login"))
+        return reverse("login")
 
 
 defender_decorator = watch_login()
@@ -222,8 +224,8 @@ class PasswordResetView(FormView):
     template_name = "authentication_service/form.html"
 
     @generic_deprecation(
-        "authentication_service.user_migration.PasswordReset:" \
-        " This view is temporary and should not be used or" \
+        "authentication_service.user_migration.PasswordReset:"
+        " This view is temporary and should not be used or"
         " subclassed."
     )
     def dispatch(self, *args, **kwargs):
@@ -234,12 +236,13 @@ class PasswordResetView(FormView):
             self.migration_user_id = signing.loads(
                 self.token,
                 salt="ge-migration-user-pwd-gate-passed",
-                max_age=5*360 # 5 min in seconds
+                max_age=5*360  # 5 min in seconds
             )
         except signing.SignatureExpired:
             messages.error(
                 self.request,
-                _("Password reset url has expired, please login again.")
+                _("Password reset url has expired,"
+                    " please restart the password reset proces.")
             )
             return redirect(self.get_login_url())
         return super(PasswordResetView, self).dispatch(*args, **kwargs)
@@ -267,3 +270,6 @@ class PasswordResetView(FormView):
 
     def get_success_url(self, query=None):
         return redirect(reverse("password_reset_done"))
+
+    def get_login_url(self, query=None):
+        return reverse("login")
