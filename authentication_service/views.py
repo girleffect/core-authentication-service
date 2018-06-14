@@ -250,12 +250,14 @@ class RegistrationView(LanguageMixin, CreateView):
     def get_success_url(self):
         key = CLIENT_URI_SESSION_KEY
         uri = utils.get_session_data(self.request, key)
-        if hasattr(
-                self, "security"
-        ) and self.security == "high" or self.request.GET.get(
-                "show2fa") == "true":
-            return reverse("two_factor_auth:setup")
-        elif uri:
+
+        ## GE-1117: Disabled
+        #if hasattr(
+        #        self, "security"
+        #) and self.security == "high" or self.request.GET.get(
+        #        "show2fa") == "true":
+        #    return reverse("two_factor_auth:setup")
+        if uri:
             return uri
         return render(
             self.request,
