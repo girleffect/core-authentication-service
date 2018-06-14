@@ -28,8 +28,8 @@ msgid ""
 "be case-sensitive."
 msgstr ""
 
-#~ msgid "Accept terms and conditions"
-#~ msgstr "RIGHT NOW IM JUST FOR UNIT TESTS"
+msgid "Accept terms and conditions"
+msgstr "RIGHT NOW IM JUST FOR UNIT TESTS"
 
-#~ msgid "Forgot password?"
-#~ msgstr "THIS IS JUST FOR UNITTESTS ATM"
+msgid "Forgot password?"
+msgstr "THIS IS JUST FOR UNITTESTS ATM"
