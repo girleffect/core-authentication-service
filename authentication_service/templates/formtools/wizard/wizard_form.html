@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<form method="post" novalidate>
+<form method="post" class="Form" novalidate>
     {% csrf_token %}
     {{ wizard.management_form }}
     {% if wizard.form.forms %}
