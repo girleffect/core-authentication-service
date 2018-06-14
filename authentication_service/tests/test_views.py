@@ -497,11 +497,10 @@ class TestSecurityQuestionLockout(TestCase):
         session["lookup_user_id"] = str(self.user.id)
         session.save()
 
-        username = "unknown_user_{}".format(random.randint(0, 10000))
         reset_url = reverse("reset_password_security_questions")
         reset_data = {
             "login_view-current_step": "auth",
-            "auth-username": username,
+            "auth-username": self.user.username,
             "question_%s" % self.user_answer_one.id: "test",
             "question_%s" % self.user_answer_two.id: "answer"
         }
@@ -524,7 +523,16 @@ class TestSecurityQuestionLockout(TestCase):
                          ["authentication_service/lockout.html",
                           "base.html"])
 
-        unblock_username(username)
+        # Even attempting via the password reset page won't work
+        response = self.client.get(reverse("reset_password"))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(
+            reverse("reset_password"), {"email": self.user.username}, follow=True)
+        self.assertEqual([template.name for template in response.templates],
+                         ["authentication_service/lockout.html",
+                          "base.html"])
+
+        unblock_username(self.user.username)
 
         self.client.get(reset_url)
         response = self.client.post(reset_url, reset_data)
