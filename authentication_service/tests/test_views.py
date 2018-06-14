@@ -643,6 +643,7 @@ class TestRegistrationView(TestCase):
         )
         self.assertIn(response.url, "/test-redirect-url/")
 
+        ## GE-1117: Changed
         # Test redirect url, 2fa
         response = self.client.post(
             reverse(
@@ -662,7 +663,10 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url, reverse("two_factor_auth:setup"))
+
+        ## GE-1117: Changed
+        # self.assertin(response.url, reverse("two_factor_auth:setup"))
+        self.assertIn(response.url, "/test-redirect-url/")
 
         # Test redirect url, high security
         response = self.client.post(
@@ -683,54 +687,61 @@ class TestRegistrationView(TestCase):
                 "form-MAX_NUM_FORMS": "1000",
             }
         )
-        self.assertIn(response.url, reverse("two_factor_auth:setup"))
+
+        ## GE-1117: Changed
+        # self.assertin(response.url, reverse("two_factor_auth:setup"))
+        self.assertIn(response.url, "/test-redirect-url/")
 
     def test_user_save(self):
-        response = self.client.post(
-            reverse("registration") + "?security=high",
-            {
-                "username": "Unique@User@Name",
-                "password1": "awesom#saFe3",
-                "password2": "awesom#saFe3",
-                "birth_date": "2000-01-01",
-                "terms": True,
-                "email": "emailunique@email.com",
-                "msisdn": "0856545698",
-                "age": "16",
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-            }
-        )
-        self.assertIn(response.url, reverse("two_factor_auth:setup"))
+        ## GE-1117: Changed
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.post(
+                reverse("registration") + "?security=high",
+                {
+                    "username": "Unique@User@Name",
+                    "password1": "awesom#saFe3",
+                    "password2": "awesom#saFe3",
+                    "birth_date": "2000-01-01",
+                    "terms": True,
+                    "email": "emailunique@email.com",
+                    "msisdn": "0856545698",
+                    "age": "16",
+                    "form-TOTAL_FORMS": "2",
+                    "form-INITIAL_FORMS": "0",
+                    "form-MIN_NUM_FORMS": "0",
+                    "form-MAX_NUM_FORMS": "1000",
+                }
+            )
+            # self.assertIn(response.url, reverse("two_factor_auth:setup"))
         user = get_user_model().objects.get(username="Unique@User@Name")
         self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
 
     def test_security_questions_save(self):
-        response = self.client.post(
-            reverse("registration") + "?security=high",
-            {
-                "username": "Unique@User@Name",
-                "age": "16",
-                "password1": "awesom#saFe3",
-                "password2": "awesom#saFe3",
-                "birth_date": "2000-01-01",
-                "terms": True,
-                "email": "emailunique@email.com",
-                "msisdn": "0856545698",
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-                "form-0-question": self.question_one.id,
-                "form-0-answer": "Answer1",
-                "form-1-question": self.question_two.id,
-                "form-1-answer": "Answer2"
-            }
-        )
-        self.assertIn(response.url, reverse("two_factor_auth:setup"))
+        ## GE-1117: Changed
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.post(
+                reverse("registration") + "?security=high",
+                {
+                    "username": "Unique@User@Name",
+                    "age": "16",
+                    "password1": "awesom#saFe3",
+                    "password2": "awesom#saFe3",
+                    "birth_date": "2000-01-01",
+                    "terms": True,
+                    "email": "emailunique@email.com",
+                    "msisdn": "0856545698",
+                    "form-TOTAL_FORMS": "2",
+                    "form-INITIAL_FORMS": "0",
+                    "form-MIN_NUM_FORMS": "0",
+                    "form-MAX_NUM_FORMS": "1000",
+                    "form-0-question": self.question_one.id,
+                    "form-0-answer": "Answer1",
+                    "form-1-question": self.question_two.id,
+                    "form-1-answer": "Answer2"
+                }
+            )
+            # self.assertIn(response.url, reverse("two_factor_auth:setup"))
         user = get_user_model().objects.get(username="Unique@User@Name")
         self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
