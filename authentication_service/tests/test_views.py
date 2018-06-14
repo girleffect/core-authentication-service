@@ -554,7 +554,7 @@ class TestRegistrationView(TestCase):
             question_text="Some text for the other question"
         )
 
-    def test_view_success_redirects(self):
+    def test_view_success_template(self):
         # Test most basic iteration
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.post(
@@ -610,6 +610,8 @@ class TestRegistrationView(TestCase):
                     "form-MAX_NUM_FORMS": "1000",
                 }
             )
+
+    def test_view_success_redirects(self):
         Client.objects.create(
             client_id="redirect-tester",
             name= "RedirectClient",
@@ -626,7 +628,7 @@ class TestRegistrationView(TestCase):
 
         # Test redirect url, no 2fa
         response = self.client.post(
-            reverse("registration") + "?redirect_uri=/test-redirect-url/",
+            reverse("registration"),
             {
                 "username": "Username1",
                 "password1": "password",
@@ -647,7 +649,7 @@ class TestRegistrationView(TestCase):
         response = self.client.post(
             reverse(
                 "registration") +
-            "?show2fa=true&redirect_uri=/test-redirect-url/",
+            "?show2fa=true",
             {
                 "username": "Username2",
                 "password1": "password",
@@ -668,7 +670,7 @@ class TestRegistrationView(TestCase):
         response = self.client.post(
             reverse(
                 "registration") +
-            "?security=high&redirect_uri=/test-redirect-url/",
+            "?security=high",
             {
                 "username": "Username3",
                 "password1": "awesom#saFe3",
