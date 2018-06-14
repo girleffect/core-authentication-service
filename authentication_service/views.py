@@ -1,13 +1,12 @@
 import datetime
 import socket
-from datetime import date
 
 import pkg_resources
-from dateutil.relativedelta import relativedelta
 from urllib.parse import urlparse, parse_qs
 import urllib
 
 from defender.decorators import watch_login
+from defender.utils import is_user_already_locked, lockout_response
 from oidc_provider.models import Client
 
 from django.conf import settings
@@ -462,6 +461,10 @@ class ResetPasswordView(PasswordResetView):
 
         # Check reset method
         if user:
+            # Check if this user has been locked out
+            if is_user_already_locked(user.username):
+                return lockout_response(self.request)
+
             # Store the id of the user that we found in our search
             self.request.session["lookup_user_id"] = str(user.id)
 
