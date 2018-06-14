@@ -16,6 +16,7 @@ from oidc_provider.models import Client
 from unittest.mock import patch, MagicMock
 from defender.utils import unblock_username
 
+from authentication_service import constants
 from authentication_service.models import (
     SecurityQuestion,
     UserSecurityQuestion
@@ -538,11 +539,6 @@ class TestSecurityQuestionLockout(TestCase):
 class TestRegistrationView(TestCase):
 
     @classmethod
-    def setUpClass(cls):
-        super(TestRegistrationView, cls).setUpClass()
-        cls.client = Client()
-
-    @classmethod
     def setUpTestData(cls):
         super(TestRegistrationView, cls).setUpTestData()
 
@@ -552,6 +548,14 @@ class TestRegistrationView(TestCase):
         )
         cls.question_two = SecurityQuestion.objects.create(
             question_text="Some text for the other question"
+        )
+        cls.client_obj = Client.objects.create(
+            client_id="redirect-tester",
+            name= "RedirectClient",
+            client_secret= "super_client_secret_4",
+            response_type= "code",
+            jwt_alg= "HS256",
+            redirect_uris= ["/test-redirect-url/"],
         )
 
     def test_view_success_template(self):
@@ -611,21 +615,30 @@ class TestRegistrationView(TestCase):
                 }
             )
 
-    def test_view_success_redirects(self):
-        Client.objects.create(
-            client_id="redirect-tester",
-            name= "RedirectClient",
-            client_secret= "super_client_secret_4",
-            response_type= "code",
-            jwt_alg= "HS256",
-            redirect_uris= ["/test-redirect-url/"],
-        )
+    def test_view_success_redirects_no_2fa(self):
         response = self.client.get(
             reverse(
                 "registration"
             ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/"
         )
-
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_NAME],
+            self.client_obj.name
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_URI],
+            "/test-redirect-url/"
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], "/test-redirect-url/"
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
         # Test redirect url, no 2fa
         response = self.client.post(
             reverse("registration"),
@@ -644,6 +657,31 @@ class TestRegistrationView(TestCase):
             }
         )
         self.assertIn(response.url, "/test-redirect-url/")
+
+    def test_view_success_redirects_2fa(self):
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_NAME],
+            self.client_obj.name
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_URI],
+            "/test-redirect-url/"
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], "/test-redirect-url/"
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
 
         ## GE-1117: Changed
         # Test redirect url, 2fa
@@ -669,6 +707,36 @@ class TestRegistrationView(TestCase):
         ## GE-1117: Changed
         # self.assertin(response.url, reverse("two_factor_auth:setup"))
         self.assertIn(response.url, "/test-redirect-url/")
+
+    def test_view_success_redirects_security_high(self):
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_NAME],
+            self.client_obj.name
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_URI],
+            "/test-redirect-url/"
+        )
+        self.assertEquals(
+            response.context["ge_global_redirect_uri"], "/test-redirect-url/"
+        )
+        self.assertEquals(
+            response.context["ge_global_client_name"], self.client_obj.name
+        )
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/"
+        )
 
         # Test redirect url, high security
         response = self.client.post(
@@ -765,7 +833,7 @@ class TestRegistrationView(TestCase):
 
         # Test with redirect URI set.
         Client.objects.create(
-            client_id="redirect-tester",
+            client_id="redirect-tester-2",
             name="RedirectClient",
             client_secret="super_client_secret_4",
             response_type="code",
@@ -775,7 +843,7 @@ class TestRegistrationView(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url-something/"
+            ) + "?client_id=redirect-tester-2&redirect_uri=/test-redirect-url-something/"
         )
         response = self.client.get(
             reverse(
