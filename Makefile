@@ -8,6 +8,7 @@ CODEGEN_VERSION=2.4.0
 CODEGEN=java -jar swagger-codegen-cli-$(CODEGEN_VERSION).jar generate
 USER_DATA_STORE_CLIENT_DIR=user_data_store
 ACCESS_CONTROL_CLIENT_DIR=access_control
+LANGUAGES=ar bn bur_MM en es fa fr ha id khm_KH kin_RW ny prs pt ru swa_TZ th tl ur vi
 
 # Colours.
 CLEAR=\033[0m
@@ -96,6 +97,8 @@ authentication-service-api: $(VENV)
 	$(PYTHON) $(VENV)/src/swagger-django-generator/swagger_django_generator/generator.py swagger/authentication_service.yml --output-dir authentication_service/api --module-name authentication_service.api
 
 make-translations:
+	@echo "$(CYAN)Ensuring that language directories exists...$(CLEAR)"
+	for language in ${LANGUAGES}; do mkdir -p "locale/$${language}"; done
 	@echo "$(CYAN)Generating .po files...$(CLEAR)"
 	mkdir other_packages
 	cp -r ./ve/lib/python3.6/site-packages/oidc_provider ./other_packages
