@@ -242,8 +242,9 @@ class RegistrationView(LanguageMixin, CreateView):
 
         # If get_success_url already returns a response object, immediately
         # return it.
-        if not isinstance(self.get_success_url(), str):
-            return self.get_success_url()
+        success_response = self.get_success_url()
+        if not isinstance(success_response, HttpResponse):
+            return success_response
         return response
 
     def get_success_url(self):
