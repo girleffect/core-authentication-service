@@ -1,13 +1,12 @@
 import datetime
 import socket
-from datetime import date
 
 import pkg_resources
-from dateutil.relativedelta import relativedelta
 from urllib.parse import urlparse, parse_qs
 import urllib
 
 from defender.decorators import watch_login
+from defender.utils import is_user_already_locked, lockout_response
 from oidc_provider.models import Client
 
 from django.conf import settings
@@ -24,9 +23,10 @@ from django.core.urlresolvers import reverse, reverse_lazy
 
 from django.contrib.auth import get_user_model
 from django.core import signing
-# NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.db import connection
-from django.http import HttpResponseRedirect, JsonResponse
+
+# NOTE: Can be refactored, both redirect import perform more or less the same.
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -239,17 +239,24 @@ class RegistrationView(LanguageMixin, CreateView):
                 data["language_code"] = self.language
                 question = models.UserSecurityQuestion.objects.create(**data)
 
+        # If get_success_url already returns a response object, immediately
+        # return it.
+        alternate_response = self.get_success_url()
+        if isinstance(alternate_response, HttpResponse):
+            return alternate_response
         return response
 
     def get_success_url(self):
         key = CLIENT_URI_SESSION_KEY
         uri = utils.get_session_data(self.request, key)
-        if hasattr(
-                self, "security"
-        ) and self.security == "high" or self.request.GET.get(
-                "show2fa") == "true":
-            return reverse("two_factor_auth:setup")
-        elif uri:
+
+        ## GE-1117: Disabled
+        #if hasattr(
+        #        self, "security"
+        #) and self.security == "high" or self.request.GET.get(
+        #        "show2fa") == "true":
+        #    return reverse("two_factor_auth:setup")
+        if uri:
             return uri
         return render(
             self.request,
@@ -454,6 +461,10 @@ class ResetPasswordView(PasswordResetView):
 
         # Check reset method
         if user:
+            # Check if this user has been locked out
+            if is_user_already_locked(user.username):
+                return lockout_response(self.request)
+
             # Store the id of the user that we found in our search
             self.request.session["lookup_user_id"] = str(user.id)
 

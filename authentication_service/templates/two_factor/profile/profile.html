@@ -27,7 +27,7 @@
         {% for phone in backup_phones %}
           <li>
             {{ phone|device_action }}
-            <form method="post" action="{% url 'two_factor:phone_delete' phone.id %}"
+            <form method="post" class="Form" action="{% url 'two_factor:phone_delete' phone.id %}"
                   onsubmit="return confirm('Are you sure?')">
               {% csrf_token %} 
               <button class="Button"

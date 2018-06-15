@@ -521,7 +521,7 @@ class SetPasswordForm(DjangoSetPasswordForm):
     def __init__(self, user, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(SetPasswordForm, self).__init__(user, *args, **kwargs)
-        if not self.user.organisational_unit:
+        if self.user and not self.user.organisational_unit:
             # Remove default help text, added by password validation,
             # middleware.
             fields_data = {
