@@ -96,6 +96,10 @@ class ThemeManagementMiddleware(MiddlewareMixin):
     def process_request(self, request):
         if request.path.rstrip("/") in [
                 path.rstrip("/") for path in SESSION_UPDATE_URL_WHITELIST]:
+            current_host = request.get_host()
+            referer = request.META.get("HTTP_REFERER", None)
+            parsed_referer = urlparse(referer)
+            is_on_domain =  current_host == parsed_referer.netloc
 
             # Grab theme value off of url if available
             query_theme = fetch_theme(request, self.session_theme_key)
@@ -103,7 +107,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                 update_session_data(
                     request, self.session_theme_key, query_theme
                 )
-            else:
+            elif not (is_on_domain and referer is not None):
                 # Cleanup session values stored by this middleware
                 delete_session_data(request, [self.session_theme_key])
 
@@ -171,9 +175,13 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         validator_uri = get_session_data(request, "redirect_uri_validation")
         if request.path.rstrip("/") in [
                 path.rstrip("/") for path in SESSION_UPDATE_URL_WHITELIST]:
+            current_host = request.get_host()
+            referer = request.META.get("HTTP_REFERER", None)
+            parsed_referer = urlparse(referer)
+            is_on_domain =  current_host == parsed_referer.netloc
 
             # Cleanup session values stored by this middleware
-            if request.method == "GET":
+            if request.method == "GET" and not (is_on_domain and referer is not None):
                 delete_session_data(
                     request,
                     [
@@ -185,7 +193,6 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
 
             # Check whether it's an on domain redirect_uri
             if uri and not client_id:
-                current_host = request.get_host()
                 parsed_url = urlparse(uri)
                 if parsed_url.netloc != "" and current_host != parsed_url.netloc:
                     raise exceptions.BadRequestException(

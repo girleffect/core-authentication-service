@@ -63,6 +63,53 @@ class TestSessionMiddleware(TestCase):
             output = cm.output
             self.assertListEqual(output, test_output)
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_session_persist_internal_redirect(self):
+        # Login user
+        self.client.login(username=self.user.username, password="P0ppy")
+        response = self.client.get(
+            reverse(
+                "edit_profile"
+            ) + "?theme=ninyampinga&redirect_uri=/profile/security/"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "ninyampinga"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_URI],
+            "/profile/security/"
+        )
+        response = self.client.post(
+            reverse("update_password"),
+            data={
+                "old_password": "P0ppy",
+                "new_password1": "P0ppy",
+                "new_password2": "P0ppy",
+            },
+            follow=True,
+            **{"HTTP_REFERER": "http://testserver/en/profile/password/"}
+        )
+        self.assertRedirects(
+            response, reverse("edit_profile")
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "ninyampinga"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_URI],
+            "/profile/security/"
+        )
+
 
 class TestRedirectManagementMiddleware(TestCase):
 
