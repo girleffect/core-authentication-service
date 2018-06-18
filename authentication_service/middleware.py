@@ -107,7 +107,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                 update_session_data(
                     request, self.session_theme_key, query_theme
                 )
-            elif not (is_on_domain and referer is not None):
+            elif not is_on_domain:
                 # Cleanup session values stored by this middleware
                 delete_session_data(request, [self.session_theme_key])
 
@@ -181,7 +181,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
             is_on_domain =  current_host == parsed_referer.netloc
 
             # Cleanup session values stored by this middleware
-            if request.method == "GET" and not (is_on_domain and referer is not None):
+            if request.method == "GET" and not is_on_domain:
                 delete_session_data(
                     request,
                     [
