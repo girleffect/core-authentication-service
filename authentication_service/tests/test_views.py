@@ -494,6 +494,9 @@ class TestSecurityQuestionLockout(TestCase):
         )
 
     def test_lockout_on_reset(self):
+        # Ensure user is not blocked
+        unblock_username(self.user.username)
+
         session = self.client.session
         session["lookup_user_id"] = str(self.user.id)
         session.save()
