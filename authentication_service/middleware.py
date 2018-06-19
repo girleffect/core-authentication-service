@@ -310,8 +310,8 @@ class GELocaleMiddleware(LocaleMiddleware):
         )
 
         # Only if language code was provided, it is not the currently active
-        # language, the url we are currently on already contains a language
-        # code and the url does not contain the querystring language.
+        # language, the url we are currently on does not already contain a
+        # language code and the url does not contain the querystring language.
         if (language["code"] and
             language["code"] != translation.get_language() and
             language["code"] != language_from_path and
