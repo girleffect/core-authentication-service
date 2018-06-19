@@ -1,4 +1,3 @@
-import re
 from urllib.parse import urlparse, parse_qs, urlencode
 import logging
 
@@ -9,8 +8,6 @@ from oidc_provider.lib.errors import (
     RedirectUriError
 )
 
-from django.conf import settings
-from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.http import HttpResponseBadRequest, HttpResponse
 from django.middleware.locale import LocaleMiddleware
 from django.shortcuts import render
@@ -39,6 +36,7 @@ SESSION_UPDATE_URL_WHITELIST = [
     reverse_lazy("oidc_provider:authorize"),
     reverse_lazy("edit_profile"),
 ]
+
 
 def authorize_client(request):
     """
@@ -159,7 +157,6 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     client_id_key = SessionKeys.CLIENT_ID
     oidc_values = None
 
-
     def process_request(self, request):
         # Before storing the redirect_uri, ensure it comes from a valid client.
         # This is to prevent urls on other parts of the site being misused to
@@ -178,7 +175,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
             current_host = request.get_host()
             referer = request.META.get("HTTP_REFERER", None)
             parsed_referer = urlparse(referer)
-            is_on_domain =  current_host == parsed_referer.netloc
+            is_on_domain = current_host == parsed_referer.netloc
 
             # Cleanup session values stored by this middleware
             if request.method == "GET" and not is_on_domain:
@@ -240,7 +237,6 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                     uri
                 )
 
-
     def process_response(self, request, response):
         # Nice to have, extra cleanup hook
         if response.status_code == 302:
@@ -290,7 +286,7 @@ class GELocaleMiddleware(LocaleMiddleware):
         next_query = request.GET.get("next")
         next_args = {}
 
-        # Only attempt to get the langauge if there is a next query present
+        # Only attempt to get the language if there is a next query present
         if next_query:
 
             # Split on ?, seemingly the only way to get the full next url, in
@@ -307,8 +303,6 @@ class GELocaleMiddleware(LocaleMiddleware):
                 "code": next_args["qs"].get("language", [None])[0],
                 "type": "next_query"
             }
-
-        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
 
         # If the language can not be obtained from the path, there is no use in
         # appending the language and redirecting to it.
@@ -349,6 +343,6 @@ class GELocaleMiddleware(LocaleMiddleware):
                     del get_query["language"]
                 elif language["type"] == "next_query" and next_args:
                     next_args["qs"].pop("language")
-                    get_query["next"] = next_args["url"] + f"?{urlencode(next_args['qs'])}"
-                new_params = f"?{urlencode(get_query)}" if get_query else ""
+                    get_query["next"] = next_args["url"] + f"?{urlencode(next_args['qs'], doseq=True)}"
+                new_params = f"?{urlencode(get_query, doseq=True)}" if get_query else ""
                 return self.response_redirect_class(f"{path}{new_params}")

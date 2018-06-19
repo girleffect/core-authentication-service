@@ -540,11 +540,8 @@ class TestLanguageUpdateMiddleware(TestCase):
         )
         self.assertEquals(
             response.request["QUERY_STRING"],
-            "next=%2Fopenid%2Fauthorize%3Fresponse_type" \
-            "%3D%255B%2527code%2527%255D%26scope%3D%255B%2527" \
-            "openid%2527%255D%26client_id%3D%255B%2527client_id_language" \
-            "%2527%255D%26redirect_uri" \
-            "%3D%255B%2527http%253A%252F%252Fexample_one.com%252F%2527%255D"
+            "next=%2Fopenid%2Fauthorize%3Fresponse_type%3Dcode%26scope%3Dopenid%26"
+            "client_id%3Dclient_id_language%26redirect_uri%3Dhttp%253A%252F%252Fexample_one.com%252F"
         )
         response = self.client.get(
             "/login/?language=prs",
