@@ -391,15 +391,6 @@ class DeleteAccountView(FormView):
     form_class = forms.DeleteAccountForm
     success_url = reverse_lazy("edit_profile")
 
-    def dispatch(self, *args, **kwargs):
-        if self.request.user.email is None and self.request.user.msisdn is None:
-            messages.error(self.request,
-                _("You require either an email or msisdn "
-                "to request an account deletion")
-            )
-            return HttpResponseRedirect(self.get_success_url())
-        return super(DeleteAccountView, self).dispatch(*args, **kwargs)
-
     def get_context_data(self, *args, **kwargs):
         ct = super(DeleteAccountView, self).get_context_data(*args, **kwargs)
         ct["confirm"] = False
