@@ -288,9 +288,10 @@ class GELocaleMiddleware(LocaleMiddleware):
 
             # Split on ?, seemingly the only way to get the full next url, in
             # the event the next is off domain .path will not suffice.
+            parsed_query = urlparse(next_query)
             next_args = {
-                "url": urlparse(next_query).geturl().split("?", maxsplit=1)[0],
-                "qs": parse_qs(urlparse(next_query).query)
+                "url": parsed_query.geturl().split("?", maxsplit=1)[0],
+                "qs": parse_qs(parsed_query.query)
             }
 
             # Query values are in list form. Only grab the first value from the
