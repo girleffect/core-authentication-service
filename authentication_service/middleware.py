@@ -280,25 +280,49 @@ class GELocaleMiddleware(LocaleMiddleware):
     def process_request(self, request):
         super(GELocaleMiddleware, self).process_request(request)
 
-        # Get the language code to use
-        language_code = request.GET.get(
-            LANGUAGE_QUERY_PARAMETER, None
-        )
+        # Get the language code to use, can be a query
+        language = {
+            "code": request.GET.get(LANGUAGE_QUERY_PARAMETER, None),
+            "type": "default"
+        }
 
+        # Need to cater for views with auth decorators that redirect to login
+        next_query = request.GET.get("next")
+        next_args = {}
+
+        # Only attempt to get the langauge if there is a next query present
+        if next_query:
+
+            # Split on ?, seemingly the only way to get the full next url, in
+            # the event the next is off domain .path will not suffice.
+            parsed_query = urlparse(next_query)
+            next_args = {
+                "url": parsed_query.geturl().split("?", maxsplit=1)[0],
+                "qs": parse_qs(parsed_query.query)
+            }
+
+            # Query values are in list form. Only grab the first value from the
+            # list.
+            language = {
+                "code": next_args["qs"].get("language", [None])[0],
+                "type": "next_query"
+            }
 
         urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
 
-        # Useful check from django.conf.urls.i18n, subclass middleware only
-        # cares about the first value
-        i18n_patterns_used, prefix_default = is_language_prefix_patterns_used(
-            urlconf)
+        # If the language can not be obtained from the path, there is no use in
+        # appending the language and redirecting to it.
+        language_from_path = translation.get_language_from_path(
+            request.path_info
+        )
 
         # Only if language code was provided, it is not the currently active
-        # language and the url we are currently on makes use of the i18n
-        # structure.
-        if (language_code and
-            language_code != translation.get_language() and
-            i18n_patterns_used):
+        # language, the url we are currently on does not already contain a
+        # language code and the url does not contain the querystring language.
+        if (language["code"] and
+            language["code"] != translation.get_language() and
+            language["code"] != language_from_path and
+            language_from_path):
 
             # Make use of the locales regex that is traditionally used to
             # attempt to get the language from the url
@@ -310,13 +334,21 @@ class GELocaleMiddleware(LocaleMiddleware):
 
                 # Replace the current language code in the full path with the
                 # querystring one and redirect to it.
-                path = request.path_info.replace(regex_match.group(1), language_code, 1)
+                path = request.path_info.replace(
+                    regex_match.group(1),
+                    language["code"],
+                    1
+                )
 
                 # Remove the language parameter, can cause a infinite redirect
                 # loop if the language is not found. Due to the base local
                 # middleware also attempting redirects back to the default
                 # language on 404s.
                 get_query = request.GET.copy()
-                del get_query["language"]
+                if language["type"] == "default":
+                    del get_query["language"]
+                elif language["type"] == "next_query" and next_args:
+                    next_args["qs"].pop("language")
+                    get_query["next"] = next_args["url"] + urlencode(next_args["qs"])
                 new_params = f"?{urlencode(get_query)}" if get_query else ""
                 return self.response_redirect_class(f"{path}{new_params}")

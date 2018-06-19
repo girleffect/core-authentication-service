@@ -484,6 +484,20 @@ class TestThemeMiddleware(TestCase):
 
 class TestLanguageUpdateMiddleware(TestCase):
 
+    @classmethod
+    def setUpTestData(cls):
+        super(TestLanguageUpdateMiddleware, cls).setUpTestData()
+        cls.client_obj = Client(
+            name="test_langauge_client",
+            client_id="client_id_language",
+            client_secret="super_client_secret_5",
+            response_type="code",
+            jwt_alg="HS256",
+            redirect_uris=["http://example_one.com/"],
+            terms_url="http://example-terms.com"
+        )
+        cls.client_obj.save()
+
     def test_language_update(self):
         response = self.client.get(
             reverse(
@@ -505,4 +519,42 @@ class TestLanguageUpdateMiddleware(TestCase):
         )
         self.assertEquals(
             response.status_code, 404
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_none_i18n_urls(self):
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_language&"
+                "redirect_uri=http%3A%2F%2Fexample_one.com%2F&language=prs",
+            follow=True
+        )
+        response = self.client.get(
+            response.redirect_chain[-1][0],
+            follow=True
+        )
+        self.assertEquals(
+            response.request["PATH_INFO"],
+            "/prs/login/"
+        )
+        self.assertEquals(
+            response.request["QUERY_STRING"],
+            "next=%2Fopenid%2Fauthorizeresponse_type" \
+            "%3D%255B%2527code%2527%255D%26scope%3D%255B%2527openid" \
+            "%2527%255D%26client_id%3D%255B%2527client_id_language" \
+            "%2527%255D%26redirect_uri" \
+            "%3D%255B%2527http%253A%252F%252Fexample_one.com%252F%2527%255D"
+        )
+        response = self.client.get(
+            "/login/?language=prs",
+            follow=True
+        )
+
+        """
+        redirect_chain = [('/en/login/?language=prs', 302), ('/prs/login/', 302)]
+        """
+        self.assertRedirects(
+            response,
+            "/prs/login/"
         )
