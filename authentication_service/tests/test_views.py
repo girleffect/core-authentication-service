@@ -348,6 +348,7 @@ class TestMigration(TestCase):
             }
 
         )
+
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_migration_redirect_persist(self):
         temp_user = TemporaryMigrationUserStore.objects.create(
@@ -405,6 +406,25 @@ class TestMigration(TestCase):
         self.assertRedirects(
             response,
             f"/openid/authorize/?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http://example.com/&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO"
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("django.core.signing.loads")
+    def test_expired_token(self, expire_mock):
+        expire_mock.side_effect = signing.SignatureExpired("Expired")
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": self.temp_user.username,
+            "auth-password": "Qwer!234"
+        }
+        response = self.do_login(data)
+        self.assertRedirects(
+            response,
+            "/en/login/?next=/openid/authorize/" \
+            "%3Fresponse_type%3Dcode%26scope%3Dopenid" \
+            "%26client_id%3Dmigration_client_id%26" \
+            "redirect_uri%3Dhttp%253A%252F%252Fexample.com%252F%26" \
+            "state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO"
         )
 
 

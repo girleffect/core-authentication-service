@@ -140,7 +140,9 @@ class MigrateUserWizard(views.LanguageMixin, NamedUrlSessionWizardView):
             )
 
     def get_login_url(self, query=None):
-        query = self.storage.extra_data.get("persist_query", query)
+        # Do not rely on storage being present
+        if hasattr(self, "storage"):
+            query = self.storage.extra_data.get("persist_query", query)
         return query or reverse("login")
 
 
