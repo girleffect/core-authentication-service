@@ -349,6 +349,6 @@ class GELocaleMiddleware(LocaleMiddleware):
                     del get_query["language"]
                 elif language["type"] == "next_query" and next_args:
                     next_args["qs"].pop("language")
-                    get_query["next"] = next_args["url"] + urlencode(next_args["qs"])
+                    get_query["next"] = next_args["url"] + f"?{urlencode(next_args['qs'])}"
                 new_params = f"?{urlencode(get_query)}" if get_query else ""
                 return self.response_redirect_class(f"{path}{new_params}")
