@@ -247,31 +247,36 @@ class RegistrationForm(UserCreationForm):
         cleaned_data = super(RegistrationForm, self).clean()
 
         # Get a new empty ErrorList
-        errors = self.error_class()
+        additional_page_errors = self.error_class()
 
         # Check that either the email or the MSISDN or both is supplied.
         email = cleaned_data.get("email")
         msisdn = cleaned_data.get("msisdn")
         if not email and not msisdn and not \
                 settings.HIDE_FIELDS["global_enable"]:
-            errors.append(ValidationError(_("Enter either email or msisdn")))
+            additional_page_errors.append(ValidationError(
+                _("Enter either email or msisdn"))
+            )
 
-        # Check that either the birth date or age is provided. If the birth date is provided, we
-        # use it, else we calculate the birth date from the age.
+        # Check that either the birth date or age is provided. If the birth
+        # date is provided, we use it, else we calculate the birth date from
+        # the age.
         birth_date = cleaned_data.get("birth_date")
         if not set(["age", "birth_date"]) & set(self.errors) and \
                 not cleaned_data.get("birth_date") and \
                 not cleaned_data.get("age") and \
                 not settings.HIDE_FIELDS["global_enable"]:
-            errors.append(ValidationError(_("Enter either birth date or age")))
+            additional_page_errors.append(ValidationError(
+                _("Enter either birth date or age"))
+            )
 
         # Add new errors to existing error list, allows the raising of all
         # clean method errors at once. Rather than one at a time per post. 
         # NOTE: non_field_errors() is most likely still empty. It usually gets
         # populated by raising a ValidationError in clean().
-        if errors:
+        if additional_page_errors:
             form_level_errors = self.non_field_errors()
-            self.errors["__all__"] = form_level_errors + errors
+            self.errors["__all__"] = form_level_errors + additional_page_errors
 
         return cleaned_data
 
