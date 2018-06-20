@@ -191,9 +191,8 @@ class RegistrationForm(UserCreationForm):
         if not bd and age:
             bd = today - relativedelta(years=age)
         if bd:
-            margin = 1 if (bd.month, bd.day) < (today.month, today.day) else 0
-            diff = today.year - bd.year - margin
-            if diff < CONSENT_AGE:
+            diff = relativedelta(today, bd)
+            if diff.years < CONSENT_AGE:
                 raise forms.ValidationError(_(
                     f"We are sorry, users under the age of {CONSENT_AGE}"
                     " cannot create an account."

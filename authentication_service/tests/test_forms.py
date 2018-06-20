@@ -412,7 +412,7 @@ class TestRegistrationForm(TestCase):
             form = RegistrationForm(data={
                 "username": "Username",
                 "email": "email@email.com",
-                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 1),
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 3),
                 "terms": True,
                 "password1": "asdasdasdA@1",
                 "password2": "asdasdasdA@1"
@@ -421,7 +421,7 @@ class TestRegistrationForm(TestCase):
             form = RegistrationForm(data={
                 "username": "Username",
                 "email": "email@email.com",
-                "birth_date": datetime.date(2018-constants.CONSENT_AGE+1, 1, 1),
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE+1, 1, 3),
                 "terms": True,
                 "password1": "asdasdasdA@1",
                 "password2": "asdasdasdA@1"
