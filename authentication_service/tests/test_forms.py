@@ -13,6 +13,7 @@ from authentication_service.forms import (
     EditProfileForm, SetPasswordForm, PasswordChangeForm
 )
 from authentication_service.models import SecurityQuestion, OrganisationalUnit
+from authentication_service import constants
 
 
 @override_settings(
@@ -389,34 +390,11 @@ class TestRegistrationForm(TestCase):
         })
         self.assertFalse(form.is_valid())
 
-    def test_min_required_age_dob_around_today(self):
-        with mock.patch("authentication_service.forms.date") as mocked_date:
-            mocked_date.today.return_value = datetime.date(2018, 1, 2)
-            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
-            form = RegistrationForm(data={
-                "username": "Username",
-                "email": "email@email.com",
-                "birth_date": datetime.date(2005, 1, 1),
-                "terms": True,
-                "password1": "asdasdasdA@1",
-                "password2": "asdasdasdA@1"
-            })
-            self.assertFalse(form.is_valid())
-            form = RegistrationForm(data={
-                "username": "Username",
-                "email": "email@email.com",
-                "birth_date": datetime.date(2005, 1, 2),
-                "terms": True,
-                "password1": "asdasdasdA@1",
-                "password2": "asdasdasdA@1"
-            })
-            self.assertTrue(form.is_valid())
-
     def test_min_required_age(self):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
-            "age": "10",
+            "age": constants.CONSENT_AGE-1,
             "terms": True,
             "password1": "asdasdasdA@1",
             "password2": "asdasdasdA@1"
@@ -425,18 +403,53 @@ class TestRegistrationForm(TestCase):
         self.assertEqual(form.errors, {
             "age": [
                 "We are sorry, " \
-                "users under the age of 13 can not create an account"
+                "users under the age of 13 cannot create an account."
             ]
         })
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = RegistrationForm(data={
+                "username": "Username",
+                "email": "email@email.com",
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 1),
+                "terms": True,
+                "password1": "asdasdasdA@1",
+                "password2": "asdasdasdA@1"
+            })
+            self.assertFalse(form.is_valid())
+            form = RegistrationForm(data={
+                "username": "Username",
+                "email": "email@email.com",
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE+1, 1, 1),
+                "terms": True,
+                "password1": "asdasdasdA@1",
+                "password2": "asdasdasdA@1"
+            })
+            self.assertFalse(form.is_valid())
+
+    def test_on_required_age(self):
         form = RegistrationForm(data={
             "username": "Username",
             "email": "email@email.com",
-            "age": "13",
+            "age": constants.CONSENT_AGE,
             "terms": True,
             "password1": "asdasdasdA@1",
             "password2": "asdasdasdA@1"
         })
         self.assertTrue(form.is_valid())
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = RegistrationForm(data={
+                "username": "Username",
+                "email": "email@email.com",
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 2),
+                "terms": True,
+                "password1": "asdasdasdA@1",
+                "password2": "asdasdasdA@1"
+            })
+            self.assertTrue(form.is_valid())
 
 
 class TestRegistrationFormHTML(TestCase):

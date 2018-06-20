@@ -28,7 +28,7 @@ from django.utils.translation import ugettext_lazy as _
 from authentication_service import models, tasks
 from authentication_service.utils import update_form_fields
 from authentication_service.constants import SECURITY_QUESTION_COUNT, \
-    MIN_NON_HIGH_PASSWORD_LENGTH
+    MIN_NON_HIGH_PASSWORD_LENGTH, CONSENT_AGE
 
 
 LOGGER = logging.getLogger(__name__)
@@ -172,19 +172,19 @@ class RegistrationForm(UserCreationForm):
         self.fields["birth_date"].widget.is_required = False
 
     def clean_age(self):
-        min_age = 13
+        CONSENT_AGE = 13
         age = self.cleaned_data.get("age")
-        if age and age < min_age:
+        if age and age < CONSENT_AGE:
             raise forms.ValidationError(_(
-                f"We are sorry, users under the age of {min_age}"
-                " can not create an account"
+                f"We are sorry, users under the age of {CONSENT_AGE}"
+                " cannot create an account."
             ))
         return self.cleaned_data.get("age")
 
     # NOTE the order of RegistrationForm.Meta.fields, age is needed before
     # birth_date. If this is not the case, the age value will always be None.
     def clean_birth_date(self):
-        min_age = 13
+        CONSENT_AGE = 13
         bd = self.cleaned_data.get("birth_date")
         age = self.cleaned_data.get("age")
         today = date.today()
@@ -193,10 +193,10 @@ class RegistrationForm(UserCreationForm):
         if bd:
             margin = 1 if (bd.month, bd.day) < (today.month, today.day) else 0
             diff = today.year - bd.year - margin
-            if diff < min_age:
+            if diff < CONSENT_AGE:
                 raise forms.ValidationError(_(
-                    f"We are sorry, users under the age of {min_age}"
-                    " can not create an account"
+                    f"We are sorry, users under the age of {CONSENT_AGE}"
+                    " cannot create an account."
                 ))
         return bd
 
