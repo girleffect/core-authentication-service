@@ -185,19 +185,19 @@ class RegistrationForm(UserCreationForm):
     # birth_date. If this is not the case, the age value will always be None.
     def clean_birth_date(self):
         CONSENT_AGE = 13
-        bd = self.cleaned_data.get("birth_date")
+        birth_date = self.cleaned_data.get("birth_date")
         age = self.cleaned_data.get("age")
         today = date.today()
-        if not bd and age:
-            bd = today - relativedelta(years=age)
-        if bd:
-            diff = relativedelta(today, bd)
+        if not birth_date and age:
+            birth_date = today - relativedelta(years=age)
+        if birth_date:
+            diff = relativedelta(today, birth_date)
             if diff.years < CONSENT_AGE:
                 raise forms.ValidationError(_(
                     f"We are sorry, users under the age of {CONSENT_AGE}"
                     " cannot create an account."
                 ))
-        return bd
+        return birth_date
 
     def clean_password2(self):
         # Short circuit normal validation if not high security.
