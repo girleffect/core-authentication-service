@@ -63,7 +63,7 @@ class RegistrationForm(UserCreationForm):
         model = get_user_model()
         fields = [
             "username", "first_name", "last_name", "email",
-            "nickname", "msisdn", "gender", "birth_date", "age",
+            "nickname", "msisdn", "gender", "age", "birth_date",
             "country", "avatar", "password1", "password2"
         ]
         exclude = ["terms",]
@@ -171,6 +171,35 @@ class RegistrationForm(UserCreationForm):
         self.fields["birth_date"].required = False
         self.fields["birth_date"].widget.is_required = False
 
+    def clean_age(self):
+        min_age = 13
+        age = self.cleaned_data.get("age")
+        if age and age < min_age:
+            raise forms.ValidationError(_(
+                f"We are sorry, users under the age of {min_age}"
+                " can not create an account"
+            ))
+        return self.cleaned_data.get("age")
+
+    # NOTE the order of RegistrationForm.Meta.fields, age is needed before
+    # birth_date. If this is not the case, the age value will always be None.
+    def clean_birth_date(self):
+        min_age = 13
+        bd = self.cleaned_data.get("birth_date")
+        age = self.cleaned_data.get("age")
+        today = date.today()
+        if not bd and age:
+            bd = today - relativedelta(years=age)
+        if bd:
+            margin = 1 if (bd.month, bd.day) < (today.month, today.day) else 0
+            diff = today.year - bd.year - margin
+            if diff < min_age:
+                raise forms.ValidationError(_(
+                    f"We are sorry, users under the age of {min_age}"
+                    " can not create an account"
+                ))
+        return bd
+
     def clean_password2(self):
         # Short circuit normal validation if not high security.
         if self.security == "high":
@@ -217,23 +246,32 @@ class RegistrationForm(UserCreationForm):
     def clean(self):
         cleaned_data = super(RegistrationForm, self).clean()
 
+        # Get a new empty ErrorList
+        errors = self.error_class()
+
         # Check that either the email or the MSISDN or both is supplied.
         email = cleaned_data.get("email")
         msisdn = cleaned_data.get("msisdn")
-
         if not email and not msisdn and not \
                 settings.HIDE_FIELDS["global_enable"]:
-            raise ValidationError(_("Enter either email or msisdn"))
+            errors.append(ValidationError(_("Enter either email or msisdn")))
 
         # Check that either the birth date or age is provided. If the birth date is provided, we
         # use it, else we calculate the birth date from the age.
         birth_date = cleaned_data.get("birth_date")
-        if not birth_date:
-            age = cleaned_data.get("age")
-            if age:
-                cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
-            elif not settings.HIDE_FIELDS["global_enable"]:
-                raise ValidationError(_("Enter either birth date or age"))
+        if not set(["age", "birth_date"]) & set(self.errors) and \
+                not cleaned_data.get("birth_date") and \
+                not cleaned_data.get("age") and \
+                not settings.HIDE_FIELDS["global_enable"]:
+            errors.append(ValidationError(_("Enter either birth date or age")))
+
+        # Add new errors to existing error list, allows the raising of all
+        # clean method errors at once. Rather than one at a time per post. 
+        # NOTE: non_field_errors() is most likely still empty. It usually gets
+        # populated by raising a ValidationError in clean().
+        if errors:
+            form_level_errors = self.non_field_errors()
+            self.errors["__all__"] = form_level_errors + errors
 
         return cleaned_data
 

@@ -1,5 +1,6 @@
-import datetime
+from dateutil.relativedelta import relativedelta
 import copy
+import datetime
 
 from unittest import mock
 
@@ -28,7 +29,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_default_password_validation(self):
@@ -153,7 +154,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_default_required_toggle_mapping(self):
@@ -171,7 +172,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_high_security_default_state(self):
@@ -183,7 +184,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_high_security_password_validation(self):
@@ -285,6 +286,7 @@ class TestRegistrationForm(TestCase):
             security="high")
         self.assertTrue(form.is_valid())
 
+    def test_age_to_birth_date(self):
         # Test age specified instead of birth_date. Refer to the link below for an explanation of
         # why the mocking is done the way it is:
         # http://www.voidspace.org.uk/python/mock/examples.html#partial-mocking
@@ -326,7 +328,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_email_validation(self):
@@ -373,6 +375,66 @@ class TestRegistrationForm(TestCase):
             "msisdn": "0856545698",
             "terms": True,
             "birth_date": datetime.date(2000, 1, 1)
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_min_required_age_dob(self):
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "birth_date": datetime.date.today() - relativedelta(years=10),
+            "terms": True,
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
+        })
+        self.assertFalse(form.is_valid())
+
+    def test_min_required_age_dob_around_today(self):
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = RegistrationForm(data={
+                "username": "Username",
+                "email": "email@email.com",
+                "birth_date": datetime.date(2005, 1, 1),
+                "terms": True,
+                "password1": "asdasdasdA@1",
+                "password2": "asdasdasdA@1"
+            })
+            self.assertFalse(form.is_valid())
+            form = RegistrationForm(data={
+                "username": "Username",
+                "email": "email@email.com",
+                "birth_date": datetime.date(2005, 1, 2),
+                "terms": True,
+                "password1": "asdasdasdA@1",
+                "password2": "asdasdasdA@1"
+            })
+            self.assertTrue(form.is_valid())
+
+    def test_min_required_age(self):
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "age": "10",
+            "terms": True,
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "age": [
+                "We are sorry, " \
+                "users under the age of 13 can not create an account"
+            ]
+        })
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "age": "13",
+            "terms": True,
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
         })
         self.assertTrue(form.is_valid())
 
