@@ -400,6 +400,7 @@ class EditProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(EditProfileForm, self).__init__(*args, **kwargs)
+        hidden_fields = []
         fields_data= {"birth_date": {
                 "attributes": {
                     "help_text": _("Please use dd/mm/yyyy format")
@@ -411,7 +412,6 @@ class EditProfileForm(forms.ModelForm):
                 }
             }
         }
-        hidden_fields = []
 
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
@@ -421,7 +421,7 @@ class EditProfileForm(forms.ModelForm):
                 hidden_fields.append(field)
 
         if self.instance.organisational_unit:
-            # Show email address explicitly since it is hidden in the
+            # Show email address explicitly since it can be hidden in the
             # global hidden fields.
             hidden_fields.remove("email")
         else:
@@ -439,6 +439,16 @@ class EditProfileForm(forms.ModelForm):
             fields_data=fields_data,
             hidden=hidden_fields
         )
+
+        # Manual overrides:
+
+        # NOTE: These will then also ignore all other overrides set up till
+        # this point.
+
+        # The birth_date is required on the model, but not on the form since it
+        # can be indirectly populated if the age is provided.
+        self.fields["birth_date"].required = False
+        self.fields["birth_date"].widget.is_required = False
 
     class Meta:
         model = get_user_model()
@@ -476,11 +486,29 @@ class EditProfileForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(EditProfileForm, self).clean()
 
-        # NOTE: At this stage edit profile does not display the birth_date
-        # field at all.
-        age = cleaned_data.get("age")
-        if age:
-            cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
+        # Get a new empty ErrorList
+        additional_page_errors = self.error_class()
+
+        # Check that either the birth date or age is provided. If the birth
+        # date is provided, we use it, else we calculate the birth date from
+        # the age.
+        birth_date = cleaned_data.get("birth_date")
+        if not set(["age", "birth_date"]) & set(self.errors) and \
+                not cleaned_data.get("birth_date") and \
+                not cleaned_data.get("age") and \
+                not settings.HIDE_FIELDS["global_enable"]:
+            additional_page_errors.append(ValidationError(
+                _("Enter either birth date or age"))
+            )
+
+        # Add new errors to existing error list, allows the raising of all
+        # clean method errors at once. Rather than one at a time per post. 
+        # NOTE: non_field_errors() is most likely still empty. It usually gets
+        # populated by raising a ValidationError in clean().
+        if additional_page_errors:
+            form_level_errors = self.non_field_errors()
+            self.errors["__all__"] = form_level_errors + additional_page_errors
+
         return cleaned_data
 
 

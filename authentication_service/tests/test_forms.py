@@ -775,6 +775,19 @@ class EditProfileFormTestCase(TestCase):
         })
         self.assertFalse(form.is_valid())
 
+    @override_settings(
+        HIDE_FIELDS={"global_enable": False,
+        "global_fields": ["birth_date"]}
+    )
+    def test_age_and_dob_required(self):
+        form = EditProfileForm(data={})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "__all__": [
+                "Enter either birth date or age"
+            ]
+        })
+
     def test_min_required_age(self):
         form = EditProfileForm(data={
             "age": constants.CONSENT_AGE-1,
