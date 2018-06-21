@@ -769,6 +769,48 @@ class EditProfileFormTestCase(TestCase):
             }
         )
 
+    def test_min_required_age_dob(self):
+        form = EditProfileForm(data={
+            "birth_date": datetime.date.today() - relativedelta(years=10),
+        })
+        self.assertFalse(form.is_valid())
+
+    def test_min_required_age(self):
+        form = EditProfileForm(data={
+            "age": constants.CONSENT_AGE-1,
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "age": [
+                "We are sorry, " \
+                "users under the age of 13 cannot create an account."
+            ]
+        })
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = EditProfileForm(data={
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 3),
+            })
+            self.assertFalse(form.is_valid())
+            form = EditProfileForm(data={
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE+1, 1, 3),
+            })
+            self.assertFalse(form.is_valid())
+
+    def test_on_required_age(self):
+        form = EditProfileForm(data={
+            "age": constants.CONSENT_AGE,
+        })
+        self.assertTrue(form.is_valid())
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = EditProfileForm(data={
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 2),
+            })
+            self.assertTrue(form.is_valid())
+
 
 class TestPasswordResetForm(TestCase):
 

@@ -394,7 +394,6 @@ class EditProfileForm(forms.ModelForm):
 
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
-        min_value=13,
         max_value=100,
         required=False
     )
@@ -445,11 +444,40 @@ class EditProfileForm(forms.ModelForm):
         model = get_user_model()
         fields = [
             "first_name", "last_name", "nickname", "email", "msisdn", "gender",
-            "birth_date", "age", "country", "avatar"
+            "age", "birth_date", "country", "avatar"
         ]
+
+    def clean_age(self):
+        age = self.cleaned_data.get("age")
+        if age and age < CONSENT_AGE:
+            raise forms.ValidationError(_(
+                f"We are sorry, users under the age of {CONSENT_AGE}"
+                " cannot create an account."
+            ))
+        return self.cleaned_data.get("age")
+
+    # NOTE the order of EditProfileForm.Meta.fields, age is needed before
+    # birth_date. If this is not the case, the age value will always be None.
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data.get("birth_date")
+        age = self.cleaned_data.get("age")
+        today = date.today()
+        if not birth_date and age:
+            birth_date = today - relativedelta(years=age)
+        if birth_date:
+            diff = relativedelta(today, birth_date)
+            if diff.years < CONSENT_AGE:
+                raise forms.ValidationError(_(
+                    f"We are sorry, users under the age of {CONSENT_AGE}"
+                    " cannot create an account."
+                ))
+        return birth_date
 
     def clean(self):
         cleaned_data = super(EditProfileForm, self).clean()
+
+        # NOTE: At this stage edit profile does not display the birth_date
+        # field at all.
         age = cleaned_data.get("age")
         if age:
             cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
