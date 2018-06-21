@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block extrastyle-feature %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/springster.feature.css" %}" />{% endblock %}
+
+{% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/theme/springster.enhanced.css" %}" />{% endblock %}
+
+{% block branding %}<img src="{% static "authentication_service/images/sp-logo.png" %}" class="Header-branding-image">{% endblock %}
+
+{% block footer %}
+    <div id="footer" class="Footer">
+        <div class="Menu">
+            <div class="Menu-title">
+                <h1>{% trans "Menu" %}</h1>
+            </div>
+            <ul class="Menu-list Menu-list--left">
+                {% if ge_global_client_name and ge_global_client_website %}
+                    <li class="Menu-item"><a href="{{ ge_global_client_website }}">{% trans "Home" %}</a></li>
+                {% endif %}
+            </ul>
+            {% if request.user.is_authenticated %}
+                <ul class="Menu-list Menu-list--right">
+                    <li class="Menu-item"><a href="{% url 'update_password' %}">{% trans "Password update" %}</a></li>
+                    <li class="Menu-item"><a href="{% url 'update_security_questions' %}">{% trans "Security questions update" %}</a></li>
+                    <li class="Menu-item"><a href="{% url 'delete_account' %}">{% trans "Delete account" %}</a></li>
+                    <li class="Menu-item"><a href="{% url 'oidc_provider:end-session' %}">{% trans "Logout" %}</a></li>
+                </ul>
+            {% endif %}
+        </div>
+        <div class="Back-to-top">
+            <a href="#" class="Back-to-top--link">{% trans "Back to Top" %}</a>
+        </div>
+    </div>
+{% endblock %}

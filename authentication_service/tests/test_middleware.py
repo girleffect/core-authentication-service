@@ -8,7 +8,7 @@ from django.utils.translation import activate
 
 from oidc_provider.models import Client
 
-from authentication_service import constants
+from authentication_service import constants, exceptions
 
 
 class TestSessionMiddleware(TestCase):
@@ -62,6 +62,53 @@ class TestSessionMiddleware(TestCase):
             ]
             output = cm.output
             self.assertListEqual(output, test_output)
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_session_persist_internal_redirect(self):
+        # Login user
+        self.client.login(username=self.user.username, password="P0ppy")
+        response = self.client.get(
+            reverse(
+                "edit_profile"
+            ) + "?theme=ninyampinga&redirect_uri=/profile/security/"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "ninyampinga"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_URI],
+            "/profile/security/"
+        )
+        response = self.client.post(
+            reverse("update_password"),
+            data={
+                "old_password": "P0ppy",
+                "new_password1": "P0ppy",
+                "new_password2": "P0ppy",
+            },
+            follow=True,
+            **{"HTTP_REFERER": "http://testserver/en/profile/password/"}
+        )
+        self.assertRedirects(
+            response, reverse("edit_profile")
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.THEME],
+            "ninyampinga"
+        )
+        self.assertEquals(
+            self.client.session[
+                constants.EXTRA_SESSION_KEY][
+                    constants.SessionKeys.CLIENT_URI],
+            "/profile/security/"
+        )
 
 
 class TestRedirectManagementMiddleware(TestCase):
@@ -135,21 +182,12 @@ class TestRedirectManagementMiddleware(TestCase):
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_client_id_and_redirect_uri_validation(self):
-        response = self.client.get(
-            reverse(
-                "registration"
-            ) + "?redirect_uri=http%3A%2F%2Fexample.com%2F"
-        )
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.context["error"], "Client ID Error")
-        self.assertEqual(
-            response.context["message"],
-            "The client identifier (client_id) is missing or invalid."
-        )
-        self.assertEqual(
-            response.templates[0].name,
-            "authentication_service/redirect_middleware_error.html"
-        )
+        with self.assertRaises(exceptions.BadRequestException) as e:
+            response = self.client.get(
+                reverse(
+                    "registration"
+                ) + "?redirect_uri=http%3A%2F%2Fexample.com%2F"
+            )
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     @patch("authentication_service.api_helpers.is_site_active")
@@ -446,6 +484,20 @@ class TestThemeMiddleware(TestCase):
 
 class TestLanguageUpdateMiddleware(TestCase):
 
+    @classmethod
+    def setUpTestData(cls):
+        super(TestLanguageUpdateMiddleware, cls).setUpTestData()
+        cls.client_obj = Client(
+            name="test_langauge_client",
+            client_id="client_id_language",
+            client_secret="super_client_secret_5",
+            response_type="code",
+            jwt_alg="HS256",
+            redirect_uris=["http://example_one.com/"],
+            terms_url="http://example-terms.com"
+        )
+        cls.client_obj.save()
+
     def test_language_update(self):
         response = self.client.get(
             reverse(
@@ -467,4 +519,39 @@ class TestLanguageUpdateMiddleware(TestCase):
         )
         self.assertEquals(
             response.status_code, 404
+        )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_none_i18n_urls(self):
+        response = self.client.get(
+            reverse(
+                "oidc_provider:authorize"
+            ) + "?response_type=code&scope=openid&client_id=client_id_language&"
+                "redirect_uri=http%3A%2F%2Fexample_one.com%2F&language=prs",
+            follow=True
+        )
+        response = self.client.get(
+            response.redirect_chain[-1][0],
+            follow=True
+        )
+        self.assertEquals(
+            response.request["PATH_INFO"],
+            "/prs/login/"
+        )
+        self.assertEquals(
+            response.request["QUERY_STRING"],
+            "next=%2Fopenid%2Fauthorize%3Fresponse_type%3Dcode%26scope%3Dopenid%26"
+            "client_id%3Dclient_id_language%26redirect_uri%3Dhttp%253A%252F%252Fexample_one.com%252F"
+        )
+        response = self.client.get(
+            "/login/?language=prs",
+            follow=True
+        )
+
+        """
+        redirect_chain = [('/en/login/?language=prs', 302), ('/prs/login/', 302)]
+        """
+        self.assertRedirects(
+            response,
+            "/prs/login/"
         )

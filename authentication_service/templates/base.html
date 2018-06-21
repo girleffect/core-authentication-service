@@ -1,4 +1,4 @@
-{% load i18n static %}
+{% load i18n static string_filters %}
 
 <!DOCTYPE html>
 
@@ -39,66 +39,68 @@
     </head>
 
     <body>
-        <div id="container" class="Container">
+        <div id="wrap" class="{{ ge_global_theme|title }}{{ request.path_info|classify:"/" }}{% block custom-class %}{% endblock %}">
+            <div id="container" class="Container">
 
-            <!-- Header -->
-            <div id="header" class="Header">
-                <div id="branding" class="Header-branding">
-                    {% block branding %}<img width="70px" src="{% static "authentication_service/images/logo.basic.png" %}" class="Header-branding-image">{% endblock %}
+                <!-- Header -->
+                <div id="header" class="Header">
+                    <div id="branding" class="Header-branding">
+                        {% block branding %}<img width="70px" src="{% static "authentication_service/images/logo.basic.png" %}" class="Header-branding-image">{% endblock %}
+                    </div>
+                    <div id="title" class="Header-title">
+                        {% block title %}{% endblock %}
+                    </div>
+                    <div class="Header-links">
+                        {% block links %}
+                            {% if ge_global_client_name and ge_global_client_website %}
+                                {% trans "Back to " %}<a href="{{ ge_global_client_website }}">{{ ge_global_client_name }}</a>
+                            {% endif %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}
+                        There might be a need for a nav later on.
+                    {% endcomment %}
+                    {% block header-nav %}{% endblock %}
                 </div>
-                <div id="title" class="Header-title">
-                    {% block title %}{% endblock %}
-                </div>
-                <div class="Header-links">
-                    {% block links %}
-                        {% if ge_global_client_name and ge_global_redirect_uri %}
-                            {% trans "Back to " %}<a href="{{ ge_global_redirect_uri }}">{{ ge_global_client_name }}</a>
-                        {% endif %}
-                    {% endblock %}
-                </div>
+                <!-- END Header -->
+
                 {% comment %}
-                    There might be a need for a nav later on.
+                    There might be a need for a nav bar later on.
+                    See into perhaps showing referrer app visually.
+                    {% block breadcrumbs %}
+                        <div class="breadcrumbs">
+                            <a href="">{% trans "App name" %}</a>
+                            &rsaquo; {% trans "Current page" %}
+                        </div>
+                    {% endblock %}
                 {% endcomment %}
-                {% block header-nav %}{% endblock %}
-            </div>
-            <!-- END Header -->
 
-            {% comment %}
-                There might be a need for a nav bar later on.
-                See into perhaps showing referrer app visually.
-                {% block breadcrumbs %}
-                    <div class="breadcrumbs">
-                        <a href="">{% trans "App name" %}</a>
-                        &rsaquo; {% trans "Current page" %}
+                {% comment %}
+                    This allows django messages from the messaging framework to be displayed.
+                {% endcomment %}
+                {% block messages %}
+                    {% if messages %}
+                        <div id="messagelist" class="Messages">
+                            {% for message in messages %}
+                                <div {% if message.tags %}class="Message Message--{{ message.tags }}"{% endif %}>{{ message|capfirst }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endblock messages %}
+
+                {% comment %}
+                    Generally only changing content will suffice for templates.
+                {% endcomment %}
+                <div id="content" class="Content">
+                    {% block content %}{% endblock %}
+                </div>
+
+                {% block footer %}
+                    <div id="footer" class="Footer">
+                        <p>&copy; Girl Effect | Company No.07516619 | Charity No.1141155</p>
                     </div>
                 {% endblock %}
-            {% endcomment %}
-
-            {% comment %}
-                This allows django messages from the messaging framework to be displayed.
-            {% endcomment %}
-            {% block messages %}
-                {% if messages %}
-                    <div id="messagelist" class="Messages">
-                        {% for message in messages %}
-                            <div {% if message.tags %}class="Message Message--{{ message.tags }}"{% endif %}>{{ message|capfirst }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endblock messages %}
-
-            {% comment %}
-                Generally only changing content will suffice for templates.
-            {% endcomment %}
-            <div id="content" class="Content">
-                {% block content %}{% endblock %}
             </div>
-
-            {% block footer %}
-                <div id="footer" class="Footer">
-                    <p>&copy; Girl Effect | Company No.07516619 | Charity No.1141155</p>
-                </div>
-            {% endblock %}
         </div>
     </body>
 </html>

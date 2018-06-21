@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block custom-class %}
+    {{ page_class }}
+{% endblock %}
+
+{% block metatitle %}
+    {{ page_meta_title }}
+{% endblock %}
+
+{% block title %}
+    <h1>{{ page_title }}</h1>
+{% endblock %}
+
+{% block content %}
+    <p>{{ page_message }}</p>
+{% endblock %}

@@ -1,4 +1,3 @@
-import re
 from urllib.parse import urlparse, parse_qs, urlencode
 import logging
 
@@ -9,8 +8,6 @@ from oidc_provider.lib.errors import (
     RedirectUriError
 )
 
-from django.conf import settings
-from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.http import HttpResponseBadRequest, HttpResponse
 from django.middleware.locale import LocaleMiddleware
 from django.shortcuts import render
@@ -39,6 +36,7 @@ SESSION_UPDATE_URL_WHITELIST = [
     reverse_lazy("oidc_provider:authorize"),
     reverse_lazy("edit_profile"),
 ]
+
 
 def authorize_client(request):
     """
@@ -96,6 +94,10 @@ class ThemeManagementMiddleware(MiddlewareMixin):
     def process_request(self, request):
         if request.path.rstrip("/") in [
                 path.rstrip("/") for path in SESSION_UPDATE_URL_WHITELIST]:
+            current_host = request.get_host()
+            referer = request.META.get("HTTP_REFERER", None)
+            parsed_referer = urlparse(referer)
+            is_on_domain =  current_host == parsed_referer.netloc
 
             # Grab theme value off of url if available
             query_theme = fetch_theme(request, self.session_theme_key)
@@ -103,7 +105,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
                 update_session_data(
                     request, self.session_theme_key, query_theme
                 )
-            else:
+            elif not is_on_domain:
                 # Cleanup session values stored by this middleware
                 delete_session_data(request, [self.session_theme_key])
 
@@ -151,8 +153,9 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     client_uri_key = SessionKeys.CLIENT_URI
     client_name_key = SessionKeys.CLIENT_NAME
     client_terms_key = SessionKeys.CLIENT_TERMS
+    client_website = SessionKeys.CLIENT_WEBSITE
+    client_id_key = SessionKeys.CLIENT_ID
     oidc_values = None
-
 
     def process_request(self, request):
         # Before storing the redirect_uri, ensure it comes from a valid client.
@@ -160,6 +163,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         # redirect users to none client apps.
 
         uri = request.GET.get("redirect_uri", None)
+        client_id = request.GET.get("client_id", None)
 
         # The authorization of a client does a lookup every time it gets
         # called. Middleware, also fires off on each request. To guard against
@@ -168,7 +172,32 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         validator_uri = get_session_data(request, "redirect_uri_validation")
         if request.path.rstrip("/") in [
                 path.rstrip("/") for path in SESSION_UPDATE_URL_WHITELIST]:
-            if uri and request.method == "GET" and uri != validator_uri:
+            current_host = request.get_host()
+            referer = request.META.get("HTTP_REFERER", None)
+            parsed_referer = urlparse(referer)
+            is_on_domain = current_host == parsed_referer.netloc
+
+            # Cleanup session values stored by this middleware
+            if request.method == "GET" and not is_on_domain:
+                delete_session_data(
+                    request,
+                    [
+                        self.client_uri_key, self.client_name_key,
+                        self.client_terms_key, "redirect_uri_validation",
+                        self.client_id_key
+                    ]
+                )
+
+            # Check whether it's an on domain redirect_uri
+            if uri and not client_id:
+                parsed_url = urlparse(uri)
+                if parsed_url.netloc != "" and current_host != parsed_url.netloc:
+                    raise exceptions.BadRequestException(
+                        "client_id paramater is missing." \
+                        " redirect_uri found that is not a" \
+                        " relative path or on the authentication service domain."
+                    )
+            if uri and request.method == "GET" and uri != validator_uri and client_id:
                 authorize = authorize_client(request)
                 if isinstance(authorize, HttpResponse):
                     return authorize
@@ -181,30 +210,31 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                     )
                     update_session_data(
                         request,
-                        self.client_uri_key,
-                        authorize.params["redirect_uri"]
-                    )
-                    update_session_data(
-                        request,
                         self.client_terms_key,
                         authorize.client.terms_url
                     )
                     update_session_data(
                         request,
-                        "redirect_uri_validation",
-                        uri
+                        self.client_website,
+                        authorize.client.website_url
+                    )
+                    update_session_data(
+                        request,
+                        self.client_id_key,
+                        authorize.client.id
                     )
 
-            # TODO the cleanup will change later, when website_url gets
-            # introduced.
-            # Cleanup session values stored by this middleware
-            if uri is None and request.method != "POST":
-                delete_session_data(
+            # Set uri if it got to this point
+            if uri:
+                update_session_data(
                     request,
-                    [
-                        self.client_uri_key, self.client_name_key,
-                        self.client_terms_key, "redirect_uri_validation"
-                    ]
+                    self.client_uri_key,
+                    uri
+                )
+                update_session_data(
+                    request,
+                    "redirect_uri_validation",
+                    uri
                 )
 
     def process_response(self, request, response):
@@ -246,25 +276,47 @@ class GELocaleMiddleware(LocaleMiddleware):
     def process_request(self, request):
         super(GELocaleMiddleware, self).process_request(request)
 
-        # Get the language code to use
-        language_code = request.GET.get(
-            LANGUAGE_QUERY_PARAMETER, None
+        # Get the language code to use, can be a query
+        language = {
+            "code": request.GET.get(LANGUAGE_QUERY_PARAMETER, None),
+            "type": "default"
+        }
+
+        # Need to cater for views with auth decorators that redirect to login
+        next_query = request.GET.get("next")
+        next_args = {}
+
+        # Only attempt to get the language if there is a next query present
+        if next_query:
+
+            # Split on ?, seemingly the only way to get the full next url, in
+            # the event the next is off domain .path will not suffice.
+            parsed_query = urlparse(next_query)
+            next_args = {
+                "url": parsed_query.geturl().split("?", maxsplit=1)[0],
+                "qs": parse_qs(parsed_query.query)
+            }
+
+            # Query values are in list form. Only grab the first value from the
+            # list.
+            language = {
+                "code": next_args["qs"].get("language", [None])[0],
+                "type": "next_query"
+            }
+
+        # If the language can not be obtained from the path, there is no use in
+        # appending the language and redirecting to it.
+        language_from_path = translation.get_language_from_path(
+            request.path_info
         )
 
-
-        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
-
-        # Useful check from django.conf.urls.i18n, subclass middleware only
-        # cares about the first value
-        i18n_patterns_used, prefix_default = is_language_prefix_patterns_used(
-            urlconf)
-
         # Only if language code was provided, it is not the currently active
-        # language and the url we are currently on makes use of the i18n
-        # structure.
-        if (language_code and
-            language_code != translation.get_language() and
-            i18n_patterns_used):
+        # language, the url we are currently on does not already contain a
+        # language code and the url does not contain the querystring language.
+        if (language["code"] and
+            language["code"] != translation.get_language() and
+            language["code"] != language_from_path and
+            language_from_path):
 
             # Make use of the locales regex that is traditionally used to
             # attempt to get the language from the url
@@ -276,13 +328,21 @@ class GELocaleMiddleware(LocaleMiddleware):
 
                 # Replace the current language code in the full path with the
                 # querystring one and redirect to it.
-                path = request.path_info.replace(regex_match.group(1), language_code, 1)
+                path = request.path_info.replace(
+                    regex_match.group(1),
+                    language["code"],
+                    1
+                )
 
                 # Remove the language parameter, can cause a infinite redirect
                 # loop if the language is not found. Due to the base local
                 # middleware also attempting redirects back to the default
                 # language on 404s.
                 get_query = request.GET.copy()
-                del get_query["language"]
-                new_params = f"?{urlencode(get_query)}" if get_query else ""
+                if language["type"] == "default":
+                    del get_query["language"]
+                elif language["type"] == "next_query" and next_args:
+                    next_args["qs"].pop("language")
+                    get_query["next"] = next_args["url"] + f"?{urlencode(next_args['qs'], doseq=True)}"
+                new_params = f"?{urlencode(get_query, doseq=True)}" if get_query else ""
                 return self.response_redirect_class(f"{path}{new_params}")
