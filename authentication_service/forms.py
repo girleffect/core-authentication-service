@@ -172,7 +172,6 @@ class RegistrationForm(UserCreationForm):
         self.fields["birth_date"].widget.is_required = False
 
     def clean_age(self):
-        CONSENT_AGE = 13
         age = self.cleaned_data.get("age")
         if age and age < CONSENT_AGE:
             raise forms.ValidationError(_(
@@ -184,7 +183,6 @@ class RegistrationForm(UserCreationForm):
     # NOTE the order of RegistrationForm.Meta.fields, age is needed before
     # birth_date. If this is not the case, the age value will always be None.
     def clean_birth_date(self):
-        CONSENT_AGE = 13
         birth_date = self.cleaned_data.get("birth_date")
         age = self.cleaned_data.get("age")
         today = date.today()
