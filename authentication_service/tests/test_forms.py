@@ -403,7 +403,8 @@ class TestRegistrationForm(TestCase):
         self.assertEqual(form.errors, {
             "age": [
                 "We are sorry, " \
-                "users under the age of 13 cannot create an account."
+                f"users under the age of {constants.CONSENT_AGE}" \
+                " cannot create an account."
             ]
         })
         with mock.patch("authentication_service.forms.date") as mocked_date:
@@ -796,7 +797,8 @@ class EditProfileFormTestCase(TestCase):
         self.assertEqual(form.errors, {
             "age": [
                 "We are sorry, " \
-                "users under the age of 13 cannot create an account."
+                f"users under the age of {constants.CONSENT_AGE}" \
+                " cannot create an account."
             ]
         })
         with mock.patch("authentication_service.forms.date") as mocked_date:
