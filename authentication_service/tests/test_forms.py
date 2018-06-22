@@ -1,5 +1,6 @@
-import datetime
+from dateutil.relativedelta import relativedelta
 import copy
+import datetime
 
 from unittest import mock
 
@@ -12,6 +13,7 @@ from authentication_service.forms import (
     EditProfileForm, SetPasswordForm, PasswordChangeForm
 )
 from authentication_service.models import SecurityQuestion, OrganisationalUnit
+from authentication_service import constants
 
 
 @override_settings(
@@ -28,7 +30,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_default_password_validation(self):
@@ -153,7 +155,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_default_required_toggle_mapping(self):
@@ -171,7 +173,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_high_security_default_state(self):
@@ -183,7 +185,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_high_security_password_validation(self):
@@ -285,6 +287,7 @@ class TestRegistrationForm(TestCase):
             security="high")
         self.assertTrue(form.is_valid())
 
+    def test_age_to_birth_date(self):
         # Test age specified instead of birth_date. Refer to the link below for an explanation of
         # why the mocking is done the way it is:
         # http://www.voidspace.org.uk/python/mock/examples.html#partial-mocking
@@ -326,7 +329,7 @@ class TestRegistrationForm(TestCase):
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
-            "__all__": ["Enter either email or msisdn"]
+            "__all__": ["Enter either email or msisdn", "Enter either birth date or age"]
         })
 
     def test_email_validation(self):
@@ -375,6 +378,79 @@ class TestRegistrationForm(TestCase):
             "birth_date": datetime.date(2000, 1, 1)
         })
         self.assertTrue(form.is_valid())
+
+    def test_min_required_age_dob(self):
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "birth_date": datetime.date.today() - relativedelta(years=10),
+            "terms": True,
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
+        })
+        self.assertFalse(form.is_valid())
+
+    def test_min_required_age(self):
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "age": constants.CONSENT_AGE-1,
+            "terms": True,
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "age": [
+                "We are sorry, " \
+                f"users under the age of {constants.CONSENT_AGE}" \
+                " cannot create an account."
+            ]
+        })
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = RegistrationForm(data={
+                "username": "Username",
+                "email": "email@email.com",
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 3),
+                "terms": True,
+                "password1": "asdasdasdA@1",
+                "password2": "asdasdasdA@1"
+            })
+            self.assertFalse(form.is_valid())
+            form = RegistrationForm(data={
+                "username": "Username",
+                "email": "email@email.com",
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE+1, 1, 3),
+                "terms": True,
+                "password1": "asdasdasdA@1",
+                "password2": "asdasdasdA@1"
+            })
+            self.assertFalse(form.is_valid())
+
+    def test_on_required_age(self):
+        form = RegistrationForm(data={
+            "username": "Username",
+            "email": "email@email.com",
+            "age": constants.CONSENT_AGE,
+            "terms": True,
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
+        })
+        self.assertTrue(form.is_valid())
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = RegistrationForm(data={
+                "username": "Username",
+                "email": "email@email.com",
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 2),
+                "terms": True,
+                "password1": "asdasdasdA@1",
+                "password2": "asdasdasdA@1"
+            })
+            self.assertTrue(form.is_valid())
 
 
 class TestRegistrationFormHTML(TestCase):
@@ -693,6 +769,62 @@ class EditProfileFormTestCase(TestCase):
                      "available choices."],
             }
         )
+
+    def test_min_required_age_dob(self):
+        form = EditProfileForm(data={
+            "birth_date": datetime.date.today() - relativedelta(years=10),
+        })
+        self.assertFalse(form.is_valid())
+
+    @override_settings(
+        HIDE_FIELDS={"global_enable": False,
+        "global_fields": ["birth_date"]}
+    )
+    def test_age_and_dob_required(self):
+        form = EditProfileForm(data={})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "__all__": [
+                "Enter either birth date or age"
+            ]
+        })
+
+    def test_min_required_age(self):
+        form = EditProfileForm(data={
+            "age": constants.CONSENT_AGE-1,
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "age": [
+                "We are sorry, " \
+                f"users under the age of {constants.CONSENT_AGE}" \
+                " cannot create an account."
+            ]
+        })
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = EditProfileForm(data={
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 3),
+            })
+            self.assertFalse(form.is_valid())
+            form = EditProfileForm(data={
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE+1, 1, 3),
+            })
+            self.assertFalse(form.is_valid())
+
+    def test_on_required_age(self):
+        form = EditProfileForm(data={
+            "age": constants.CONSENT_AGE,
+        })
+        self.assertTrue(form.is_valid())
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            form = EditProfileForm(data={
+                "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 2),
+            })
+            self.assertTrue(form.is_valid())
 
 
 class TestPasswordResetForm(TestCase):

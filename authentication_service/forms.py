@@ -28,7 +28,7 @@ from django.utils.translation import ugettext_lazy as _
 from authentication_service import models, tasks
 from authentication_service.utils import update_form_fields
 from authentication_service.constants import SECURITY_QUESTION_COUNT, \
-    MIN_NON_HIGH_PASSWORD_LENGTH
+    MIN_NON_HIGH_PASSWORD_LENGTH, CONSENT_AGE
 
 
 LOGGER = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ class RegistrationForm(UserCreationForm):
         model = get_user_model()
         fields = [
             "username", "first_name", "last_name", "email",
-            "nickname", "msisdn", "gender", "birth_date", "age",
+            "nickname", "msisdn", "gender", "age", "birth_date",
             "country", "avatar", "password1", "password2"
         ]
         exclude = ["terms",]
@@ -171,6 +171,32 @@ class RegistrationForm(UserCreationForm):
         self.fields["birth_date"].required = False
         self.fields["birth_date"].widget.is_required = False
 
+    def clean_age(self):
+        age = self.cleaned_data.get("age")
+        if age and age < CONSENT_AGE:
+            raise forms.ValidationError(_(
+                f"We are sorry, users under the age of {CONSENT_AGE}"
+                " cannot create an account."
+            ))
+        return self.cleaned_data.get("age")
+
+    # NOTE the order of RegistrationForm.Meta.fields, age is needed before
+    # birth_date. If this is not the case, the age value will always be None.
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data.get("birth_date")
+        age = self.cleaned_data.get("age")
+        today = date.today()
+        if not birth_date and age:
+            birth_date = today - relativedelta(years=age)
+        if birth_date:
+            diff = relativedelta(today, birth_date)
+            if diff.years < CONSENT_AGE:
+                raise forms.ValidationError(_(
+                    f"We are sorry, users under the age of {CONSENT_AGE}"
+                    " cannot create an account."
+                ))
+        return birth_date
+
     def clean_password2(self):
         # Short circuit normal validation if not high security.
         if self.security == "high":
@@ -217,23 +243,37 @@ class RegistrationForm(UserCreationForm):
     def clean(self):
         cleaned_data = super(RegistrationForm, self).clean()
 
+        # Get a new empty ErrorList
+        additional_page_errors = self.error_class()
+
         # Check that either the email or the MSISDN or both is supplied.
         email = cleaned_data.get("email")
         msisdn = cleaned_data.get("msisdn")
-
         if not email and not msisdn and not \
                 settings.HIDE_FIELDS["global_enable"]:
-            raise ValidationError(_("Enter either email or msisdn"))
+            additional_page_errors.append(ValidationError(
+                _("Enter either email or msisdn"))
+            )
 
-        # Check that either the birth date or age is provided. If the birth date is provided, we
-        # use it, else we calculate the birth date from the age.
+        # Check that either the birth date or age is provided. If the birth
+        # date is provided, we use it, else we calculate the birth date from
+        # the age.
         birth_date = cleaned_data.get("birth_date")
-        if not birth_date:
-            age = cleaned_data.get("age")
-            if age:
-                cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
-            elif not settings.HIDE_FIELDS["global_enable"]:
-                raise ValidationError(_("Enter either birth date or age"))
+        if not set(["age", "birth_date"]) & set(self.errors) and \
+                not cleaned_data.get("birth_date") and \
+                not cleaned_data.get("age") and \
+                not settings.HIDE_FIELDS["global_enable"]:
+            additional_page_errors.append(ValidationError(
+                _("Enter either birth date or age"))
+            )
+
+        # Add new errors to existing error list, allows the raising of all
+        # clean method errors at once. Rather than one at a time per post. 
+        # NOTE: non_field_errors() is most likely still empty. It usually gets
+        # populated by raising a ValidationError in clean().
+        if additional_page_errors:
+            form_level_errors = self.non_field_errors()
+            self.errors["__all__"] = form_level_errors + additional_page_errors
 
         return cleaned_data
 
@@ -354,13 +394,13 @@ class EditProfileForm(forms.ModelForm):
 
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
-        min_value=13,
         max_value=100,
         required=False
     )
 
     def __init__(self, *args, **kwargs):
         super(EditProfileForm, self).__init__(*args, **kwargs)
+        hidden_fields = []
         fields_data= {"birth_date": {
                 "attributes": {
                     "help_text": _("Please use dd/mm/yyyy format")
@@ -372,7 +412,6 @@ class EditProfileForm(forms.ModelForm):
                 }
             }
         }
-        hidden_fields = []
 
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
@@ -382,7 +421,7 @@ class EditProfileForm(forms.ModelForm):
                 hidden_fields.append(field)
 
         if self.instance.organisational_unit:
-            # Show email address explicitly since it is hidden in the
+            # Show email address explicitly since it can be hidden in the
             # global hidden fields.
             hidden_fields.remove("email")
         else:
@@ -401,18 +440,75 @@ class EditProfileForm(forms.ModelForm):
             hidden=hidden_fields
         )
 
+        # Manual overrides:
+
+        # NOTE: These will then also ignore all other overrides set up till
+        # this point.
+
+        # The birth_date is required on the model, but not on the form since it
+        # can be indirectly populated if the age is provided.
+        self.fields["birth_date"].required = False
+        self.fields["birth_date"].widget.is_required = False
+
     class Meta:
         model = get_user_model()
         fields = [
             "first_name", "last_name", "nickname", "email", "msisdn", "gender",
-            "birth_date", "age", "country", "avatar"
+            "age", "birth_date", "country", "avatar"
         ]
+
+    def clean_age(self):
+        age = self.cleaned_data.get("age")
+        if age and age < CONSENT_AGE:
+            raise forms.ValidationError(_(
+                f"We are sorry, users under the age of {CONSENT_AGE}"
+                " cannot create an account."
+            ))
+        return self.cleaned_data.get("age")
+
+    # NOTE the order of EditProfileForm.Meta.fields, age is needed before
+    # birth_date. If this is not the case, the age value will always be None.
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data.get("birth_date")
+        age = self.cleaned_data.get("age")
+        today = date.today()
+        if not birth_date and age:
+            birth_date = today - relativedelta(years=age)
+        if birth_date:
+            diff = relativedelta(today, birth_date)
+            if diff.years < CONSENT_AGE:
+                raise forms.ValidationError(_(
+                    f"We are sorry, users under the age of {CONSENT_AGE}"
+                    " cannot create an account."
+                ))
+        return birth_date
 
     def clean(self):
         cleaned_data = super(EditProfileForm, self).clean()
-        age = cleaned_data.get("age")
-        if age:
-            cleaned_data["birth_date"] = date.today() - relativedelta(years=age)
+
+        # Get a new empty ErrorList
+        additional_page_errors = self.error_class()
+
+        # Check that either the birth date or age is provided. If the birth
+        # date is provided, we use it, else we calculate the birth date from
+        # the age.
+        birth_date = cleaned_data.get("birth_date")
+        if not set(["age", "birth_date"]) & set(self.errors) and \
+                not cleaned_data.get("birth_date") and \
+                not cleaned_data.get("age") and \
+                not settings.HIDE_FIELDS["global_enable"]:
+            additional_page_errors.append(ValidationError(
+                _("Enter either birth date or age"))
+            )
+
+        # Add new errors to existing error list, allows the raising of all
+        # clean method errors at once. Rather than one at a time per post. 
+        # NOTE: non_field_errors() is most likely still empty. It usually gets
+        # populated by raising a ValidationError in clean().
+        if additional_page_errors:
+            form_level_errors = self.non_field_errors()
+            self.errors["__all__"] = form_level_errors + additional_page_errors
+
         return cleaned_data
 
 
