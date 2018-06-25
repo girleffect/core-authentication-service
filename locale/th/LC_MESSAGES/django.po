@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-25 11:29+0200\n"
+"POT-Creation-Date: 2018-06-25 11:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -377,8 +377,9 @@ msgid "Request for Permission"
 msgstr ""
 
 #: authentication_service/templates/oidc_provider/authorize.html:25
+#, python-format
 msgid ""
-"You recently logged in to {{ client.name }}. They would like to access this "
+"You recently logged in to %(client_name)s. They would like to access this "
 "information of you:"
 msgstr ""
 
@@ -701,6 +702,7 @@ msgstr ""
 msgid "You have only one backup token remaining."
 msgid_plural "You have %(counter)s backup tokens remaining."
 msgstr[0] ""
+msgstr[1] ""
 
 #: authentication_service/templates/two_factor/profile/profile.html:56
 msgid "Show Codes"

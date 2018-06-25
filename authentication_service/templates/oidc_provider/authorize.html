@@ -22,7 +22,7 @@
 
 {% block content %}
     <p class="Intro">
-        {% trans "You recently logged in to {{ client.name }}. They would like to access this information of you:" %}
+        {% blocktrans with client_name=client.name %}You recently logged in to {{ client_name }}. They would like to access this information of you:{% endblocktrans %}
     </p>
     <form method="post" action="{% url 'oidc_provider:authorize' %}" class="Form">
         {% csrf_token %}
