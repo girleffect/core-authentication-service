@@ -10,12 +10,16 @@
 {% endblock %}
 
 {% block content %}
-  <p>{% blocktrans %}You are about to disable two-factor authentication. This
-    compromises your account security, are you sure?{% endblocktrans %}</p>
-  <form method="post" class="Form">
-    {% csrf_token %}
-    <table>{{ form }}</table>
-    <button class="Button"
+    <p>
+        {% blocktrans trimmed %}
+            You are about to disable two-factor authentication. This
+            compromises your account security, are you sure?
+        {% endblocktrans %}
+    </p>
+    <form method="post" class="Form">
+        {% csrf_token %}
+        <table>{{ form }}</table>
+        <button class="Button"
             type="submit">{% trans "Disable" %}</button>
-  </form>
+    </form>
 {% endblock %}

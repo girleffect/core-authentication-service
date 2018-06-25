@@ -11,17 +11,21 @@
 
 {% block content %}
     {% if "security-questions" in referrer %}
-        {% blocktrans %}
-        <p>You have exceeded the maximum number of allowed incorrect reset attempts ({{ failure_limit }}).
-        Please wait {{ cooloff_time_minutes }} minutes before trying again.</p>
-        {% endblocktrans %}
-    {% else %}
-        {% blocktrans %}
-        <p>You have exceeded the maximum number of allowed incorrect login attempts ({{ failure_limit }}).
-        Please wait {{ cooloff_time_minutes }} minutes before trying again.</p>
-        {% endblocktrans %}
         <p>
-            <a href="{% url "login" %}" class="Button">{% trans "Login" %}</a>
+            {% blocktrans with limit=failure_limit cooloff=cooloff_time_minutes trimmed %}
+                You have exceeded the maximum number of allowed incorrect reset
+                attempts ({{ limit }}).  Please wait {{ cooloff }} minutes
+                before trying again.
+            {% endblocktrans %}
         </p>
+    {% else %}
+        <p>
+            {% blocktrans with limit=failure_limit cooloff=cooloff_time_minutes trimmed %}
+                You have exceeded the maximum number of allowed incorrect login
+                attempts ({{ limit }}).  Please wait {{ cooloff }} minutes
+                before trying again.
+            {% endblocktrans %}
+        </p>
+        <p><a href="{% url "login" %}" class="Button">{% trans "Login" %}</a></p>
     {% endif %}
 {% endblock %}

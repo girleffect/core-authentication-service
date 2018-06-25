@@ -21,9 +21,9 @@
 {% endblock %}
 
 {% block content %}
-    {% blocktrans with client_name=client.name %}
-        <p class="Intro">You recently logged in to <strong>{{ client_name }}</strong>, and they would like to access this information of you:</p>
-    {% endblocktrans %}
+    <p class="Intro">
+        {% trans "You recently logged in to {{ client.name }}. They would like to access this information of you:" %}
+    </p>
     <form method="post" action="{% url 'oidc_provider:authorize' %}" class="Form">
         {% csrf_token %}
         {{ hidden_inputs }}
