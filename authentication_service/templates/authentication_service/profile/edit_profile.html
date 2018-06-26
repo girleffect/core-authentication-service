@@ -17,19 +17,5 @@
         <div class="Form-buttons">
             <input type="submit" value="{% trans "Update" %}" class="Button" />
         </div>
-
-        <div class="Menu">
-            <div class="Menu-title">
-                <h1>{% trans "Menu" %}</h1>
-            </div>
-            <ul class="Menu-list">
-                <li class="Menu-item"><a href="{% url "update_password" %}">{% trans "Password update" %}</a></li>
-                <li class="Menu-item"><a href="{% url "update_security_questions" %}">{% trans "Security questions update" %}</a></li>
-                <li class="Menu-item"><a href="{% url "delete_account" %}">{% trans "Delete account" %}</a></li>
-                {% if 2fa_enabled %}
-                    <li class="Menu-item"><a href="{% url "update_2fa" %}">{% trans "2FA settings" %}</a></li>
-                {% endif %}
-            </ul>
-        </div>
     </form>
 {% endblock %}
