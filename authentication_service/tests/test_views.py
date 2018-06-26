@@ -580,6 +580,15 @@ class TestRegistrationView(TestCase):
         cls.question_two = SecurityQuestion.objects.create(
             question_text="Some text for the other question"
         )
+        cls.question_three = SecurityQuestion.objects.create(
+            question_text="Some text Three"
+        )
+        cls.question_four = SecurityQuestion.objects.create(
+            question_text="Some text Four"
+        )
+        cls.question_five = SecurityQuestion.objects.create(
+            question_text="Some text Five"
+        )
         cls.client_obj = Client.objects.create(
             client_id="redirect-tester",
             name= "RedirectClient",
@@ -950,6 +959,45 @@ class TestRegistrationView(TestCase):
         )
         self.assertContains(response, '<a href="http://registration-terms.com">'\
         'Click here to view the terms and conditions</a>'
+        )
+
+    def test_question_preselect(self):
+        # Test with redirect URI set.
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + f"?question_ids={self.question_four.id}&question_ids={self.question_three.id}"
+        )
+        self.assertContains(
+            response,
+            f'<option value="{self.question_four.id}" selected>{self.question_four.question_text}</option>'
+        )
+        self.assertContains(
+            response,
+            f'<option value="{self.question_three.id}" selected>{self.question_three.question_text}</option>'
+        )
+
+    def test_question_preselect_incorrect_id(self):
+        # Test with redirect URI set.
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + f"?question_ids=9999999&question_ids={self.question_three.id}"
+        )
+        self.assertContains(
+            response,
+            f'<option value="{self.question_three.id}" selected>{self.question_three.question_text}</option>',
+            count=1
+        )
+        self.assertContains(
+            response,
+            '<option value="" selected>---------</option>',
+            count=2
+        )
+        self.assertContains(
+            response,
+            "selected>",
+            count=3
         )
 
 

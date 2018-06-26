@@ -167,9 +167,21 @@ class RegistrationView(LanguageMixin, CreateView):
     form_class = forms.RegistrationForm
     security = None
 
+    def dispatch(self, *args, **kwargs):
+        self.question_ids = self.request.GET.getlist("question_ids", [])
+        return super(RegistrationView, self).dispatch(*args, **kwargs)
+
     @property
     def get_formset(self):
-        formset = forms.SecurityQuestionFormSet(language=self.language)
+        # Formsets take a list of dictionaries for initial data.
+        initial_data = [
+            {"question": q_id} for q_id in self.question_ids
+        ]
+        data = {
+            "language": self.language,
+            "initial": initial_data
+        }
+        formset = forms.SecurityQuestionFormSet(**data)
         if self.request.POST:
             formset = forms.SecurityQuestionFormSet(
                 data=self.request.POST, language=self.language
