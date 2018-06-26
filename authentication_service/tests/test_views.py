@@ -977,6 +977,29 @@ class TestRegistrationView(TestCase):
             f'<option value="{self.question_three.id}" selected>{self.question_three.question_text}</option>'
         )
 
+    def test_question_preselect_incorrect_id(self):
+        # Test with redirect URI set.
+        response = self.client.get(
+            reverse(
+                "registration"
+            ) + f"?question_ids=9999999&question_ids={self.question_three.id}"
+        )
+        self.assertContains(
+            response,
+            f'<option value="{self.question_three.id}" selected>{self.question_three.question_text}</option>',
+            count=1
+        )
+        self.assertContains(
+            response,
+            '<option value="" selected>---------</option>',
+            count=2
+        )
+        self.assertContains(
+            response,
+            "selected>",
+            count=3
+        )
+
 
 class EditProfileViewTestCase(TestCase):
 
