@@ -173,12 +173,13 @@ class RegistrationView(LanguageMixin, CreateView):
 
     @property
     def get_formset(self):
-        pre_select_questions = [
+        # Formsets take a list of dictionaries for initial data.
+        initial_data = [
             {"question": q_id} for q_id in self.question_ids
         ]
         data = {
             "language": self.language,
-            "initial": pre_select_questions
+            "initial": initial_data
         }
         formset = forms.SecurityQuestionFormSet(**data)
         if self.request.POST:
