@@ -118,12 +118,13 @@ class LoginView(core.LoginView):
                     # Query values are in list form. Only grab the first value
                     # from the list.
                     client_id = next_query_args.get("client_id", [None])[0]
-                    # Only do these checks if no user was authenticated and
-                    # client_id is present
-                    if form_user is None and client_id:
-                        username = form.cleaned_data["username"]
-                        password = form.cleaned_data["password"]
 
+                    # Only do these checks if no user was authenticated and
+                    # client_id is present. Also need to ensure form values are
+                    # present.
+                    username = form.cleaned_data.get("username", None)
+                    password = form.cleaned_data.get("password", None)
+                    if form_user is None and client_id and username and password:
                         try:
                             user = TemporaryMigrationUserStore.objects.get(
                                 username=username, client_id=client_id
