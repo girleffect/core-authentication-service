@@ -7,6 +7,7 @@ import urllib
 
 from defender.decorators import watch_login
 from defender.utils import is_user_already_locked, lockout_response
+from formtools.wizard.views import NamedUrlSessionWizardView
 from oidc_provider.models import Client
 
 from django.conf import settings
@@ -19,6 +20,7 @@ from django.contrib.auth.views import (
     PasswordChangeView
 )
 from django.core.exceptions import ValidationError
+from django.core.files.storage import DefaultStorage
 from django.core.urlresolvers import reverse, reverse_lazy
 
 from django.contrib.auth import get_user_model
@@ -162,26 +164,65 @@ defender_decorator = watch_login()
 watch_login_method = method_decorator(defender_decorator)
 LoginView.dispatch = watch_login_method(LoginView.dispatch)
 
+registration_forms = (
+    ("userdata", forms.RegistrationForm),
+    ("securityquestions", forms.SecurityQuestionFormSet),
+)
 
-class RegistrationView(LanguageMixin, CreateView):
-    template_name = "authentication_service/registration.html"
-    form_class = forms.RegistrationForm
+class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
+    form_list = registration_forms
+    file_storage = DefaultStorage()
+
+    # Needed to stop a NoneType error from triggering in django internals. The
+    # formset does not require a queryset.
+    instance_dict = {"securityquestions": models.UserSecurityQuestion.objects.none()}
     security = None
 
     def dispatch(self, *args, **kwargs):
-        self.question_ids = self.request.GET.getlist("question_ids", [])
-        return super(RegistrationView, self).dispatch(*args, **kwargs)
+        dispatch = super(RegistrationWizard, self).dispatch(*args, **kwargs)
+
+        # Need to set these values once, but guard against clearing them.
+        security = self.request.GET.get("security")
+        if security:
+            self.storage.extra_data["security"] = security
+        required = self.request.GET.getlist("requires")
+        if required:
+            self.storage.extra_data["required"] = required
+        hidden = self.request.GET.getlist("hide")
+        if hidden:
+            self.storage.extra_data["hidden"] = hidden
+        question_ids = self.request.GET.getlist("question_ids", [])
+        if question_ids:
+            self.storage.extra_data["question_ids"] = question_ids
+        return dispatch
+
+    def get_form_kwargs(self, step=None):
+        kwargs = super(RegistrationWizard, self).get_form_kwargs()
+        if step == "userdata":
+            security = self.storage.extra_data.get("security")
+            hidden = self.storage.extra_data.get("hidden")
+            required = self.storage.extra_data.get("required")
+            if security:
+                kwargs["security"] = security.lower()
+            if required:
+                kwargs["required"] = required
+            if hidden:
+                kwargs["hidden"] = hidden
+
+        if step == "securityquestions":
+            # Formsets take a list of dictionaries for initial data.
+            initial_data = [
+                {"question": q_id}
+                for q_id in self.storage.extra_data.get("question_ids", [])
+            ]
+            kwargs = {
+                "language": self.language,
+                "initial": initial_data
+            }
+        return kwargs
 
     @property
     def get_formset(self):
-        # Formsets take a list of dictionaries for initial data.
-        initial_data = [
-            {"question": q_id} for q_id in self.question_ids
-        ]
-        data = {
-            "language": self.language,
-            "initial": initial_data
-        }
         formset = forms.SecurityQuestionFormSet(**data)
         if self.request.POST:
             formset = forms.SecurityQuestionFormSet(
@@ -189,55 +230,24 @@ class RegistrationView(LanguageMixin, CreateView):
             )
         return formset
 
-    def get_form_kwargs(self):
-        kwargs = super(RegistrationView, self).get_form_kwargs()
-        self.security = self.request.GET.get("security")
-        if isinstance(self.security, str):
-            kwargs["security"] = self.security.lower()
+    def done(self, form_list, **kwargs):
+        formset =  kwargs["form_dict"]["securityquestions"]
 
-        required = self.request.GET.getlist("requires")
-        if required:
-            kwargs["required"] = required
+        # Once form is saved the data gets removed from the
+        # get_all_cleaned_data, store the values before saving. The values are
+        # needed to login user.
+        username = self.get_all_cleaned_data()["username"]
+        pwd = self.get_all_cleaned_data()["password1"]
 
-        hidden = self.request.GET.getlist("hide")
-        if hidden:
-            kwargs["hidden"] = hidden
+        # Save user model
+        user =  kwargs["form_dict"]["userdata"].save()
 
-        return kwargs
-
-    def get_context_data(self, *args, **kwargs):
-        ct = super(RegistrationView, self).get_context_data(*args, **kwargs)
-
-        # Either a new formset instance or an existing one is passed to the
-        # formset class.
-        if kwargs.get("question_formset"):
-            ct["question_formset"] = kwargs["question_formset"]
-        else:
-            ct["question_formset"] = self.get_formset
-        return ct
-
-    def form_invalid(self, form):
-        return self.render_to_response(self.get_context_data(
-            form=form, question_formset=self.get_formset
-        ))
-
-    def form_valid(self, form):
-        formset = self.get_formset
-
-        if not formset.is_valid():
-            return self.render_to_response(self.get_context_data(
-                form=form, question_formset=formset)
-            )
-
-        # Let the user model save.
-        response = super(RegistrationView, self).form_valid(form)
-
-        # GE-1065 requires ALL users to be logged in
-        new_user = authenticate(username=form.cleaned_data["username"],
-                                password=form.cleaned_data["password1"])
+        ## GE-1065 requires ALL users to be logged in
+        new_user = authenticate(username=username,
+                                password=pwd)
         login(self.request, new_user)
 
-        # Do some work and assign questions to the user.
+        ## Do some work and assign questions to the user.
         for form in formset.forms:
             # Trust that form did its work. In the event that not all questions
             # were answered, save what can be saved.
@@ -248,18 +258,16 @@ class RegistrationView(LanguageMixin, CreateView):
                 # All fields on model are required, as such it requires the
                 # full set of data.
                 data = form.cleaned_data
-                data["user_id"] = self.object.id
+                data["user_id"] = user.id
                 data["language_code"] = self.language
                 question = models.UserSecurityQuestion.objects.create(**data)
 
-        # If get_success_url already returns a response object, immediately
-        # return it.
-        alternate_response = self.get_success_url()
-        if isinstance(alternate_response, HttpResponse):
-            return alternate_response
-        return response
+        ## If get_success_url already returns a response object, immediately
+        ## return it.
+        #alternate_response = self.get_success_url()
+        return self.get_success_response()
 
-    def get_success_url(self):
+    def get_success_response(self):
         key = CLIENT_URI_SESSION_KEY
         uri = utils.get_session_data(self.request, key)
 
@@ -270,7 +278,7 @@ class RegistrationView(LanguageMixin, CreateView):
         #        "show2fa") == "true":
         #    return reverse("two_factor_auth:setup")
         if uri:
-            return uri
+            return redirect(uri)
         return render(
             self.request,
             "authentication_service/message.html",

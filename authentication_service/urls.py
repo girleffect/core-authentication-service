@@ -28,6 +28,10 @@ from two_factor.views import ProfileView
 
 from authentication_service import views
 
+registration_wizard = views.RegistrationWizard.as_view(
+    url_name="registration_step"
+)
+
 
 urlpatterns = [
     url(r"^i18n/", include("django.conf.urls.i18n")),
@@ -106,10 +110,11 @@ urlpatterns += i18n_patterns(
     ),
     # Registration URLs
     url(
-        r"^registration/$",
-        views.RegistrationView.as_view(),
-        name="registration"
+        r"^registration/(?P<step>.+)/$",
+        registration_wizard,
+        name="registration_step"
     ),
+    url(r"^registration/$", registration_wizard, name="registration"),
     url(
         r"^redirect/$",
         views.SessionRedirectView.as_view(),
