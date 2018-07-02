@@ -202,6 +202,10 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             security = self.storage.extra_data.get("security")
             hidden = self.storage.extra_data.get("hidden")
             required = self.storage.extra_data.get("required")
+            kwargs["term_url"] = utils.get_session_data(
+                self.request,
+                constants.SessionKeys.CLIENT_TERMS
+            )
             if security:
                 kwargs["security"] = security.lower()
             if required:

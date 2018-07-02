@@ -23,12 +23,17 @@ from django.forms import modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
 from authentication_service.utils import update_form_fields
-from authentication_service.constants import SECURITY_QUESTION_COUNT, \
-    MIN_NON_HIGH_PASSWORD_LENGTH, CONSENT_AGE
+from authentication_service.constants import (
+    SECURITY_QUESTION_COUNT,
+    MIN_NON_HIGH_PASSWORD_LENGTH,
+    CONSENT_AGE,
+    GE_TERMS_URL
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -68,9 +73,10 @@ class RegistrationForm(UserCreationForm):
         ]
         exclude = ["terms",]
 
-    def __init__(self, security=None, required=None, hidden=None, *args, **kwargs):
+    def __init__(self, term_url=None, security=None, required=None, hidden=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
+        self.term_url = term_url or GE_TERMS_URL
 
         # Security value is required later in form processes as well.
         self.security = security
@@ -119,10 +125,21 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
+        none_html_tag_translatable_terms_anchor_text = _(
+            "Click here to view the terms and conditions"
+        )
         fields_data.update({
             "birth_date": {
                 "attributes": {
                     "help_text": _("Please use dd/mm/yyyy format")
+                }
+            },
+            "terms": {
+                "attributes": {
+                    "help_text": (
+                        f'<a href="{self.term_url}">'
+                        f"{none_html_tag_translatable_terms_anchor_text}</a>"
+                    )
                 }
             },
             "nickname": {

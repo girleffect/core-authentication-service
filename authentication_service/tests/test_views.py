@@ -600,59 +600,88 @@ class TestRegistrationView(TestCase):
 
     def test_view_success_template(self):
         # Test most basic iteration
+        response = self.client.post(
+            reverse("registration"),
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Username",
+                "userdata-password1": "password",
+                "userdata-password2": "password",
+                "userdata-age": "18",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-email": "email@email.com",
+            },
+            follow=True
+        )
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.post(
-                reverse("registration"),
+                response.redirect_chain[-1][0],
                 {
-                    "username": "Username",
-                    "password1": "password",
-                    "password2": "password",
-                    "age": "18",
-                    "birth_date": "2000-01-01",
-                    "terms": True,
-                    "email": "email@email.com",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                }
+                    "registration_wizard-current_step": "securityquestions",
+                    "securityquestions-TOTAL_FORMS": "2",
+                    "securityquestions-INITIAL_FORMS": "0",
+                    "securityquestions-MIN_NUM_FORMS": "0",
+                    "securityquestions-MAX_NUM_FORMS": "1000",
+                },
+                follow=True
             )
 
+    def test_view_success_template_age(self):
+        # Test most basic registration with age instead of birth_date
+        response = self.client.post(
+            reverse("registration"),
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Username0",
+                "userdata-password1": "password",
+                "userdata-password2": "password",
+                "userdata-age": "16",
+                "userdata-terms": True,
+                "userdata-email": "email1@email.com",
+            },
+            follow=True
+        )
         with self.assertTemplateUsed("authentication_service/message.html"):
-            # Test most basic registration with age instead of birth_date
             response = self.client.post(
-                reverse("registration"),
+                response.redirect_chain[-1][0],
                 {
-                    "username": "Username0",
-                    "password1": "password",
-                    "password2": "password",
-                    "age": "16",
-                    "terms": True,
-                    "email": "email1@email.com",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                }
+                    "registration_wizard-current_step": "securityquestions",
+                    "securityquestions-TOTAL_FORMS": "2",
+                    "securityquestions-INITIAL_FORMS": "0",
+                    "securityquestions-MIN_NUM_FORMS": "0",
+                    "securityquestions-MAX_NUM_FORMS": "1000",
+                },
+                follow=True
             )
 
+    def test_view_success_template_age_and_bday(self):
+        # Test most basic registration with age and birth_date. Birth_date takes precedence.
+        response = self.client.post(
+            reverse("registration"),
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Username0a",
+                "userdata-password1": "password",
+                "userdata-password2": "password",
+                "userdata-birth_date": "1999-01-01",
+                "userdata-age": "16",
+                "userdata-terms": True,
+                "userdata-email": "email2@email.com",
+            },
+            follow=True
+        )
         with self.assertTemplateUsed("authentication_service/message.html"):
-            # Test most basic registration with age and birth_date. Birth_date takes precedence.
             response = self.client.post(
-                reverse("registration"),
+                response.redirect_chain[-1][0],
                 {
-                    "username": "Username0a",
-                    "password1": "password",
-                    "password2": "password",
-                    "birth_date": "1999-01-01",
-                    "age": "16",
-                    "terms": True,
-                    "email": "email1a@email.com",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                }
+                    "registration_wizard-current_step": "securityquestions",
+                    "securityquestions-TOTAL_FORMS": "2",
+                    "securityquestions-INITIAL_FORMS": "0",
+                    "securityquestions-MIN_NUM_FORMS": "0",
+                    "securityquestions-MAX_NUM_FORMS": "1000",
+                },
+                follow=True
             )
 
     def test_view_success_redirects_no_2fa(self):
@@ -843,27 +872,36 @@ class TestRegistrationView(TestCase):
 
     def test_security_questions_save(self):
         ## GE-1117: Changed
+        response = self.client.post(
+            reverse("registration") + "?security=high",
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Unique@User@Name",
+                "userdata-age": "16",
+                "userdata-password1": "awesom#saFe3",
+                "userdata-password2": "awesom#saFe3",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-email": "emailunique@email.com",
+                "userdata-msisdn": "0856545698",
+            },
+            follow=True
+        )
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.post(
-                reverse("registration") + "?security=high",
+                response.redirect_chain[-1][0],
                 {
-                    "username": "Unique@User@Name",
-                    "age": "16",
-                    "password1": "awesom#saFe3",
-                    "password2": "awesom#saFe3",
-                    "birth_date": "2000-01-01",
-                    "terms": True,
-                    "email": "emailunique@email.com",
-                    "msisdn": "0856545698",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                    "form-0-question": self.question_one.id,
-                    "form-0-answer": "Answer1",
-                    "form-1-question": self.question_two.id,
-                    "form-1-answer": "Answer2"
-                }
+                    "registration_wizard-current_step": "securityquestions",
+                    "securityquestions-TOTAL_FORMS": "2",
+                    "securityquestions-INITIAL_FORMS": "0",
+                    "securityquestions-MIN_NUM_FORMS": "0",
+                    "securityquestions-MAX_NUM_FORMS": "1000",
+                    "securityquestions-0-question": self.question_one.id,
+                    "securityquestions-0-answer": "Answer1",
+                    "securityquestions-1-question": self.question_two.id,
+                    "securityquestions-1-answer": "Answer2"
+                },
+                follow=True
             )
             # self.assertIn(response.url, reverse("two_factor_auth:setup"))
         user = get_user_model().objects.get(username="Unique@User@Name")
@@ -961,7 +999,8 @@ class TestRegistrationView(TestCase):
             terms_url="http://registration-terms.com"
         )
         response = self.client.get(
-            reverse("registration")
+            reverse("registration"),
+            follow=True
         )
         self.assertContains(response, '<a href="https://www.girleffect.org/'\
         'terms-and-conditions/">Click here to view the terms and conditions</a>'
@@ -969,7 +1008,8 @@ class TestRegistrationView(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?client_id=registraion_client_id&redirect_uri=http://exmpl.co/"
+            ) + "?client_id=registraion_client_id&redirect_uri=http://exmpl.co/",
+            follow=True
         )
         self.assertContains(response, '<a href="http://registration-terms.com">'\
         'Click here to view the terms and conditions</a>'
