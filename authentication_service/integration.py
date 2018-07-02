@@ -8,7 +8,7 @@ from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 
 from authentication_service.api.stubs import AbstractStubClass
-from authentication_service.models import CoreUser, Country, OrganisationalUnit
+from authentication_service.models import CoreUser, Country, OrganisationalUnit, UserSite
 from authentication_service.utils import strip_empty_optional_fields, check_limit, \
     to_dict_with_custom_fields, range_filter_parser
 
@@ -228,9 +228,7 @@ class Implementation(AbstractStubClass):
         limit = check_limit(limit)
 
         order_by = order_by or ["id"]
-        # The user filter needs to contain a distinct() filter since joining
-        # with the UserSite table can lead to multiple rows containing the same user.
-        users = get_user_model().objects.distinct().order_by(*order_by)
+        users = get_user_model().objects.order_by(*order_by)
 
         # Bools
         if tfa_enabled is not None:
@@ -296,12 +294,18 @@ class Implementation(AbstractStubClass):
         if organisational_unit_id:
             users = users.filter(organisational_unit__id=organisational_unit_id)
         if site_ids:
-            users = users.filter(usersite__site_id__in=site_ids)
+            # In order for the count to be correct, we cannot join with the UserSite table and
+            # need to use a subquery.
+            site_user_ids = UserSite.objects.distinct().filter(site_id__in=site_ids).values(
+                "user_id")
+            users = users.filter(id__in=site_user_ids)
 
-        # Count
+        # Add count
         users = users.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
-        )[offset:offset + limit]
+        )
+        # Perform the query and get the correct slice
+        users = users[offset:offset + limit]
         return (
             [strip_empty_optional_fields(to_dict_with_custom_fields(user, USER_VALUES))
              for user in users],

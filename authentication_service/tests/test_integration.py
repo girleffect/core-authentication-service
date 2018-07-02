@@ -504,6 +504,7 @@ class IntegrationTestCase(TestCase):
         response = self.client.get(
             f"/api/v1/users?site_ids=1,2")
         print(response.json())
+        self.assertEqual(int(response["X-Total-Count"]), 1)
         self.assertEqual(len(response.json()), 1)
 
         # Link another user to site 2
@@ -512,6 +513,7 @@ class IntegrationTestCase(TestCase):
         # Querying both sites now results in 2 users...
         response = self.client.get(
             f"/api/v1/users?site_ids=1,2")
+        self.assertEqual(int(response["X-Total-Count"]), 2)
         self.assertEqual(len(response.json()), 2)
 
         # ...while querying only site 1 results in 1 user.
