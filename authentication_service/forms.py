@@ -280,6 +280,11 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
         self.question_queryset = kwargs.pop(
             "question_queryset", None
         )
+
+        # Hook value for wizards
+        self.email = kwargs.pop(
+            "step_email", None
+        )
         self.language = language
         super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
 
@@ -298,7 +303,7 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 
     def clean(self):
         # This is the email as found on RegistrationForm.
-        email = self.data.get("email", None)
+        email = self.data.get("email", self.email)
 
         questions = []
         for form in self.forms:

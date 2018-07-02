@@ -217,6 +217,9 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             ]
             kwargs = {
                 "language": self.language,
+                "step_email": self.get_cleaned_data_for_step(
+                    "userdata"
+                ).get("email"),
                 "initial": initial_data
             }
         return kwargs

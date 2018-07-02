@@ -803,24 +803,38 @@ class TestRegistrationView(TestCase):
         self.assertIn(response.url, "/test-redirect-url/")
 
     def test_user_save(self):
+        response = self.client.post(
+            reverse("registration") + "?security=high",
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Unique@User@Name",
+                "userdata-password1": "awesom#saFe3",
+                "userdata-password2": "awesom#saFe3",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-email": "emailunique@email.com",
+                "userdata-msisdn": "0856545698",
+                "userdata-age": "16",
+            },
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            reverse("registration_step", kwargs={"step": "securityquestions"})
+        )
+
         ## GE-1117: Changed
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.post(
-                reverse("registration") + "?security=high",
+                response.redirect_chain[-1][0],
                 {
-                    "username": "Unique@User@Name",
-                    "password1": "awesom#saFe3",
-                    "password2": "awesom#saFe3",
-                    "birth_date": "2000-01-01",
-                    "terms": True,
-                    "email": "emailunique@email.com",
-                    "msisdn": "0856545698",
-                    "age": "16",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                }
+                    "registration_wizard-current_step": "securityquestions",
+                    "securityquestions-TOTAL_FORMS": "2",
+                    "securityquestions-INITIAL_FORMS": "0",
+                    "securityquestions-MIN_NUM_FORMS": "0",
+                    "securityquestions-MAX_NUM_FORMS": "1000",
+                },
+                follow=True
             )
             # self.assertIn(response.url, reverse("two_factor_auth:setup"))
         user = get_user_model().objects.get(username="Unique@User@Name")
