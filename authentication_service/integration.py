@@ -29,7 +29,7 @@ USER_VALUES = [
     "id", "username", "first_name", "last_name", "email", "is_active",
     "date_joined", "last_login", "email_verified", "msisdn_verified", "msisdn",
     "gender", "birth_date", "avatar", "country", "created_at", "updated_at",
-    "organisational_unit_id"
+    "organisational_unit"
 ]
 
 
