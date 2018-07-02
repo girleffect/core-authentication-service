@@ -195,6 +195,16 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         if question_ids:
             self.storage.extra_data["question_ids"] = question_ids
         return dispatch
+    def get_form_initial(self, step):
+        initial = super(RegistrationWizard, self).get_form_kwargs()
+
+        # Formsets take a list of dictionaries for initial data.
+        if step == "securityquestions":
+            initial = [
+                {"question": q_id}
+                for q_id in self.storage.extra_data.get("question_ids", [])
+            ]
+        return initial
 
     def get_form_kwargs(self, step=None):
         kwargs = super(RegistrationWizard, self).get_form_kwargs()
@@ -214,17 +224,11 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 kwargs["hidden"] = hidden
 
         if step == "securityquestions":
-            # Formsets take a list of dictionaries for initial data.
-            initial_data = [
-                {"question": q_id}
-                for q_id in self.storage.extra_data.get("question_ids", [])
-            ]
             kwargs = {
                 "language": self.language,
                 "step_email": self.get_cleaned_data_for_step(
                     "userdata"
-                ).get("email"),
-                "initial": initial_data
+                ).get("email")
             }
         return kwargs
 
