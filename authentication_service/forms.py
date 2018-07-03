@@ -73,10 +73,10 @@ class RegistrationForm(UserCreationForm):
         ]
         exclude = ["terms",]
 
-    def __init__(self, term_url=None, security=None, required=None, hidden=None, *args, **kwargs):
+    def __init__(self, terms_url=None, security=None, required=None, hidden=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
-        self.term_url = term_url or GE_TERMS_URL
+        self.terms_url = terms_url or GE_TERMS_URL
 
         # Security value is required later in form processes as well.
         self.security = security
@@ -137,7 +137,7 @@ class RegistrationForm(UserCreationForm):
             "terms": {
                 "attributes": {
                     "help_text": (
-                        f'<a href="{self.term_url}">'
+                        f'<a href="{self.terms_url}">'
                         f"{none_html_tag_translatable_terms_anchor_text}</a>"
                     )
                 }

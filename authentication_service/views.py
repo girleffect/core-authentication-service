@@ -216,7 +216,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             security = self.storage.extra_data.get("security")
             hidden = self.storage.extra_data.get("hidden")
             required = self.storage.extra_data.get("required")
-            kwargs["term_url"] = utils.get_session_data(
+            kwargs["terms_url"] = utils.get_session_data(
                 self.request,
                 constants.SessionKeys.CLIENT_TERMS
             )
@@ -246,9 +246,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         return formset
 
     def done(self, form_list, **kwargs):
-        security_obj = types.SimpleNamespace()
-        security_obj.forms = []
-        formset =  kwargs["form_dict"].get("securityquestions", security_obj)
+        formset =  kwargs["form_dict"].get("securityquestions")
 
         # Once form is saved the data gets removed from the
         # get_all_cleaned_data, store the values before saving. The values are
@@ -259,13 +257,13 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         # Save user model
         user =  kwargs["form_dict"]["userdata"].save()
 
-        ## GE-1065 requires ALL users to be logged in
+        # GE-1065 requires ALL users to be logged in
         new_user = authenticate(username=username,
                                 password=pwd)
         login(self.request, new_user)
 
-        ## Do some work and assign questions to the user.
-        for form in formset.forms:
+        # Do some work and assign questions to the user.
+        for form in getattr(formset, "forms", []):
             # Trust that form did its work. In the event that not all questions
             # were answered, save what can be saved.
             if form.cleaned_data.get(
