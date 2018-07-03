@@ -1,5 +1,6 @@
 import datetime
 import socket
+import types
 
 import pkg_resources
 from urllib.parse import urlparse, parse_qs
@@ -169,18 +170,33 @@ registration_forms = (
     ("securityquestions", forms.SecurityQuestionFormSet),
 )
 
+def show_security_questions(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step(
+        "userdata") or {"email": None}
+    return cleaned_data["email"] is None
+
 class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     form_list = registration_forms
     file_storage = DefaultStorage()
+    condition_dict = {"securityquestions": show_security_questions}
 
     # Needed to stop a NoneType error from triggering in django internals. The
     # formset does not require a queryset.
     instance_dict = {"securityquestions": models.UserSecurityQuestion.objects.none()}
     security = None
 
-    def dispatch(self, *args, **kwargs):
-        dispatch = super(RegistrationWizard, self).dispatch(*args, **kwargs)
+    def get_form_initial(self, step):
+        initial = super(RegistrationWizard, self).get_form_kwargs()
 
+        # Formsets take a list of dictionaries for initial data.
+        if step == "securityquestions":
+            initial = [
+                {"question": q_id}
+                for q_id in self.storage.extra_data.get("question_ids", [])
+            ]
+        return initial
+
+    def get_form_kwargs(self, step=None):
         # Need to set these values once, but guard against clearing them.
         security = self.request.GET.get("security")
         if security:
@@ -194,19 +210,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         question_ids = self.request.GET.getlist("question_ids", [])
         if question_ids:
             self.storage.extra_data["question_ids"] = question_ids
-        return dispatch
-    def get_form_initial(self, step):
-        initial = super(RegistrationWizard, self).get_form_kwargs()
 
-        # Formsets take a list of dictionaries for initial data.
-        if step == "securityquestions":
-            initial = [
-                {"question": q_id}
-                for q_id in self.storage.extra_data.get("question_ids", [])
-            ]
-        return initial
-
-    def get_form_kwargs(self, step=None):
         kwargs = super(RegistrationWizard, self).get_form_kwargs()
         if step == "userdata":
             security = self.storage.extra_data.get("security")
@@ -242,7 +246,9 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         return formset
 
     def done(self, form_list, **kwargs):
-        formset =  kwargs["form_dict"]["securityquestions"]
+        security_obj = types.SimpleNamespace()
+        security_obj.forms = []
+        formset =  kwargs["form_dict"].get("securityquestions", security_obj)
 
         # Once form is saved the data gets removed from the
         # get_all_cleaned_data, store the values before saving. The values are
@@ -273,9 +279,6 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 data["language_code"] = self.language
                 question = models.UserSecurityQuestion.objects.create(**data)
 
-        ## If get_success_url already returns a response object, immediately
-        ## return it.
-        #alternate_response = self.get_success_url()
         return self.get_success_response()
 
     def get_success_response(self):
