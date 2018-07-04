@@ -7,7 +7,7 @@ from project.settings_base import *
 
 HIDE_FIELDS = {
     "global_enable": True,
-    "global_fields": ["email", "msisdn", "birth_date"]
+    "global_fields": ["email", "birth_date", "nickname"]
 }
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
@@ -31,11 +31,11 @@ LOCALE_PATHS = [
 LANGUAGE_CODE = "en"
 
 LANGUAGES = global_settings.LANGUAGES + [
-    ("tl", "Tagalog"),
-    ("rw", "Kinyarwanda"),
-    ("ha", "Hausa"),
-    ("ny", "Chichewa"),
-    ("prs", "Dari"),
+    ("tl", _("Tagalog")),
+    ("rw", _("Kinyarwanda")),
+    ("ha", _("Hausa")),
+    ("ny", _("Chichewa")),
+    ("prs", _("Dari")),
 ]
 
 EXTRA_LANG_INFO = {
