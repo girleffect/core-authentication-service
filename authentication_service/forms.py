@@ -23,12 +23,17 @@ from django.forms import modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
 from authentication_service.utils import update_form_fields
-from authentication_service.constants import SECURITY_QUESTION_COUNT, \
-    MIN_NON_HIGH_PASSWORD_LENGTH, CONSENT_AGE
+from authentication_service.constants import (
+    SECURITY_QUESTION_COUNT,
+    MIN_NON_HIGH_PASSWORD_LENGTH,
+    CONSENT_AGE,
+    GE_TERMS_URL
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -64,13 +69,14 @@ class RegistrationForm(UserCreationForm):
         fields = [
             "username", "first_name", "last_name", "email",
             "nickname", "msisdn", "gender", "age", "birth_date",
-            "country", "avatar", "password1", "password2"
+            "country", "password1", "password2"
         ]
         exclude = ["terms",]
 
-    def __init__(self, security=None, required=None, hidden=None, *args, **kwargs):
+    def __init__(self, terms_url=None, security=None, required=None, hidden=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
+        self.terms_url = terms_url or GE_TERMS_URL
 
         # Security value is required later in form processes as well.
         self.security = security
@@ -119,10 +125,21 @@ class RegistrationForm(UserCreationForm):
             )
             hidden_fields.discard(field)
 
+        none_html_tag_translatable_terms_anchor_text = _(
+            "Click here to view the terms and conditions"
+        )
         fields_data.update({
             "birth_date": {
                 "attributes": {
                     "help_text": _("Please use dd/mm/yyyy format")
+                }
+            },
+            "terms": {
+                "attributes": {
+                    "help_text": (
+                        f'<a href="{self.terms_url}">'
+                        f"{none_html_tag_translatable_terms_anchor_text}</a>"
+                    )
                 }
             },
             "nickname": {
@@ -228,18 +245,6 @@ class RegistrationForm(UserCreationForm):
             exclude.append("email")
         return exclude
 
-    def _html_output(self, *args, **kwargs):
-        # Django does not allow the exclusion of fields on none ModelForm forms.
-
-        # Remove the field from the form during the html output creation.
-        original_fields = self.fields.copy()
-        self.fields.pop("terms")
-        html = super(RegistrationForm, self)._html_output(*args, **kwargs)
-
-        # Replace the original fields.
-        self.fields = original_fields
-        return html
-
     def clean(self):
         cleaned_data = super(RegistrationForm, self).clean()
 
@@ -292,6 +297,11 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
         self.question_queryset = kwargs.pop(
             "question_queryset", None
         )
+
+        # Hook value for wizards
+        self.email = kwargs.pop(
+            "step_email", None
+        )
         self.language = language
         super(SecurityQuestionFormSetClass, self).__init__(*args, **kwargs)
 
@@ -310,7 +320,7 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 
     def clean(self):
         # This is the email as found on RegistrationForm.
-        email = self.data.get("email", None)
+        email = self.data.get("email", self.email)
 
         questions = []
         for form in self.forms:

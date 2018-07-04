@@ -604,62 +604,59 @@ class TestRegistrationView(TestCase):
             response = self.client.post(
                 reverse("registration"),
                 {
-                    "username": "Username",
-                    "password1": "password",
-                    "password2": "password",
-                    "age": "18",
-                    "birth_date": "2000-01-01",
-                    "terms": True,
-                    "email": "email@email.com",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                }
+                    "registration_wizard-current_step": "userdata",
+                    "userdata-username": "Username",
+                    "userdata-password1": "password",
+                    "userdata-password2": "password",
+                    "userdata-age": "18",
+                    "userdata-birth_date": "2000-01-01",
+                    "userdata-terms": True,
+                    "userdata-email": "email@email.com",
+                },
+                follow=True
             )
 
+    def test_view_success_template_age(self):
+        # Test most basic registration with age instead of birth_date
         with self.assertTemplateUsed("authentication_service/message.html"):
-            # Test most basic registration with age instead of birth_date
             response = self.client.post(
                 reverse("registration"),
                 {
-                    "username": "Username0",
-                    "password1": "password",
-                    "password2": "password",
-                    "age": "16",
-                    "terms": True,
-                    "email": "email1@email.com",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                }
+                    "registration_wizard-current_step": "userdata",
+                    "userdata-username": "Username0",
+                    "userdata-password1": "password",
+                    "userdata-password2": "password",
+                    "userdata-age": "16",
+                    "userdata-terms": True,
+                    "userdata-email": "email1@email.com",
+                },
+                follow=True
             )
 
+    def test_view_success_template_age_and_bday(self):
+        # Test most basic registration with age and birth_date. Birth_date takes precedence.
         with self.assertTemplateUsed("authentication_service/message.html"):
-            # Test most basic registration with age and birth_date. Birth_date takes precedence.
             response = self.client.post(
                 reverse("registration"),
                 {
-                    "username": "Username0a",
-                    "password1": "password",
-                    "password2": "password",
-                    "birth_date": "1999-01-01",
-                    "age": "16",
-                    "terms": True,
-                    "email": "email1a@email.com",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                }
+                    "registration_wizard-current_step": "userdata",
+                    "userdata-username": "Username0a",
+                    "userdata-password1": "password",
+                    "userdata-password2": "password",
+                    "userdata-birth_date": "1999-01-01",
+                    "userdata-age": "16",
+                    "userdata-terms": True,
+                    "userdata-email": "email2@email.com",
+                },
+                follow=True
             )
 
     def test_view_success_redirects_no_2fa(self):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/"
+            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/",
+            follow=True
         )
         self.assertEquals(
             self.client.session[
@@ -679,30 +676,30 @@ class TestRegistrationView(TestCase):
         self.assertEquals(
             response.context["ge_global_client_name"], self.client_obj.name
         )
+
         # Test redirect url, no 2fa
         response = self.client.post(
             reverse("registration"),
             {
-                "username": "Username1",
-                "password1": "password",
-                "password2": "password",
-                "age": "18",
-                "terms": True,
-                "birth_date": "2000-01-01",
-                "email": "email2@email.com",
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-            }
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Username1",
+                "userdata-password1": "password",
+                "userdata-password2": "password",
+                "userdata-birth_date": "1999-01-01",
+                "userdata-age": "18",
+                "userdata-terms": True,
+                "userdata-email": "email2@email.com",
+            },
+            follow=True
         )
-        self.assertIn(response.url, "/test-redirect-url/")
+        self.assertEquals(response.redirect_chain[-1][0], "/test-redirect-url/")
 
     def test_view_success_redirects_2fa(self):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/"
+            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/",
+            follow=True
         )
         self.assertEquals(
             self.client.session[
@@ -726,33 +723,31 @@ class TestRegistrationView(TestCase):
         ## GE-1117: Changed
         # Test redirect url, 2fa
         response = self.client.post(
-            reverse(
-                "registration") +
-            "?show2fa=true",
+            reverse("registration") + "?show2fa=true",
             {
-                "username": "Username2",
-                "password1": "password",
-                "password2": "password",
-                "age": "18",
-                "terms": True,
-                "birth_date": "2000-01-01",
-                "email": "email3@email.com",
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-            }
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Username2",
+                "userdata-age": "18",
+                "userdata-password1": "awesom#saFe3",
+                "userdata-password2": "awesom#saFe3",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-email": "email3@email.com",
+                "userdata-msisdn": "0856545698",
+            },
+            follow=True
         )
 
         ## GE-1117: Changed
         # self.assertin(response.url, reverse("two_factor_auth:setup"))
-        self.assertIn(response.url, "/test-redirect-url/")
+        self.assertEquals(response.redirect_chain[-1][0], "/test-redirect-url/")
 
     def test_view_success_redirects_security_high(self):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/"
+            ) + "?client_id=redirect-tester&redirect_uri=/test-redirect-url/",
+            follow=True
         )
         self.assertEquals(
             self.client.session[
@@ -780,80 +775,122 @@ class TestRegistrationView(TestCase):
 
         # Test redirect url, high security
         response = self.client.post(
-            reverse(
-                "registration") +
-            "?security=high",
+            reverse("registration") + "?security=high",
             {
-                "username": "Username3",
-                "password1": "awesom#saFe3",
-                "password2": "awesom#saFe3",
-                "age": "18",
-                "terms": True,
-                "birth_date": "2000-01-01",
-                "email": "email4@email.com",
-                "form-TOTAL_FORMS": "2",
-                "form-INITIAL_FORMS": "0",
-                "form-MIN_NUM_FORMS": "0",
-                "form-MAX_NUM_FORMS": "1000",
-            }
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Username3",
+                "userdata-age": "18",
+                "userdata-password1": "awesom#saFe3",
+                "userdata-password2": "awesom#saFe3",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-email": "email3@email.com",
+                "userdata-msisdn": "0856545698",
+            },
+            follow=True
         )
 
         ## GE-1117: Changed
         # self.assertin(response.url, reverse("two_factor_auth:setup"))
-        self.assertIn(response.url, "/test-redirect-url/")
+        self.assertEquals(response.redirect_chain[-1][0], "/test-redirect-url/")
+
+    def test_success_redirect(self):
+        # Test without redirect URI set.
+        response = self.client.get(reverse("redirect_view"))
+        self.assertIn(response.url, reverse("login"))
+
+        # Test with redirect URI set.
+        Client.objects.create(
+            client_id="redirect-tester-3",
+            name="RedirectClient",
+            client_secret="super_client_secret_4",
+            response_type="code",
+            jwt_alg="HS256",
+            redirect_uris=["/test-redirect-url-something/"],
+        )
+        response = self.client.get(
+            reverse("registration") + "?client_id=redirect-tester-3&redirect_uri=/test-redirect-url-something/",
+            follow=True
+        )
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "RedirectUser",
+                "userdata-age": "18",
+                "userdata-password1": "awesom#saFe3",
+                "userdata-password2": "awesom#saFe3",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-email": "email3@email.com",
+                "userdata-msisdn": "0856545698",
+            },
+            follow=True
+        )
+        self.assertEquals(response.redirect_chain[-1][0], "/test-redirect-url-something/")
 
     def test_user_save(self):
+
         ## GE-1117: Changed
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.post(
                 reverse("registration") + "?security=high",
                 {
-                    "username": "Unique@User@Name",
-                    "password1": "awesom#saFe3",
-                    "password2": "awesom#saFe3",
-                    "birth_date": "2000-01-01",
-                    "terms": True,
-                    "email": "emailunique@email.com",
-                    "msisdn": "0856545698",
-                    "age": "16",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                }
+                    "registration_wizard-current_step": "userdata",
+                    "userdata-username": "Unique@User@Name",
+                    "userdata-password1": "awesom#saFe3",
+                    "userdata-password2": "awesom#saFe3",
+                    "userdata-birth_date": "2000-01-01",
+                    "userdata-terms": True,
+                    "userdata-email": "emailunique@email.com",
+                    "userdata-msisdn": "0856545698",
+                    "userdata-age": "16",
+                },
+                follow=True
             )
-            # self.assertIn(response.url, reverse("two_factor_auth:setup"))
+        self.assertRedirects(
+            response,
+            reverse("registration_step", kwargs={"step": "done"})
+        )
+        # self.assertIn(response.url, reverse("two_factor_auth:setup"))
         user = get_user_model().objects.get(username="Unique@User@Name")
         self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
 
     def test_security_questions_save(self):
         ## GE-1117: Changed
+        response = self.client.post(
+            reverse("registration"),
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "Unique@User@Name",
+                "userdata-age": "16",
+                "userdata-password1": "awesom#saFe3",
+                "userdata-password2": "awesom#saFe3",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-msisdn": "0856545698",
+            },
+            follow=True
+        )
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.post(
-                reverse("registration") + "?security=high",
+                response.redirect_chain[-1][0],
                 {
-                    "username": "Unique@User@Name",
-                    "age": "16",
-                    "password1": "awesom#saFe3",
-                    "password2": "awesom#saFe3",
-                    "birth_date": "2000-01-01",
-                    "terms": True,
-                    "email": "emailunique@email.com",
-                    "msisdn": "0856545698",
-                    "form-TOTAL_FORMS": "2",
-                    "form-INITIAL_FORMS": "0",
-                    "form-MIN_NUM_FORMS": "0",
-                    "form-MAX_NUM_FORMS": "1000",
-                    "form-0-question": self.question_one.id,
-                    "form-0-answer": "Answer1",
-                    "form-1-question": self.question_two.id,
-                    "form-1-answer": "Answer2"
-                }
+                    "registration_wizard-current_step": "securityquestions",
+                    "securityquestions-TOTAL_FORMS": "2",
+                    "securityquestions-INITIAL_FORMS": "0",
+                    "securityquestions-MIN_NUM_FORMS": "0",
+                    "securityquestions-MAX_NUM_FORMS": "1000",
+                    "securityquestions-0-question": self.question_one.id,
+                    "securityquestions-0-answer": "Answer1",
+                    "securityquestions-1-question": self.question_two.id,
+                    "securityquestions-1-answer": "Answer2"
+                },
+                follow=True
             )
             # self.assertIn(response.url, reverse("two_factor_auth:setup"))
         user = get_user_model().objects.get(username="Unique@User@Name")
-        self.assertEquals(user.email, "emailunique@email.com")
         self.assertEquals(user.msisdn, "0856545698")
         question_one = UserSecurityQuestion.objects.get(
             question=self.question_one,
@@ -883,32 +920,42 @@ class TestRegistrationView(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?client_id=redirect-tester-2&redirect_uri=/test-redirect-url-something/"
+            ) + "?client_id=redirect-tester-2&redirect_uri=/test-redirect-url-something/",
         )
         response = self.client.get(
             reverse(
                 "redirect_view"
             )
         )
-        self.assertIn(response.url, "/test-redirect-url-something/")
+        self.assertEquals(response.url, "/test-redirect-url-something/")
 
     def test_incorrect_required_field_logger(self):
         test_output = [
-            "WARNING:authentication_service.forms:"
-            "Received required field that is "
-            "not on form: someawesomefield",
-            "WARNING:authentication_service.forms:"
-            "Received required field that is "
-            "not on form: notontheform"
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield'
         ]
         test_output.sort()
         with self.assertLogs(level="WARNING") as cm:
             self.client.get(
                 reverse("registration") +
                 "?requires=names"
-                "&requires=picture"
+                # TODO: S3-reliant
+                #"&requires=picture"
                 "&requires=someawesomefield"
-                "&requires=notontheform"
+                "&requires=notontheform",
+                follow=True
             )
         output = cm.output
         output.sort()
@@ -916,21 +963,31 @@ class TestRegistrationView(TestCase):
 
     def test_incorrect_hidden_field_logger(self):
         test_output = [
-            "WARNING:authentication_service.forms:"
-            "Received hidden field that is "
-            "not on form: someawesomefield",
-            "WARNING:authentication_service.forms:"
-            "Received hidden field that is "
-            "not on form: notontheform"
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield'
         ]
         test_output.sort()
         with self.assertLogs(level="WARNING") as cm:
             self.client.get(
                 reverse("registration") +
                 "?hide=end-user"
-                "&hide=avatar"
+                # TODO: S3-reliant
+                #"&hide=avatar"
                 "&hide=someawesomefield"
-                "&hide=notontheform"
+                "&hide=notontheform",
+                follow=True
             )
         output = cm.output
         output.sort()
@@ -947,7 +1004,8 @@ class TestRegistrationView(TestCase):
             terms_url="http://registration-terms.com"
         )
         response = self.client.get(
-            reverse("registration")
+            reverse("registration"),
+            follow=True
         )
         self.assertContains(response, '<a href="https://www.girleffect.org/'\
         'terms-and-conditions/">Click here to view the terms and conditions</a>'
@@ -955,7 +1013,8 @@ class TestRegistrationView(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?client_id=registraion_client_id&redirect_uri=http://exmpl.co/"
+            ) + "?client_id=registraion_client_id&redirect_uri=http://exmpl.co/",
+            follow=True,
         )
         self.assertContains(response, '<a href="http://registration-terms.com">'\
         'Click here to view the terms and conditions</a>'
@@ -966,7 +1025,22 @@ class TestRegistrationView(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + f"?question_ids={self.question_four.id}&question_ids={self.question_three.id}"
+            ) + f"?question_ids={self.question_four.id}&question_ids={self.question_three.id}",
+            follow=True
+        )
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "stupidnowrequiredtestuseroriginal",
+                "userdata-age": "16",
+                "userdata-password1": "awesom#saFe3",
+                "userdata-password2": "awesom#saFe3",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-msisdn": "0856545698",
+            },
+            follow=True
         )
         self.assertContains(
             response,
@@ -982,22 +1056,27 @@ class TestRegistrationView(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + f"?question_ids=9999999&question_ids={self.question_three.id}"
+            ) + f"?question_ids=9999999&question_ids={self.question_three.id}",
+            follow=True
+        )
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            {
+                "registration_wizard-current_step": "userdata",
+                "userdata-username": "stupidnowrequiredtestuser",
+                "userdata-age": "16",
+                "userdata-password1": "awesom#saFe3",
+                "userdata-password2": "awesom#saFe3",
+                "userdata-birth_date": "2000-01-01",
+                "userdata-terms": True,
+                "userdata-msisdn": "0856545698",
+            },
+            follow=True
         )
         self.assertContains(
             response,
             f'<option value="{self.question_three.id}" selected>{self.question_three.question_text}</option>',
             count=1
-        )
-        self.assertContains(
-            response,
-            '<option value="" selected>---------</option>',
-            count=2
-        )
-        self.assertContains(
-            response,
-            "selected>",
-            count=3
         )
 
 
