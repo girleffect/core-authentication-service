@@ -12,7 +12,7 @@ from authentication_service.forms import (
     RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
     EditProfileForm, SetPasswordForm, PasswordChangeForm
 )
-from authentication_service.models import SecurityQuestion, OrganisationalUnit
+from authentication_service.models import SecurityQuestion, Organisation
 from authentication_service import constants
 
 
@@ -838,7 +838,7 @@ class TestPasswordResetForm(TestCase):
             email_verified=True
         )
         cls.user.save()
-        org = OrganisationalUnit.objects.create(
+        org = Organisation.objects.create(
             name="uniquename",
             description="some text"
         )
@@ -847,7 +847,7 @@ class TestPasswordResetForm(TestCase):
             birth_date=datetime.date(2000, 1, 1),
             email="org_atleastihavethis@email.com",
             email_verified=True,
-            organisational_unit=org
+            organisation=org
         )
         cls.org_user.save()
 
@@ -981,7 +981,7 @@ class TestPasswordChangeForm(TestCase):
         )
         cls.user.set_password("atleast_its_not_1234")
         cls.user.save()
-        org = OrganisationalUnit.objects.create(
+        org = Organisation.objects.create(
             name="uniquename",
             description="some text"
         )
@@ -990,7 +990,7 @@ class TestPasswordChangeForm(TestCase):
             birth_date=datetime.date(2000, 1, 1),
             email="org_atleastihavethis@email.com",
             email_verified=True,
-            organisational_unit=org
+            organisation=org
         )
         cls.org_user.set_password("atleast_its_not_1234")
         cls.org_user.save()

@@ -8,7 +8,7 @@ from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 
 from authentication_service.api.stubs import AbstractStubClass
-from authentication_service.models import CoreUser, Country, OrganisationalUnit, UserSite
+from authentication_service.models import CoreUser, Country, Organisation, UserSite
 from authentication_service.utils import strip_empty_optional_fields, check_limit, \
     to_dict_with_custom_fields, range_filter_parser
 
@@ -22,14 +22,14 @@ CLIENT_VALUES = [
 COUNTRY_VALUES = [
     "code", "name"
 ]
-ORGANISATIONAL_UNIT_VALUES = [
+ORGANISATION_VALUES = [
     "id", "name", "description", "created_at", "updated_at"
 ]
 USER_VALUES = [
     "id", "username", "first_name", "last_name", "email", "is_active",
     "date_joined", "last_login", "email_verified", "msisdn_verified", "msisdn",
     "gender", "birth_date", "avatar", "country", "created_at", "updated_at",
-    "organisational_unit"
+    "organisation"
 ]
 
 
@@ -126,53 +126,53 @@ class Implementation(AbstractStubClass):
         result = to_dict_with_custom_fields(country, COUNTRY_VALUES)
         return strip_empty_optional_fields(result)
 
-    # organisational_unit_list -- Synchronisation point for meld
+    # organisation_list -- Synchronisation point for meld
     @staticmethod
-    def organisational_unit_list(request, offset=None, limit=None, organisational_unit_ids=None, *args, **kwargs):
+    def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
         :type offset: integer
         :param limit: (optional) An optional query parameter to limit the number of results returned.
         :type limit: integer
-        :param organisational_unit_ids: (optional) An optional list of organisational unit ids
-        :type organisational_unit_ids: array
+        :param organisation_ids: (optional) An optional list of organisation ids
+        :type organisation_ids: array
         """
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
         limit = check_limit(limit)
 
-        organisational_units = OrganisationalUnit.objects.order_by("id")
+        organisations = Organisation.objects.order_by("id")
 
-        if organisational_unit_ids:
-            organisational_units = organisational_units.filter(id__in=organisational_unit_ids)
+        if organisation_ids:
+            organisations = organisations.filter(id__in=organisation_ids)
 
-        organisational_units = organisational_units.annotate(
+        organisations = organisations.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
         )[offset:offset + limit]
         return (
-            [strip_empty_optional_fields(to_dict_with_custom_fields(organisational_unit,
-                                                                    ORGANISATIONAL_UNIT_VALUES))
-             for organisational_unit in organisational_units],
+            [strip_empty_optional_fields(to_dict_with_custom_fields(organisation,
+                                                                    ORGANISATION_VALUES))
+             for organisation in organisations],
             {
-                "X-Total-Count": organisational_units[0].x_total_count if organisational_units else 0
+                "X-Total-Count": organisations[0].x_total_count if organisations else 0
             }
         )
 
-    # organisational_unit_read -- Synchronisation point for meld
+    # organisation_read -- Synchronisation point for meld
     @staticmethod
-    def organisational_unit_read(request, organisational_unit_id, *args, **kwargs):
+    def organisation_read(request, organisation_id, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param organisational_unit_id: An integer identifying an organisational unit
-        :type organisational_unit_id: integer
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
         """
-        organisational_unit = get_object_or_404(OrganisationalUnit, id=organisational_unit_id)
-        result = to_dict_with_custom_fields(organisational_unit, ORGANISATIONAL_UNIT_VALUES)
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
         return strip_empty_optional_fields(result)
 
     # user_list -- Synchronisation point for meld
     @staticmethod
-    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisational_unit_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
+    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisation_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisation=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
@@ -205,8 +205,8 @@ class Implementation(AbstractStubClass):
         :type msisdn_verified: boolean
         :param nickname: (optional) An optional case insensitive nickname inner match filter
         :type nickname: string
-        :param organisational_unit_id: (optional) An optional filter on the organisational unit id
-        :type organisational_unit_id: integer
+        :param organisation_id: (optional) An optional filter on the organisation id
+        :type organisation_id: integer
         :param updated_at: (optional) An optional updated_at range filter
         :type updated_at: string
         :param username: (optional) An optional case insensitive username inner match filter
@@ -215,8 +215,8 @@ class Implementation(AbstractStubClass):
         :type q: string
         :param tfa_enabled: (optional) An optional filter based on whether a user has 2FA enabled or not
         :type tfa_enabled: boolean
-        :param has_organisational_unit: (optional) An optional filter based on whether a user has an organisational unit or not
-        :type has_organisational_unit: boolean
+        :param has_organisation: (optional) An optional filter based on whether a user belongs to an organisation or not
+        :type has_organisation: boolean
         :param order_by: (optional) Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
         :type order_by: array
         :param user_ids: (optional) An optional list of user ids
@@ -236,10 +236,10 @@ class Implementation(AbstractStubClass):
             users = users.filter(
                 totpdevice__isnull=not check
             )
-        if has_organisational_unit is not None:
-            check = has_organisational_unit.lower() == "true"
+        if has_organisation is not None:
+            check = has_organisation.lower() == "true"
             users = users.filter(
-                organisational_unit__isnull=not check
+                organisation__isnull=not check
             )
         if email_verified is not None:
             users = users.filter(
@@ -291,8 +291,8 @@ class Implementation(AbstractStubClass):
             users = users.filter(id__in=user_ids)
         if gender:
             users = users.filter(gender=gender)
-        if organisational_unit_id:
-            users = users.filter(organisational_unit__id=organisational_unit_id)
+        if organisation_id:
+            users = users.filter(organisation__id=organisation_id)
         if site_ids:
             # In order for the count to be correct, we cannot join with the UserSite table and
             # need to use a subquery.
