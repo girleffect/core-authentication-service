@@ -95,7 +95,7 @@ country = json.loads("""
 }
 """)
 
-organisational_unit = json.loads("""
+organisation = json.loads("""
 {
     "properties": {
         "created_at": {
@@ -198,7 +198,7 @@ user = json.loads("""
         "msisdn_verified": {
             "type": "boolean"
         },
-        "organisational_unit_id": {
+        "organisation_id": {
             "readOnly": true,
             "type": "integer"
         },

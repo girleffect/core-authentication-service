@@ -268,7 +268,7 @@ class RegistrationForm(UserCreationForm):
             )
 
         # Add new errors to existing error list, allows the raising of all
-        # clean method errors at once. Rather than one at a time per post. 
+        # clean method errors at once. Rather than one at a time per post.
         # NOTE: non_field_errors() is most likely still empty. It usually gets
         # populated by raising a ValidationError in clean().
         if additional_page_errors:
@@ -420,7 +420,7 @@ class EditProfileForm(forms.ModelForm):
                 self.fields[field].widget.is_required = False
                 hidden_fields.append(field)
 
-        if self.instance.organisational_unit:
+        if self.instance.organisation:
             # Show email address explicitly since it can be hidden in the
             # global hidden fields.
             hidden_fields.remove("email")
@@ -502,7 +502,7 @@ class EditProfileForm(forms.ModelForm):
             )
 
         # Add new errors to existing error list, allows the raising of all
-        # clean method errors at once. Rather than one at a time per post. 
+        # clean method errors at once. Rather than one at a time per post.
         # NOTE: non_field_errors() is most likely still empty. It usually gets
         # populated by raising a ValidationError in clean().
         if additional_page_errors:
@@ -606,18 +606,18 @@ class SetPasswordForm(DjangoSetPasswordForm):
     """
     Change password validation requirements based on current user.
 
-    Users with an organisational unit assigned to them have a high likelihood
+    Users with an organisation assigned to them have a high likelihood
     of also obtaining roles. As such they require the default password
     validation middleware functionality.
 
-    Users without an organisational unit assigned will not have roles assigned
+    Users without an organisation assigned will not have roles assigned
     to them. They also do not need to adhere to the full validation suite, only
     a limited subset.
     """
     def __init__(self, user, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(SetPasswordForm, self).__init__(user, *args, **kwargs)
-        if self.user and not self.user.organisational_unit:
+        if self.user and not self.user.organisation:
             # Remove default help text, added by password validation,
             # middleware.
             fields_data = {
@@ -635,7 +635,7 @@ class SetPasswordForm(DjangoSetPasswordForm):
 
     def clean_new_password2(self):
         # If user has an organisation, let original validation kick in.
-        if self.user.organisational_unit:
+        if self.user.organisation:
             return super(SetPasswordForm, self).clean_new_password2()
 
         password1 = self.cleaned_data.get("new_password1")
