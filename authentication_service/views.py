@@ -21,7 +21,6 @@ from django.contrib.auth.views import (
     PasswordChangeView
 )
 from django.core.exceptions import ValidationError
-from django.core.files.storage import DefaultStorage
 from django.core.urlresolvers import reverse, reverse_lazy
 
 from django.contrib.auth import get_user_model
@@ -177,7 +176,6 @@ def show_security_questions(wizard):
 
 class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     form_list = registration_forms
-    file_storage = DefaultStorage()
     condition_dict = {"securityquestions": show_security_questions}
 
     # Needed to stop a NoneType error from triggering in django internals. The

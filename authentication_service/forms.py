@@ -69,7 +69,7 @@ class RegistrationForm(UserCreationForm):
         fields = [
             "username", "first_name", "last_name", "email",
             "nickname", "msisdn", "gender", "age", "birth_date",
-            "country", "avatar", "password1", "password2"
+            "country", "password1", "password2"
         ]
         exclude = ["terms",]
 

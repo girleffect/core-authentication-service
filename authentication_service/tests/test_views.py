@@ -951,7 +951,8 @@ class TestRegistrationView(TestCase):
             self.client.get(
                 reverse("registration") +
                 "?requires=names"
-                "&requires=picture"
+                # TODO: S3-reliant
+                #"&requires=picture"
                 "&requires=someawesomefield"
                 "&requires=notontheform",
                 follow=True
@@ -982,7 +983,8 @@ class TestRegistrationView(TestCase):
             self.client.get(
                 reverse("registration") +
                 "?hide=end-user"
-                "&hide=avatar"
+                # TODO: S3-reliant
+                #"&hide=avatar"
                 "&hide=someawesomefield"
                 "&hide=notontheform",
                 follow=True
