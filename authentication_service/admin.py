@@ -10,7 +10,7 @@ class CoreUserAdmin(UserAdmin):
         ("Extra data",
             {"fields": (
                 "nickname", "msisdn", "birth_date", "country", "avatar",
-                "email_verified", "msisdn_verified", "organisational_unit"
+                "email_verified", "msisdn_verified", "organisation"
             )}
         ),
     )
@@ -38,5 +38,5 @@ admin.site.register(models.Country, admin.ModelAdmin)
 admin.site.register(models.UserSecurityQuestion, admin.ModelAdmin)
 admin.site.register(models.SecurityQuestion, SecurityQuestionForm)
 admin.site.register(models.QuestionLanguageText, admin.ModelAdmin)
-admin.site.register(models.OrganisationalUnit, admin.ModelAdmin)
+admin.site.register(models.Organisation, admin.ModelAdmin)
 admin.site.register(models.UserSite, UserSiteAdmin)

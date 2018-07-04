@@ -85,8 +85,8 @@ class CoreUser(AbstractUser):
     avatar = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    organisational_unit = models.ForeignKey(
-        "OrganisationalUnit", blank=True, null=True
+    organisation = models.ForeignKey(
+        "Organisation", blank=True, null=True
     )
     q = AutoQueryField(
         query_fields=[
@@ -232,7 +232,7 @@ class QuestionLanguageText(models.Model):
         super(QuestionLanguageText, self).save(*args, **kwargs)
 
 
-class OrganisationalUnit(models.Model):
+class Organisation(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

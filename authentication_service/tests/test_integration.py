@@ -85,8 +85,8 @@ class IntegrationTestCase(TestCase):
 
         # Organisational units
         cls.MAX_ORG_UNITS = 5
-        cls.org_units = [
-            models.OrganisationalUnit.objects.create(
+        cls.organisations = [
+            models.Organisation.objects.create(
                 id=i,
                 name=f"test_unit_{i}",
                 description="Desc"
@@ -94,46 +94,46 @@ class IntegrationTestCase(TestCase):
             for i in range(0, 5)
         ]
 
-    def test_organisational_unit_list(self):
+    def test_organisation_list(self):
         # Authorize user
         self.client.login(username="test_user_1", password="password")
 
         # Test complete list
-        response = self.client.get("/api/v1/organisational_units")
+        response = self.client.get("/api/v1/organisations")
         self.assertEqual(len(response.json()),
                          min(self.MAX_ORG_UNITS, settings.DEFAULT_LISTING_LIMIT))
         self.assertEqual(int(response["X-Total-Count"]), self.MAX_ORG_UNITS)
 
         # Test limit
-        response = self.client.get("/api/v1/organisational_units?limit=1")
+        response = self.client.get("/api/v1/organisations?limit=1")
         self.assertEqual(len(response.json()), 1)
-        self.assertContains(response, "%s" % self.org_units[0].name)
+        self.assertContains(response, "%s" % self.organisations[0].name)
         self.assertEqual(int(response["X-Total-Count"]), self.MAX_ORG_UNITS)
 
         # Test offset
-        response = self.client.get("/api/v1/organisational_units?offset=1")
+        response = self.client.get("/api/v1/organisations?offset=1")
         self.assertEqual(len(response.json()),
                          min(self.MAX_ORG_UNITS - 1, settings.DEFAULT_LISTING_LIMIT))
-        self.assertContains(response, "%s" % self.org_units[1].name)
+        self.assertContains(response, "%s" % self.organisations[1].name)
         self.assertEqual(int(response["X-Total-Count"]), self.MAX_ORG_UNITS)
 
         # Test bad request
-        response = self.client.get("/api/v1/organisational_units?limit=500")
+        response = self.client.get("/api/v1/organisations?limit=500")
         self.assertEqual(response.status_code, 400)
 
-    def test_organisational_unit_read(self):
+    def test_organisation_read(self):
         # Authorize user
         self.client.login(username="test_user_2", password="password")
 
         # Test read
-        response = self.client.get("/api/v1/organisational_units/1")
-        self.assertContains(response, self.org_units[1].name)
+        response = self.client.get("/api/v1/organisations/1")
+        self.assertContains(response, self.organisations[1].name)
 
         # Validate returned data
-        jsonschema.validate(response.json(), schema=schemas.organisational_unit)
+        jsonschema.validate(response.json(), schema=schemas.organisation)
 
-        # Test non-existent organisational_unit
-        response = self.client.get("/api/v1/organisational_units/999999")
+        # Test non-existent organisation
+        response = self.client.get("/api/v1/organisations/999999")
         self.assertEqual(response.status_code, 404)
 
     def test_country_list(self):
@@ -462,20 +462,20 @@ class IntegrationTestCase(TestCase):
         response = self.client.get("/api/v1/users?country=de")
         self.assertEqual(len(response.json()), 2)
 
-        # has organisational unit
+        # has organisation
         response = self.client.get(
-            "/api/v1/users?has_organisational_unit=true")
+            "/api/v1/users?has_organisation=true")
         self.assertEqual(len(response.json()), 0)
         user = users[0][0]
-        user.organisational_unit = self.org_units[0]
+        user.organisation = self.organisations[0]
         user.save()
         response = self.client.get(
-            "/api/v1/users?has_organisational_unit=true")
+            "/api/v1/users?has_organisation=true")
         self.assertEqual(len(response.json()), 1)
 
-        # organisational_unit
+        # organisation
         response = self.client.get(
-            f"/api/v1/users?organisational_unit_id={self.org_units[0].id}")
+            f"/api/v1/users?organisation_id={self.organisations[0].id}")
         self.assertEqual(len(response.json()), 1)
 
         response = self.client.get(

@@ -282,7 +282,7 @@ class CountriesCountryCode(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 @method_decorator(utils.login_required_no_redirect, name="get")
-class OrganisationalUnits(View):
+class Organisations(View):
 
     GET_RESPONSE_SCHEMA = json.loads("""{
     "items": {
@@ -324,18 +324,18 @@ class OrganisationalUnits(View):
 
     def get(self, request, *args, **kwargs):
         """
-        :param self: A OrganisationalUnits instance
+        :param self: A Organisations instance
         :param request: An HttpRequest
         """
         # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
         offset = request.GET.get("offset", None)
         # limit (optional): integer An optional query parameter to limit the number of results returned.
         limit = request.GET.get("limit", None)
-        # organisational_unit_ids (optional): array An optional list of organisational unit ids
-        organisational_unit_ids = request.GET.get("organisational_unit_ids", None)
-        if organisational_unit_ids is not None:
-            organisational_unit_ids = organisational_unit_ids.split(",")
-        result = Stubs.organisational_unit_list(request, offset, limit, organisational_unit_ids, )
+        # organisation_ids (optional): array An optional list of organisation ids
+        organisation_ids = request.GET.get("organisation_ids", None)
+        if organisation_ids is not None:
+            organisation_ids = organisation_ids.split(",")
+        result = Stubs.organisation_list(request, offset, limit, organisation_ids, )
 
         if type(result) is tuple:
             result, headers = result
@@ -357,17 +357,17 @@ class OrganisationalUnits(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 @method_decorator(utils.login_required_no_redirect, name="get")
-class OrganisationalUnitsOrganisationalUnitId(View):
+class OrganisationsOrganisationId(View):
 
-    GET_RESPONSE_SCHEMA = schemas.organisational_unit
+    GET_RESPONSE_SCHEMA = schemas.organisation
 
-    def get(self, request, organisational_unit_id, *args, **kwargs):
+    def get(self, request, organisation_id, *args, **kwargs):
         """
-        :param self: A OrganisationalUnitsOrganisationalUnitId instance
+        :param self: A OrganisationsOrganisationId instance
         :param request: An HttpRequest
-        :param organisational_unit_id: integer An integer identifying an organisational unit
+        :param organisation_id: integer An integer identifying an organisation a user belongs to
         """
-        result = Stubs.organisational_unit_read(request, organisational_unit_id, )
+        result = Stubs.organisation_read(request, organisation_id, )
 
         if type(result) is tuple:
             result, headers = result
@@ -460,7 +460,7 @@ class Users(View):
             "msisdn_verified": {
                 "type": "boolean"
             },
-            "organisational_unit_id": {
+            "organisation_id": {
                 "readOnly": true,
                 "type": "integer"
             },
@@ -526,8 +526,8 @@ class Users(View):
         msisdn_verified = request.GET.get("msisdn_verified", None)
         # nickname (optional): string An optional case insensitive nickname inner match filter
         nickname = request.GET.get("nickname", None)
-        # organisational_unit_id (optional): integer An optional filter on the organisational unit id
-        organisational_unit_id = request.GET.get("organisational_unit_id", None)
+        # organisation_id (optional): integer An optional filter on the organisation id
+        organisation_id = request.GET.get("organisation_id", None)
         # updated_at (optional): string An optional updated_at range filter
         updated_at = request.GET.get("updated_at", None)
         # username (optional): string An optional case insensitive username inner match filter
@@ -536,8 +536,8 @@ class Users(View):
         q = request.GET.get("q", None)
         # tfa_enabled (optional): boolean An optional filter based on whether a user has 2FA enabled or not
         tfa_enabled = request.GET.get("tfa_enabled", None)
-        # has_organisational_unit (optional): boolean An optional filter based on whether a user has an organisational unit or not
-        has_organisational_unit = request.GET.get("has_organisational_unit", None)
+        # has_organisation (optional): boolean An optional filter based on whether a user belongs to an organisation or not
+        has_organisation = request.GET.get("has_organisation", None)
         # order_by (optional): array Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
         order_by = request.GET.get("order_by", None)
         if order_by is not None:
@@ -550,7 +550,7 @@ class Users(View):
         site_ids = request.GET.get("site_ids", None)
         if site_ids is not None:
             site_ids = site_ids.split(",")
-        result = Stubs.user_list(request, offset, limit, birth_date, country, date_joined, email, email_verified, first_name, gender, is_active, last_login, last_name, msisdn, msisdn_verified, nickname, organisational_unit_id, updated_at, username, q, tfa_enabled, has_organisational_unit, order_by, user_ids, site_ids, )
+        result = Stubs.user_list(request, offset, limit, birth_date, country, date_joined, email, email_verified, first_name, gender, is_active, last_login, last_name, msisdn, msisdn_verified, nickname, organisation_id, updated_at, username, q, tfa_enabled, has_organisation, order_by, user_ids, site_ids, )
 
         if type(result) is tuple:
             result, headers = result
@@ -744,7 +744,7 @@ class __SWAGGER_SPEC__(View):
             ],
             "type": "object"
         },
-        "organisational_unit": {
+        "organisation": {
             "properties": {
                 "created_at": {
                     "format": "date-time",
@@ -843,7 +843,7 @@ class __SWAGGER_SPEC__(View):
                 "msisdn_verified": {
                     "type": "boolean"
                 },
-                "organisational_unit_id": {
+                "organisation_id": {
                     "readOnly": true,
                     "type": "integer"
                 },
@@ -1001,10 +1001,10 @@ class __SWAGGER_SPEC__(View):
             "required": false,
             "type": "integer"
         },
-        "organisational_unit_id": {
-            "description": "An integer identifying an organisational unit",
+        "organisation_id": {
+            "description": "An integer identifying an organisation a user belongs to",
             "in": "path",
-            "name": "organisational_unit_id",
+            "name": "organisation_id",
             "required": true,
             "type": "integer"
         },
@@ -1203,9 +1203,9 @@ class __SWAGGER_SPEC__(View):
                 }
             ]
         },
-        "/organisational_units": {
+        "/organisations": {
             "get": {
-                "operationId": "organisational_unit_list",
+                "operationId": "organisation_list",
                 "parameters": [
                     {
                         "$ref": "#/parameters/optional_offset",
@@ -1221,13 +1221,13 @@ class __SWAGGER_SPEC__(View):
                     },
                     {
                         "collectionFormat": "csv",
-                        "description": "An optional list of organisational unit ids",
+                        "description": "An optional list of organisation ids",
                         "in": "query",
                         "items": {
                             "type": "integer"
                         },
                         "minItems": 1,
-                        "name": "organisational_unit_ids",
+                        "name": "organisation_ids",
                         "required": false,
                         "type": "array",
                         "uniqueItems": true
@@ -1247,7 +1247,7 @@ class __SWAGGER_SPEC__(View):
                         },
                         "schema": {
                             "items": {
-                                "$ref": "#/definitions/organisational_unit",
+                                "$ref": "#/definitions/organisation",
                                 "x-scope": [
                                     ""
                                 ]
@@ -1261,9 +1261,9 @@ class __SWAGGER_SPEC__(View):
                 ]
             }
         },
-        "/organisational_units/{organisational_unit_id}": {
+        "/organisations/{organisation_id}": {
             "get": {
-                "operationId": "organisational_unit_read",
+                "operationId": "organisation_read",
                 "produces": [
                     "application/json"
                 ],
@@ -1271,7 +1271,7 @@ class __SWAGGER_SPEC__(View):
                     "200": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/organisational_unit",
+                            "$ref": "#/definitions/organisation",
                             "x-scope": [
                                 ""
                             ]
@@ -1284,7 +1284,7 @@ class __SWAGGER_SPEC__(View):
             },
             "parameters": [
                 {
-                    "$ref": "#/parameters/organisational_unit_id",
+                    "$ref": "#/parameters/organisation_id",
                     "x-scope": [
                         ""
                     ]
@@ -1406,9 +1406,9 @@ class __SWAGGER_SPEC__(View):
                         "type": "string"
                     },
                     {
-                        "description": "An optional filter on the organisational unit id",
+                        "description": "An optional filter on the organisation id",
                         "in": "query",
-                        "name": "organisational_unit_id",
+                        "name": "organisation_id",
                         "required": false,
                         "type": "integer"
                     },
@@ -1443,9 +1443,9 @@ class __SWAGGER_SPEC__(View):
                         "type": "boolean"
                     },
                     {
-                        "description": "An optional filter based on whether a user has an organisational unit or not",
+                        "description": "An optional filter based on whether a user belongs to an organisation or not",
                         "in": "query",
-                        "name": "has_organisational_unit",
+                        "name": "has_organisation",
                         "required": false,
                         "type": "boolean"
                     },
