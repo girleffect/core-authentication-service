@@ -467,7 +467,8 @@ class EditProfileForm(forms.ModelForm):
         ]
 
     def _html_output(self, *args, **kwargs):
-        # Django does not allow the exclusion of fields on ModelForm forms.
+        # Exclude fields from the html not the form itself. Makes using built
+        # in save method easier.
 
         # Currently birth_date should not be merely hidden, it causes the
         # browser to send back the original value. Birth date is always used
