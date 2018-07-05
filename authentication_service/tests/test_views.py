@@ -1,6 +1,8 @@
 import datetime
 import random
 
+from unittest import mock
+
 from django.conf import settings
 from django.core import signing
 from django.contrib import auth
@@ -1088,7 +1090,7 @@ class EditProfileViewTestCase(TestCase):
             username="testuser",
             email="wrong@email.com",
             password="Qwer!234",
-            birth_date=datetime.date(2001, 1, 1)
+            birth_date=datetime.date(2001, 12, 12)
         )
         cls.user.save()
 
@@ -1163,7 +1165,25 @@ class EditProfileViewTestCase(TestCase):
         updated = get_user_model().objects.get(username="testuser")
 
         self.assertEquals(updated.email, "test@user.com")
+        self.assertEquals(datetime.date(2001, 1, 1), updated.birth_date)
         self.assertRedirects(response, reverse("admin:index"))
+
+        response = self.client.get(reverse("edit_profile"))
+        with mock.patch("authentication_service.forms.date") as mocked_date:
+            mocked_date.today.return_value = datetime.date(2018, 1, 2)
+            mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
+            response = self.client.post(
+                reverse("edit_profile"),
+                {
+                    "email": "test@user.com",
+                    "age": "14"
+                },
+                follow=True
+            )
+
+        updated = get_user_model().objects.get(username="testuser")
+        self.assertEquals(updated.email, "test@user.com")
+        self.assertEquals(datetime.date(2004, 1, 2), updated.birth_date)
 
     def test_2fa_link_enabled(self):
         # Login user

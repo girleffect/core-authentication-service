@@ -742,6 +742,12 @@ class EditProfileFormTestCase(TestCase):
         form = EditProfileForm(instance=self.user, data=data)
         self.assertTrue(form.has_changed())
         self.assertTrue(form.is_valid())
+        form.save()
+
+        user = get_user_model().objects.get(username=self.user.username)
+        self.assertNotEqual(datetime.date(2000, 1, 1), user.birth_date)
+        self.assertEqual(data["email"], user.email)
+        self.assertEqual(data["msisdn"], user.msisdn)
 
     def test_nothing_updated(self):
         data = model_to_dict(self.user)
