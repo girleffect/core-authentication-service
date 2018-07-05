@@ -18,8 +18,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
-from django.forms import BaseFormSet, BaseModelFormSet
-from django.forms import modelformset_factory
+from django.forms import BaseFormSet, BaseModelFormSet, HiddenInput, modelformset_factory
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
 from django.utils.http import urlsafe_base64_encode
@@ -466,6 +465,24 @@ class EditProfileForm(forms.ModelForm):
             "first_name", "last_name", "nickname", "email", "msisdn", "gender",
             "age", "birth_date", "country", "avatar"
         ]
+
+    def _html_output(self, *args, **kwargs):
+        # Django does not allow the exclusion of fields on none ModelForm forms.
+
+        # Currently birth_date should not be merely hidden, it causes the
+        # browser to send back the original value. Birth date is always used
+        # for user age over the actual age field.
+        if self.fields["birth_date"].required is False \
+                and isinstance(self.fields["birth_date"].widget, HiddenInput):
+            # Remove the field from the form during the html output creation.
+            original_fields = self.fields.copy()
+            self.fields.pop("birth_date")
+            html = super(EditProfileForm, self)._html_output(*args, **kwargs)
+
+            # Replace the original fields.
+            self.fields = original_fields
+            return html
+        return super(EditProfileForm, self)._html_output(*args, **kwargs)
 
     def clean_age(self):
         age = self.cleaned_data.get("age")
