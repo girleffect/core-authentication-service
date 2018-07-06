@@ -200,6 +200,10 @@ class UserSecurityQuestion(models.Model):
 class SecurityQuestion(models.Model):
     question_text = models.TextField(help_text=_("Default question text"))
 
+    @property
+    def translations(self):
+        return QuestionLanguageText.objects.filter(question=self)
+
     def __str__(self):
         return self.question_text
 
@@ -211,6 +215,17 @@ class QuestionLanguageText(models.Model):
         "SecurityQuestion", on_delete=models.CASCADE
     )
     question_text = models.TextField()
+
+    class Meta:
+        unique_together = ("question", "language_code")
+
+    def clean(self):
+        super(QuestionLanguageText, self).clean()
+        if self.language_code == "en":
+            raise ValidationError(_("The default question text should already"
+                " be in English, please do not add extra English translations")
+            )
+
 
     def validate_unique(self, *args, **kwargs):
         super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
