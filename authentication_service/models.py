@@ -200,10 +200,6 @@ class UserSecurityQuestion(models.Model):
 class SecurityQuestion(models.Model):
     question_text = models.TextField(help_text=_("Default question text"))
 
-    @property
-    def translations(self):
-        return QuestionLanguageText.objects.filter(question=self)
-
     def __str__(self):
         return self.question_text
 
