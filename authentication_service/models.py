@@ -226,7 +226,6 @@ class QuestionLanguageText(models.Model):
                 " be in English, please do not add extra English translations")
             )
 
-
     def validate_unique(self, *args, **kwargs):
         super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
         if SecurityQuestion.objects.filter(
