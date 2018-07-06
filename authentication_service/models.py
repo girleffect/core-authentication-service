@@ -218,9 +218,10 @@ class QuestionLanguageText(models.Model):
     def clean(self):
         super(QuestionLanguageText, self).clean()
         if self.language_code == "en":
-            raise ValidationError(_("The default question text should already"
-                " be in English, please do not add extra English translations")
-            )
+            raise ValidationError(_(
+                "The default question text is already in English."
+                " Please do not add an English translation."
+            ))
 
     def validate_unique(self, *args, **kwargs):
         super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
