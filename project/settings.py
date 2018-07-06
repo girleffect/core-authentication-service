@@ -36,7 +36,24 @@ LOCALE_PATHS = [
 
 LANGUAGE_CODE = "en"
 
-LANGUAGES = global_settings.LANGUAGES + [
+# We explicitly exclude language variants.
+EXCLUDED_LANGUAGE_CODES = {
+    "en-au",
+    "en-gb",
+    "es-ar",
+    "es-co",
+    "es-mx",
+    "es-ni",
+    "es-ve",
+    "pt-br",
+    "sr-latn",
+    "zh-hans",
+    "zh-hant",
+}
+
+LANGUAGES = [
+    language for language in global_settings.LANGUAGES if language[0] not in EXCLUDED_LANGUAGE_CODES
+] + [
     ("tl", _("Tagalog")),
     ("rw", _("Kinyarwanda")),
     ("ha", _("Hausa")),
