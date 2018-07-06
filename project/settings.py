@@ -358,7 +358,7 @@ if not any([IS_WORKER, env.bool("BUILDER", False)]):
         )
     )
 
-# SECURITY WARNING: don"t run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", False)
 
 # Attempt to import local settings if present.
