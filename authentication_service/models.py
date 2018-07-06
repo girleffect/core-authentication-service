@@ -212,6 +212,17 @@ class QuestionLanguageText(models.Model):
     )
     question_text = models.TextField()
 
+    class Meta:
+        unique_together = ("question", "language_code")
+
+    def clean(self):
+        super(QuestionLanguageText, self).clean()
+        if self.language_code == "en":
+            raise ValidationError(_(
+                "The default question text is already in English."
+                " Please do not add an English translation."
+            ))
+
     def validate_unique(self, *args, **kwargs):
         super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
         if SecurityQuestion.objects.filter(

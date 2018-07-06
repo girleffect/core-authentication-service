@@ -143,7 +143,7 @@ class TestQuestionLanguageModels(TestCase):
             question_text="Some text for the other question"
         )
 
-    def test_q_field(self):
+    def test_validation(self):
         QuestionLanguageText.objects.create(
             language_code="fr",
             question_text="Translation text",
@@ -155,17 +155,22 @@ class TestQuestionLanguageModels(TestCase):
                 question_text="Translation text",
                 question=self.question_two
             )
-            self.assertEqual(
-                e.message,
-                "Question text can not be assigned to more than one question."
-            )
-        QuestionLanguageText.objects.create(
-            language_code="af",
-            question_text="Translation text",
-            question=self.question_two
+        self.assertEqual(
+            e.exception.message,
+            "Question text can not be assigned to more than one question."
         )
-        QuestionLanguageText.objects.create(
-            language_code="af",
-            question_text="Slightly tweaked text",
-            question=self.question_two
+        with self.assertRaises(ValidationError) as e:
+            QuestionLanguageText.objects.create(
+                language_code="af",
+                question_text="Translation text",
+                question=self.question_two
+            )
+            QuestionLanguageText.objects.create(
+                language_code="af",
+                question_text="Slightly tweaked text",
+                question=self.question_two
+            )
+        self.assertEqual(
+            e.exception.message_dict["__all__"],
+            ["Question language text with this Question and Language code already exists."]
         )
