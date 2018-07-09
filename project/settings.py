@@ -28,9 +28,9 @@ SESSION_COOKIE_AGE = 86400
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
 STATIC_URL = env.str("STATIC_URL", "/static/")
-STATIC_ROOT = env.str("STATIC_ROOT", "/app/static")
+STATIC_ROOT = env.str("STATIC_ROOT", "app/static")
 
-MEDIA_URL = env.str("MEDIA_URL", "")
+MEDIA_URL = env.str("MEDIA_URL", "/app/media")
 
 LOCALE_PATHS = [
     "locale"
@@ -403,9 +403,9 @@ if not env.bool("DEFAULT_STORAGE", False):
     # Allow collectstatic to automatically put your static files in your
     # bucket.
     STATICFILES_STORAGE = "project.settings.StaticStorage"
-    AWS_ACCESS_KEY_ID = env.str()
-    AWS_SECRET_ACCESS_KEY = env.str()
-    AWS_STORAGE_BUCKET_NAME = env.str()
+    AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_OBJECT_PARAMETERS = {
         "CacheControl": "max-age=360",
     }
