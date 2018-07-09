@@ -33,6 +33,7 @@ celery>=4.1.0,<5.0
 django-cors-headers>=2.1.0,<3.0
 django-layers-hr==1.11.1
 
+django-storages>=1.6.6,<1.7
 environs>=2.1.0,<3.0
 jsonschema==2.6.0
 rstr==2.2.6 # For mock class in generated server code.

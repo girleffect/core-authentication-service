@@ -27,8 +27,10 @@ SESSION_COOKIE_AGE = 86400
 
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
-STATIC_URL = "/static/"
-STATIC_ROOT = "/app/static"
+STATIC_URL = env.str("STATIC_URL", "/static/")
+STATIC_ROOT = env.str("STATIC_ROOT", "/app/static")
+
+MEDIA_URL = env.str("MEDIA_URL", "")
 
 LOCALE_PATHS = [
     "locale"
@@ -151,7 +153,10 @@ ADDITIONAL_APPS = [
     "corsheaders",
 
     # Sentry
-    "raven.contrib.django.raven_compat"
+    "raven.contrib.django.raven_compat",
+
+    # File storage
+    "storages",
 ]
 
 # Project app has to be first in the list.
@@ -379,3 +384,28 @@ if DEBUG:
 
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+
+# STORAGE
+# Setup storage last, to make use of final static and media roots
+if not env.bool("DEFAULT_STORAGE", False):
+    # Create separate backends to prevent file overriding when saving to static
+    # and media.
+    # backends/s3boto3.py l:194; location = setting('AWS_LOCATION', '')
+    from storages.backends.s3boto3 import S3Boto3Storage
+    class StaticStorage(S3Boto3Storage):
+        location = STATIC_ROOT
+
+    class MediaStorage(S3Boto3Storage):
+        location = MEDIA_ROOT
+    # Storage
+    DEFAULT_FILE_STORAGE = "project.settings.MediaStorage"
+
+    # Allow collectstatic to automatically put your static files in your
+    # bucket.
+    STATICFILES_STORAGE = "project.settings.StaticStorage"
+    AWS_ACCESS_KEY_ID = env.str()
+    AWS_SECRET_ACCESS_KEY = env.str()
+    AWS_STORAGE_BUCKET_NAME = env.str()
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=360",
+    }
