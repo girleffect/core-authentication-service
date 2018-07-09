@@ -177,6 +177,7 @@ def show_security_questions(wizard):
 class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     form_list = registration_forms
     condition_dict = {"securityquestions": show_security_questions}
+    template_name = "authentication_service/registration.html"
 
     # Needed to stop a NoneType error from triggering in django internals. The
     # formset does not require a queryset.
