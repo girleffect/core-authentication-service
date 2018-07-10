@@ -282,6 +282,40 @@ class CountriesCountryCode(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 @method_decorator(utils.login_required_no_redirect, name="get")
+class InvitationsInvitationIdSend(View):
+
+    GET_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
+
+    def get(self, request, invitation_id, *args, **kwargs):
+        """
+        :param self: A InvitationsInvitationIdSend instance
+        :param request: An HttpRequest
+        :param invitation_id: string 
+        """
+        # language (optional): string 
+        language = request.GET.get("language", None)
+        result = Stubs.invitation_send(request, invitation_id, language, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="get")
 class Organisations(View):
 
     GET_RESPONSE_SCHEMA = json.loads("""{
@@ -1200,6 +1234,38 @@ class __SWAGGER_SPEC__(View):
                     "x-scope": [
                         ""
                     ]
+                }
+            ]
+        },
+        "/invitations/{invitation_id}/send": {
+            "get": {
+                "operationId": "invitation_send",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An invitation email was successfully queued for sending."
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            },
+            "parameters": [
+                {
+                    "format": "uuid",
+                    "in": "path",
+                    "name": "invitation_id",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "default": "en",
+                    "in": "query",
+                    "name": "language",
+                    "required": false,
+                    "type": "string"
                 }
             ]
         },
