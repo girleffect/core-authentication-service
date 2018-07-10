@@ -1,5 +1,9 @@
 import logging
 
+from django.core.exceptions import SuspiciousOperation
+from django.http import HttpResponseNotFound, HttpResponseBadRequest
+from django.utils import timezone
+from django.utils.datetime_safe import datetime
 from oidc_provider.models import Client
 
 from django.conf import settings
@@ -7,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 
+from authentication_service import utils, tasks
 from authentication_service.api.stubs import AbstractStubClass
 from authentication_service.models import CoreUser, Country, Organisation, UserSite
 from authentication_service.utils import strip_empty_optional_fields, check_limit, \
@@ -31,6 +36,8 @@ USER_VALUES = [
     "gender", "birth_date", "avatar", "country", "created_at", "updated_at",
     "organisation"
 ]
+
+SUPPORTED_LANGUAGE_CODES = {language[0] for language in settings.LANGUAGES}
 
 
 class Implementation(AbstractStubClass):
@@ -125,6 +132,41 @@ class Implementation(AbstractStubClass):
         country = get_object_or_404(Country, code=country_code)
         result = to_dict_with_custom_fields(country, COUNTRY_VALUES)
         return strip_empty_optional_fields(result)
+
+    # invitation_send -- Synchronisation point for meld
+    @staticmethod
+    def invitation_send(request, invitation_id, language=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param invitation_id:
+        :type invitation_id: string
+        :param language: (optional)
+        :type language: string
+        """
+        language = language or "en"  # English is the default language
+
+        if language not in SUPPORTED_LANGUAGE_CODES:
+            raise SuspiciousOperation("An unsupported language was specified.")
+
+        invitation = settings.ACCESS_CONTROL_API.invitation_read(invitation_id)
+
+        if invitation is None:
+            raise SuspiciousOperation("The specified invitation does not exist.")
+
+        # We need to use timezone.now() instead of datetime.now(), since timezone.now()
+        # is timezone aware and is required to be able to compare against invitation.expires_at.
+        if invitation.expires_at < timezone.now():
+            raise SuspiciousOperation("The specified invitation has expired.")
+
+        # Ensure the invitor exists
+        get_object_or_404(CoreUser, id=invitation.invitor_id)
+        # Ensure the organisation exists
+        get_object_or_404(Organisation, id=invitation.organisation_id)
+
+        tasks.send_invitation_email.delay(invitation.to_dict(), language)
+
+        return {}
+
 
     # organisation_list -- Synchronisation point for meld
     @staticmethod
