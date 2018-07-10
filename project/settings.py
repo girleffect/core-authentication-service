@@ -273,9 +273,9 @@ LOGGING = {
         }
     },
     "loggers": {
-        "root": {
+        "": {
             "level": "WARNING",
-            "handlers": ["sentry"],
+            "handlers": ["sentry", "console"],
         },
         "django.db.backends": {
             "level": "ERROR",
@@ -308,19 +308,16 @@ RAVEN_CONFIG = {
 # EXTRA SETTINGS LOGIC #
 ########################
 
-# NOTE: Logic to reduce duplication of uneeded env vars for certain uses of
-# docker image.
-IS_WORKER = env.str("CELERY_APP", None) == "project"
-if IS_WORKER:
-    # Email settings
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
-    EMAIL_HOST_USER = env.str("EMAIL_USER", "")
-    EMAIL_HOST_PASSWORD = env.str("EMAIL_PASSWORD", "")
-    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", False)
-    EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", False)
-    EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", None)
+# Email settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
+EMAIL_HOST_USER = env.str("EMAIL_USER", "")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_PASSWORD", "")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", False)
+EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", False)
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", None)
 
+IS_WORKER = env.str("CELERY_APP", None) == "project"
 # NOTE: Celery workers do not currently require the apis either.
 if not any([IS_WORKER, env.bool("BUILDER", False)]):
     # GE API settings and setup
