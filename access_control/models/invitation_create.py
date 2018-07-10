@@ -35,6 +35,7 @@ class InvitationCreate(object):
         'first_name': 'str',
         'last_name': 'str',
         'email': 'str',
+        'organisation_id': 'int',
         'expires_at': 'datetime'
     }
 
@@ -43,16 +44,18 @@ class InvitationCreate(object):
         'first_name': 'first_name',
         'last_name': 'last_name',
         'email': 'email',
+        'organisation_id': 'organisation_id',
         'expires_at': 'expires_at'
     }
 
-    def __init__(self, invitor_id=None, first_name=None, last_name=None, email=None, expires_at=None):  # noqa: E501
+    def __init__(self, invitor_id=None, first_name=None, last_name=None, email=None, organisation_id=None, expires_at=None):  # noqa: E501
         """InvitationCreate - a model defined in Swagger"""  # noqa: E501
 
         self._invitor_id = None
         self._first_name = None
         self._last_name = None
         self._email = None
+        self._organisation_id = None
         self._expires_at = None
         self.discriminator = None
 
@@ -60,6 +63,7 @@ class InvitationCreate(object):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
+        self.organisation_id = organisation_id
         if expires_at is not None:
             self.expires_at = expires_at
 
@@ -160,6 +164,29 @@ class InvitationCreate(object):
             raise ValueError("Invalid value for `email`, must not be `None`")  # noqa: E501
 
         self._email = email
+
+    @property
+    def organisation_id(self):
+        """Gets the organisation_id of this InvitationCreate.  # noqa: E501
+
+
+        :return: The organisation_id of this InvitationCreate.  # noqa: E501
+        :rtype: int
+        """
+        return self._organisation_id
+
+    @organisation_id.setter
+    def organisation_id(self, organisation_id):
+        """Sets the organisation_id of this InvitationCreate.
+
+
+        :param organisation_id: The organisation_id of this InvitationCreate.  # noqa: E501
+        :type: int
+        """
+        if organisation_id is None:
+            raise ValueError("Invalid value for `organisation_id`, must not be `None`")  # noqa: E501
+
+        self._organisation_id = organisation_id
 
     @property
     def expires_at(self):
