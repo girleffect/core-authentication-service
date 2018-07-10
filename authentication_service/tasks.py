@@ -123,9 +123,12 @@ def send_mail(
 
 
 @task(name="invitation_email_task", default_retry_delay=300, max_retries=2)
-def send_invitation_email(invitation: dict, language=None) -> None:
+def send_invitation_email(invitation: dict, registration_url: str, language=None) -> None:
     """
     Task to construct and send an invitation email.
+    :param invitation: A dictionary representation of the Access Control Invitation model
+    :param registration_url: An absolute URL to the registration page
+    :param language: The code of the language in which the email must be sent, e.g. "en"
     """
     language = language or "en"
     with translation.override(language):
@@ -140,7 +143,7 @@ def send_invitation_email(invitation: dict, language=None) -> None:
         }
         params["signature"] = signing.dumps(params, salt="invitation")
 
-        registration_url = reverse("registration") + "?" + urlencode(params)
+        registration_url = registration_url + "?" + urlencode(params)
 
         context = invitation.copy()
         # Supplement the invitation context with extra information
@@ -151,7 +154,7 @@ def send_invitation_email(invitation: dict, language=None) -> None:
         html_content = loader.render_to_string("authentication_service/email/invitation.html",
                                                context)
         text_content = strip_tags(html_content)
-
+        logger.warning(html_content)
         message = EmailMultiAlternatives(
             subject=subject,
             body=text_content,

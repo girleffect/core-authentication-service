@@ -2,6 +2,7 @@ import logging
 
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseNotFound, HttpResponseBadRequest
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
 from oidc_provider.models import Client
@@ -163,7 +164,9 @@ class Implementation(AbstractStubClass):
         # Ensure the organisation exists
         get_object_or_404(Organisation, id=invitation.organisation_id)
 
-        tasks.send_invitation_email.delay(invitation.to_dict(), language)
+        registration_url = request.build_absolute_uri(reverse("registration"))
+
+        tasks.send_invitation_email.delay(invitation.to_dict(), registration_url, language)
 
         return {}
 
