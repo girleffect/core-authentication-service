@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from django.core.exceptions import SuspiciousOperation
@@ -12,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 
-from authentication_service import utils, tasks
+from authentication_service import tasks
 from authentication_service.api.stubs import AbstractStubClass
 from authentication_service.models import CoreUser, Country, Organisation, UserSite
 from authentication_service.utils import strip_empty_optional_fields, check_limit, \
@@ -408,3 +409,18 @@ class Implementation(AbstractStubClass):
         instance.save()
         result = to_dict_with_custom_fields(instance, USER_VALUES)
         return strip_empty_optional_fields(result)
+
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: An optional cutoff date to purge invites before this date
+        :type cutoff_date: date
+        """
+        if cutoff_date is None:
+            cutoff_date = str(datetime.datetime.now().date())
+        tasks.purge_expired_invitations.apply_async(
+            operational_api=settings.AC_OPERATIONAL_API,
+            cutoff_date=cutoff_date
+        )
+        return

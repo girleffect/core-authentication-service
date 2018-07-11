@@ -1,12 +1,13 @@
 import datetime
 import logging
 import uuid
+from unittest.mock import MagicMock
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.test import TestCase
+from django.test import override_settings, TestCase
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -170,3 +171,18 @@ class SendInvitationMail(TestCase):
         self.assertEqual(cm.output[0], "INFO:authentication_service.tasks:Sent invitation from "
                                        "test_user_1 to Thename Thesurname")
 
+
+class PurgeExpiredInvitations(TestCase):
+
+    @override_settings(AC_OPERTAIONAL_API=MagicMock(
+        purge_expired_invitations=MagicMock(return_value={
+            "amount": 4
+        }))
+    )
+    def test_purge_expired_invitation_task(self):
+        result = tasks.purge_expired_invitations(
+            operational_api=settings.AC_OPERTAIONAL_API,
+            cutoff_date=str(datetime.datetime.now().date())
+        )
+        print(result)
+        self.assertEqual(result["amount"], 4)

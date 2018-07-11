@@ -2,6 +2,7 @@ import logging
 import typing
 import uuid
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core import signing
 from django.core.mail import EmailMultiAlternatives
@@ -162,3 +163,17 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
 
         logger.info(f"Sent invitation from {sender.username} "
                     f"to {invitation['first_name']} {invitation['last_name']}")
+
+
+@task(name="purge_expired_invitations_task")
+def purge_expired_invitations(operational_api, cutoff_date):
+    """
+    Task to call the purge_expired_invitations on the access_control API.
+    :param operational_api: The API client to use.
+    :param cutoff_date: The cutoff_date for invitations.
+    :return:
+    """
+    return operational_api.purge_expired_invitations(
+        cutoff_date=cutoff_date
+    )
+
