@@ -223,6 +223,105 @@ class OperationalApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
+    def get_resource_permissions_for_roles(self, role_ids, **kwargs):  # noqa: E501
+        """get_resource_permissions_for_roles  # noqa: E501
+
+        Get a list of all resource permissions the specified roles have.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_resource_permissions_for_roles(role_ids, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param list[int] role_ids: (required)
+        :return: list[ResourcePermission]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.get_resource_permissions_for_roles_with_http_info(role_ids, **kwargs)  # noqa: E501
+        else:
+            (data) = self.get_resource_permissions_for_roles_with_http_info(role_ids, **kwargs)  # noqa: E501
+            return data
+
+    def get_resource_permissions_for_roles_with_http_info(self, role_ids, **kwargs):  # noqa: E501
+        """get_resource_permissions_for_roles  # noqa: E501
+
+        Get a list of all resource permissions the specified roles have.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_resource_permissions_for_roles_with_http_info(role_ids, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param list[int] role_ids: (required)
+        :return: list[ResourcePermission]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['role_ids']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_resource_permissions_for_roles" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'role_ids' is set
+        if ('role_ids' not in params or
+                params['role_ids'] is None):
+            raise ValueError("Missing the required parameter `role_ids` when calling `get_resource_permissions_for_roles`")  # noqa: E501
+
+        if ('role_ids' in params and
+                len(params['role_ids']) < 1):
+            raise ValueError("Invalid value for parameter `role_ids` when calling `get_resource_permissions_for_roles`, number of items must be greater than or equal to `1`")  # noqa: E501
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'role_ids' in params:
+            query_params.append(('role_ids', params['role_ids']))  # noqa: E501
+            collection_formats['role_ids'] = 'csv'  # noqa: E501
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/ops/resource_permissions_for_roles', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[ResourcePermission]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
     def get_site_and_domain_roles(self, site_id, **kwargs):  # noqa: E501
         """get_site_and_domain_roles  # noqa: E501
 
@@ -413,6 +512,188 @@ class OperationalApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
+    def get_sites_under_domain(self, domain_id, **kwargs):  # noqa: E501
+        """get_sites_under_domain  # noqa: E501
+
+        Get a list of all sites linked directly or indirectly to the specified domain.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_sites_under_domain(domain_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int domain_id: A unique integer value identifying the domain. (required)
+        :return: list[Site]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.get_sites_under_domain_with_http_info(domain_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.get_sites_under_domain_with_http_info(domain_id, **kwargs)  # noqa: E501
+            return data
+
+    def get_sites_under_domain_with_http_info(self, domain_id, **kwargs):  # noqa: E501
+        """get_sites_under_domain  # noqa: E501
+
+        Get a list of all sites linked directly or indirectly to the specified domain.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_sites_under_domain_with_http_info(domain_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int domain_id: A unique integer value identifying the domain. (required)
+        :return: list[Site]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['domain_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_sites_under_domain" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'domain_id' is set
+        if ('domain_id' not in params or
+                params['domain_id'] is None):
+            raise ValueError("Missing the required parameter `domain_id` when calling `get_sites_under_domain`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'domain_id' in params:
+            path_params['domain_id'] = params['domain_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/ops/get_sites_under_domain/{domain_id}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[Site]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def get_tech_admin_resource_permissions(self, **kwargs):  # noqa: E501
+        """get_tech_admin_resource_permissions  # noqa: E501
+
+        Get a list of all possible permissions any user can have. This is effectively what a tech admin user can do.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_tech_admin_resource_permissions(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :return: list[ResourcePermission]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.get_tech_admin_resource_permissions_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.get_tech_admin_resource_permissions_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def get_tech_admin_resource_permissions_with_http_info(self, **kwargs):  # noqa: E501
+        """get_tech_admin_resource_permissions  # noqa: E501
+
+        Get a list of all possible permissions any user can have. This is effectively what a tech admin user can do.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_tech_admin_resource_permissions_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :return: list[ResourcePermission]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = []  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_tech_admin_resource_permissions" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/ops/tech_admin_resource_permissions', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[ResourcePermission]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
     def get_user_site_role_labels_aggregated(self, user_id, site_id, **kwargs):  # noqa: E501
         """get_user_site_role_labels_aggregated  # noqa: E501
 
@@ -509,6 +790,372 @@ class OperationalApi(object):
             post_params=form_params,
             files=local_var_files,
             response_type='UserSiteRoleLabelsAggregated',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def get_users_with_roles_for_domain(self, domain_id, **kwargs):  # noqa: E501
+        """get_users_with_roles_for_domain  # noqa: E501
+
+        Get a list of Users with their effective roles within the given domain.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_users_with_roles_for_domain(domain_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int domain_id: A unique integer value identifying the domain. (required)
+        :return: list[UserWithRoles]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.get_users_with_roles_for_domain_with_http_info(domain_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.get_users_with_roles_for_domain_with_http_info(domain_id, **kwargs)  # noqa: E501
+            return data
+
+    def get_users_with_roles_for_domain_with_http_info(self, domain_id, **kwargs):  # noqa: E501
+        """get_users_with_roles_for_domain  # noqa: E501
+
+        Get a list of Users with their effective roles within the given domain.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_users_with_roles_for_domain_with_http_info(domain_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int domain_id: A unique integer value identifying the domain. (required)
+        :return: list[UserWithRoles]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['domain_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_users_with_roles_for_domain" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'domain_id' is set
+        if ('domain_id' not in params or
+                params['domain_id'] is None):
+            raise ValueError("Missing the required parameter `domain_id` when calling `get_users_with_roles_for_domain`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'domain_id' in params:
+            path_params['domain_id'] = params['domain_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/ops/users_with_roles_for_domain/{domain_id}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[UserWithRoles]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def get_users_with_roles_for_site(self, site_id, **kwargs):  # noqa: E501
+        """get_users_with_roles_for_site  # noqa: E501
+
+        Get a list of Users with their effective roles within the given site.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_users_with_roles_for_site(site_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int site_id: A unique integer value identifying the site. (required)
+        :return: list[UserWithRoles]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.get_users_with_roles_for_site_with_http_info(site_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.get_users_with_roles_for_site_with_http_info(site_id, **kwargs)  # noqa: E501
+            return data
+
+    def get_users_with_roles_for_site_with_http_info(self, site_id, **kwargs):  # noqa: E501
+        """get_users_with_roles_for_site  # noqa: E501
+
+        Get a list of Users with their effective roles within the given site.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.get_users_with_roles_for_site_with_http_info(site_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int site_id: A unique integer value identifying the site. (required)
+        :return: list[UserWithRoles]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['site_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_users_with_roles_for_site" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'site_id' is set
+        if ('site_id' not in params or
+                params['site_id'] is None):
+            raise ValueError("Missing the required parameter `site_id` when calling `get_users_with_roles_for_site`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'site_id' in params:
+            path_params['site_id'] = params['site_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/ops/users_with_roles_for_site/{site_id}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[UserWithRoles]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def healthcheck(self, **kwargs):  # noqa: E501
+        """healthcheck  # noqa: E501
+
+        Get the status of the service.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.healthcheck(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :return: HealthInfo
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.healthcheck_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.healthcheck_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def healthcheck_with_http_info(self, **kwargs):  # noqa: E501
+        """healthcheck  # noqa: E501
+
+        Get the status of the service.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.healthcheck_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :return: HealthInfo
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = []  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method healthcheck" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = []  # noqa: E501
+
+        return self.api_client.call_api(
+            '/ops/healthcheck', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='HealthInfo',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def purge_expired_invitations(self, **kwargs):  # noqa: E501
+        """purge_expired_invitations  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.purge_expired_invitations(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param date cutoff_date: An optional cutoff date to purge invites before this date
+        :return: PurgedInvitations
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.purge_expired_invitations_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.purge_expired_invitations_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def purge_expired_invitations_with_http_info(self, **kwargs):  # noqa: E501
+        """purge_expired_invitations  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.purge_expired_invitations_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param date cutoff_date: An optional cutoff date to purge invites before this date
+        :return: PurgedInvitations
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['cutoff_date']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method purge_expired_invitations" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'cutoff_date' in params:
+            query_params.append(('cutoff_date', params['cutoff_date']))  # noqa: E501
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/ops/purge_expired_invitations', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='PurgedInvitations',  # noqa: E501
             auth_settings=auth_settings,
             async=params.get('async'),
             _return_http_data_only=params.get('_return_http_data_only'),
