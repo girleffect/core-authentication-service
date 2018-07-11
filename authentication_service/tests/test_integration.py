@@ -564,6 +564,7 @@ class IntegrationTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @override_settings(ACCESS_CONTROL_API=MagicMock(invitation_read=MagicMock()))
+    @patch("authentication_service.tasks.send_invitation_email.delay", MagicMock())
     def test_invitation_send(self):
         test_invitation_id = uuid.uuid4()
 
