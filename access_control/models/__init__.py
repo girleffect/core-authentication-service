@@ -34,6 +34,7 @@ from access_control.models.invitation_update import InvitationUpdate
 from access_control.models.permission import Permission
 from access_control.models.permission_create import PermissionCreate
 from access_control.models.permission_update import PermissionUpdate
+from access_control.models.purged_invitations import PurgedInvitations
 from access_control.models.resource import Resource
 from access_control.models.resource_create import ResourceCreate
 from access_control.models.resource_permission import ResourcePermission

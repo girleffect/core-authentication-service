@@ -89,6 +89,13 @@ parameters:
     required: false
     type: string
     format: uuid
+  optional_cutoff_date:
+    description: An optional cutoff date to purge invites before this date
+    in: query
+    name: cutoff_date
+    required: false
+    type: string
+    format: date
   domain_id:
     description: A unique integer value identifying the domain.
     in: path
@@ -923,6 +930,14 @@ definitions:
     - version
     - db_timestamp
 
+  purged_invitations:
+    type: object
+    properties:
+      amount:
+        type: integer
+    required:
+      - amount
+
 
 paths:
   /ops/healthcheck:
@@ -1141,6 +1156,23 @@ paths:
           description: 'Forbidden'
         404:
           description: 'Site not found'
+      tags:
+        - operational
+
+  /ops/purge_expired_invitations:
+    get:
+      operationId: purge_expired_invitations
+      parameters:
+        - $ref: '#/parameters/optional_cutoff_date'
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 'Expired Invitations Purged'
+          schema:
+            $ref: '#/definitions/purged_invitations'
+        403:
+          description: 'Forbidden'
       tags:
         - operational
 
@@ -1433,6 +1465,8 @@ paths:
           description: ''
           schema:
             $ref: '#/definitions/all_user_roles'
+        '410':
+          description: 'Gone: Resource has expired or no longer exists'
       tags:
         - access_control
 
