@@ -273,7 +273,7 @@ LOGGING = {
         }
     },
     "loggers": {
-        "": {
+        "root": {
             "level": "WARNING",
             "handlers": ["sentry", "console"],
         },

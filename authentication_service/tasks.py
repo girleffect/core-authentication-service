@@ -6,7 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core import signing
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
-from django.urls import reverse
 from django.utils import timezone, translation
 from django.utils.html import strip_tags
 from django.utils.http import urlencode
@@ -14,10 +13,9 @@ from django.utils.translation import ugettext as _
 
 from celery.task import task
 
-from access_control import Invitation
 from authentication_service.models import CoreUser, Organisation
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 MAIL_TYPE_DATA = {
     "default": {
@@ -32,7 +30,7 @@ MAIL_TYPE_DATA = {
         "subject": "Account deletion",
         "template_name": "authentication_service/email/delete_account.html",
         # TODO GE mail address to be added.
-        "recipients": ["ge@ge.com", "fritz@praekelt.com"]
+        "recipients": ["ge@ge.com"]
     },
 }
 
@@ -66,7 +64,8 @@ def send_mail(
     objects_to_fetch = objects_to_fetch or []
 
     # The data used in the email are made up of default, type-specific and extra data.
-    data = MAIL_TYPE_DATA["default"]
+    # Important: Make a copy of the default data to avoid manipulating the definitions.
+    data = MAIL_TYPE_DATA["default"].copy()
     # Update the default data with type-specific data.
     data.update(MAIL_TYPE_DATA.get(mail_type, {}))
     # Update the data with what is specified in the "extra" data.
@@ -82,10 +81,7 @@ def send_mail(
     # If there is not a recipient present, log the attempt and return nothing.
     # No use in attempting to mail without a recipient list.
     if not recipients:
-        logger.error(
-            "Attempt to send an email without recipients; %s-%s" %
-            (mail_type, now)
-        )
+        logger.error(f"Attempted to send an email of type '{mail_type}' without recipients")
         return
 
     # Fetches instance for each object from the db and puts it into
@@ -154,7 +150,6 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
         html_content = loader.render_to_string("authentication_service/email/invitation.html",
                                                context)
         text_content = strip_tags(html_content)
-        logger.warning(html_content)
         message = EmailMultiAlternatives(
             subject=subject,
             body=text_content,

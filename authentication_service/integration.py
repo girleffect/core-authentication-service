@@ -138,6 +138,11 @@ class Implementation(AbstractStubClass):
     @staticmethod
     def invitation_send(request, invitation_id, language=None, *args, **kwargs):
         """
+        Queue sending of an invitation email.
+
+        This function needs to perform thorough validation of all fields to ensure any errors
+        are detected before queuing the task that will send the email asynchronously.
+
         :param request: An HttpRequest
         :param invitation_id:
         :type invitation_id: string
@@ -169,7 +174,6 @@ class Implementation(AbstractStubClass):
         tasks.send_invitation_email.delay(invitation.to_dict(), registration_url, language)
 
         return {}
-
 
     # organisation_list -- Synchronisation point for meld
     @staticmethod
