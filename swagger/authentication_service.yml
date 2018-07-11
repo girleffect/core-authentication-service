@@ -689,6 +689,28 @@ paths:
       tags:
         - authentication
 
+  /invitations/{invitation_id}/send:
+    parameters:
+      - name: invitation_id
+        type: string
+        format: uuid
+        in: path
+        required: true
+      - name: language
+        type: string
+        in: query
+        required: false
+        default: "en"
+    get:
+      operationId: invitation_send
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'An invitation email was successfully queued for sending.'
+      tags:
+        - authentication
+
   /organisations:
     get:
       operationId: organisation_list

@@ -12,3 +12,6 @@ https://girleffect.github.io/core-authentication-service/
 Migration 0001 for otp_totp will break if user AUTH_USER_MODEL is changed after running migrations.
 
 Env vars: CELERY_APP and BUILDER are used to flag the need for certain other env variables.
+
+Notes on how the production system was bootstrapped can be found in `bootstrap.md`.
+
