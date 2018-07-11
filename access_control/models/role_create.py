@@ -44,7 +44,7 @@ class RoleCreate(object):
         'description': 'description'
     }
 
-    def __init__(self, label=None, requires_2fa=None, description=None):  # noqa: E501
+    def __init__(self, label=None, requires_2fa=True, description=None):  # noqa: E501
         """RoleCreate - a model defined in Swagger"""  # noqa: E501
 
         self._label = None
@@ -53,7 +53,8 @@ class RoleCreate(object):
         self.discriminator = None
 
         self.label = label
-        self.requires_2fa = requires_2fa
+        if requires_2fa is not None:
+            self.requires_2fa = requires_2fa
         if description is not None:
             self.description = description
 
@@ -98,8 +99,6 @@ class RoleCreate(object):
         :param requires_2fa: The requires_2fa of this RoleCreate.  # noqa: E501
         :type: bool
         """
-        if requires_2fa is None:
-            raise ValueError("Invalid value for `requires_2fa`, must not be `None`")  # noqa: E501
 
         self._requires_2fa = requires_2fa
 

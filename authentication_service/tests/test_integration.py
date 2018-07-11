@@ -1,19 +1,24 @@
 import random
 import json
 import os
+from unittest.mock import patch, MagicMock
+
 import jsonschema
 import datetime
 import uuid
 
+from django.core import mail
+from django.utils import timezone
 from oidc_provider.models import Client
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.util import random_hex
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
-from authentication_service import models
+from access_control import Invitation
+from authentication_service import models, tasks
 from authentication_service.api import schemas
 from authentication_service.models import UserSite
 
@@ -25,7 +30,9 @@ class IntegrationTestCase(TestCase):
         # Create users
         cls.user_1 = get_user_model().objects.create(
             username="test_user_1",
-            email="",
+            first_name="Firstname",
+            last_name="Lastname",
+            email="firstname@example.com",
             is_superuser=1,
             is_staff=1,
             birth_date=datetime.date(2000, 1, 1)
@@ -411,10 +418,10 @@ class IntegrationTestCase(TestCase):
         for index in range(1, 9):
             count += 1
             user = users[index][0]
-            user.last_name = f"last_{index}"
+            user.last_name = f"mY_last_{index}"
             user.save()
             users[index] = (user, users[index][1])
-        response = self.client.get("/api/v1/users?last_name=ASt")
+        response = self.client.get("/api/v1/users?last_name=_lASt_")
         self.assertEqual(len(response.json()), count)
 
         # Test list on first_name
@@ -422,10 +429,10 @@ class IntegrationTestCase(TestCase):
         for index in range(1, 10):
             count += 1
             user = users[index][0]
-            user.first_name = f"first_{index}"
+            user.first_name = f"mY_first_{index}"
             user.save()
             users[index] = (user, users[index][1])
-        response = self.client.get("/api/v1/users?first_name=IrsT")
+        response = self.client.get("/api/v1/users?first_name=_fIrsT_")
         self.assertEqual(len(response.json()), count)
 
         # DOB
@@ -503,7 +510,6 @@ class IntegrationTestCase(TestCase):
 
         response = self.client.get(
             f"/api/v1/users?site_ids=1,2")
-        print(response.json())
         self.assertEqual(int(response["X-Total-Count"]), 1)
         self.assertEqual(len(response.json()), 1)
 
@@ -520,7 +526,6 @@ class IntegrationTestCase(TestCase):
         response = self.client.get(
             f"/api/v1/users?site_ids=1")
         self.assertEqual(len(response.json()), 1)
-
 
     def test_user_list_filter_errors(self):
         self.client.login(username="test_user_3", password="password")
@@ -557,3 +562,64 @@ class IntegrationTestCase(TestCase):
             '{"from":"1","to"}'
         )
         self.assertEqual(response.status_code, 400)
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock(invitation_read=MagicMock()))
+    @patch("authentication_service.tasks.send_invitation_email.delay", MagicMock())
+    def test_invitation_send(self):
+        test_invitation_id = uuid.uuid4()
+
+        settings.ACCESS_CONTROL_API.invitation_read.return_value = Invitation(
+            id=test_invitation_id.hex,
+            invitor_id=self.user_1.id,  # Valid user
+            first_name="Thename",
+            last_name="Thesurname",
+            email="thename.thesurname@example.com",
+            organisation_id=self.organisations[0].id,
+            expires_at=timezone.now() + datetime.timedelta(minutes=10),
+            created_at=timezone.now(),
+            updated_at=timezone.now()
+        )
+
+        self.client.login(username="test_user_1", password="password")
+        response = self.client.get(f"/api/v1/invitations/{test_invitation_id}/send")
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock(invitation_read=MagicMock()))
+    def test_invitation_send_expired(self):
+        test_invitation_id = uuid.uuid4()
+
+        settings.ACCESS_CONTROL_API.invitation_read.return_value = Invitation(
+            id=test_invitation_id.hex,
+            invitor_id=self.user_1.id,  # Valid user
+            first_name="Thename",
+            last_name="Thesurname",
+            email="thename.thesurname@example.com",
+            organisation_id=self.organisations[0].id,
+            expires_at=timezone.now() - datetime.timedelta(minutes=10),
+            created_at=timezone.now(),
+            updated_at=timezone.now()
+        )
+
+        self.client.login(username="test_user_1", password="password")
+        response = self.client.get(f"/api/v1/invitations/{test_invitation_id}/send")
+        self.assertEqual(response.status_code, 400)
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock(invitation_read=MagicMock()))
+    def test_invitation_send_invalid_invitor(self):
+        test_invitation_id = uuid.uuid4()
+
+        settings.ACCESS_CONTROL_API.invitation_read.return_value = Invitation(
+            id=test_invitation_id.hex,
+            invitor_id=uuid.uuid4().hex,
+            first_name="Thename",
+            last_name="Thesurname",
+            email="thename.thesurname@example.com",
+            organisation_id=self.organisations[0].id,
+            expires_at=timezone.now() + datetime.timedelta(minutes=10),
+            created_at=timezone.now(),
+            updated_at=timezone.now()
+        )
+
+        self.client.login(username="test_user_1", password="password")
+        response = self.client.get(f"/api/v1/invitations/{test_invitation_id}/send")
+        self.assertEqual(response.status_code, 404)

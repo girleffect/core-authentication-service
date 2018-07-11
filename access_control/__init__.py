@@ -31,6 +31,7 @@ from access_control.models.domain_role_create import DomainRoleCreate
 from access_control.models.domain_role_update import DomainRoleUpdate
 from access_control.models.domain_roles import DomainRoles
 from access_control.models.domain_update import DomainUpdate
+from access_control.models.health_info import HealthInfo
 from access_control.models.invitation import Invitation
 from access_control.models.invitation_create import InvitationCreate
 from access_control.models.invitation_domain_role import InvitationDomainRole
@@ -41,8 +42,10 @@ from access_control.models.invitation_update import InvitationUpdate
 from access_control.models.permission import Permission
 from access_control.models.permission_create import PermissionCreate
 from access_control.models.permission_update import PermissionUpdate
+from access_control.models.purged_invitations import PurgedInvitations
 from access_control.models.resource import Resource
 from access_control.models.resource_create import ResourceCreate
+from access_control.models.resource_permission import ResourcePermission
 from access_control.models.resource_update import ResourceUpdate
 from access_control.models.role import Role
 from access_control.models.role_create import RoleCreate
@@ -63,3 +66,4 @@ from access_control.models.user_domain_role_create import UserDomainRoleCreate
 from access_control.models.user_site_role import UserSiteRole
 from access_control.models.user_site_role_create import UserSiteRoleCreate
 from access_control.models.user_site_role_labels_aggregated import UserSiteRoleLabelsAggregated
+from access_control.models.user_with_roles import UserWithRoles

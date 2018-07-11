@@ -89,6 +89,13 @@ parameters:
     required: false
     type: string
     format: uuid
+  optional_cutoff_date:
+    description: An optional cutoff date to purge invites before this date
+    in: query
+    name: cutoff_date
+    required: false
+    type: string
+    format: date
   domain_id:
     description: A unique integer value identifying the domain.
     in: path
@@ -292,11 +299,11 @@ definitions:
         $ref: '#/definitions/role_label'
       requires_2fa:
         type: boolean
+        default: true
       description:
         type: string
     required:
       - label
-      - requires_2fa
 
   role_update:
     type: object
@@ -346,7 +353,6 @@ definitions:
     required:
       - site_id
       - role_id
-      - grant_implicitly
 
   site_role_update:
     type: object
@@ -629,6 +635,8 @@ definitions:
       email:
         type: string
         format: email
+      organisation_id:
+        type: integer
       expires_at:
         type: string
         format: 'date-time'
@@ -646,6 +654,7 @@ definitions:
       - first_name
       - last_name
       - email
+      - organisation_id
       - expires_at
       - created_at
       - updated_at
@@ -666,6 +675,8 @@ definitions:
       email:
         type: string
         format: email
+      organisation_id:
+        type: integer
       expires_at:
         type: string
         format: 'date-time'
@@ -674,10 +685,15 @@ definitions:
       - first_name
       - last_name
       - email
+      - organisation_id
 
   invitation_update:
     type: object
     properties:
+      invitor_id:
+        type: string
+        format: uuid
+        description: The user that created the invitation
       first_name:
         type: string
         maxLength: 100
@@ -687,6 +703,8 @@ definitions:
       email:
         type: string
         format: email
+      organisation_id:
+        type: integer
       expires_at:
         type: string
         format: 'date-time'
@@ -867,7 +885,96 @@ definitions:
       - user_id
       - roles_map
 
+  user_with_roles:
+    description: 'A user with their roles.'
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: uuid
+      role_ids:
+        type: array
+        items:
+          type: integer
+
+  resource_permission:
+    description: 'An object containing (resource, permission) pairs'
+    type: object
+    properties:
+      resource_id:
+        type: integer
+      permission_id:
+        type: integer
+    required:
+      - resource_id
+      - permission_id
+    additionalProperties: false
+
+  health_info:
+    description: 'Health check response'
+    type: object
+    properties:
+      host:
+        type: string
+      server_timestamp:
+        type: string
+        format: 'date-time'
+      version:
+        type: string
+      db_timestamp:
+        type: string
+        format: 'date-time'
+    required:
+    - host
+    - server_timestamp
+    - version
+    - db_timestamp
+
+  purged_invitations:
+    type: object
+    properties:
+      amount:
+        type: integer
+    required:
+      - amount
+
+
 paths:
+  /ops/healthcheck:
+    get:
+      security: [ ]
+      description: 'Get the status of the service.'
+      operationId: healthcheck
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 'The service is operating normally.'
+          schema:
+            $ref: '#/definitions/health_info'
+      tags:
+        - operational
+
+  /ops/get_sites_under_domain/{domain_id}:
+    parameters:
+      - $ref: '#/parameters/domain_id'
+    get:
+      description: 'Get a list of all sites linked directly or indirectly to the specified domain.'
+      operationId: get_sites_under_domain
+      produces:
+        - application/json
+      responses:
+        200:
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/site'
+        403:
+          description: 'Forbidden'
+      tags:
+        - operational
+
   /ops/site_role_labels_aggregated/{site_id}:
     parameters:
       - $ref: '#/parameters/site_id'
@@ -881,6 +988,53 @@ paths:
           description: ''
           schema:
             $ref: '#/definitions/site_role_labels_aggregated'
+        403:
+          description: 'Forbidden'
+      tags:
+        - operational
+
+  /ops/tech_admin_resource_permissions:
+    get:
+      description: Get a list of all possible permissions any user can have. This is effectively
+        what a tech admin user can do.
+      operationId: get_tech_admin_resource_permissions
+      produces:
+        - application/json
+      responses:
+        200:
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/resource_permission'
+        403:
+          description: 'Forbidden'
+      tags:
+        - operational
+
+  /ops/resource_permissions_for_roles:
+    parameters:
+      - name: role_ids
+        in: query
+        required: true
+        type: array
+        collectionFormat: csv
+        items:
+          type: integer
+        uniqueItems: true
+        minItems: 1
+    get:
+      description: Get a list of all resource permissions the specified roles have.
+      operationId: get_resource_permissions_for_roles
+      produces:
+        - application/json
+      responses:
+        200:
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/resource_permission'
         403:
           description: 'Forbidden'
       tags:
@@ -958,6 +1112,67 @@ paths:
           description: 'Forbidden'
         404:
           description: 'User not found'
+      tags:
+        - operational
+
+  /ops/users_with_roles_for_domain/{domain_id}:
+    parameters:
+      - $ref: '#/parameters/domain_id'
+    get:
+      description: 'Get a list of Users with their effective roles within the given domain.'
+      operationId: get_users_with_roles_for_domain
+      produces:
+        - application/json
+      responses:
+        200:
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/user_with_roles'
+        403:
+          description: 'Forbidden'
+        404:
+          description: 'Domain not found'
+      tags:
+        - operational
+
+  /ops/users_with_roles_for_site/{site_id}:
+    parameters:
+      - $ref: '#/parameters/site_id'
+    get:
+      description: 'Get a list of Users with their effective roles within the given site.'
+      operationId: get_users_with_roles_for_site
+      produces:
+        - application/json
+      responses:
+        200:
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/user_with_roles'
+        403:
+          description: 'Forbidden'
+        404:
+          description: 'Site not found'
+      tags:
+        - operational
+
+  /ops/purge_expired_invitations:
+    get:
+      operationId: purge_expired_invitations
+      parameters:
+        - $ref: '#/parameters/optional_cutoff_date'
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 'Expired Invitations Purged'
+          schema:
+            $ref: '#/definitions/purged_invitations'
+        403:
+          description: 'Forbidden'
       tags:
         - operational
 
@@ -1250,6 +1465,8 @@ paths:
           description: ''
           schema:
             $ref: '#/definitions/all_user_roles'
+        '410':
+          description: 'Gone: Resource has expired or no longer exists'
       tags:
         - access_control
 

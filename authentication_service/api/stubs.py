@@ -62,6 +62,18 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # invitation_send -- Synchronisation point for meld
+    @staticmethod
+    def invitation_send(request, invitation_id, language=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param invitation_id: 
+        :type invitation_id: string
+        :param language: (optional) 
+        :type language: string
+        """
+        raise NotImplementedError()
+
     # organisation_list -- Synchronisation point for meld
     @staticmethod
     def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
@@ -334,6 +346,24 @@ class MockedStubClass(AbstractStubClass):
         :type country_code: string
         """
         response_schema = schemas.country
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def invitation_send(request, invitation_id, language=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param invitation_id: 
+        :type invitation_id: string
+        :param language: (optional) 
+        :type language: string
+        """
+        response_schema = schemas.__UNSPECIFIED__
         if "type" not in response_schema:
             response_schema["type"] = "object"
 
