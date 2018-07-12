@@ -27,6 +27,16 @@ class IntegrationTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        # Organisational units
+        cls.MAX_ORG_UNITS = 5
+        cls.organisations = [
+            models.Organisation.objects.create(
+                name=f"test_unit_{i}",
+                description="Desc"
+            )
+            for i in range(0, 5)
+        ]
+
         # Create users
         cls.user_1 = get_user_model().objects.create(
             username="test_user_1",
@@ -35,7 +45,8 @@ class IntegrationTestCase(TestCase):
             email="firstname@example.com",
             is_superuser=1,
             is_staff=1,
-            birth_date=datetime.date(2000, 1, 1)
+            birth_date=datetime.date(2000, 1, 1),
+            organisation=cls.organisations[0]
         )
         cls.user_1.set_password("password")
         cls.user_1.save()
@@ -89,16 +100,6 @@ class IntegrationTestCase(TestCase):
                     code=language[0], name=language[1]
                 )
                 cls.total_countries += 1
-
-        # Organisational units
-        cls.MAX_ORG_UNITS = 5
-        cls.organisations = [
-            models.Organisation.objects.create(
-                name=f"test_unit_{i}",
-                description="Desc"
-            )
-            for i in range(0, 5)
-        ]
 
     def test_organisation_list(self):
         # Authorize user
@@ -169,6 +170,10 @@ class IntegrationTestCase(TestCase):
         # Double check
         response = self.client.get(f"/api/v1/organisations/{organisation['id']}")
         self.assertEqual(response.status_code, 404)
+
+        # Test Delete Organisation with user linked.
+        response = self.client.delete(f"/api/v1/organisations/{self.organisations[0].id}")
+        self.assertEqual(response.status_code, 400)
 
     def test_organisation_read(self):
         # Authorize user
@@ -536,17 +541,17 @@ class IntegrationTestCase(TestCase):
         # has organisation
         response = self.client.get(
             "/api/v1/users?has_organisation=true")
-        self.assertEqual(len(response.json()), 0)
+        self.assertEqual(len(response.json()), 1)
         user = users[0][0]
-        user.organisation = self.organisations[0]
+        user.organisation = self.organisations[1]
         user.save()
         response = self.client.get(
             "/api/v1/users?has_organisation=true")
-        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(len(response.json()), 2)
 
         # organisation
         response = self.client.get(
-            f"/api/v1/users?organisation_id={self.organisations[0].id}")
+            f"/api/v1/users?organisation_id={self.organisations[1].id}")
         self.assertEqual(len(response.json()), 1)
 
         response = self.client.get(
