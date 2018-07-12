@@ -94,7 +94,6 @@ class IntegrationTestCase(TestCase):
         cls.MAX_ORG_UNITS = 5
         cls.organisations = [
             models.Organisation.objects.create(
-                id=i,
                 name=f"test_unit_{i}",
                 description="Desc"
             )
@@ -128,12 +127,55 @@ class IntegrationTestCase(TestCase):
         response = self.client.get("/api/v1/organisations?limit=500")
         self.assertEqual(response.status_code, 400)
 
+    def test_organisation_create(self):
+        # Authorize user
+        self.client.login(username="test_user_2", password="password")
+
+        # Test Create Endpoint
+        response = self.client.post(
+            "/api/v1/organisations",
+            data=json.dumps({
+                "name": "Test Org",
+                "description": "Test Description"
+            }),
+            content_type="application/json"
+        )
+        organisation = response.json()
+        jsonschema.validate(organisation, schema=schemas.organisation)
+
+        # Test if exists
+        response = self.client.get(f"/api/v1/organisations/{organisation['id']}")
+        self.assertContains(response, organisation["name"])
+
+    def test_organisation_delete(self):
+        # Authorize user
+        self.client.login(username="test_user_2", password="password")
+
+        # Create Temporary Organisation
+        response = self.client.post(
+            "/api/v1/organisations",
+            data=json.dumps({
+                "name": "Temp Org",
+                "description": "Temp Description"
+            }),
+            content_type="application/json"
+        )
+        organisation = response.json()
+
+        # Test Delete Organisation
+        response = self.client.delete(f"/api/v1/organisations/{organisation['id']}")
+        self.assertEqual(response.status_code, 200)
+
+        # Double check
+        response = self.client.get(f"/api/v1/organisations/{organisation['id']}")
+        self.assertEqual(response.status_code, 404)
+
     def test_organisation_read(self):
         # Authorize user
         self.client.login(username="test_user_2", password="password")
 
         # Test read
-        response = self.client.get("/api/v1/organisations/1")
+        response = self.client.get(f"/api/v1/organisations/{self.organisations[1].id}")
         self.assertContains(response, self.organisations[1].name)
 
         # Validate returned data
@@ -142,6 +184,28 @@ class IntegrationTestCase(TestCase):
         # Test non-existent organisation
         response = self.client.get("/api/v1/organisations/999999")
         self.assertEqual(response.status_code, 404)
+
+    def test_organisation_update(self):
+        # Authorize user
+        self.client.login(username="test_user_2", password="password")
+
+        # Test Update
+        response = self.client.put(
+            f"/api/v1/organisations/{self.organisations[1].id}",
+            data=json.dumps({
+                "name": "Changed Name",
+                "description": "Changed Description"
+            }),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        jsonschema.validate(response.json(), schema=schemas.organisation)
+
+        # Double Check
+        response = self.client.get(f"/api/v1/organisations/{self.organisations[1].id}")
+        organisation = response.json()
+        self.assertEqual(organisation["name"], "Changed Name")
+        self.assertEqual(organisation["description"], "Changed Description")
 
     def test_country_list(self):
         # Authorize user

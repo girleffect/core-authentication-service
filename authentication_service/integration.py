@@ -207,6 +207,29 @@ class Implementation(AbstractStubClass):
             }
         )
 
+    # organisation_create -- Synchronisation point for meld
+    @staticmethod
+    def organisation_create(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        organisation = Organisation.objects.create(**body)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
+        return strip_empty_optional_fields(result)
+
+    # organisation_delete -- Synchronisation point for meld
+    @staticmethod
+    def organisation_delete(request, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        organisation.delete()
+
     # organisation_read -- Synchronisation point for meld
     @staticmethod
     def organisation_read(request, organisation_id, *args, **kwargs):
@@ -216,6 +239,27 @@ class Implementation(AbstractStubClass):
         :type organisation_id: integer
         """
         organisation = get_object_or_404(Organisation, id=organisation_id)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
+        return strip_empty_optional_fields(result)
+
+    # organisation_update -- Synchronisation point for meld
+    @staticmethod
+    def organisation_update(request, body, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        for attr, value in body.items():
+            try:
+                setattr(organisation, attr, value)
+            except Exception as e:
+                LOGGER.error("Failed to set user attribute %s: %s" % (attr, e))
+
+        organisation.save()
         result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
         return strip_empty_optional_fields(result)
 
