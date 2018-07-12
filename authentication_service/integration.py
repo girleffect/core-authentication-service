@@ -229,6 +229,11 @@ class Implementation(AbstractStubClass):
         organisation = get_object_or_404(Organisation, id=organisation_id)
         users = CoreUser.objects.filter(organisation=organisation)
         if users:
+            LOGGER.warning(
+                "Users Linked to organisation {}. Delete Canceled".format(
+                    organisation_id
+                )
+            )
             raise BadRequestException
         else:
             organisation.delete()
