@@ -1,10 +1,8 @@
 import logging
 
 from django.core.exceptions import SuspiciousOperation
-from django.http import HttpResponseNotFound, HttpResponseBadRequest
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.datetime_safe import datetime
 from oidc_provider.models import Client
 
 from django.conf import settings
@@ -12,8 +10,9 @@ from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 
-from authentication_service import utils, tasks
+from authentication_service import tasks
 from authentication_service.api.stubs import AbstractStubClass
+from authentication_service.exceptions import BadRequestException
 from authentication_service.models import CoreUser, Country, Organisation, UserSite
 from authentication_service.utils import strip_empty_optional_fields, check_limit, \
     to_dict_with_custom_fields, range_filter_parser
@@ -228,7 +227,16 @@ class Implementation(AbstractStubClass):
         :type organisation_id: integer
         """
         organisation = get_object_or_404(Organisation, id=organisation_id)
-        organisation.delete()
+        users = CoreUser.objects.filter(organisation=organisation)
+        if users:
+            LOGGER.warning(
+                "Users Linked to organisation {}. Delete Canceled".format(
+                    organisation_id
+                )
+            )
+            raise BadRequestException
+        else:
+            organisation.delete()
 
     # organisation_read -- Synchronisation point for meld
     @staticmethod
