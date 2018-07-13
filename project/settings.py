@@ -27,10 +27,13 @@ SESSION_COOKIE_AGE = 86400
 
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
-STATIC_URL = env.str("STATIC_URL", "/static/")
-STATIC_ROOT = env.str("STATIC_ROOT", "app/static")
 
-MEDIA_URL = env.str("MEDIA_URL", "/app/media")
+# Defaults are for S3 and CloudFront usage
+STATIC_URL = env.str("STATIC_URL", "/static/")
+STATIC_ROOT = env.str("STATIC_ROOT", "/static")
+
+MEDIA_URL = env.str("MEDIA_URL", "/media/")
+MEDIA_ROOT = env.str("MEDIA_ROOT", "/media")
 
 LOCALE_PATHS = [
     "locale"
@@ -386,8 +389,25 @@ if DEBUG:
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 # STORAGE
-# Setup storage last, to make use of final static and media roots
+# Set to True and it will make use of the default django storage settings
 if not env.bool("DEFAULT_STORAGE", False):
+    # Storage
+    DEFAULT_FILE_STORAGE = "project.settings.MediaStorage"
+
+    # Allow collectstatic to automatically put static files in the bucket
+    STATICFILES_STORAGE = "project.settings.StaticStorage"
+
+    # CloudFront domain
+    AWS_S3_CUSTOM_DOMAIN = env.str("AWS_S3_CUSTOM_DOMAIN")
+
+    AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME")
+
+    # Optional file paramaters
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=360",
+    }
     # Create separate backends to prevent file overriding when saving to static
     # and media.
     # backends/s3boto3.py l:194; location = setting('AWS_LOCATION', '')
@@ -397,15 +417,3 @@ if not env.bool("DEFAULT_STORAGE", False):
 
     class MediaStorage(S3Boto3Storage):
         location = MEDIA_ROOT
-    # Storage
-    DEFAULT_FILE_STORAGE = "project.settings.MediaStorage"
-
-    # Allow collectstatic to automatically put your static files in your
-    # bucket.
-    STATICFILES_STORAGE = "project.settings.StaticStorage"
-    AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY")
-    AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME")
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=360",
-    }

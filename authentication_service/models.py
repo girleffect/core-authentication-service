@@ -64,6 +64,9 @@ class TrigramIndex(GinIndex):
         sql_values["columns"] = ", ".join(new_columns)
         return sql_values
 
+def user_avatar_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/avatar_<filename>
+    return f"user_{instance.id}/avatar_{filename}"
 
 # NOTE: Changing AUTH_USER_MODEL will cause migration 0001 from otp_totp to
 # break once migrations have already been run once.
@@ -82,7 +85,7 @@ class CoreUser(AbstractUser):
     birth_date = models.DateField()
     country = models.ForeignKey("Country", blank=True, null=True,
         verbose_name=_("country"))
-    avatar = models.ImageField(blank=True, null=True)
+    avatar = models.ImageField(blank=True, null=True, upload_to=user_avatar_path)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     organisation = models.ForeignKey(
