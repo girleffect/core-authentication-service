@@ -389,7 +389,8 @@ if DEBUG:
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 # STORAGE
-# Set to True and it will make use of the default django storage settings
+# Unless env.DEFAULT_STORAGE is set to false, this service will make use of the
+# default storage backend and settings.
 if env.bool("DEFAULT_STORAGE", True) is False:
     # Storage
     DEFAULT_FILE_STORAGE = "project.settings.MediaStorage"
