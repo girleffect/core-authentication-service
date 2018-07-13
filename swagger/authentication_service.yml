@@ -577,6 +577,13 @@ parameters:
     type: integer
     default: 0
     minimum: 0
+  optional_cutoff_date:
+    description: An optional cutoff date to purge invites before this date
+    in: query
+    name: cutoff_date
+    required: false
+    type: string
+    format: date
   client_id:
     description: A string value identifying the client
     in: path
@@ -1015,6 +1022,19 @@ paths:
           description: ''
           schema:
             $ref: '#/definitions/user'
+      tags:
+        - authentication
+
+  /invitations/purge_expired:
+    get:
+      operationId: purge_expired_invitations
+      parameters:
+        - $ref: '#/parameters/optional_cutoff_date'
+      responses:
+        200:
+          description: 'Began task to purge invitations.'
+        403:
+          description: 'Forbidden'
       tags:
         - authentication
 

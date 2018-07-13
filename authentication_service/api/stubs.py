@@ -74,6 +74,16 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # purge_expired_invitations -- Synchronisation point for meld
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: (optional) An optional cutoff date to purge invites before this date
+        :type cutoff_date: string
+        """
+        raise NotImplementedError()
+
     # organisation_list -- Synchronisation point for meld
     @staticmethod
     def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
@@ -394,6 +404,22 @@ class MockedStubClass(AbstractStubClass):
         :type invitation_id: string
         :param language: (optional) 
         :type language: string
+        """
+        response_schema = schemas.__UNSPECIFIED__
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: (optional) An optional cutoff date to purge invites before this date
+        :type cutoff_date: string
         """
         response_schema = schemas.__UNSPECIFIED__
         if "type" not in response_schema:

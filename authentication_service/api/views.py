@@ -316,6 +316,39 @@ class InvitationsInvitationIdSend(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 @method_decorator(utils.login_required_no_redirect, name="get")
+class InvitationsPurgeExpired(View):
+
+    GET_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
+
+    def get(self, request, *args, **kwargs):
+        """
+        :param self: A InvitationsPurgeExpired instance
+        :param request: An HttpRequest
+        """
+        # cutoff_date (optional): string An optional cutoff date to purge invites before this date
+        cutoff_date = request.GET.get("cutoff_date", None)
+        result = Stubs.purge_expired_invitations(request, cutoff_date, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="get")
 @method_decorator(utils.login_required_no_redirect, name="post")
 class Organisations(View):
 
@@ -1132,6 +1165,14 @@ class __SWAGGER_SPEC__(View):
             "required": true,
             "type": "string"
         },
+        "optional_cutoff_date": {
+            "description": "An optional cutoff date to purge invites before this date",
+            "format": "date",
+            "in": "query",
+            "name": "cutoff_date",
+            "required": false,
+            "type": "string"
+        },
         "optional_limit": {
             "default": 20,
             "description": "An optional query parameter to limit the number of results returned.",
@@ -1352,6 +1393,30 @@ class __SWAGGER_SPEC__(View):
                     ]
                 }
             ]
+        },
+        "/invitations/purge_expired": {
+            "get": {
+                "operationId": "purge_expired_invitations",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/optional_cutoff_date",
+                        "x-scope": [
+                            ""
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Began task to purge invitations."
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            }
         },
         "/invitations/{invitation_id}/send": {
             "get": {
