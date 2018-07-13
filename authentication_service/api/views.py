@@ -316,13 +316,13 @@ class InvitationsInvitationIdSend(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 @method_decorator(utils.login_required_no_redirect, name="get")
-class OpsPurgeExpiredInvitationsTask(View):
+class InvitationsPurgeExpired(View):
 
     GET_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
 
     def get(self, request, *args, **kwargs):
         """
-        :param self: A OpsPurgeExpiredInvitationsTask instance
+        :param self: A InvitationsPurgeExpired instance
         :param request: An HttpRequest
         """
         # cutoff_date (optional): string An optional cutoff date to purge invites before this date
@@ -1394,6 +1394,30 @@ class __SWAGGER_SPEC__(View):
                 }
             ]
         },
+        "/invitations/purge_expired": {
+            "get": {
+                "operationId": "purge_expired_invitations",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/optional_cutoff_date",
+                        "x-scope": [
+                            ""
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Began task to purge invitations."
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            }
+        },
         "/invitations/{invitation_id}/send": {
             "get": {
                 "operationId": "invitation_send",
@@ -1425,30 +1449,6 @@ class __SWAGGER_SPEC__(View):
                     "type": "string"
                 }
             ]
-        },
-        "/ops/purge_expired_invitations_task": {
-            "get": {
-                "operationId": "purge_expired_invitations",
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/optional_cutoff_date",
-                        "x-scope": [
-                            ""
-                        ]
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Began task to purge invitations."
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                },
-                "tags": [
-                    "authentication"
-                ]
-            }
         },
         "/organisations": {
             "get": {

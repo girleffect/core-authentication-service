@@ -472,7 +472,6 @@ class Implementation(AbstractStubClass):
         if cutoff_date is None:
             cutoff_date = str(datetime.datetime.now().date())
         tasks.purge_expired_invitations.apply_async(
-            operational_api=settings.AC_OPERATIONAL_API,
             cutoff_date=cutoff_date
         )
         return

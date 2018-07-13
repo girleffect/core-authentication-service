@@ -3,7 +3,6 @@ import logging
 import uuid
 from unittest.mock import MagicMock
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
@@ -181,8 +180,6 @@ class PurgeExpiredInvitations(TestCase):
     )
     def test_purge_expired_invitation_task(self):
         result = tasks.purge_expired_invitations(
-            operational_api=settings.AC_OPERTAIONAL_API,
             cutoff_date=str(datetime.datetime.now().date())
         )
-        print(result)
         self.assertEqual(result["amount"], 4)

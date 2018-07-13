@@ -166,14 +166,13 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
 
 
 @task(name="purge_expired_invitations_task")
-def purge_expired_invitations(operational_api, cutoff_date):
+def purge_expired_invitations(cutoff_date):
     """
     Task to call the purge_expired_invitations on the access_control API.
-    :param operational_api: The API client to use.
     :param cutoff_date: The cutoff_date for invitations.
     :return:
     """
-    return operational_api.purge_expired_invitations(
+    return settings.AC_OPERTAIONAL_API.purge_expired_invitations(
         cutoff_date=cutoff_date
     )
 

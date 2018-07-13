@@ -1025,7 +1025,7 @@ paths:
       tags:
         - authentication
 
-  /ops/purge_expired_invitations_task:
+  /invitations/purge_expired:
     get:
       operationId: purge_expired_invitations
       parameters:
