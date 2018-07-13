@@ -317,40 +317,41 @@ EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", False)
 EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", False)
 EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", None)
 
-# Celery workers now require the Access Control API.
-# GE API settings and setup
-ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
-USER_DATA_STORE_API_URL = env.str("USER_DATA_STORE_API")
-USER_DATA_STORE_API_KEY = env.str("USER_DATA_STORE_API_KEY")
-ACCESS_CONTROL_API_URL = env.str("ACCESS_CONTROL_API")
-ACCESS_CONTROL_API_KEY = env.str("ACCESS_CONTROL_API_KEY")
+if not env.bool("BUILDER", False):
+    # Celery workers now require the Access Control API.
+    # GE API settings and setup
+    ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
+    USER_DATA_STORE_API_URL = env.str("USER_DATA_STORE_API")
+    USER_DATA_STORE_API_KEY = env.str("USER_DATA_STORE_API_KEY")
+    ACCESS_CONTROL_API_URL = env.str("ACCESS_CONTROL_API")
+    ACCESS_CONTROL_API_KEY = env.str("ACCESS_CONTROL_API_KEY")
 
-# Setup API clients
-config = user_data_store.configuration.Configuration()
-config.host = USER_DATA_STORE_API_URL
-config = access_control.configuration.Configuration()
-config.host = ACCESS_CONTROL_API_URL
-USER_DATA_STORE_API = user_data_store.api.UserDataApi(
-    api_client=user_data_store.ApiClient(
-        header_name="X-API-KEY",
-        header_value=USER_DATA_STORE_API_KEY,
-        configuration=config
+    # Setup API clients
+    config = user_data_store.configuration.Configuration()
+    config.host = USER_DATA_STORE_API_URL
+    config = access_control.configuration.Configuration()
+    config.host = ACCESS_CONTROL_API_URL
+    USER_DATA_STORE_API = user_data_store.api.UserDataApi(
+        api_client=user_data_store.ApiClient(
+            header_name="X-API-KEY",
+            header_value=USER_DATA_STORE_API_KEY,
+            configuration=config
+        )
     )
-)
-ACCESS_CONTROL_API = access_control.api.AccessControlApi(
-    api_client=access_control.ApiClient(
-        header_name="X-API-KEY",
-        header_value=ACCESS_CONTROL_API_KEY,
-        configuration=config
+    ACCESS_CONTROL_API = access_control.api.AccessControlApi(
+        api_client=access_control.ApiClient(
+            header_name="X-API-KEY",
+            header_value=ACCESS_CONTROL_API_KEY,
+            configuration=config
+        )
     )
-)
-AC_OPERATIONAL_API = access_control.api.OperationalApi(
-    api_client=access_control.ApiClient(
-        header_name="X-API-KEY",
-        header_value=ACCESS_CONTROL_API_KEY,
-        configuration=config
+    AC_OPERATIONAL_API = access_control.api.OperationalApi(
+        api_client=access_control.ApiClient(
+            header_name="X-API-KEY",
+            header_value=ACCESS_CONTROL_API_KEY,
+            configuration=config
+        )
     )
-)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", False)
