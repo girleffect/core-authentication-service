@@ -2,10 +2,8 @@ import datetime
 import logging
 
 from django.core.exceptions import SuspiciousOperation
-from django.http import HttpResponseNotFound, HttpResponseBadRequest
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.datetime_safe import datetime
 from oidc_provider.models import Client
 
 from django.conf import settings
@@ -15,6 +13,7 @@ from django.shortcuts import get_object_or_404
 
 from authentication_service import tasks
 from authentication_service.api.stubs import AbstractStubClass
+from authentication_service.exceptions import BadRequestException
 from authentication_service.models import CoreUser, Country, Organisation, UserSite
 from authentication_service.utils import strip_empty_optional_fields, check_limit, \
     to_dict_with_custom_fields, range_filter_parser
@@ -208,6 +207,38 @@ class Implementation(AbstractStubClass):
             }
         )
 
+    # organisation_create -- Synchronisation point for meld
+    @staticmethod
+    def organisation_create(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        organisation = Organisation.objects.create(**body)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
+        return strip_empty_optional_fields(result)
+
+    # organisation_delete -- Synchronisation point for meld
+    @staticmethod
+    def organisation_delete(request, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        users = CoreUser.objects.filter(organisation=organisation)
+        if users:
+            LOGGER.warning(
+                "Users Linked to organisation {}. Delete Canceled".format(
+                    organisation_id
+                )
+            )
+            raise BadRequestException
+        else:
+            organisation.delete()
+
     # organisation_read -- Synchronisation point for meld
     @staticmethod
     def organisation_read(request, organisation_id, *args, **kwargs):
@@ -217,6 +248,27 @@ class Implementation(AbstractStubClass):
         :type organisation_id: integer
         """
         organisation = get_object_or_404(Organisation, id=organisation_id)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
+        return strip_empty_optional_fields(result)
+
+    # organisation_update -- Synchronisation point for meld
+    @staticmethod
+    def organisation_update(request, body, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        for attr, value in body.items():
+            try:
+                setattr(organisation, attr, value)
+            except Exception as e:
+                LOGGER.error("Failed to set user attribute %s: %s" % (attr, e))
+
+        organisation.save()
         result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
         return strip_empty_optional_fields(result)
 
