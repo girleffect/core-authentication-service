@@ -390,7 +390,7 @@ if DEBUG:
 
 # STORAGE
 # Set to True and it will make use of the default django storage settings
-if not env.bool("DEFAULT_STORAGE", False):
+if env.bool("DEFAULT_STORAGE", False) is not True:
     # Storage
     DEFAULT_FILE_STORAGE = "project.settings.MediaStorage"
 
