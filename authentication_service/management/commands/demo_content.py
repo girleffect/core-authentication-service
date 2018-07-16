@@ -276,3 +276,5 @@ class Command(BaseCommand):
         )))
 
         call_command("load_security_questions")
+        call_command("load_countries")
+        call_command("load_organisations")
