@@ -216,7 +216,12 @@ CORS_ORIGIN_WHITELIST = [
     "localhost:8000", "127.0.0.1:8000",  # Development: Management Layer UI
     "localhost:3000", "127.0.0.1:3000",  # Development: Management Portal
     "core-management-layer:8000", "core-management-portal:3000",  # Demo environment
+
 ]
+if env.bool("USE_DEFAULT_STORAGE", True) is False:
+    # CloudFront domain
+    CORS_ORIGIN_WHITELIST.append(env.str("AWS_S3_CUSTOM_DOMAIN"))
+
 CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
 CORS_ALLOW_CREDENTIALS = True  # Allow CORS requests to send cookies along
 CORS_ALLOW_HEADERS = default_headers + (
