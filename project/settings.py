@@ -27,8 +27,13 @@ SESSION_COOKIE_AGE = 86400
 
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
-STATIC_URL = "/static/"
-STATIC_ROOT = "/app/static"
+
+# Defaults are for S3 and CloudFront usage
+STATIC_URL = env.str("STATIC_URL", "/static/")
+STATIC_ROOT = env.str("STATIC_ROOT", "/static")
+
+MEDIA_URL = env.str("MEDIA_URL", "/media/")
+MEDIA_ROOT = env.str("MEDIA_ROOT", "/media")
 
 LOCALE_PATHS = [
     "locale"
@@ -151,7 +156,10 @@ ADDITIONAL_APPS = [
     "corsheaders",
 
     # Sentry
-    "raven.contrib.django.raven_compat"
+    "raven.contrib.django.raven_compat",
+
+    # File storage
+    "storages",
 ]
 
 # Project app has to be first in the list.
@@ -374,3 +382,49 @@ if DEBUG:
 
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+
+# STORAGE
+# Unless env.USE_DEFAULT_STORAGE is set to false, this service will make use of
+# the default storage backend and settings.
+if env.bool("USE_DEFAULT_STORAGE", True) is False:
+    # Storage
+    DEFAULT_FILE_STORAGE = "project.settings.FileStorage"
+
+    # Allow collectstatic to automatically put static files in the bucket
+    STATICFILES_STORAGE = "project.settings.StaticStorage"
+
+    # CloudFront domain
+    AWS_S3_CUSTOM_DOMAIN = env.str("AWS_S3_CUSTOM_DOMAIN")
+
+    AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME")
+
+    # Optional file paramaters
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=360",
+    }
+    # Create separate backends to prevent file overriding when saving to static
+    # and media.
+    # backends/s3boto3.py l:194; location = setting('AWS_LOCATION', '')
+    from storages.backends.s3boto3 import S3Boto3Storage
+    class FileStorage(S3Boto3Storage):
+        location = "/"
+
+    class StaticStorage(S3Boto3Storage):
+        location = STATIC_ROOT
+
+    class MediaStorage(S3Boto3Storage):
+        """
+        Media should not be on the bucket root. Means storage needs to be defined
+        one each FileField.
+        """
+        location = MEDIA_ROOT
+else:
+    from django.core.files.storage import FileSystemStorage
+    class MediaStorage(FileSystemStorage):
+        """
+        Due to MediaStorage needing to be used explicitly, it needs to be set
+        for DefaultStorage as well.
+        """
+        location = MEDIA_ROOT
