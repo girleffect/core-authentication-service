@@ -18,10 +18,12 @@ from authentication_service.models import CoreUser, Organisation
 
 logger = logging.getLogger(__name__)
 
+FROM_EMAIL = "auth@gehosting.org",
+
 MAIL_TYPE_DATA = {
     "default": {
         "subject": _("Email from Girl Effect"),
-        "from_email": "auth@gehosting.org",
+        "from_email": FROM_EMAIL,
     },
     "password_reset": {
         "subject": _("Password reset for Girl Effect account"),
@@ -75,7 +77,7 @@ def send_mail(
     now = timezone.now().strftime("%a %d-%b-%Y|%H:%M:%S")
     recipients = data.get("recipients")
     subject = data.get("subject")
-    from_mail = data.get("from_mail")
+    from_email = data.get("from_email")
     cc = data.get("cc")
     template_name = data.get("template_name")
 
@@ -99,11 +101,11 @@ def send_mail(
     text_content = loader.render_to_string(template_name, context)
 
     message = EmailMultiAlternatives(
-        subject,
-        text_content,
-        from_mail,
-        recipients,
-        headers={"Unique-ID": uuid.uuid1()},
+        subject=subject,
+        body=text_content,
+        from_email=from_email,
+        to=recipients,
+        headers={"Unique-ID": uuid.uuid1().hex},
         cc=cc
     )
 
@@ -146,6 +148,7 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
         # Supplement the invitation context with extra information
         context["url"] = registration_url
         context["organisation"] = Organisation.objects.get(pk=invitation["organisation_id"])
+        context["sender"] = sender
 
         # Generate the email from the template
         html_content = loader.render_to_string("authentication_service/email/invitation.html",
@@ -154,9 +157,10 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
         message = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
-            from_email=sender.email,
+            from_email=FROM_EMAIL,
+            reply_to=[sender.email],
             to=[recipient],  # Must be a list
-            headers={"Unique-ID": uuid.uuid1()},
+            headers={"Unique-ID": uuid.uuid1().hex},
         )
         message.attach_alternative(html_content, "text/html")
         message.send()
