@@ -391,9 +391,9 @@ if DEBUG:
 # STORAGE
 # Unless env.DEFAULT_STORAGE is set to false, this service will make use of the
 # default storage backend and settings.
-if env.bool("DEFAULT_STORAGE", True) is False:
+if env.bool("USE_DEFAULT_STORAGE", True) is False:
     # Storage
-    DEFAULT_FILE_STORAGE = "project.settings.MediaStorage"
+    DEFAULT_FILE_STORAGE = "project.settings.FileStorage"
 
     # Allow collectstatic to automatically put static files in the bucket
     STATICFILES_STORAGE = "project.settings.StaticStorage"
@@ -413,8 +413,23 @@ if env.bool("DEFAULT_STORAGE", True) is False:
     # and media.
     # backends/s3boto3.py l:194; location = setting('AWS_LOCATION', '')
     from storages.backends.s3boto3 import S3Boto3Storage
+    class FileStorage(S3Boto3Storage):
+        location = "/"
+
     class StaticStorage(S3Boto3Storage):
         location = STATIC_ROOT
 
     class MediaStorage(S3Boto3Storage):
+        """
+        Media should not be on the bucket root. Means storage needs to be defined
+        one each FileField.
+        """
+        location = MEDIA_ROOT
+else:
+    from django.core.files.storage import FileSystemStorage
+    class MediaStorage(FileSystemStorage):
+        """
+        Due to MediaStorage needing to be used explicitly, it needs to be set
+        for DefaultStorage as well.
+        """
         location = MEDIA_ROOT
