@@ -342,8 +342,6 @@ if not env.bool("BUILDER", False):
     # Setup API clients
     config = user_data_store.configuration.Configuration()
     config.host = USER_DATA_STORE_API_URL
-    config = access_control.configuration.Configuration()
-    config.host = ACCESS_CONTROL_API_URL
     USER_DATA_STORE_API = user_data_store.api.UserDataApi(
         api_client=user_data_store.ApiClient(
             header_name="X-API-KEY",
@@ -351,6 +349,9 @@ if not env.bool("BUILDER", False):
             configuration=config
         )
     )
+
+    config = access_control.configuration.Configuration()
+    config.host = ACCESS_CONTROL_API_URL
     ACCESS_CONTROL_API = access_control.api.AccessControlApi(
         api_client=access_control.ApiClient(
             header_name="X-API-KEY",
