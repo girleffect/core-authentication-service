@@ -384,8 +384,8 @@ if DEBUG:
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 # STORAGE
-# Unless env.DEFAULT_STORAGE is set to false, this service will make use of the
-# default storage backend and settings.
+# Unless env.USE_DEFAULT_STORAGE is set to false, this service will make use of
+# the default storage backend and settings.
 if env.bool("USE_DEFAULT_STORAGE", True) is False:
     # Storage
     DEFAULT_FILE_STORAGE = "project.settings.FileStorage"
