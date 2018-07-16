@@ -18,7 +18,7 @@ from authentication_service.models import CoreUser, Organisation
 
 logger = logging.getLogger(__name__)
 
-FROM_EMAIL = "auth@gehosting.org",
+FROM_EMAIL = "auth@gehosting.org"
 
 MAIL_TYPE_DATA = {
     "default": {
