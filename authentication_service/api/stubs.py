@@ -62,6 +62,28 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # invitation_send -- Synchronisation point for meld
+    @staticmethod
+    def invitation_send(request, invitation_id, language=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param invitation_id: 
+        :type invitation_id: string
+        :param language: (optional) 
+        :type language: string
+        """
+        raise NotImplementedError()
+
+    # purge_expired_invitations -- Synchronisation point for meld
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: (optional) An optional cutoff date to purge invites before this date
+        :type cutoff_date: string
+        """
+        raise NotImplementedError()
+
     # organisation_list -- Synchronisation point for meld
     @staticmethod
     def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
@@ -76,11 +98,43 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # organisation_create -- Synchronisation point for meld
+    @staticmethod
+    def organisation_create(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        raise NotImplementedError()
+
+    # organisation_delete -- Synchronisation point for meld
+    @staticmethod
+    def organisation_delete(request, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        raise NotImplementedError()
+
     # organisation_read -- Synchronisation point for meld
     @staticmethod
     def organisation_read(request, organisation_id, *args, **kwargs):
         """
         :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        raise NotImplementedError()
+
+    # organisation_update -- Synchronisation point for meld
+    @staticmethod
+    def organisation_update(request, body, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
         :param organisation_id: An integer identifying an organisation a user belongs to
         :type organisation_id: integer
         """
@@ -343,6 +397,40 @@ class MockedStubClass(AbstractStubClass):
         return MockedStubClass.GENERATOR.random_value(response_schema)
 
     @staticmethod
+    def invitation_send(request, invitation_id, language=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param invitation_id: 
+        :type invitation_id: string
+        :param language: (optional) 
+        :type language: string
+        """
+        response_schema = schemas.__UNSPECIFIED__
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: (optional) An optional cutoff date to purge invites before this date
+        :type cutoff_date: string
+        """
+        response_schema = schemas.__UNSPECIFIED__
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
     def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
         """
         :param request: An HttpRequest
@@ -399,9 +487,59 @@ class MockedStubClass(AbstractStubClass):
         return MockedStubClass.GENERATOR.random_value(response_schema)
 
     @staticmethod
+    def organisation_create(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        response_schema = schemas.organisation
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def organisation_delete(request, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        response_schema = schemas.__UNSPECIFIED__
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
     def organisation_read(request, organisation_id, *args, **kwargs):
         """
         :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        response_schema = schemas.organisation
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def organisation_update(request, body, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
         :param organisation_id: An integer identifying an organisation a user belongs to
         :type organisation_id: integer
         """

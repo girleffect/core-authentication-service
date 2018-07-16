@@ -282,6 +282,74 @@ class CountriesCountryCode(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 @method_decorator(utils.login_required_no_redirect, name="get")
+class InvitationsInvitationIdSend(View):
+
+    GET_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
+
+    def get(self, request, invitation_id, *args, **kwargs):
+        """
+        :param self: A InvitationsInvitationIdSend instance
+        :param request: An HttpRequest
+        :param invitation_id: string 
+        """
+        # language (optional): string 
+        language = request.GET.get("language", None)
+        result = Stubs.invitation_send(request, invitation_id, language, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="get")
+class InvitationsPurgeExpired(View):
+
+    GET_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
+
+    def get(self, request, *args, **kwargs):
+        """
+        :param self: A InvitationsPurgeExpired instance
+        :param request: An HttpRequest
+        """
+        # cutoff_date (optional): string An optional cutoff date to purge invites before this date
+        cutoff_date = request.GET.get("cutoff_date", None)
+        result = Stubs.purge_expired_invitations(request, cutoff_date, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="get")
+@method_decorator(utils.login_required_no_redirect, name="post")
 class Organisations(View):
 
     GET_RESPONSE_SCHEMA = json.loads("""{
@@ -321,6 +389,8 @@ class Organisations(View):
     },
     "type": "array"
 }""")
+    POST_RESPONSE_SCHEMA = schemas.organisation
+    POST_BODY_SCHEMA = schemas.organisation_create
 
     def get(self, request, *args, **kwargs):
         """
@@ -354,12 +424,70 @@ class Organisations(View):
 
         return response
 
+    def post(self, request, *args, **kwargs):
+        """
+        :param self: A Organisations instance
+        :param request: An HttpRequest
+        """
+        body = utils.body_to_dict(request.body, self.POST_BODY_SCHEMA)
+        if not body:
+            return HttpResponseBadRequest("Body required")
+
+        result = Stubs.organisation_create(request, body, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.POST_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
 
 @method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="delete")
 @method_decorator(utils.login_required_no_redirect, name="get")
+@method_decorator(utils.login_required_no_redirect, name="put")
 class OrganisationsOrganisationId(View):
 
+    DELETE_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
     GET_RESPONSE_SCHEMA = schemas.organisation
+    PUT_RESPONSE_SCHEMA = schemas.organisation
+    PUT_BODY_SCHEMA = schemas.organisation_update
+
+    def delete(self, request, organisation_id, *args, **kwargs):
+        """
+        :param self: A OrganisationsOrganisationId instance
+        :param request: An HttpRequest
+        :param organisation_id: integer An integer identifying an organisation a user belongs to
+        """
+        result = Stubs.organisation_delete(request, organisation_id, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.DELETE_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
 
     def get(self, request, organisation_id, *args, **kwargs):
         """
@@ -380,6 +508,35 @@ class OrganisationsOrganisationId(View):
         response = JsonResponse(result, safe=False)
 
         maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+    def put(self, request, organisation_id, *args, **kwargs):
+        """
+        :param self: A OrganisationsOrganisationId instance
+        :param request: An HttpRequest
+        :param organisation_id: integer An integer identifying an organisation a user belongs to
+        """
+        body = utils.body_to_dict(request.body, self.PUT_BODY_SCHEMA)
+        if not body:
+            return HttpResponseBadRequest("Body required")
+
+        result = Stubs.organisation_update(request, body, organisation_id, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.PUT_RESPONSE_SCHEMA)
 
         for key, val in headers.items():
             response[key] = val
@@ -775,6 +932,32 @@ class __SWAGGER_SPEC__(View):
             ],
             "type": "object"
         },
+        "organisation_create": {
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "type": "object"
+        },
+        "organisation_update": {
+            "minProperties": 1,
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
         "user": {
             "properties": {
                 "avatar": {
@@ -980,6 +1163,14 @@ class __SWAGGER_SPEC__(View):
             "minLength": 2,
             "name": "country_code",
             "required": true,
+            "type": "string"
+        },
+        "optional_cutoff_date": {
+            "description": "An optional cutoff date to purge invites before this date",
+            "format": "date",
+            "in": "query",
+            "name": "cutoff_date",
+            "required": false,
             "type": "string"
         },
         "optional_limit": {
@@ -1203,6 +1394,62 @@ class __SWAGGER_SPEC__(View):
                 }
             ]
         },
+        "/invitations/purge_expired": {
+            "get": {
+                "operationId": "purge_expired_invitations",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/optional_cutoff_date",
+                        "x-scope": [
+                            ""
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Began task to purge invitations."
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            }
+        },
+        "/invitations/{invitation_id}/send": {
+            "get": {
+                "operationId": "invitation_send",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An invitation email was successfully queued for sending."
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            },
+            "parameters": [
+                {
+                    "format": "uuid",
+                    "in": "path",
+                    "name": "invitation_id",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "default": "en",
+                    "in": "query",
+                    "name": "language",
+                    "required": false,
+                    "type": "string"
+                }
+            ]
+        },
         "/organisations": {
             "get": {
                 "operationId": "organisation_list",
@@ -1259,9 +1506,55 @@ class __SWAGGER_SPEC__(View):
                 "tags": [
                     "authentication"
                 ]
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "operationId": "organisation_create",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "data",
+                        "schema": {
+                            "$ref": "#/definitions/organisation_create",
+                            "x-scope": [
+                                ""
+                            ]
+                        }
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/organisation",
+                            "x-scope": [
+                                ""
+                            ]
+                        }
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
             }
         },
         "/organisations/{organisation_id}": {
+            "delete": {
+                "operationId": "organisation_delete",
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            },
             "get": {
                 "operationId": "organisation_read",
                 "produces": [
@@ -1289,7 +1582,42 @@ class __SWAGGER_SPEC__(View):
                         ""
                     ]
                 }
-            ]
+            ],
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "operationId": "organisation_update",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "data",
+                        "schema": {
+                            "$ref": "#/definitions/organisation_update",
+                            "x-scope": [
+                                ""
+                            ]
+                        }
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/organisation",
+                            "x-scope": [
+                                ""
+                            ]
+                        }
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            }
         },
         "/users": {
             "get": {

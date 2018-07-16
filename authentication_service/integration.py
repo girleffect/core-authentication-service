@@ -1,5 +1,9 @@
+import datetime
 import logging
 
+from django.core.exceptions import SuspiciousOperation
+from django.urls import reverse
+from django.utils import timezone
 from oidc_provider.models import Client
 
 from django.conf import settings
@@ -7,7 +11,9 @@ from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 
+from authentication_service import tasks
 from authentication_service.api.stubs import AbstractStubClass
+from authentication_service.exceptions import BadRequestException
 from authentication_service.models import CoreUser, Country, Organisation, UserSite
 from authentication_service.utils import strip_empty_optional_fields, check_limit, \
     to_dict_with_custom_fields, range_filter_parser
@@ -31,6 +37,8 @@ USER_VALUES = [
     "gender", "birth_date", "avatar", "country", "created_at", "updated_at",
     "organisation"
 ]
+
+SUPPORTED_LANGUAGE_CODES = {language[0] for language in settings.LANGUAGES}
 
 
 class Implementation(AbstractStubClass):
@@ -126,6 +134,47 @@ class Implementation(AbstractStubClass):
         result = to_dict_with_custom_fields(country, COUNTRY_VALUES)
         return strip_empty_optional_fields(result)
 
+    # invitation_send -- Synchronisation point for meld
+    @staticmethod
+    def invitation_send(request, invitation_id, language=None, *args, **kwargs):
+        """
+        Queue sending of an invitation email.
+
+        This function needs to perform thorough validation of all fields to ensure any errors
+        are detected before queuing the task that will send the email asynchronously.
+
+        :param request: An HttpRequest
+        :param invitation_id:
+        :type invitation_id: string
+        :param language: (optional)
+        :type language: string
+        """
+        language = language or "en"  # English is the default language
+
+        if language not in SUPPORTED_LANGUAGE_CODES:
+            raise SuspiciousOperation("An unsupported language was specified.")
+
+        invitation = settings.ACCESS_CONTROL_API.invitation_read(invitation_id)
+
+        if invitation is None:
+            raise SuspiciousOperation("The specified invitation does not exist.")
+
+        # We need to use timezone.now() instead of datetime.now(), since timezone.now()
+        # is timezone aware and is required to be able to compare against invitation.expires_at.
+        if invitation.expires_at < timezone.now():
+            raise SuspiciousOperation("The specified invitation has expired.")
+
+        # Ensure the invitor exists
+        get_object_or_404(CoreUser, id=invitation.invitor_id)
+        # Ensure the organisation exists
+        get_object_or_404(Organisation, id=invitation.organisation_id)
+
+        registration_url = request.build_absolute_uri(reverse("registration"))
+
+        tasks.send_invitation_email.delay(invitation.to_dict(), registration_url, language)
+
+        return {}
+
     # organisation_list -- Synchronisation point for meld
     @staticmethod
     def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
@@ -158,6 +207,38 @@ class Implementation(AbstractStubClass):
             }
         )
 
+    # organisation_create -- Synchronisation point for meld
+    @staticmethod
+    def organisation_create(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        organisation = Organisation.objects.create(**body)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
+        return strip_empty_optional_fields(result)
+
+    # organisation_delete -- Synchronisation point for meld
+    @staticmethod
+    def organisation_delete(request, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        users = CoreUser.objects.filter(organisation=organisation)
+        if users:
+            LOGGER.warning(
+                "Users Linked to organisation {}. Delete Canceled".format(
+                    organisation_id
+                )
+            )
+            raise BadRequestException
+        else:
+            organisation.delete()
+
     # organisation_read -- Synchronisation point for meld
     @staticmethod
     def organisation_read(request, organisation_id, *args, **kwargs):
@@ -167,6 +248,27 @@ class Implementation(AbstractStubClass):
         :type organisation_id: integer
         """
         organisation = get_object_or_404(Organisation, id=organisation_id)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
+        return strip_empty_optional_fields(result)
+
+    # organisation_update -- Synchronisation point for meld
+    @staticmethod
+    def organisation_update(request, body, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        for attr, value in body.items():
+            try:
+                setattr(organisation, attr, value)
+            except Exception as e:
+                LOGGER.error("Failed to set user attribute %s: %s" % (attr, e))
+
+        organisation.save()
         result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
         return strip_empty_optional_fields(result)
 
@@ -359,3 +461,17 @@ class Implementation(AbstractStubClass):
         instance.save()
         result = to_dict_with_custom_fields(instance, USER_VALUES)
         return strip_empty_optional_fields(result)
+
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: An optional cutoff date to purge invites before this date
+        :type cutoff_date: date
+        """
+        if cutoff_date is None:
+            cutoff_date = str(datetime.datetime.now().date())
+        tasks.purge_expired_invitations.apply_async(
+            cutoff_date=cutoff_date
+        )
+        return

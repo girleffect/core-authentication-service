@@ -129,6 +129,38 @@ organisation = json.loads("""
 }
 """)
 
+organisation_create = json.loads("""
+{
+    "properties": {
+        "description": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "name"
+    ],
+    "type": "object"
+}
+""")
+
+organisation_update = json.loads("""
+{
+    "minProperties": 1,
+    "properties": {
+        "description": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        }
+    },
+    "type": "object"
+}
+""")
+
 user = json.loads("""
 {
     "properties": {

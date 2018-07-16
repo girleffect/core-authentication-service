@@ -31,36 +31,69 @@ class InvitationUpdate(object):
                             and the value is json key in definition.
     """
     swagger_types = {
+        'invitor_id': 'str',
         'first_name': 'str',
         'last_name': 'str',
         'email': 'str',
+        'organisation_id': 'int',
         'expires_at': 'datetime'
     }
 
     attribute_map = {
+        'invitor_id': 'invitor_id',
         'first_name': 'first_name',
         'last_name': 'last_name',
         'email': 'email',
+        'organisation_id': 'organisation_id',
         'expires_at': 'expires_at'
     }
 
-    def __init__(self, first_name=None, last_name=None, email=None, expires_at=None):  # noqa: E501
+    def __init__(self, invitor_id=None, first_name=None, last_name=None, email=None, organisation_id=None, expires_at=None):  # noqa: E501
         """InvitationUpdate - a model defined in Swagger"""  # noqa: E501
 
+        self._invitor_id = None
         self._first_name = None
         self._last_name = None
         self._email = None
+        self._organisation_id = None
         self._expires_at = None
         self.discriminator = None
 
+        if invitor_id is not None:
+            self.invitor_id = invitor_id
         if first_name is not None:
             self.first_name = first_name
         if last_name is not None:
             self.last_name = last_name
         if email is not None:
             self.email = email
+        if organisation_id is not None:
+            self.organisation_id = organisation_id
         if expires_at is not None:
             self.expires_at = expires_at
+
+    @property
+    def invitor_id(self):
+        """Gets the invitor_id of this InvitationUpdate.  # noqa: E501
+
+        The user that created the invitation  # noqa: E501
+
+        :return: The invitor_id of this InvitationUpdate.  # noqa: E501
+        :rtype: str
+        """
+        return self._invitor_id
+
+    @invitor_id.setter
+    def invitor_id(self, invitor_id):
+        """Sets the invitor_id of this InvitationUpdate.
+
+        The user that created the invitation  # noqa: E501
+
+        :param invitor_id: The invitor_id of this InvitationUpdate.  # noqa: E501
+        :type: str
+        """
+
+        self._invitor_id = invitor_id
 
     @property
     def first_name(self):
@@ -128,6 +161,27 @@ class InvitationUpdate(object):
         """
 
         self._email = email
+
+    @property
+    def organisation_id(self):
+        """Gets the organisation_id of this InvitationUpdate.  # noqa: E501
+
+
+        :return: The organisation_id of this InvitationUpdate.  # noqa: E501
+        :rtype: int
+        """
+        return self._organisation_id
+
+    @organisation_id.setter
+    def organisation_id(self, organisation_id):
+        """Sets the organisation_id of this InvitationUpdate.
+
+
+        :param organisation_id: The organisation_id of this InvitationUpdate.  # noqa: E501
+        :type: int
+        """
+
+        self._organisation_id = organisation_id
 
     @property
     def expires_at(self):

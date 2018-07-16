@@ -171,6 +171,25 @@ definitions:
       - created_at
       - updated_at
 
+  organisation_create:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+    required:
+      - name
+
+  organisation_update:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+    minProperties: 1
+
   user:
     type: object
     properties:
@@ -558,6 +577,13 @@ parameters:
     type: integer
     default: 0
     minimum: 0
+  optional_cutoff_date:
+    description: An optional cutoff date to purge invites before this date
+    in: query
+    name: cutoff_date
+    required: false
+    type: string
+    format: date
   client_id:
     description: A string value identifying the client
     in: path
@@ -689,6 +715,28 @@ paths:
       tags:
         - authentication
 
+  /invitations/{invitation_id}/send:
+    parameters:
+      - name: invitation_id
+        type: string
+        format: uuid
+        in: path
+        required: true
+      - name: language
+        type: string
+        in: query
+        required: false
+        default: "en"
+    get:
+      operationId: invitation_send
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'An invitation email was successfully queued for sending.'
+      tags:
+        - authentication
+
   /organisations:
     get:
       operationId: organisation_list
@@ -718,15 +766,57 @@ paths:
             X-Total-Count:
               type: integer
               description: The total number of results matching the query
-
+      tags:
+        - authentication
+    post:
+      consumes:
+        - application/json
+      operationId: organisation_create
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/organisation_create'
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/organisation'
       tags:
         - authentication
 
   /organisations/{organisation_id}:
     parameters:
       - $ref: '#/parameters/organisation_id'
+    delete:
+      operationId: organisation_delete
+      responses:
+        '204':
+          description: ''
+      tags:
+        - authentication
     get:
       operationId: organisation_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/organisation'
+      tags:
+        - authentication
+    put:
+      consumes:
+        - application/json
+      operationId: organisation_update
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/organisation_update'
       produces:
         - application/json
       responses:
@@ -932,6 +1022,19 @@ paths:
           description: ''
           schema:
             $ref: '#/definitions/user'
+      tags:
+        - authentication
+
+  /invitations/purge_expired:
+    get:
+      operationId: purge_expired_invitations
+      parameters:
+        - $ref: '#/parameters/optional_cutoff_date'
+      responses:
+        200:
+          description: 'Began task to purge invitations.'
+        403:
+          description: 'Forbidden'
       tags:
         - authentication
 

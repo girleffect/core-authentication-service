@@ -1,16 +1,24 @@
 import datetime
+import logging
+import uuid
+from unittest.mock import MagicMock
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.test import TestCase
+from django.test import override_settings, TestCase
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from access_control import Invitation
 from authentication_service import tasks
 
 
 # TODO we need more test functions, for now only actual use cases are covered.
+from authentication_service.models import Organisation
+
+
 class SendMailCase(TestCase):
 
     @classmethod
@@ -23,8 +31,9 @@ class SendMailCase(TestCase):
         cls.user.save()
 
     def test_no_recipient(self):
-        test_output = "ERROR:root:Attempt to send an email without recipients; unknown-"
-        with self.assertLogs(level="ERROR") as cm:
+        test_output = "ERROR:authentication_service.tasks:Attempted to send an email of " \
+                      "type 'unknown' without recipients"
+        with self.assertLogs(level=logging.ERROR) as cm:
             tasks.send_mail(
                 {"a": "b"},
                 "unknown"
@@ -113,3 +122,64 @@ class SendMailCase(TestCase):
                 self.user.username,
             )
         )
+
+
+class SendInvitationMail(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = Organisation.objects.create(
+            id=1,
+            name=f"test unit",
+            description="Description"
+        )
+
+        cls.user = get_user_model().objects.create(
+            username="test_user_1",
+            first_name="Firstname",
+            last_name="Lastname",
+            email="firstname@example.com",
+            is_superuser=1,
+            is_staff=1,
+            birth_date=datetime.date(2000, 1, 1)
+        )
+
+    def test_send_invitation_mail(self):
+        test_invitation_id = uuid.uuid4()
+        invitation = Invitation(
+            id=test_invitation_id.hex,
+            invitor_id=self.user.id,
+            first_name="Thename",
+            last_name="Thesurname",
+            email="thename.thesurname@example.com",
+            organisation_id=self.organisation.id,
+            expires_at=timezone.now() + datetime.timedelta(minutes=10),
+            created_at=timezone.now(),
+            updated_at=timezone.now()
+        )
+
+        with self.assertLogs(level=logging.INFO) as cm:
+            tasks.send_invitation_email(invitation.to_dict(), "http://test.me/register")
+
+        self.assertEquals(len(mail.outbox), 1)
+
+        # Check part of the email
+        self.assertIn("Dear Thename Thesurname", mail.outbox[0].body)
+
+        # Check log line
+        self.assertEqual(cm.output[0], "INFO:authentication_service.tasks:Sent invitation from "
+                                       "test_user_1 to Thename Thesurname")
+
+
+class PurgeExpiredInvitations(TestCase):
+
+    @override_settings(AC_OPERTAIONAL_API=MagicMock(
+        purge_expired_invitations=MagicMock(return_value={
+            "amount": 4
+        }))
+    )
+    def test_purge_expired_invitation_task(self):
+        result = tasks.purge_expired_invitations(
+            cutoff_date=str(datetime.datetime.now().date())
+        )
+        self.assertEqual(result["amount"], 4)

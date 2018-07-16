@@ -13,6 +13,8 @@ urlpatterns = [
     url(r"^users$", views.Users.as_view()),
     url(r"^organisations/(?P<organisation_id>.+)$", views.OrganisationsOrganisationId.as_view()),
     url(r"^organisations$", views.Organisations.as_view()),
+    url(r"^invitations/purge_expired$", views.InvitationsPurgeExpired.as_view()),
+    url(r"^invitations/(?P<invitation_id>.+)/send$", views.InvitationsInvitationIdSend.as_view()),
     url(r"^countries/(?P<country_code>.+)$", views.CountriesCountryCode.as_view()),
     url(r"^countries$", views.Countries.as_view()),
     url(r"^clients/(?P<client_id>.+)$", views.ClientsClientId.as_view()),

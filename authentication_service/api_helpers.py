@@ -3,7 +3,9 @@ import logging
 from django.conf import settings
 from django.core import exceptions
 
-from user_data_store.rest import ApiException
+from access_control.rest import ApiException as AccessControlApiException
+from user_data_store.rest import ApiException as UserDataStoreApiException
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +23,7 @@ def is_site_active(client):
     """
     try:
         sites = settings.ACCESS_CONTROL_API.site_list(client_id=client.id)
-    except ApiException as e:
+    except AccessControlApiException as e:
         LOGGER.error(str(e))
         return False
 
@@ -47,7 +49,7 @@ def get_site_for_client(client_id):
         raise exceptions.ImproperlyConfigured(
             f"Site for client.id ({client_id}) not found."
         )
-    except ApiException as e:
+    except AccessControlApiException as e:
         raise e
 
 
@@ -57,7 +59,7 @@ def get_user_site_data(user_id, site_id):
 
     try:
         site_data = settings.USER_DATA_STORE_API.usersitedata_read(str(user_id), site_id)
-    except ApiException as e:
+    except UserDataStoreApiException as e:
         if e.status == 404:
             site_data = create_user_site_data(user_id, site_id)
         else:
