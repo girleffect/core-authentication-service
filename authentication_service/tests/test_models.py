@@ -30,7 +30,7 @@ class TestRegistrationModels(TestCase):
         )
         for language in settings.LANGUAGES:
             if not len(language[0]) > 2:
-                Country.objects.create(
+                Country.objects.get_or_create(
                     code=language[0], name=language[1]
                 )
         cls.user.country = Country.objects.get(code="de")

@@ -3,6 +3,8 @@
 
 # Main Django requirement.
 django>=1.11,<2.0
+django-formtools>=2.1,<3.0
+
 
 # Database connector.
 psycopg2>=2.7.4,<2.8
@@ -22,7 +24,7 @@ django-form-renderers>=0.3.2,<1.0
 # 3rd party image related.
 Pillow==5.0.0
 
-django-defender>=0.5.2,<0.6
+django-defender>=0.5.4,<0.6
 dateutils>=0.6.6,<1.0.0
 
 # Celery
@@ -31,9 +33,10 @@ celery>=4.1.0,<5.0
 django-cors-headers>=2.1.0,<3.0
 django-layers-hr==1.11.1
 
-# Test specific packages.
-testfixtures>=6.0.0,<7.0.0
-mock==2.0.0
+# Storage
+django-storages>=1.6.6,<1.7
+boto3>=1.7.57,<1.8
+botocore>=1.10.57,<1.11
 
 environs>=2.1.0,<3.0
 jsonschema==2.6.0
@@ -41,3 +44,7 @@ rstr==2.2.6 # For mock class in generated server code.
 raven==6.6.0
 
 django-debug-toolbar<=1.9.1,<2.0
+
+# Test specific packages.
+testfixtures>=6.0.0,<7.0.0
+mock==2.0.0

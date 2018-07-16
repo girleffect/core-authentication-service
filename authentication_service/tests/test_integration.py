@@ -1,21 +1,21 @@
-import random
-import json
-import os
-from unittest.mock import patch, MagicMock
-
-import jsonschema
 import datetime
+import json
+import jsonschema
+import os
+import random
 import uuid
 
-from django.core import mail
-from django.utils import timezone
 from oidc_provider.models import Client
-from django_otp.plugins.otp_totp.models import TOTPDevice
-from django_otp.util import random_hex
+from unittest.mock import patch, MagicMock
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core import mail
+from django.db.utils import IntegrityError
 from django.test import TestCase, override_settings
+from django.utils import timezone
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.util import random_hex
 
 from access_control import Invitation
 from authentication_service import models, tasks
@@ -96,10 +96,10 @@ class IntegrationTestCase(TestCase):
         cls.total_countries = 0
         for language in settings.LANGUAGES:
             if not len(language[0]) > 2:
-                models.Country.objects.create(
+                models.Country.objects.get_or_create(
                     code=language[0], name=language[1]
                 )
-                cls.total_countries += 1
+        cls.total_countries = models.Country.objects.all().count()
 
     def test_organisation_list(self):
         # Authorize user
