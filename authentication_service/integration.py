@@ -171,7 +171,9 @@ class Implementation(AbstractStubClass):
 
         registration_url = request.build_absolute_uri(reverse("registration"))
 
-        tasks.send_invitation_email.delay(invitation.to_dict(), registration_url, language)
+        # CC 2018-07-16: Use sync call until we can figure out the issue with email on prod
+        #tasks.send_invitation_email.delay(invitation.to_dict(), registration_url, language)
+        tasks.send_invitation_email(invitation.to_dict(), registration_url, language)
 
         return {}
 
