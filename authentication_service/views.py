@@ -200,7 +200,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 }
             )
 
-            # Check if signatur is valid
+            # Check if signature is valid
             try:
                 invitation_data = signing.loads(
                     signature,
@@ -321,6 +321,25 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 data["language_code"] = self.language
                 question = models.UserSecurityQuestion.objects.create(**data)
 
+        invitation = self.storage.extra_data.get("invitation_data")
+        if invitation:
+            response = api_helpers.invitation_redeem(invitation["id"], user.id)
+            if response.get("error"):
+                return render(
+                    self.request,
+                    "authentication_service/message.html",
+                    context={
+                        "page_meta_title": _("Registration invite error"),
+                        "page_title": _("Registration invite error"),
+                        "page_message": _(
+                            "Oops. You have successfully registered for a" \
+                            " Girl Effect account. Unfortunately something" \
+                            " went wrong while redeeming the invitation." \
+                            " Please contact the admin that provided you with" \
+                            " the invitation url."
+                        ),
+                    }
+                )
         return self.get_success_response()
 
     def get_success_response(self):

@@ -92,3 +92,15 @@ def get_invitation_data(invitation_id):
     except AccessControlApiException as e:
         return {"error": True, "code": e.status}
     return invitation_data
+
+
+def invitation_redeem(invitation_id, user_id):
+    # API clients require uuid as a string.
+    user_id = str(user_id)
+    try:
+        redeem_data = settings.ACCESS_CONTROL_API.invitation_redeem(
+            invitation_id=invitation_id, user_id=user_id
+        )
+    except AccessControlApiException as e:
+        return {"error": True, "code": e.status}
+    return redeem_data
