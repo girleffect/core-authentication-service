@@ -189,23 +189,27 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         invitation_id = self.request.GET.get("invitation")
         signature = self.request.GET.get("signature")
         if invitation_id and signature:
-            try:
-                self.migration_user_id = signing.loads(
-                    signature,
-                    salt="invitation",
-                )
-            except signing.BadSignature:
-                return render(
+            error_response = render(
                     self.request,
                     "authentication_service/message.html",
                     context={
                         "page_meta_title": _("Registration invite error"),
                         "page_title": _("Registration invite error"),
                         "page_message": _(
-                            "Invitation URL is incorrect or has been tampered with."
+                            "The invitation is incorrect or the URL" \
+                            " has been tampered with."
                         ),
                     }
                 )
+            try:
+                invitation_data = signing.loads(
+                    signature,
+                    salt="invitation",
+                )
+            except signing.BadSignature:
+                return error_response
+            if invitation_data.get("security") != "high":
+                return error_response
 
         return super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
 

@@ -602,11 +602,27 @@ class TestRegistrationView(TestCase):
 
     def test_invite_tampered_signature(self):
         # Test most basic iteration
-        tampered_signature = signing.dumps("data", salt="invitation") + "m"
+        invite_id = 1
+        params = {
+            "security": "high",
+            "invitation": invite_id
+        }
+        tampered_signature = signing.dumps(params, salt="invitation") + "m"
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.get(
                 reverse("registration"
-                ) + f"?invitation=1&signature={tampered_signature}",
+                ) + f"?invitation={invite_id}&signature={tampered_signature}",
+                follow=True
+            )
+
+        params = {
+            "invitation": invite_id
+        }
+        incorrect_security = signing.dumps(params, salt="invitation")
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.get(
+                reverse("registration"
+                ) + f"?invitation={invite_id}&signature={incorrect_security}",
                 follow=True
             )
 
