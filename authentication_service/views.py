@@ -184,18 +184,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     instance_dict = {"securityquestions": models.UserSecurityQuestion.objects.none()}
     security = None
 
-    def get_form_initial(self, step):
-        initial = super(RegistrationWizard, self).get_form_kwargs()
-
-        # Formsets take a list of dictionaries for initial data.
-        if step == "securityquestions":
-            initial = [
-                {"question": q_id}
-                for q_id in self.storage.extra_data.get("question_ids", [])
-            ]
-        return initial
-
-    def get_form_kwargs(self, step=None):
+    def dispatch(self, request, *args, **kwargs):
         # Validate invitation and get data.
         invitation_id = self.request.GET.get("invitation")
         signature = self.request.GET.get("signature")
@@ -218,6 +207,20 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                     }
                 )
 
+        return super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
+
+    def get_form_initial(self, step):
+        initial = super(RegistrationWizard, self).get_form_kwargs()
+
+        # Formsets take a list of dictionaries for initial data.
+        if step == "securityquestions":
+            initial = [
+                {"question": q_id}
+                for q_id in self.storage.extra_data.get("question_ids", [])
+            ]
+        return initial
+
+    def get_form_kwargs(self, step=None):
         # Need to set these values once, but guard against clearing them.
         security = self.request.GET.get("security")
         if security:

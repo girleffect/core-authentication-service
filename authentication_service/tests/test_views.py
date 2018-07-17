@@ -600,6 +600,16 @@ class TestRegistrationView(TestCase):
             redirect_uris= ["/test-redirect-url/"],
         )
 
+    def test_invite_tampered_signature(self):
+        # Test most basic iteration
+        tampered_signature = signing.dumps("data", salt="invitation") + "m"
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.get(
+                reverse("registration"
+                ) + f"?invitation=1&signature={tampered_signature}",
+                follow=True
+            )
+
     def test_view_success_template(self):
         # Test most basic iteration
         with self.assertTemplateUsed("authentication_service/message.html"):
