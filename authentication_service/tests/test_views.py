@@ -628,11 +628,11 @@ class TestRegistrationView(TestCase):
         params = {
             "security": "high",
         }
-        incorrect_security = signing.dumps(params, salt="invitation")
+        incorrect_signature = signing.dumps(params, salt="invitation")
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.get(
                 reverse("registration"
-                ) + f"?invitation={invite_id}&signature={incorrect_security}",
+                ) + f"?invitation={invite_id}&signature={incorrect_signature}",
                 follow=True
             )
 
