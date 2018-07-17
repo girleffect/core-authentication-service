@@ -1,15 +1,18 @@
+from urllib.parse import urlparse, parse_qs
 import datetime
+import pkg_resources
 import socket
 import types
-
-import pkg_resources
-from urllib.parse import urlparse, parse_qs
 import urllib
 
 from defender.decorators import watch_login
 from defender.utils import is_user_already_locked, lockout_response
 from formtools.wizard.views import NamedUrlSessionWizardView
 from oidc_provider.models import Client
+from two_factor.forms import AuthenticationTokenForm
+from two_factor.forms import BackupTokenForm
+from two_factor.utils import default_device
+from two_factor.views import core
 
 from django.conf import settings
 from django.contrib import messages
@@ -22,7 +25,6 @@ from django.contrib.auth.views import (
 )
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
-
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.db import connection
@@ -37,15 +39,10 @@ from django.utils.translation import ugettext as _
 from django.views.generic import View, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, FormView
 
-from two_factor.forms import AuthenticationTokenForm
-from two_factor.forms import BackupTokenForm
-from two_factor.utils import default_device
-from two_factor.views import core
-
+from authentication_service import api_helpers
 from authentication_service import forms, models, tasks, constants, utils
 from authentication_service.decorators import generic_deprecation
 from authentication_service.forms import LoginForm
-
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 
@@ -190,17 +187,19 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         signature = self.request.GET.get("signature")
         if invitation_id and signature:
             error_response = render(
-                    self.request,
-                    "authentication_service/message.html",
-                    context={
-                        "page_meta_title": _("Registration invite error"),
-                        "page_title": _("Registration invite error"),
-                        "page_message": _(
-                            "The invitation is incorrect or the URL" \
-                            " has been tampered with."
-                        ),
-                    }
-                )
+                self.request,
+                "authentication_service/message.html",
+                context={
+                    "page_meta_title": _("Registration invite error"),
+                    "page_title": _("Registration invite error"),
+                    "page_message": _(
+                        "The invitation is incorrect or the URL" \
+                        " has been tampered with."
+                    ),
+                }
+            )
+
+            # Check if signatur is valid
             try:
                 invitation_data = signing.loads(
                     signature,
@@ -211,6 +210,9 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             invitation_id_matches = invitation_data.get("invitation") == invitation_id
             if invitation_data.get("security") != "high" or \
                     not invitation_id_matches:
+                return error_response
+            invitation = api_helpers.get_invitation_data(invitation_id)
+            if invitation.get("error") == True:
                 return error_response
 
         return super(RegistrationWizard, self).dispatch(request, *args, **kwargs)

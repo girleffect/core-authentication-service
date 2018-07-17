@@ -601,7 +601,6 @@ class TestRegistrationView(TestCase):
         )
 
     def test_invite_tampered_signature(self):
-        # Test most basic iteration
         invite_id = 1
         params = {
             "security": "high",
@@ -633,6 +632,23 @@ class TestRegistrationView(TestCase):
             response = self.client.get(
                 reverse("registration"
                 ) + f"?invitation={invite_id}&signature={incorrect_signature}",
+                follow=True
+            )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.get_invitation_data")
+    def test_invite_missing(self, mocked_get_invitation_data):
+        mocked_get_invitation_data.return_value = {"error": True}
+        invite_id = 1
+        params = {
+            "security": "high",
+            "invitation": invite_id
+        }
+        signature = signing.dumps(params, salt="invitation")
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.get(
+                reverse("registration"
+                ) + f"?invitation={invite_id}&signature={signature}",
                 follow=True
             )
 

@@ -81,3 +81,14 @@ def get_user_site_role_labels_aggregated(user_id, client_id):
     raise exceptions.ImproperlyConfigured(
         f"Site for client.id ({client_id}) not found."
     )
+
+
+def get_invitation_data(invitation_id):
+    # API clients require uuid as a string.
+    try:
+        invitation_data = settings.ACCESS_CONTROL_API.invitation_read(
+            invitation_id
+        )
+    except AccessControlApiException as e:
+        return {"error": True, "code": e.status}
+    return invitation_data
