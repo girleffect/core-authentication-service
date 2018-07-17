@@ -625,6 +625,16 @@ class TestRegistrationView(TestCase):
                 ) + f"?invitation={invite_id}&signature={incorrect_security}",
                 follow=True
             )
+        params = {
+            "security": "high",
+        }
+        incorrect_security = signing.dumps(params, salt="invitation")
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.get(
+                reverse("registration"
+                ) + f"?invitation={invite_id}&signature={incorrect_security}",
+                follow=True
+            )
 
     def test_view_success_template(self):
         # Test most basic iteration

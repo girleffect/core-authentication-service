@@ -208,7 +208,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 )
             except signing.BadSignature:
                 return error_response
-            if invitation_data.get("security") != "high":
+            invitation_id = invitation_data.get("invitation")
+            if invitation_data.get("security") != "high" and not invitation_id:
                 return error_response
 
         return super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
