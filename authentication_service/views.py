@@ -185,6 +185,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         # Validate invitation and get data.
         invitation_id = self.request.GET.get("invitation")
         signature = self.request.GET.get("signature")
+        invitation_data = None
         if invitation_id and signature:
             error_response = render(
                 self.request,
@@ -207,19 +208,30 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 )
             except signing.BadSignature:
                 return error_response
-            invitation_id_matches = invitation_data.get("invitation") == invitation_id
+            invitation_id_matches = invitation_data.get("invitation") == int(invitation_id)
             if invitation_data.get("security") != "high" or \
                     not invitation_id_matches:
                 return error_response
-            invitation = api_helpers.get_invitation_data(invitation_id)
-            if invitation.get("error") == True:
+            api_invitation = api_helpers.get_invitation_data(invitation_id)
+            if api_invitation.get("error") == True:
                 return error_response
 
-        return super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
+        dispatch = super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
+
+        if invitation_id and api_invitation:
+            self.storage.extra_data["invitation_data"] = api_invitation
+        return dispatch
 
     def get_form_initial(self, step):
         initial = super(RegistrationWizard, self).get_form_kwargs()
 
+        invitation = self.storage.extra_data.get("invitation_data")
+        if step == "userdata" and invitation:
+            initial = {
+                "first_name": invitation.get("first_name"),
+                "last_name": invitation.get("last_name"),
+                "email": invitation.get("email")
+            }
         # Formsets take a list of dictionaries for initial data.
         if step == "securityquestions":
             initial = [

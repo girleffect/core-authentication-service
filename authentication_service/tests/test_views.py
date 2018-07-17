@@ -652,6 +652,37 @@ class TestRegistrationView(TestCase):
                 follow=True
             )
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.get_invitation_data")
+    def test_form_initial(self, mocked_get_invitation_data):
+        mocked_get_invitation_data.return_value = {
+            "first_name": "super_cool_invitation_fname",
+            "last_name": "same_as_above_but_surname",
+            "email": "totallynotinvitation@email.com"
+        }
+        invite_id = 1
+        params = {
+            "security": "high",
+            "invitation": invite_id
+        }
+        signature = signing.dumps(params, salt="invitation")
+        response = self.client.get(
+            reverse("registration"
+            ) + f"?invitation={invite_id}&signature={signature}",
+            follow=True
+        )
+        self.assertIn(
+            "/registration/userdata/",
+            response.redirect_chain[-1][0],
+        )
+        self.assertEqual(
+            response.context["form"].initial,
+            {
+                "first_name": "super_cool_invitation_fname",
+                "last_name": "same_as_above_but_surname",
+                "email": "totallynotinvitation@email.com"
+            }
+        )
     def test_view_success_template(self):
         # Test most basic iteration
         with self.assertTemplateUsed("authentication_service/message.html"):
