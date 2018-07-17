@@ -196,6 +196,28 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         return initial
 
     def get_form_kwargs(self, step=None):
+        # Validate invitation and get data.
+        invitation_id = self.request.GET.get("invitation")
+        signature = self.request.GET.get("signature")
+        if invitation_id and signature:
+            try:
+                self.migration_user_id = signing.loads(
+                    signature,
+                    salt="invitation",
+                )
+            except signing.BadSignature:
+                return render(
+                    self.request,
+                    "authentication_service/message.html",
+                    context={
+                        "page_meta_title": _("Registration invite error"),
+                        "page_title": _("Registration invite error"),
+                        "page_message": _(
+                            "Invitation URL is incorrect or has been tampered with."
+                        ),
+                    }
+                )
+
         # Need to set these values once, but guard against clearing them.
         security = self.request.GET.get("security")
         if security:
