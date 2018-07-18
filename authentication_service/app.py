@@ -8,5 +8,7 @@ class AuthAppConfig(AppConfig):
     name = "authentication_service"
 
     def ready(self):
+        # We have to import signals only when the app is ready.
+        from authentication_service import signals
         Field.register_lookup(lookups.Ilike)
 
