@@ -136,12 +136,14 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
         subject = _("Please create your Girl Effect account")
 
         # Create the registration URL
-        params = {
+        # The payload is the data contained in the signed invitation
+        payload = {
             "security": "high",
-            "invitation": invitation["id"]
+            "invitation_id": invitation["id"]
         }
-        params["signature"] = signing.dumps(params, salt="invitation")
-
+        params = {
+            "invitation": signing.dumps(payload, salt="invitation")
+        }
         registration_url = registration_url + "?" + urlencode(params)
 
         context = invitation.copy()
