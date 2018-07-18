@@ -28,6 +28,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.db import connection
+from django.utils import timezone
 
 # NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
@@ -178,15 +179,16 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
     # Needed to stop a NoneType error from triggering in django internals. The
     # formset does not require a queryset.
-    instance_dict = {"securityquestions": models.UserSecurityQuestion.objects.none()}
+    instance_dict = {
+        "securityquestions": models.UserSecurityQuestion.objects.none()
+    }
     security = None
 
     def dispatch(self, request, *args, **kwargs):
         # Validate invitation and get data.
-        invitation_id = self.request.GET.get("invitation")
-        signature = self.request.GET.get("signature")
-        invitation_data = None
-        if invitation_id and signature:
+        invitation = self.request.GET.get("invitation")
+        api_invitation = None
+        if invitation:
             error_response = render(
                 self.request,
                 "authentication_service/message.html",
@@ -200,26 +202,50 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 }
             )
 
-            # Check if signature is valid
             try:
                 invitation_data = signing.loads(
-                    signature,
+                    invitation,
                     salt="invitation",
                 )
             except signing.BadSignature:
                 return error_response
-            invitation_id_matches = invitation_data.get("invitation") == invitation_id
-            if invitation_data.get("security") != "high" or \
-                    not invitation_id_matches:
+
+            # ID is required for the api call
+            if not invitation_data.get("invitation_id"):
                 return error_response
-            api_invitation = api_helpers.get_invitation_data(invitation_id)
-            if api_invitation.get("error") == True:
+            api_invitation = api_helpers.get_invitation_data(
+                invitation_data.pop("invitation_id")
+            )
+
+            # Do some validation with the invitation data
+            if api_invitation.get("error") is True:
                 return error_response
+            if api_invitation["expires_at"] < timezone.now():
+                return render(
+                    self.request,
+                    "authentication_service/message.html",
+                    context={
+                        "page_meta_title": _("Registration invitation expired"),
+                        "page_title": _("Registration invitation expired"),
+                        "page_message": _(
+                            "The invitation has expired."\
+                            " Please contact the admin that" \
+                            " provided the invitation link."
+                        ),
+                    }
+                )
+            else:
+                # Prevents needing to manipulate data before being saved to
+                # session storage.
+                api_invitation.pop("created_at")
+                api_invitation.pop("updated_at")
+                api_invitation.pop("expires_at")
 
         dispatch = super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
 
-        if invitation_id and api_invitation:
+        if invitation and api_invitation:
             self.storage.extra_data["invitation_data"] = api_invitation
+            self.storage.extra_data["invitation_setup"] = invitation
         return dispatch
 
     def get_form_initial(self, step):

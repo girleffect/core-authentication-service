@@ -619,26 +619,16 @@ class TestRegistrationView(TestCase):
         invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
         params = {
             "security": "high",
-            "invitation": invite_id
+            "invitation_id": invite_id
         }
         tampered_signature = signing.dumps(params, salt="invitation") + "m"
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.get(
                 reverse("registration"
-                ) + f"?invitation={invite_id}&signature={tampered_signature}",
+                ) + f"?invitation={tampered_signature}",
                 follow=True
             )
 
-        params = {
-            "invitation": invite_id
-        }
-        incorrect_security = signing.dumps(params, salt="invitation")
-        with self.assertTemplateUsed("authentication_service/message.html"):
-            response = self.client.get(
-                reverse("registration"
-                ) + f"?invitation={invite_id}&signature={incorrect_security}",
-                follow=True
-            )
         params = {
             "security": "high",
         }
@@ -646,7 +636,7 @@ class TestRegistrationView(TestCase):
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.get(
                 reverse("registration"
-                ) + f"?invitation={invite_id}&signature={incorrect_signature}",
+                ) + f"?invitation={incorrect_signature}",
                 follow=True
             )
 
@@ -657,15 +647,45 @@ class TestRegistrationView(TestCase):
         invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
         params = {
             "security": "high",
-            "invitation": invite_id
+            "invitation_id": invite_id
         }
         signature = signing.dumps(params, salt="invitation")
         with self.assertTemplateUsed("authentication_service/message.html"):
             response = self.client.get(
                 reverse("registration"
-                ) + f"?invitation={invite_id}&signature={signature}",
+                ) + f"?invitation={signature}",
                 follow=True
             )
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_expire(self):
+        test_invitation_id = uuid.uuid4()
+        invitation = Invitation(
+            id=test_invitation_id.hex,
+            invitor_id=str(test_invitation_id),
+            first_name="super_cool_invitation_fname",
+            last_name="same_as_above_but_surname",
+            email="totallynotinvitation@email.com",
+            organisation_id=10,
+            expires_at=timezone.now() - datetime.timedelta(minutes=10),
+            created_at=timezone.now(),
+            updated_at=timezone.now()
+        )
+        with mock.patch("authentication_service.api_helpers.settings") as mocked_settings:
+            mocked_settings.ACCESS_CONTROL_API.invitation_read.return_value = invitation
+            invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
+            params = {
+                "security": "high",
+                "invitation_id": invite_id
+            }
+            signature = signing.dumps(params, salt="invitation")
+            with self.assertTemplateUsed("authentication_service/message.html"):
+                response = self.client.get(
+                    reverse("registration"
+                    ) + f"?invitation={signature}",
+                    follow=True
+                )
+                self.assertContains(response, "The invitation has expired.")
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_form_initial(self):
@@ -674,12 +694,12 @@ class TestRegistrationView(TestCase):
             invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
             params = {
                 "security": "high",
-                "invitation": invite_id
+                "invitation_id": invite_id
             }
             signature = signing.dumps(params, salt="invitation")
             response = self.client.get(
                 reverse("registration"
-                ) + f"?invitation={invite_id}&signature={signature}",
+                ) + f"?invitation={signature}",
                 follow=True
             )
             self.assertIn(
@@ -706,12 +726,12 @@ class TestRegistrationView(TestCase):
             invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
             params = {
                 "security": "high",
-                "invitation": invite_id
+                "invitation_id": invite_id
             }
             signature = signing.dumps(params, salt="invitation")
             response = self.client.get(
                 reverse("registration"
-                ) + f"?invitation={invite_id}&signature={signature}",
+                ) + f"?invitation={signature}",
                 follow=True
             )
             self.assertIn(
@@ -746,12 +766,12 @@ class TestRegistrationView(TestCase):
             invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
             params = {
                 "security": "high",
-                "invitation": invite_id
+                "invitation_id": invite_id
             }
             signature = signing.dumps(params, salt="invitation")
             response = self.client.get(
                 reverse("registration"
-                ) + f"?invitation={invite_id}&signature={signature}",
+                ) + f"?invitation={signature}",
                 follow=True
             )
             self.assertIn(
