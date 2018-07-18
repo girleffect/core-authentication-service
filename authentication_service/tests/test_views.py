@@ -601,7 +601,7 @@ class TestRegistrationView(TestCase):
         )
 
     def test_invite_tampered_signature(self):
-        invite_id = 1
+        invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
         params = {
             "security": "high",
             "invitation": invite_id
@@ -639,7 +639,7 @@ class TestRegistrationView(TestCase):
     @patch("authentication_service.api_helpers.get_invitation_data")
     def test_invite_missing(self, mocked_get_invitation_data):
         mocked_get_invitation_data.return_value = {"error": True}
-        invite_id = 1
+        invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
         params = {
             "security": "high",
             "invitation": invite_id
@@ -660,7 +660,7 @@ class TestRegistrationView(TestCase):
             "last_name": "same_as_above_but_surname",
             "email": "totallynotinvitation@email.com"
         }
-        invite_id = 1
+        invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
         params = {
             "security": "high",
             "invitation": invite_id
@@ -697,7 +697,7 @@ class TestRegistrationView(TestCase):
         mocked_redeem.return_value = {
             "error": True
         }
-        invite_id = 1
+        invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
         params = {
             "security": "high",
             "invitation": invite_id

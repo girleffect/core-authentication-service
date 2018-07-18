@@ -1,3 +1,4 @@
+import types
 import logging
 
 from django.conf import settings
@@ -84,18 +85,24 @@ def get_user_site_role_labels_aggregated(user_id, client_id):
 
 
 def get_invitation_data(invitation_id):
-    # API clients require uuid as a string.
     try:
         invitation_data = settings.ACCESS_CONTROL_API.invitation_read(
             invitation_id
         )
     except AccessControlApiException as e:
         return {"error": True, "code": e.status}
-    return invitation_data
+
+    # invitation_data.to_dict() causes a JSON serialisation error on the
+    # datefields, there is no need for them at present.
+    return {
+        "first_name": invitation_data.first_name,
+        "last_name": invitation_data.last_name,
+        "email": invitation_data.email,
+        "error": False
+    }
 
 
 def invitation_redeem(invitation_id, user_id):
-    # API clients require uuid as a string.
     user_id = str(user_id)
     try:
         redeem_data = settings.ACCESS_CONTROL_API.invitation_redeem(
@@ -103,4 +110,4 @@ def invitation_redeem(invitation_id, user_id):
         )
     except AccessControlApiException as e:
         return {"error": True, "code": e.status}
-    return redeem_data
+    return {"error": False}
