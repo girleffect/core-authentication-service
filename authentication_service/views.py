@@ -245,7 +245,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
         if invitation and api_invitation:
             self.storage.extra_data["invitation_data"] = api_invitation
-            self.storage.extra_data["invitation_setup"] = invitation
+            self.storage.extra_data["invitation_setup"] = invitation_data
         return dispatch
 
     def get_form_initial(self, step):
@@ -268,18 +268,26 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
     def get_form_kwargs(self, step=None):
         # Need to set these values once, but guard against clearing them.
-        security = self.request.GET.get("security")
-        if security:
-            self.storage.extra_data["security"] = security
-        required = self.request.GET.getlist("requires")
-        if required:
-            self.storage.extra_data["required"] = required
-        hidden = self.request.GET.getlist("hide")
-        if hidden:
-            self.storage.extra_data["hidden"] = hidden
-        question_ids = self.request.GET.getlist("question_ids", [])
-        if question_ids:
-            self.storage.extra_data["question_ids"] = question_ids
+        custom_kwargs = {
+            "security": self.request.GET.get("security"),
+            "required": self.request.GET.getlist("requires"),
+            "hidden": self.request.GET.getlist("hide"),
+            "question_ids": self.request.GET.getlist("question_ids", [])
+        }
+
+        custom_kwargs.update(
+            self.storage.extra_data.get("invitation_setup", {})
+        )
+
+        # TODO: Can be refactored later
+        if custom_kwargs["security"]:
+            self.storage.extra_data["security"] = custom_kwargs["security"]
+        if custom_kwargs["required"]:
+            self.storage.extra_data["required"] = custom_kwargs["required"]
+        if custom_kwargs["hidden"]:
+            self.storage.extra_data["hidden"] = custom_kwargs["hidden"]
+        if custom_kwargs["question_ids"]:
+            self.storage.extra_data["question_ids"] = custom_kwargs["question_ids"]
 
         kwargs = super(RegistrationWizard, self).get_form_kwargs()
         if step == "userdata":

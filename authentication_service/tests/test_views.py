@@ -744,8 +744,8 @@ class TestRegistrationView(TestCase):
                     {
                         "registration_wizard-current_step": "userdata",
                         "userdata-username": "Username",
-                        "userdata-password1": "password",
-                        "userdata-password2": "password",
+                        "userdata-password1": "@32786AGYJUFEtyfusegh,.,",
+                        "userdata-password2": "@32786AGYJUFEtyfusegh,.,",
                         "userdata-age": "18",
                         "userdata-birth_date": "2000-01-01",
                         "userdata-terms": True,
@@ -784,8 +784,8 @@ class TestRegistrationView(TestCase):
                     {
                         "registration_wizard-current_step": "userdata",
                         "userdata-username": "Username",
-                        "userdata-password1": "password",
-                        "userdata-password2": "password",
+                        "userdata-password1": "@A2315,./,asDV",
+                        "userdata-password2": "@A2315,./,asDV",
                         "userdata-age": "18",
                         "userdata-birth_date": "2000-01-01",
                         "userdata-terms": True,
@@ -803,8 +803,8 @@ class TestRegistrationView(TestCase):
                 {
                     "registration_wizard-current_step": "userdata",
                     "userdata-username": "Username",
-                    "userdata-password1": "password",
-                    "userdata-password2": "password",
+                    "userdata-password1": "@A2315,./,asDV",
+                    "userdata-password2": "@A2315,./,asDV",
                     "userdata-age": "18",
                     "userdata-birth_date": "2000-01-01",
                     "userdata-terms": True,
