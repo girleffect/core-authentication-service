@@ -95,6 +95,7 @@ def get_invitation_data(invitation_id):
     # invitation_data.to_dict() causes a JSON serialisation error on the
     # datefields, there is no need for them at present.
     return {
+        "id": invitation_data.id,
         "first_name": invitation_data.first_name,
         "last_name": invitation_data.last_name,
         "email": invitation_data.email,
