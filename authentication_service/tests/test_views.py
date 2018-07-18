@@ -735,6 +735,46 @@ class TestRegistrationView(TestCase):
                 )
             self.assertContains(response, "Oops. You have")
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.invitation_redeem")
+    def test_form_redeem_success(self, mocked_redeem):
+        with mock.patch("authentication_service.api_helpers.settings") as mocked_settings:
+            mocked_settings.ACCESS_CONTROL_API.invitation_read.return_value = self.invitation
+            mocked_redeem.return_value = {
+                "error": False
+            }
+            invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
+            params = {
+                "security": "high",
+                "invitation": invite_id
+            }
+            signature = signing.dumps(params, salt="invitation")
+            response = self.client.get(
+                reverse("registration"
+                ) + f"?invitation={invite_id}&signature={signature}",
+                follow=True
+            )
+            self.assertIn(
+                "/registration/userdata/",
+                response.redirect_chain[-1][0],
+            )
+            with self.assertTemplateUsed("authentication_service/message.html"):
+                response = self.client.post(
+                    reverse("registration"),
+                    {
+                        "registration_wizard-current_step": "userdata",
+                        "userdata-username": "Username",
+                        "userdata-password1": "password",
+                        "userdata-password2": "password",
+                        "userdata-age": "18",
+                        "userdata-birth_date": "2000-01-01",
+                        "userdata-terms": True,
+                        "userdata-email": "email@email.com",
+                    },
+                    follow=True
+                )
+            self.assertContains(response, "Congratulations, you have successfully")
+
     def test_view_success_template(self):
         # Test most basic iteration
         with self.assertTemplateUsed("authentication_service/message.html"):
