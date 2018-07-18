@@ -264,6 +264,7 @@ MAX_LISTING_LIMIT = 100
 MIN_LISTING_LIMIT = 1
 DEFAULT_LISTING_OFFSET = 0
 
+LOG_LEVEL = env.str("LOG_LEVEL", "info").upper()
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
@@ -286,7 +287,7 @@ LOGGING = {
         }
     },
     "loggers": {
-        "root": {
+        "": {
             "level": "WARNING",
             "handlers": ["sentry", "console"],
         },
@@ -310,6 +311,12 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": False,
         },
+        "authentication_service": {
+            "level": LOG_LEVEL,
+            "handlers": ["console", "sentry"],
+            # required to avoid double logging with root logger
+            "propagate": False,
+        }
     },
 }
 
