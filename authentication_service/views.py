@@ -185,6 +185,18 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     }
     security = None
 
+    @cached_property
+    def inviter(self):
+        admin_id = self.storage.extra_data.get("invitation_data", {}).get("invitor_id")
+        try:
+            return get_user_model().objects.get(
+                id=admin_id
+            )
+        except TemporaryMigrationUserStore.DoesNotExist:
+            raise Http404(
+                f"Admin tied to invite id {admin_id} does not exist."
+            )
+
     def dispatch(self, request, *args, **kwargs):
         # Validate invitation and get data.
         invitation = self.request.GET.get("invitation")
@@ -353,6 +365,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
         invitation = self.storage.extra_data.get("invitation_data")
         if invitation:
+            admin = self.inviter
             error_response = render(
                 self.request,
                 "authentication_service/message.html",
@@ -363,8 +376,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                         "Oops. You have successfully registered for a" \
                         " Girl Effect account. Unfortunately something" \
                         " went wrong while redeeming the invitation." \
-                        " Please contact the admin that provided you with" \
-                        " the invitation url."
+                        " Please contact {admin.first_name} {admin.last_name}" \
+                        " at {admin.email}"
                     ),
                 }
             )

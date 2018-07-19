@@ -603,6 +603,11 @@ class TestRegistrationView(TestCase):
             jwt_alg= "HS256",
             redirect_uris= ["/test-redirect-url/"],
         )
+        cls.admin_user = get_user_model().objects.create_user(
+            username="user_{}".format(random.randint(0, 10000)),
+            password="password",
+            birth_date=datetime.date(2001, 1, 1)
+        )
         cls.organisation = Organisation.objects.create(
             name="inviteorg",
             description="invite_text"
@@ -610,7 +615,7 @@ class TestRegistrationView(TestCase):
         test_invitation_id = uuid.uuid4()
         cls.invitation = Invitation(
             id=test_invitation_id.hex,
-            invitor_id=str(test_invitation_id),
+            invitor_id=str(cls.admin_user.id),
             first_name="super_cool_invitation_fname",
             last_name="same_as_above_but_surname",
             email="totallynotinvitation@email.com",
@@ -766,7 +771,7 @@ class TestRegistrationView(TestCase):
         test_invitation_id = uuid.uuid4()
         invitation = Invitation(
             id=test_invitation_id.hex,
-            invitor_id=str(test_invitation_id),
+            invitor_id=str(self.admin_user.id),
             first_name="super_cool_invitation_fname",
             last_name="same_as_above_but_surname",
             email="totallynotinvitation@email.com",
