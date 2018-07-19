@@ -29,6 +29,7 @@ from django.contrib.auth import get_user_model
 from django.core import signing
 from django.db import connection
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 # NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
@@ -335,11 +336,6 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         # Save user model
         user =  kwargs["form_dict"]["userdata"].save()
 
-        # GE-1065 requires ALL users to be logged in
-        new_user = authenticate(username=username,
-                                password=pwd)
-        login(self.request, new_user)
-
         # Do some work and assign questions to the user.
         for form in getattr(formset, "forms", []):
             # Trust that form did its work. In the event that not all questions
@@ -357,23 +353,36 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
         invitation = self.storage.extra_data.get("invitation_data")
         if invitation:
+            error_response = render(
+                self.request,
+                "authentication_service/message.html",
+                context={
+                    "page_meta_title": _("Registration invite error"),
+                    "page_title": _("Registration invite error"),
+                    "page_message": _(
+                        "Oops. You have successfully registered for a" \
+                        " Girl Effect account. Unfortunately something" \
+                        " went wrong while redeeming the invitation." \
+                        " Please contact the admin that provided you with" \
+                        " the invitation url."
+                    ),
+                }
+            )
+            try:
+                org = models.Organisation.objects.get(id=invitation["organisation_id"])
+                user.organisation = org
+                user.save()
+            except models.Organisation.DoesNotExist:
+                return error_response
             response = api_helpers.invitation_redeem(invitation["id"], user.id)
             if response.get("error"):
-                return render(
-                    self.request,
-                    "authentication_service/message.html",
-                    context={
-                        "page_meta_title": _("Registration invite error"),
-                        "page_title": _("Registration invite error"),
-                        "page_message": _(
-                            "Oops. You have successfully registered for a" \
-                            " Girl Effect account. Unfortunately something" \
-                            " went wrong while redeeming the invitation." \
-                            " Please contact the admin that provided you with" \
-                            " the invitation url."
-                        ),
-                    }
-                )
+                return error_response
+
+        # GE-1065 requires ALL users to be logged in
+        new_user = authenticate(username=username,
+                                password=pwd)
+        login(self.request, new_user)
+
         return self.get_success_response()
 
     def get_success_response(self):

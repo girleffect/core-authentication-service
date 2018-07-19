@@ -24,7 +24,8 @@ from access_control import Invitation
 from authentication_service import constants
 from authentication_service.models import (
     SecurityQuestion,
-    UserSecurityQuestion
+    UserSecurityQuestion,
+    Organisation
 )
 from authentication_service.user_migration.models import (
     TemporaryMigrationUserStore
@@ -602,6 +603,10 @@ class TestRegistrationView(TestCase):
             jwt_alg= "HS256",
             redirect_uris= ["/test-redirect-url/"],
         )
+        cls.organisation = Organisation.objects.create(
+            name="inviteorg",
+            description="invite_text"
+        )
         test_invitation_id = uuid.uuid4()
         cls.invitation = Invitation(
             id=test_invitation_id.hex,
@@ -609,7 +614,7 @@ class TestRegistrationView(TestCase):
             first_name="super_cool_invitation_fname",
             last_name="same_as_above_but_surname",
             email="totallynotinvitation@email.com",
-            organisation_id=10,
+            organisation_id=cls.organisation.id,
             expires_at=timezone.now() + datetime.timedelta(minutes=10),
             created_at=timezone.now(),
             updated_at=timezone.now()
@@ -685,7 +690,7 @@ class TestRegistrationView(TestCase):
                     ) + f"?invitation={signature}",
                     follow=True
                 )
-                self.assertContains(response, "The invitation has expired.")
+        self.assertContains(response, "The invitation has expired.")
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     def test_form_initial(self):
@@ -753,7 +758,61 @@ class TestRegistrationView(TestCase):
                     },
                     follow=True
                 )
-            self.assertContains(response, "Oops. You have")
+        self.assertContains(response, "Oops. You have")
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.invitation_redeem")
+    def test_org_missing_failure(self, mocked_redeem):
+        test_invitation_id = uuid.uuid4()
+        invitation = Invitation(
+            id=test_invitation_id.hex,
+            invitor_id=str(test_invitation_id),
+            first_name="super_cool_invitation_fname",
+            last_name="same_as_above_but_surname",
+            email="totallynotinvitation@email.com",
+            organisation_id=845459,
+            expires_at=timezone.now() + datetime.timedelta(minutes=10),
+            created_at=timezone.now(),
+            updated_at=timezone.now()
+        )
+        with mock.patch("authentication_service.api_helpers.settings") as mocked_settings:
+            mocked_settings.ACCESS_CONTROL_API.invitation_read.return_value = invitation
+            mocked_redeem.return_value = {
+                "error": True
+            }
+            invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
+            params = {
+                "security": "high",
+                "invitation_id": invite_id
+            }
+            signature = signing.dumps(params, salt="invitation")
+            response = self.client.get(
+                reverse("registration"
+                ) + f"?invitation={signature}",
+                follow=True
+            )
+            self.assertIn(
+                "/registration/userdata/",
+                response.redirect_chain[-1][0],
+            )
+            with self.assertTemplateUsed("authentication_service/message.html"):
+                response = self.client.post(
+                    reverse("registration"),
+                    {
+                        "registration_wizard-current_step": "userdata",
+                        "userdata-username": "suprorglessuser",
+                        "userdata-password1": "@32786AGYJUFEtyfusegh,.,",
+                        "userdata-password2": "@32786AGYJUFEtyfusegh,.,",
+                        "userdata-age": "18",
+                        "userdata-birth_date": "2000-01-01",
+                        "userdata-terms": True,
+                        "userdata-email": "email@email.com",
+                    },
+                    follow=True
+                )
+        self.assertContains(response, "Oops. You have")
+        user = get_user_model().objects.get(username="suprorglessuser")
+        self.assertEqual(user.organisation, None)
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     @patch("authentication_service.api_helpers.invitation_redeem")
@@ -783,7 +842,7 @@ class TestRegistrationView(TestCase):
                     reverse("registration"),
                     {
                         "registration_wizard-current_step": "userdata",
-                        "userdata-username": "Username",
+                        "userdata-username": "AmazingInviteUser",
                         "userdata-password1": "@A2315,./,asDV",
                         "userdata-password2": "@A2315,./,asDV",
                         "userdata-age": "18",
@@ -793,7 +852,10 @@ class TestRegistrationView(TestCase):
                     },
                     follow=True
                 )
-            self.assertContains(response, "Congratulations, you have successfully")
+        self.assertContains(response, "Congratulations, you have successfully")
+
+        user = get_user_model().objects.get(username="AmazingInviteUser")
+        self.assertEqual(user.organisation, self.organisation)
 
     def test_view_success_template(self):
         # Test most basic iteration
