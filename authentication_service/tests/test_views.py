@@ -794,30 +794,8 @@ class TestRegistrationView(TestCase):
             response = self.client.get(
                 reverse("registration"
                 ) + f"?invitation={signature}",
-                follow=True
             )
-            self.assertIn(
-                "/registration/userdata/",
-                response.redirect_chain[-1][0],
-            )
-            with self.assertTemplateUsed("authentication_service/message.html"):
-                response = self.client.post(
-                    reverse("registration"),
-                    {
-                        "registration_wizard-current_step": "userdata",
-                        "userdata-username": "suprorglessuser",
-                        "userdata-password1": "@32786AGYJUFEtyfusegh,.,",
-                        "userdata-password2": "@32786AGYJUFEtyfusegh,.,",
-                        "userdata-age": "18",
-                        "userdata-birth_date": "2000-01-01",
-                        "userdata-terms": True,
-                        "userdata-email": "email@email.com",
-                    },
-                    follow=True
-                )
-        self.assertContains(response, "Oops. You have")
-        user = get_user_model().objects.get(username="suprorglessuser")
-        self.assertEqual(user.organisation, None)
+        self.assertEqual(response.status_code, 404)
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     @patch("authentication_service.api_helpers.invitation_redeem")

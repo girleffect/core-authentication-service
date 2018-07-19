@@ -32,7 +32,12 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 
 # NOTE: Can be refactored, both redirect import perform more or less the same.
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import (
+    HttpResponseRedirect,
+    JsonResponse,
+    HttpResponse,
+    Http404
+)
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -192,9 +197,19 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             return get_user_model().objects.get(
                 id=admin_id
             )
-        except TemporaryMigrationUserStore.DoesNotExist:
+        except get_user_model().DoesNotExist:
             raise Http404(
                 f"Admin tied to invite id {admin_id} does not exist."
+            )
+
+    @cached_property
+    def organisation(self):
+        invitation = self.storage.extra_data.get("invitation_data")
+        try:
+            return models.Organisation.objects.get(id=invitation["organisation_id"])
+        except models.Organisation.DoesNotExist:
+            raise Http404(
+                f"Organisation you have been invited for does not exist."
             )
 
     def dispatch(self, request, *args, **kwargs):
@@ -244,6 +259,10 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             # Storage value needed for the inviter property
             self.storage.extra_data["invitation_data"] = api_invitation
             self.storage.extra_data["invitation_setup"] = invitation_data
+
+            # Set check if organisation exists and set cached property in the
+            # process.
+            self.organisation
             if expires_at < timezone.now():
                 inviter = self.inviter
                 return render(
@@ -382,12 +401,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                     ),
                 }
             )
-            try:
-                org = models.Organisation.objects.get(id=invitation["organisation_id"])
-                user.organisation = org
-                user.save()
-            except models.Organisation.DoesNotExist:
-                return error_response
+            user.organisation = self.organisation
+            user.save()
             response = api_helpers.invitation_redeem(invitation["id"], user.id)
             if response.get("error"):
                 return error_response
