@@ -54,6 +54,7 @@ from authentication_service.user_migration.models import TemporaryMigrationUserS
 
 
 CLIENT_URI_SESSION_KEY = constants.SessionKeys.CLIENT_URI
+USER_MODEL = get_user_model()
 
 
 class LanguageMixin:
@@ -194,10 +195,10 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     def inviter(self):
         admin_id = self.storage.extra_data.get("invitation_data", {}).get("invitor_id")
         try:
-            return get_user_model().objects.get(
+            return USER_MODEL.objects.get(
                 id=admin_id
             )
-        except get_user_model().DoesNotExist:
+        except USER_MODEL.DoesNotExist:
             raise Http404(
                 f"Admin tied to invite id {admin_id} does not exist."
             )
