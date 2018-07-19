@@ -672,7 +672,7 @@ class TestRegistrationView(TestCase):
         test_invitation_id = uuid.uuid4()
         invitation = Invitation(
             id=test_invitation_id.hex,
-            invitor_id=str(test_invitation_id),
+            invitor_id=str(self.admin_user.id),
             first_name="super_cool_invitation_fname",
             last_name="same_as_above_but_surname",
             email="totallynotinvitation@email.com",

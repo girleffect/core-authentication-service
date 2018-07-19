@@ -198,6 +198,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             )
 
     def dispatch(self, request, *args, **kwargs):
+        dispatch = super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
+
         # Validate invitation and get data.
         invitation = self.request.GET.get("invitation")
         api_invitation = None
@@ -233,7 +235,17 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             # Do some validation with the invitation data
             if api_invitation.get("error") is True:
                 return error_response
-            if api_invitation["expires_at"] < timezone.now():
+            # Prevents needing to manipulate data before being saved to
+            # session storage.
+            api_invitation.pop("created_at")
+            api_invitation.pop("updated_at")
+            expires_at = api_invitation.pop("expires_at")
+
+            # Storage value needed for the inviter property
+            self.storage.extra_data["invitation_data"] = api_invitation
+            self.storage.extra_data["invitation_setup"] = invitation_data
+            if expires_at < timezone.now():
+                inviter = self.inviter
                 return render(
                     self.request,
                     "authentication_service/message.html",
@@ -242,23 +254,12 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                         "page_title": _("Registration invitation expired"),
                         "page_message": _(
                             "The invitation has expired."\
-                            " Please contact the admin that" \
-                            " provided the invitation link."
+                            f" Please contact {inviter.first_name} {inviter.last_name}" \
+                            f" at {inviter.email}"
                         ),
                     }
                 )
-            else:
-                # Prevents needing to manipulate data before being saved to
-                # session storage.
-                api_invitation.pop("created_at")
-                api_invitation.pop("updated_at")
-                api_invitation.pop("expires_at")
 
-        dispatch = super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
-
-        if invitation and api_invitation:
-            self.storage.extra_data["invitation_data"] = api_invitation
-            self.storage.extra_data["invitation_setup"] = invitation_data
         return dispatch
 
     def get_form_initial(self, step):
@@ -365,7 +366,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
         invitation = self.storage.extra_data.get("invitation_data")
         if invitation:
-            admin = self.inviter
+            inviter = self.inviter
             error_response = render(
                 self.request,
                 "authentication_service/message.html",
@@ -376,8 +377,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                         "Oops. You have successfully registered for a" \
                         " Girl Effect account. Unfortunately something" \
                         " went wrong while redeeming the invitation." \
-                        " Please contact {admin.first_name} {admin.last_name}" \
-                        " at {admin.email}"
+                        f" Please contact {inviter.first_name} {inviter.last_name}" \
+                        f" at {inviter.email}"
                     ),
                 }
             )
