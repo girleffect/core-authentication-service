@@ -92,8 +92,6 @@ def get_invitation_data(invitation_id):
     except AccessControlApiException as e:
         return {"error": True, "code": e.status}
 
-    # invitation_data.to_dict() causes a JSON serialisation error on the
-    # datefields, there is no need for them at present.
     return invitation_data.to_dict()
 
 
