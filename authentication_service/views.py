@@ -222,6 +222,10 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
     @cached_property
     def inviter(self):
+        """
+        Only called during two errors, no need to do a lookup if the view
+        didn't error.
+        """
         admin_id = self.storage.extra_data.get("invitation_data", {}).get("invitor_id")
         try:
             return USER_MODEL.objects.get(
@@ -230,16 +234,6 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         except USER_MODEL.DoesNotExist:
             raise Http404(
                 f"Admin tied to invite id {admin_id} does not exist."
-            )
-
-    @cached_property
-    def organisation(self):
-        invitation = self.storage.extra_data.get("invitation_data")
-        try:
-            return models.Organisation.objects.get(id=invitation["organisation_id"])
-        except models.Organisation.DoesNotExist:
-            raise Http404(
-                f"Organisation you have been invited for does not exist."
             )
 
     def dispatch(self, request, *args, **kwargs):
@@ -277,11 +271,19 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             self.storage.extra_data["invitation_data"] = api_invitation
             self.storage.extra_data["invitation_setup"] = invitation_data
 
-            # Check if organisation exists and set cached property in the
-            # process.
-            self.organisation
             if expires_at < timezone.now():
                 return self._render_expired_invitation_page(self.inviter)
+
+            # Check if org exists
+            try:
+                self.organisation = models.Organisation.objects.get(
+                    id=api_invitation["organisation_id"]
+                )
+            except models.Organisation.DoesNotExist:
+                raise Http404(
+                    f"Organisation you have been invited for does not exist."
+                )
+
 
         return dispatch
 
@@ -304,7 +306,6 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         return initial
 
     def get_form_kwargs(self, step=None):
-        # Need to set these values once, but guard against clearing them.
         custom_kwargs = {
             "security": self.request.GET.get("security"),
             "required": self.request.GET.getlist("requires"),
@@ -316,14 +317,10 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             self.storage.extra_data.get("invitation_setup", {})
         )
 
-        if custom_kwargs["security"]:
-            self.storage.extra_data["security"] = custom_kwargs["security"]
-        if custom_kwargs["required"]:
-            self.storage.extra_data["required"] = custom_kwargs["required"]
-        if custom_kwargs["hidden"]:
-            self.storage.extra_data["hidden"] = custom_kwargs["hidden"]
-        if custom_kwargs["question_ids"]:
-            self.storage.extra_data["question_ids"] = custom_kwargs["question_ids"]
+        # Need to set these values once, but guard against clearing them.
+        for key, value in custom_kwargs.items():
+            if value:
+                self.storage.extra_data[key] = custom_kwargs[key]
 
         kwargs = super(RegistrationWizard, self).get_form_kwargs()
         if step == "userdata":
@@ -379,11 +376,19 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
         invitation = self.storage.extra_data.get("invitation_data")
         if invitation:
-            inviter = self.inviter
-            user.organisation = self.organisation
+            try:
+                organisation = models.Organisation.objects.get(
+                    id=invitation["organisation_id"]
+                )
+            except models.Organisation.DoesNotExist:
+                raise Http404(
+                    f"Organisation you have been invited for does not exist."
+                )
+            user.organisation = organisation
             user.save()
             response = api_helpers.invitation_redeem(invitation["id"], user.id)
             if response.get("error"):
+                inviter = self.inviter
                 return render(
                     self.request,
                     "authentication_service/message.html",
@@ -394,8 +399,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                             "Oops. You have successfully registered for a" \
                             " Girl Effect account. Unfortunately something" \
                             " went wrong while redeeming the invitation." \
-                            f" Please contact {inviter.first_name} {inviter.last_name}" \
-                            f" at {inviter.email}"
+                            f" Please contact {inviter.first_name}" \
+                            f"{inviter.last_name} at {inviter.email}"
                         ),
                     }
                 )
