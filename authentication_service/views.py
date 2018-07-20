@@ -191,6 +191,35 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     }
     security = None
 
+    def _url_signature_error(self):
+        return render(
+            self.request,
+            "authentication_service/message.html",
+            context={
+                "page_meta_title": _("Registration invite error"),
+                "page_title": _("Registration invite error"),
+                "page_message": _(
+                    "The invitation is incorrect or the URL" \
+                    " has been tampered with."
+                ),
+            }
+        )
+
+    def _render_expired_invitation_page(self, inviter):
+        return render(
+            self.request,
+            "authentication_service/message.html",
+            context={
+                "page_meta_title": _("Registration invitation expired"),
+                "page_title": _("Registration invitation expired"),
+                "page_message": _(
+                    "The invitation has expired."\
+                    f" Please contact {inviter.first_name} {inviter.last_name}" \
+                    f" at {inviter.email}"
+                ),
+            }
+        )
+
     @cached_property
     def inviter(self):
         admin_id = self.storage.extra_data.get("invitation_data", {}).get("invitor_id")
@@ -220,37 +249,24 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         invitation = self.request.GET.get("invitation")
         api_invitation = None
         if invitation:
-            error_response = render(
-                self.request,
-                "authentication_service/message.html",
-                context={
-                    "page_meta_title": _("Registration invite error"),
-                    "page_title": _("Registration invite error"),
-                    "page_message": _(
-                        "The invitation is incorrect or the URL" \
-                        " has been tampered with."
-                    ),
-                }
-            )
-
             try:
                 invitation_data = signing.loads(
                     invitation,
                     salt="invitation",
                 )
             except signing.BadSignature:
-                return error_response
+                return self._url_signature_error()
 
             # ID is required for the api call
             if not invitation_data.get("invitation_id"):
-                return error_response
+                return self._url_signature_error()
             api_invitation = api_helpers.get_invitation_data(
                 invitation_data.pop("invitation_id")
             )
 
             # Do some validation with the invitation data
             if api_invitation.get("error") is True:
-                return error_response
+                return self._url_signature_error()
             # Prevents needing to manipulate data before being saved to
             # session storage.
             api_invitation.pop("created_at")
@@ -265,20 +281,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             # process.
             self.organisation
             if expires_at < timezone.now():
-                inviter = self.inviter
-                return render(
-                    self.request,
-                    "authentication_service/message.html",
-                    context={
-                        "page_meta_title": _("Registration invitation expired"),
-                        "page_title": _("Registration invitation expired"),
-                        "page_message": _(
-                            "The invitation has expired."\
-                            f" Please contact {inviter.first_name} {inviter.last_name}" \
-                            f" at {inviter.email}"
-                        ),
-                    }
-                )
+                return self._render_expired_invitation_page(self.inviter)
 
         return dispatch
 
@@ -387,26 +390,25 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         invitation = self.storage.extra_data.get("invitation_data")
         if invitation:
             inviter = self.inviter
-            error_response = render(
-                self.request,
-                "authentication_service/message.html",
-                context={
-                    "page_meta_title": _("Registration invite error"),
-                    "page_title": _("Registration invite error"),
-                    "page_message": _(
-                        "Oops. You have successfully registered for a" \
-                        " Girl Effect account. Unfortunately something" \
-                        " went wrong while redeeming the invitation." \
-                        f" Please contact {inviter.first_name} {inviter.last_name}" \
-                        f" at {inviter.email}"
-                    ),
-                }
-            )
             user.organisation = self.organisation
             user.save()
             response = api_helpers.invitation_redeem(invitation["id"], user.id)
             if response.get("error"):
-                return error_response
+                return render(
+                    self.request,
+                    "authentication_service/message.html",
+                    context={
+                        "page_meta_title": _("Registration invite error"),
+                        "page_title": _("Registration invite error"),
+                        "page_message": _(
+                            "Oops. You have successfully registered for a" \
+                            " Girl Effect account. Unfortunately something" \
+                            " went wrong while redeeming the invitation." \
+                            f" Please contact {inviter.first_name} {inviter.last_name}" \
+                            f" at {inviter.email}"
+                        ),
+                    }
+                )
 
         # GE-1065 requires ALL users to be logged in
         new_user = authenticate(username=username,
