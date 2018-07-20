@@ -320,7 +320,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         # Need to set these values once, but guard against clearing them.
         for key, value in custom_kwargs.items():
             if value:
-                self.storage.extra_data[key] = custom_kwargs[key]
+                self.storage.extra_data[key] = value
 
         kwargs = super(RegistrationWizard, self).get_form_kwargs()
         if step == "userdata":
