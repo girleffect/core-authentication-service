@@ -835,6 +835,7 @@ class TestRegistrationView(TestCase):
                     },
                     follow=True
                 )
+                mocked_settings.ACCESS_CONTROL_API.invitation_read.assert_called_with(invite_id)
         self.assertContains(response, "Congratulations, you have successfully")
 
         user = get_user_model().objects.get(username="AmazingInviteUser")

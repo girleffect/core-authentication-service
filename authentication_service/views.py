@@ -263,8 +263,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 return self._url_signature_error()
             # Prevents needing to manipulate data before being saved to
             # session storage.
-            api_invitation.pop("created_at")
-            api_invitation.pop("updated_at")
+            del api_invitation["created_at"]
+            del api_invitation["updated_at"]
             expires_at = api_invitation.pop("expires_at")
 
             # Storage value needed for the inviter property and organisation
