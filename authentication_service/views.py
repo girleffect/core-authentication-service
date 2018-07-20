@@ -257,7 +257,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             api_invitation.pop("updated_at")
             expires_at = api_invitation.pop("expires_at")
 
-            # Storage value needed for the inviter property
+            # Storage value needed for the inviter property and organisation
             self.storage.extra_data["invitation_data"] = api_invitation
             self.storage.extra_data["invitation_setup"] = invitation_data
 
