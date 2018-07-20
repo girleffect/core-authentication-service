@@ -261,7 +261,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             self.storage.extra_data["invitation_data"] = api_invitation
             self.storage.extra_data["invitation_setup"] = invitation_data
 
-            # Set check if organisation exists and set cached property in the
+            # Check if organisation exists and set cached property in the
             # process.
             self.organisation
             if expires_at < timezone.now():
