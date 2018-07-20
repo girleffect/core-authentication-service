@@ -1,3 +1,4 @@
+import types
 import logging
 
 from django.conf import settings
@@ -81,3 +82,25 @@ def get_user_site_role_labels_aggregated(user_id, client_id):
     raise exceptions.ImproperlyConfigured(
         f"Site for client.id ({client_id}) not found."
     )
+
+
+def get_invitation_data(invitation_id):
+    try:
+        invitation_data = settings.ACCESS_CONTROL_API.invitation_read(
+            invitation_id
+        )
+    except AccessControlApiException as e:
+        return {"error": True, "code": e.status}
+
+    return invitation_data.to_dict()
+
+
+def invitation_redeem(invitation_id, user_id):
+    user_id = str(user_id)
+    try:
+        redeem_data = settings.ACCESS_CONTROL_API.invitation_redeem(
+            invitation_id=invitation_id, user_id=user_id
+        )
+    except AccessControlApiException as e:
+        return {"error": True, "code": e.status}
+    return {"error": False}
