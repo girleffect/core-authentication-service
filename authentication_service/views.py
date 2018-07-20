@@ -2,7 +2,6 @@ from urllib.parse import urlparse, parse_qs
 import datetime
 import pkg_resources
 import socket
-import types
 import urllib
 
 from defender.decorators import watch_login
@@ -16,7 +15,7 @@ from two_factor.views import core
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, hashers, logout
+from django.contrib.auth import login, authenticate, hashers
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import (
     PasswordResetView,
@@ -35,7 +34,6 @@ from django.utils.functional import cached_property
 from django.http import (
     HttpResponseRedirect,
     JsonResponse,
-    HttpResponse,
     Http404
 )
 from django.shortcuts import render, redirect
@@ -44,7 +42,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext as _
 from django.views.generic import View, TemplateView
-from django.views.generic.edit import CreateView, UpdateView, FormView
+from django.views.generic.edit import UpdateView, FormView
 
 from authentication_service import api_helpers
 from authentication_service import forms, models, tasks, constants, utils
@@ -144,7 +142,7 @@ class LoginView(core.LoginView):
                             # If the temp user password matches, redirect to
                             # migration wizard.
                             if user.check_password(password):
-                                querystring =  urllib.parse.quote_plus(
+                                querystring = urllib.parse.quote_plus(
                                     self.request.GET.get("next", "")
                                 )
                                 url = reverse(
@@ -174,10 +172,12 @@ registration_forms = (
     ("securityquestions", forms.SecurityQuestionFormSet),
 )
 
+
 def show_security_questions(wizard):
     cleaned_data = wizard.get_cleaned_data_for_step(
         "userdata") or {"email": None}
     return cleaned_data["email"] is None
+
 
 class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     form_list = registration_forms
@@ -316,7 +316,6 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             self.storage.extra_data.get("invitation_setup", {})
         )
 
-        # TODO: Can be refactored later
         if custom_kwargs["security"]:
             self.storage.extra_data["security"] = custom_kwargs["security"]
         if custom_kwargs["required"]:
@@ -351,17 +350,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             }
         return kwargs
 
-    @property
-    def get_formset(self):
-        formset = forms.SecurityQuestionFormSet(**data)
-        if self.request.POST:
-            formset = forms.SecurityQuestionFormSet(
-                data=self.request.POST, language=self.language
-            )
-        return formset
-
     def done(self, form_list, **kwargs):
-        formset =  kwargs["form_dict"].get("securityquestions")
+        formset = kwargs["form_dict"].get("securityquestions")
 
         # Once form is saved the data gets removed from the
         # get_all_cleaned_data, store the values before saving. The values are
@@ -370,7 +360,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         pwd = self.get_all_cleaned_data()["password1"]
 
         # Save user model
-        user =  kwargs["form_dict"]["userdata"].save()
+        user = kwargs["form_dict"]["userdata"].save()
 
         # Do some work and assign questions to the user.
         for form in getattr(formset, "forms", []):
@@ -385,7 +375,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 data = form.cleaned_data
                 data["user_id"] = user.id
                 data["language_code"] = self.language
-                question = models.UserSecurityQuestion.objects.create(**data)
+                models.UserSecurityQuestion.objects.create(**data)
 
         invitation = self.storage.extra_data.get("invitation_data")
         if invitation:
@@ -584,7 +574,7 @@ class DeleteAccountView(FormView):
             }
             tasks.send_mail.apply_async(
                 kwargs={
-                    "context":{"reason": form.cleaned_data["reason"]},
+                    "context": {"reason": form.cleaned_data["reason"]},
                     "mail_type": "delete_account",
                     "objects_to_fetch": [user]
                 }
