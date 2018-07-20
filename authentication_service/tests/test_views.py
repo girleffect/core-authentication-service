@@ -800,6 +800,8 @@ class TestRegistrationView(TestCase):
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     @patch("authentication_service.api_helpers.invitation_redeem")
     def test_form_redeem_success(self, mocked_redeem):
+        # NOTE self.invitation.id != invite_id, due to invitation values being
+        # mocked as well.
         with mock.patch("authentication_service.api_helpers.settings") as mocked_settings:
             mocked_settings.ACCESS_CONTROL_API.invitation_read.return_value = self.invitation
             mocked_redeem.return_value = {
@@ -835,10 +837,11 @@ class TestRegistrationView(TestCase):
                     },
                     follow=True
                 )
+                user = get_user_model().objects.get(username="AmazingInviteUser")
                 mocked_settings.ACCESS_CONTROL_API.invitation_read.assert_called_with(invite_id)
+                mocked_redeem.assert_called_with(self.invitation.id, user.id)
         self.assertContains(response, "Congratulations, you have successfully")
 
-        user = get_user_model().objects.get(username="AmazingInviteUser")
         self.assertEqual(user.organisation, self.organisation)
 
     def test_view_success_template(self):
