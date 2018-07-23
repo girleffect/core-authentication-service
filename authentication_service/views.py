@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from urllib.parse import urlparse, parse_qs
 import datetime
 import pkg_resources
@@ -406,11 +407,35 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 )
 
         # GE-1065 requires ALL users to be logged in
-        new_user = authenticate(username=username,
+        self.new_user = authenticate(username=username,
                                 password=pwd)
-        login(self.request, new_user)
-
         return self.get_success_response()
+
+    def render_done(self, form, **kwargs):
+        # This validation is done in the base wizard render_done as well.
+        # However, revalidating the forms a second time is safer than
+        # attempting to react based on the possible super responses due to the
+        # wizard subclass in use here being last in the inheritance tree.
+        # formtools.wizard.views: Line 343 (formtools v2.1)
+        final_forms = OrderedDict()
+        # walk through the form list and try to validate the data again.
+        for form_key in self.get_form_list():
+            form_obj = self.get_form(
+                step=form_key,
+                data=self.storage.get_step_data(form_key),
+                files=self.storage.get_step_files(form_key)
+            )
+            if not form_obj.is_valid():
+                return self.render_revalidation_failure(form_key, form_obj, **kwargs)
+            final_forms[form_key] = form_obj
+
+        # Call super that validates forms again and resets storage.
+        response = super(RegistrationWizard, self).render_done(form, **kwargs)
+
+        # Log new user in.
+        if hasattr(self, "new_user"):
+            login(self.request, self.new_user)
+        return response
 
     def get_success_response(self):
         key = CLIENT_URI_SESSION_KEY
