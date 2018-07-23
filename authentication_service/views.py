@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from urllib.parse import urlparse, parse_qs
 import datetime
 import pkg_resources
@@ -406,11 +407,19 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 )
 
         # GE-1065 requires ALL users to be logged in
-        new_user = authenticate(username=username,
+        self.new_user = authenticate(username=username,
                                 password=pwd)
-        login(self.request, new_user)
-
         return self.get_success_response()
+
+    def render_done(self, form, **kwargs):
+        # Validate all forms again. If valid calls done() and clears storage.
+        response = super(RegistrationWizard, self).render_done(form, **kwargs)
+
+        # Ensure new user is present as set in done, if it is log new user in.
+        # Clearing old session in the progress.
+        if hasattr(self, "new_user"):
+            login(self.request, self.new_user)
+        return response
 
     def get_success_response(self):
         key = CLIENT_URI_SESSION_KEY
