@@ -90,11 +90,12 @@ database:
 	sql/create_database.sh $(DB_NAME) $(DB_USER) | sudo -u postgres psql -f -
 
 test:
-	$(PYTHON) manage.py test --settings=authentication_service.tests.settings.111
+	ALLOWED_API_KEYS=test-api-key,some-other-api-key USER_DATA_STORE_API=local.uds USER_DATA_STORE_API_KEY=uds-test-api-key ACCESS_CONTROL_API=local.acs ACCESS_CONTROL_API_KEY=acs-test-api-key $(PYTHON) manage.py test --settings=authentication_service.tests.settings.111
 
 authentication-service-api: $(VENV)
 	$(VENV)/bin/pip install -r $(VENV)/src/swagger-django-generator/requirements.txt
-	$(PYTHON) $(VENV)/src/swagger-django-generator/swagger_django_generator/generator.py swagger/authentication_service.yml --output-dir authentication_service/api --module-name authentication_service.api
+	# The utils file must not be overwritten, hence "--utils-file /dev/null"
+	$(PYTHON) $(VENV)/src/swagger-django-generator/swagger_django_generator/generator.py swagger/authentication_service.yml --output-dir authentication_service/api --module-name authentication_service.api --utils-file /dev/null
 
 make-translations:
 	@echo "$(CYAN)Ensuring that language directories exists...$(CLEAR)"
