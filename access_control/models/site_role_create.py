@@ -52,7 +52,8 @@ class SiteRoleCreate(object):
 
         self.site_id = site_id
         self.role_id = role_id
-        self.grant_implicitly = grant_implicitly
+        if grant_implicitly is not None:
+            self.grant_implicitly = grant_implicitly
 
     @property
     def site_id(self):
@@ -118,8 +119,6 @@ class SiteRoleCreate(object):
         :param grant_implicitly: The grant_implicitly of this SiteRoleCreate.  # noqa: E501
         :type: bool
         """
-        if grant_implicitly is None:
-            raise ValueError("Invalid value for `grant_implicitly`, must not be `None`")  # noqa: E501
 
         self._grant_implicitly = grant_implicitly
 

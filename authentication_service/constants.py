@@ -31,3 +31,6 @@ def get_theme_client_name(request):
         {}
     ).get(SessionKeys.CLIENT_NAME)
     return THEME_NAME_MAP.get(theme, fallback_name)
+
+
+CONSENT_AGE = 13

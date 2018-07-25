@@ -1,0 +1,37 @@
+{% load i18n %}
+<html>
+
+<body>
+    <div>
+    {% blocktrans with name=first_name|title surname=last_name|title %}
+    Dear {{name}} {{surname}}
+    {% endblocktrans %}
+    </div>
+    <br/>
+    <br/>
+    <div>
+    {% blocktrans with organisation_title=organisation|title %}
+    You have been invited to join Girl Effect as part of the {{organisation_title}} organisation.
+    {% endblocktrans %}
+    </div>
+
+{% comment %} The section below is required for when we re-activate 2FA
+{% blocktrans %}
+As part of the registration process you will be asked to download and install the Google Authenticator app. We suggest doing this before starting the registration process:
+* For Android: https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en
+* For iOS: https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8
+{% endblocktrans %}
+{% endcomment %}
+
+    <div>
+    {% trans "Please click the link below or paste it into your browser to register your account." %}<br/>
+    <a href="{{ url }}">{{ url }}</a>
+    </div>
+    <br/>
+    <div>
+    {% trans "Regards," %}<br/>
+    {{ sender.first_name|title }} {{ sender.last_name|title }}
+    {% trans "(on behalf of Girl Effect)" %}
+    </div>
+</body>
+</html>

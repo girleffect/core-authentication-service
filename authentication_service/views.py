@@ -1,17 +1,22 @@
-import datetime
-import socket
-
-import pkg_resources
+from collections import OrderedDict
 from urllib.parse import urlparse, parse_qs
+import datetime
+import pkg_resources
+import socket
 import urllib
 
 from defender.decorators import watch_login
 from defender.utils import is_user_already_locked, lockout_response
+from formtools.wizard.views import NamedUrlSessionWizardView
 from oidc_provider.models import Client
+from two_factor.forms import AuthenticationTokenForm
+from two_factor.forms import BackupTokenForm
+from two_factor.utils import default_device
+from two_factor.views import core
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, hashers, logout
+from django.contrib.auth import login, authenticate, hashers
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import (
     PasswordResetView,
@@ -20,34 +25,35 @@ from django.contrib.auth.views import (
 )
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
-
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.db import connection
+from django.utils import timezone
+from django.utils.functional import cached_property
 
 # NOTE: Can be refactored, both redirect import perform more or less the same.
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import (
+    HttpResponseRedirect,
+    JsonResponse,
+    Http404
+)
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext as _
 from django.views.generic import View, TemplateView
-from django.views.generic.edit import CreateView, UpdateView, FormView
+from django.views.generic.edit import UpdateView, FormView
 
-from two_factor.forms import AuthenticationTokenForm
-from two_factor.forms import BackupTokenForm
-from two_factor.utils import default_device
-from two_factor.views import core
-
+from authentication_service import api_helpers
 from authentication_service import forms, models, tasks, constants, utils
 from authentication_service.decorators import generic_deprecation
 from authentication_service.forms import LoginForm
-
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 
 CLIENT_URI_SESSION_KEY = constants.SessionKeys.CLIENT_URI
+USER_MODEL = get_user_model()
 
 
 class LanguageMixin:
@@ -118,12 +124,13 @@ class LoginView(core.LoginView):
                     # Query values are in list form. Only grab the first value
                     # from the list.
                     client_id = next_query_args.get("client_id", [None])[0]
-                    # Only do these checks if no user was authenticated and
-                    # client_id is present
-                    if form_user is None and client_id:
-                        username = form.cleaned_data["username"]
-                        password = form.cleaned_data["password"]
 
+                    # Only do these checks if no user was authenticated and
+                    # client_id is present. Also need to ensure form values are
+                    # present.
+                    username = form.cleaned_data.get("username", None)
+                    password = form.cleaned_data.get("password", None)
+                    if form_user is None and client_id and username and password:
                         try:
                             user = TemporaryMigrationUserStore.objects.get(
                                 username=username, client_id=client_id
@@ -136,7 +143,7 @@ class LoginView(core.LoginView):
                             # If the temp user password matches, redirect to
                             # migration wizard.
                             if user.check_password(password):
-                                querystring =  urllib.parse.quote_plus(
+                                querystring = urllib.parse.quote_plus(
                                     self.request.GET.get("next", "")
                                 )
                                 url = reverse(
@@ -161,71 +168,200 @@ defender_decorator = watch_login()
 watch_login_method = method_decorator(defender_decorator)
 LoginView.dispatch = watch_login_method(LoginView.dispatch)
 
+registration_forms = (
+    ("userdata", forms.RegistrationForm),
+    ("securityquestions", forms.SecurityQuestionFormSet),
+)
 
-class RegistrationView(LanguageMixin, CreateView):
+
+def show_security_questions(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step(
+        "userdata") or {"email": None}
+    return cleaned_data["email"] is None
+
+
+class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
+    form_list = registration_forms
+    condition_dict = {"securityquestions": show_security_questions}
     template_name = "authentication_service/registration.html"
-    form_class = forms.RegistrationForm
+
+    # Needed to stop a NoneType error from triggering in django internals. The
+    # formset does not require a queryset.
+    instance_dict = {
+        "securityquestions": models.UserSecurityQuestion.objects.none()
+    }
     security = None
 
-    @property
-    def get_formset(self):
-        formset = forms.SecurityQuestionFormSet(language=self.language)
-        if self.request.POST:
-            formset = forms.SecurityQuestionFormSet(
-                data=self.request.POST, language=self.language
+    def _url_signature_error(self):
+        return render(
+            self.request,
+            "authentication_service/message.html",
+            context={
+                "page_meta_title": _("Registration invite error"),
+                "page_title": _("Registration invite error"),
+                "page_message": _(
+                    "The invitation is incorrect or the URL" \
+                    " has been tampered with."
+                ),
+            }
+        )
+
+    def _render_expired_invitation_page(self, inviter):
+        return render(
+            self.request,
+            "authentication_service/message.html",
+            context={
+                "page_meta_title": _("Registration invitation expired"),
+                "page_title": _("Registration invitation expired"),
+                "page_message": _(
+                    "The invitation has expired."\
+                    f" Please contact {inviter.first_name} {inviter.last_name}" \
+                    f" at {inviter.email}"
+                ),
+            }
+        )
+
+    @cached_property
+    def inviter(self):
+        """
+        Only called during two errors, no need to do a lookup if the view
+        didn't error.
+        """
+        admin_id = self.storage.extra_data.get("invitation_data", {}).get("invitor_id")
+        try:
+            return USER_MODEL.objects.get(
+                id=admin_id
             )
-        return formset
+        except USER_MODEL.DoesNotExist:
+            raise Http404(
+                f"Admin tied to invite id {admin_id} does not exist."
+            )
 
-    def get_form_kwargs(self):
-        kwargs = super(RegistrationView, self).get_form_kwargs()
-        self.security = self.request.GET.get("security")
-        if isinstance(self.security, str):
-            kwargs["security"] = self.security.lower()
+    def dispatch(self, request, *args, **kwargs):
+        dispatch = super(RegistrationWizard, self).dispatch(request, *args, **kwargs)
 
-        required = self.request.GET.getlist("requires")
-        if required:
-            kwargs["required"] = required
+        # Validate invitation and get data.
+        invitation = self.request.GET.get("invitation")
+        api_invitation = None
+        if invitation:
+            try:
+                invitation_data = signing.loads(
+                    invitation,
+                    salt="invitation",
+                )
+            except signing.BadSignature:
+                return self._url_signature_error()
 
-        hidden = self.request.GET.getlist("hide")
-        if hidden:
-            kwargs["hidden"] = hidden
+            # ID is required for the api call
+            if not invitation_data.get("invitation_id"):
+                return self._url_signature_error()
+            api_invitation = api_helpers.get_invitation_data(
+                invitation_data.pop("invitation_id")
+            )
 
+            # Do some validation with the invitation data
+            if api_invitation.get("error") is True:
+                return self._url_signature_error()
+            # Prevents needing to manipulate data before being saved to
+            # session storage.
+            del api_invitation["created_at"]
+            del api_invitation["updated_at"]
+            expires_at = api_invitation.pop("expires_at")
+
+            # Storage value needed for the inviter property and organisation
+            self.storage.extra_data["invitation_data"] = api_invitation
+            self.storage.extra_data["invitation_setup"] = invitation_data
+
+            if expires_at < timezone.now():
+                return self._render_expired_invitation_page(self.inviter)
+
+            # Check if org exists
+            try:
+                self.organisation = models.Organisation.objects.get(
+                    id=api_invitation["organisation_id"]
+                )
+            except models.Organisation.DoesNotExist:
+                raise Http404(
+                    f"Organisation you have been invited for does not exist."
+                )
+
+
+        return dispatch
+
+    def get_form_initial(self, step):
+        initial = super(RegistrationWizard, self).get_form_kwargs()
+
+        invitation = self.storage.extra_data.get("invitation_data")
+        if step == "userdata" and invitation:
+            initial = {
+                "first_name": invitation.get("first_name"),
+                "last_name": invitation.get("last_name"),
+                "email": invitation.get("email")
+            }
+        # Formsets take a list of dictionaries for initial data.
+        if step == "securityquestions":
+            initial = [
+                {"question": q_id}
+                for q_id in self.storage.extra_data.get("question_ids", [])
+            ]
+        return initial
+
+    def get_form_kwargs(self, step=None):
+        custom_kwargs = {
+            "security": self.request.GET.get("security"),
+            "required": self.request.GET.getlist("requires"),
+            "hidden": self.request.GET.getlist("hide"),
+            "question_ids": self.request.GET.getlist("question_ids", [])
+        }
+
+        custom_kwargs.update(
+            self.storage.extra_data.get("invitation_setup", {})
+        )
+
+        # Need to set these values once, but guard against clearing them.
+        for key, value in custom_kwargs.items():
+            if value:
+                self.storage.extra_data[key] = value
+
+        kwargs = super(RegistrationWizard, self).get_form_kwargs()
+        if step == "userdata":
+            security = self.storage.extra_data.get("security")
+            hidden = self.storage.extra_data.get("hidden")
+            required = self.storage.extra_data.get("required")
+            kwargs["terms_url"] = utils.get_session_data(
+                self.request,
+                constants.SessionKeys.CLIENT_TERMS
+            )
+            if security:
+                kwargs["security"] = security.lower()
+            if required:
+                kwargs["required"] = required
+            if hidden:
+                kwargs["hidden"] = hidden
+
+        if step == "securityquestions":
+            kwargs = {
+                "language": self.language,
+                "step_email": self.get_cleaned_data_for_step(
+                    "userdata"
+                ).get("email")
+            }
         return kwargs
 
-    def get_context_data(self, *args, **kwargs):
-        ct = super(RegistrationView, self).get_context_data(*args, **kwargs)
+    def done(self, form_list, **kwargs):
+        formset = kwargs["form_dict"].get("securityquestions")
 
-        # Either a new formset instance or an existing one is passed to the
-        # formset class.
-        if kwargs.get("question_formset"):
-            ct["question_formset"] = kwargs["question_formset"]
-        else:
-            ct["question_formset"] = self.get_formset
-        return ct
+        # Once form is saved the data gets removed from the
+        # get_all_cleaned_data, store the values before saving. The values are
+        # needed to login user.
+        username = self.get_all_cleaned_data()["username"]
+        pwd = self.get_all_cleaned_data()["password1"]
 
-    def form_invalid(self, form):
-        return self.render_to_response(self.get_context_data(
-            form=form, question_formset=self.get_formset
-        ))
-
-    def form_valid(self, form):
-        formset = self.get_formset
-
-        if not formset.is_valid():
-            return self.render_to_response(self.get_context_data(
-                form=form, question_formset=formset)
-            )
-
-        # Let the user model save.
-        response = super(RegistrationView, self).form_valid(form)
-
-        # GE-1065 requires ALL users to be logged in
-        new_user = authenticate(username=form.cleaned_data["username"],
-                                password=form.cleaned_data["password1"])
-        login(self.request, new_user)
+        # Save user model
+        user = kwargs["form_dict"]["userdata"].save()
 
         # Do some work and assign questions to the user.
-        for form in formset.forms:
+        for form in getattr(formset, "forms", []):
             # Trust that form did its work. In the event that not all questions
             # were answered, save what can be saved.
             if form.cleaned_data.get(
@@ -235,18 +371,57 @@ class RegistrationView(LanguageMixin, CreateView):
                 # All fields on model are required, as such it requires the
                 # full set of data.
                 data = form.cleaned_data
-                data["user_id"] = self.object.id
+                data["user_id"] = user.id
                 data["language_code"] = self.language
-                question = models.UserSecurityQuestion.objects.create(**data)
+                models.UserSecurityQuestion.objects.create(**data)
 
-        # If get_success_url already returns a response object, immediately
-        # return it.
-        alternate_response = self.get_success_url()
-        if isinstance(alternate_response, HttpResponse):
-            return alternate_response
+        invitation = self.storage.extra_data.get("invitation_data")
+        if invitation:
+            try:
+                organisation = models.Organisation.objects.get(
+                    id=invitation["organisation_id"]
+                )
+            except models.Organisation.DoesNotExist:
+                raise Http404(
+                    f"Organisation you have been invited for does not exist."
+                )
+            user.organisation = organisation
+            user.save()
+            response = api_helpers.invitation_redeem(invitation["id"], user.id)
+            if response.get("error"):
+                inviter = self.inviter
+                return render(
+                    self.request,
+                    "authentication_service/message.html",
+                    context={
+                        "page_meta_title": _("Registration invite error"),
+                        "page_title": _("Registration invite error"),
+                        "page_message": _(
+                            "Oops. You have successfully registered for a" \
+                            " Girl Effect account. Unfortunately something" \
+                            " went wrong while redeeming the invitation." \
+                            f" Please contact {inviter.first_name}" \
+                            f"{inviter.last_name} at {inviter.email}"
+                        ),
+                    }
+                )
+
+        # GE-1065 requires ALL users to be logged in
+        self.new_user = authenticate(username=username,
+                                password=pwd)
+        return self.get_success_response()
+
+    def render_done(self, form, **kwargs):
+        # Validate all forms again. If valid calls done() and clears storage.
+        response = super(RegistrationWizard, self).render_done(form, **kwargs)
+
+        # Ensure new user is present as set in done, if it is log new user in.
+        # Clearing old session in the progress.
+        if hasattr(self, "new_user"):
+            login(self.request, self.new_user)
         return response
 
-    def get_success_url(self):
+    def get_success_response(self):
         key = CLIENT_URI_SESSION_KEY
         uri = utils.get_session_data(self.request, key)
 
@@ -257,7 +432,7 @@ class RegistrationView(LanguageMixin, CreateView):
         #        "show2fa") == "true":
         #    return reverse("two_factor_auth:setup")
         if uri:
-            return uri
+            return redirect(uri)
         return render(
             self.request,
             "authentication_service/message.html",
@@ -413,7 +588,7 @@ class DeleteAccountView(FormView):
             }
             tasks.send_mail.apply_async(
                 kwargs={
-                    "context":{"reason": form.cleaned_data["reason"]},
+                    "context": {"reason": form.cleaned_data["reason"]},
                     "mail_type": "delete_account",
                     "objects_to_fetch": [user]
                 }

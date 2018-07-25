@@ -38,14 +38,14 @@ class APIKeyTestCase(TestCase):
     def test_authorized(self):
         response = self.client.get(
             "/api/v1/clients",
-            **{"HTTP_X_API_KEY": "test_api_key"}
+            **{"HTTP_X_API_KEY": "test-api-key"}
         )
         self.assertEqual(response.status_code, 200)
 
     def test_other_key(self):
         response = self.client.get(
             "/api/v1/clients",
-            **{"HTTP_X_API_KEY": "some_other_api_key"}
+            **{"HTTP_X_API_KEY": "some-other-api-key"}
         )
         self.assertEqual(response.status_code, 200)
 

@@ -1,5 +1,9 @@
+import datetime
 import logging
 
+from django.core.exceptions import SuspiciousOperation
+from django.urls import reverse
+from django.utils import timezone
 from oidc_provider.models import Client
 
 from django.conf import settings
@@ -7,8 +11,10 @@ from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 
+from authentication_service import tasks
 from authentication_service.api.stubs import AbstractStubClass
-from authentication_service.models import CoreUser, Country, OrganisationalUnit
+from authentication_service.exceptions import BadRequestException
+from authentication_service.models import CoreUser, Country, Organisation, UserSite
 from authentication_service.utils import strip_empty_optional_fields, check_limit, \
     to_dict_with_custom_fields, range_filter_parser
 
@@ -22,15 +28,17 @@ CLIENT_VALUES = [
 COUNTRY_VALUES = [
     "code", "name"
 ]
-ORGANISATIONAL_UNIT_VALUES = [
+ORGANISATION_VALUES = [
     "id", "name", "description", "created_at", "updated_at"
 ]
 USER_VALUES = [
     "id", "username", "first_name", "last_name", "email", "is_active",
     "date_joined", "last_login", "email_verified", "msisdn_verified", "msisdn",
     "gender", "birth_date", "avatar", "country", "created_at", "updated_at",
-    "organisational_unit_id"
+    "organisation"
 ]
+
+SUPPORTED_LANGUAGE_CODES = {language[0] for language in settings.LANGUAGES}
 
 
 class Implementation(AbstractStubClass):
@@ -126,53 +134,147 @@ class Implementation(AbstractStubClass):
         result = to_dict_with_custom_fields(country, COUNTRY_VALUES)
         return strip_empty_optional_fields(result)
 
-    # organisational_unit_list -- Synchronisation point for meld
+    # invitation_send -- Synchronisation point for meld
     @staticmethod
-    def organisational_unit_list(request, offset=None, limit=None, organisational_unit_ids=None, *args, **kwargs):
+    def invitation_send(request, invitation_id, language=None, *args, **kwargs):
+        """
+        Queue sending of an invitation email.
+
+        This function needs to perform thorough validation of all fields to ensure any errors
+        are detected before queuing the task that will send the email asynchronously.
+
+        :param request: An HttpRequest
+        :param invitation_id:
+        :type invitation_id: string
+        :param language: (optional)
+        :type language: string
+        """
+        language = language or "en"  # English is the default language
+
+        if language not in SUPPORTED_LANGUAGE_CODES:
+            raise SuspiciousOperation("An unsupported language was specified.")
+
+        invitation = settings.ACCESS_CONTROL_API.invitation_read(invitation_id)
+
+        if invitation is None:
+            raise SuspiciousOperation("The specified invitation does not exist.")
+
+        # We need to use timezone.now() instead of datetime.now(), since timezone.now()
+        # is timezone aware and is required to be able to compare against invitation.expires_at.
+        if invitation.expires_at < timezone.now():
+            raise SuspiciousOperation("The specified invitation has expired.")
+
+        # Ensure the invitor exists
+        get_object_or_404(CoreUser, id=invitation.invitor_id)
+        # Ensure the organisation exists
+        get_object_or_404(Organisation, id=invitation.organisation_id)
+
+        registration_url = request.build_absolute_uri(reverse("registration"))
+
+        tasks.send_invitation_email.delay(invitation.to_dict(), registration_url, language)
+
+        return {}
+
+    # organisation_list -- Synchronisation point for meld
+    @staticmethod
+    def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
         :type offset: integer
         :param limit: (optional) An optional query parameter to limit the number of results returned.
         :type limit: integer
-        :param organisational_unit_ids: (optional) An optional list of organisational unit ids
-        :type organisational_unit_ids: array
+        :param organisation_ids: (optional) An optional list of organisation ids
+        :type organisation_ids: array
         """
         offset = int(offset if offset else settings.DEFAULT_LISTING_OFFSET)
         limit = check_limit(limit)
 
-        organisational_units = OrganisationalUnit.objects.order_by("id")
+        organisations = Organisation.objects.order_by("id")
 
-        if organisational_unit_ids:
-            organisational_units = organisational_units.filter(id__in=organisational_unit_ids)
+        if organisation_ids:
+            organisations = organisations.filter(id__in=organisation_ids)
 
-        organisational_units = organisational_units.annotate(
+        organisations = organisations.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
         )[offset:offset + limit]
         return (
-            [strip_empty_optional_fields(to_dict_with_custom_fields(organisational_unit,
-                                                                    ORGANISATIONAL_UNIT_VALUES))
-             for organisational_unit in organisational_units],
+            [strip_empty_optional_fields(to_dict_with_custom_fields(organisation,
+                                                                    ORGANISATION_VALUES))
+             for organisation in organisations],
             {
-                "X-Total-Count": organisational_units[0].x_total_count if organisational_units else 0
+                "X-Total-Count": organisations[0].x_total_count if organisations else 0
             }
         )
 
-    # organisational_unit_read -- Synchronisation point for meld
+    # organisation_create -- Synchronisation point for meld
     @staticmethod
-    def organisational_unit_read(request, organisational_unit_id, *args, **kwargs):
+    def organisation_create(request, body, *args, **kwargs):
         """
         :param request: An HttpRequest
-        :param organisational_unit_id: An integer identifying an organisational unit
-        :type organisational_unit_id: integer
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
         """
-        organisational_unit = get_object_or_404(OrganisationalUnit, id=organisational_unit_id)
-        result = to_dict_with_custom_fields(organisational_unit, ORGANISATIONAL_UNIT_VALUES)
+        organisation = Organisation.objects.create(**body)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
+        return strip_empty_optional_fields(result)
+
+    # organisation_delete -- Synchronisation point for meld
+    @staticmethod
+    def organisation_delete(request, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        users = CoreUser.objects.filter(organisation=organisation)
+        if users:
+            LOGGER.warning(
+                "Users Linked to organisation {}. Delete Canceled".format(
+                    organisation_id
+                )
+            )
+            raise BadRequestException
+        else:
+            organisation.delete()
+
+    # organisation_read -- Synchronisation point for meld
+    @staticmethod
+    def organisation_read(request, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
+        return strip_empty_optional_fields(result)
+
+    # organisation_update -- Synchronisation point for meld
+    @staticmethod
+    def organisation_update(request, body, organisation_id, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        :param organisation_id: An integer identifying an organisation a user belongs to
+        :type organisation_id: integer
+        """
+        organisation = get_object_or_404(Organisation, id=organisation_id)
+        for attr, value in body.items():
+            try:
+                setattr(organisation, attr, value)
+            except Exception as e:
+                LOGGER.error("Failed to set user attribute %s: %s" % (attr, e))
+
+        organisation.save()
+        result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
         return strip_empty_optional_fields(result)
 
     # user_list -- Synchronisation point for meld
     @staticmethod
-    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisational_unit_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisational_unit=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
+    def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisation_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisation=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
         """
         :param request: An HttpRequest
         :param offset: (optional) An optional query parameter specifying the offset in the result set to start from.
@@ -205,8 +307,8 @@ class Implementation(AbstractStubClass):
         :type msisdn_verified: boolean
         :param nickname: (optional) An optional case insensitive nickname inner match filter
         :type nickname: string
-        :param organisational_unit_id: (optional) An optional filter on the organisational unit id
-        :type organisational_unit_id: integer
+        :param organisation_id: (optional) An optional filter on the organisation id
+        :type organisation_id: integer
         :param updated_at: (optional) An optional updated_at range filter
         :type updated_at: string
         :param username: (optional) An optional case insensitive username inner match filter
@@ -215,8 +317,8 @@ class Implementation(AbstractStubClass):
         :type q: string
         :param tfa_enabled: (optional) An optional filter based on whether a user has 2FA enabled or not
         :type tfa_enabled: boolean
-        :param has_organisational_unit: (optional) An optional filter based on whether a user has an organisational unit or not
-        :type has_organisational_unit: boolean
+        :param has_organisation: (optional) An optional filter based on whether a user belongs to an organisation or not
+        :type has_organisation: boolean
         :param order_by: (optional) Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
         :type order_by: array
         :param user_ids: (optional) An optional list of user ids
@@ -228,9 +330,7 @@ class Implementation(AbstractStubClass):
         limit = check_limit(limit)
 
         order_by = order_by or ["id"]
-        # The user filter needs to contain a distinct() filter since joining
-        # with the UserSite table can lead to multiple rows containing the same user.
-        users = get_user_model().objects.distinct().order_by(*order_by)
+        users = get_user_model().objects.order_by(*order_by)
 
         # Bools
         if tfa_enabled is not None:
@@ -238,10 +338,10 @@ class Implementation(AbstractStubClass):
             users = users.filter(
                 totpdevice__isnull=not check
             )
-        if has_organisational_unit is not None:
-            check = has_organisational_unit.lower() == "true"
+        if has_organisation is not None:
+            check = has_organisation.lower() == "true"
             users = users.filter(
-                organisational_unit__isnull=not check
+                organisation__isnull=not check
             )
         if email_verified is not None:
             users = users.filter(
@@ -293,15 +393,21 @@ class Implementation(AbstractStubClass):
             users = users.filter(id__in=user_ids)
         if gender:
             users = users.filter(gender=gender)
-        if organisational_unit_id:
-            users = users.filter(organisational_unit__id=organisational_unit_id)
+        if organisation_id:
+            users = users.filter(organisation__id=organisation_id)
         if site_ids:
-            users = users.filter(usersite__site_id__in=site_ids)
+            # In order for the count to be correct, we cannot join with the UserSite table and
+            # need to use a subquery.
+            site_user_ids = UserSite.objects.distinct().filter(site_id__in=site_ids).values(
+                "user_id")
+            users = users.filter(id__in=site_user_ids)
 
-        # Count
+        # Add count
         users = users.annotate(
             x_total_count=RawSQL("COUNT(*) OVER ()", [])
-        )[offset:offset + limit]
+        )
+        # Perform the query and get the correct slice
+        users = users[offset:offset + limit]
         return (
             [strip_empty_optional_fields(to_dict_with_custom_fields(user, USER_VALUES))
              for user in users],
@@ -355,3 +461,17 @@ class Implementation(AbstractStubClass):
         instance.save()
         result = to_dict_with_custom_fields(instance, USER_VALUES)
         return strip_empty_optional_fields(result)
+
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: An optional cutoff date to purge invites before this date
+        :type cutoff_date: date
+        """
+        if cutoff_date is None:
+            cutoff_date = str(datetime.datetime.now().date())
+        tasks.purge_expired_invitations.apply_async(
+            cutoff_date=cutoff_date
+        )
+        return

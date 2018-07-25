@@ -11,6 +11,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from project.settings import MediaStorage
+
 
 GENDER_CHOICES = (
     ("female", _("Female")),
@@ -64,6 +66,9 @@ class TrigramIndex(GinIndex):
         sql_values["columns"] = ", ".join(new_columns)
         return sql_values
 
+def user_avatar_path(instance, filename):
+    # file will be uploaded to <FileStorageRoot>/user_<id>/avatar_<filename>
+    return f"user_{instance.id}/avatar_{filename}"
 
 # NOTE: Changing AUTH_USER_MODEL will cause migration 0001 from otp_totp to
 # break once migrations have already been run once.
@@ -82,11 +87,16 @@ class CoreUser(AbstractUser):
     birth_date = models.DateField()
     country = models.ForeignKey("Country", blank=True, null=True,
         verbose_name=_("country"))
-    avatar = models.ImageField(blank=True, null=True)
+    avatar = models.ImageField(
+        blank=True,
+        null=True,
+        upload_to=user_avatar_path,
+        storage=MediaStorage()
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    organisational_unit = models.ForeignKey(
-        "OrganisationalUnit", blank=True, null=True
+    organisation = models.ForeignKey(
+        "Organisation", blank=True, null=True
     )
     q = AutoQueryField(
         query_fields=[
@@ -212,6 +222,17 @@ class QuestionLanguageText(models.Model):
     )
     question_text = models.TextField()
 
+    class Meta:
+        unique_together = ("question", "language_code")
+
+    def clean(self):
+        super(QuestionLanguageText, self).clean()
+        if self.language_code == "en":
+            raise ValidationError(_(
+                "The default question text is already in English."
+                " Please do not add an English translation."
+            ))
+
     def validate_unique(self, *args, **kwargs):
         super(QuestionLanguageText, self).validate_unique(*args, **kwargs)
         if SecurityQuestion.objects.filter(
@@ -232,7 +253,7 @@ class QuestionLanguageText(models.Model):
         super(QuestionLanguageText, self).save(*args, **kwargs)
 
 
-class OrganisationalUnit(models.Model):
+class Organisation(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

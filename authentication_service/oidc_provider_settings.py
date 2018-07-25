@@ -90,8 +90,6 @@ class CustomScopeClaims(ScopeClaims):
         """
         # Find the Site ID associated with this Client
         site_id = api_helpers.get_site_for_client(self.client.id)
-        # Make sure we have a UserSite entry, otherwise create one.
-        UserSite.objects.get_or_create({}, user=self.user, site_id=site_id)
 
         LOGGER.debug("Looking up site {} data for user {}".format(
             self.client.client_id, self.user))

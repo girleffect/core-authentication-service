@@ -1,4 +1,4 @@
-FROM praekeltfoundation/django-bootstrap:py3
+FROM praekeltfoundation/django-bootstrap:py3.6
 
 ARG EXTRA_DEPS
 
@@ -20,7 +20,6 @@ COPY . /app/
 
 RUN pip install -e .
 
-RUN BUILDER="true" django-admin collectstatic --noinput
 RUN BUILDER="true" python manage.py compilemessages
 
 EXPOSE 8000

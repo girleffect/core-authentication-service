@@ -160,10 +160,11 @@ class TestRedirectManagementMiddleware(TestCase):
             reverse(
                 "registration"
             ) + "?client_id=client_id_1&" \
-            "redirect_uri=http%3A%2F%2Fexample.com%2F"
+            "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
         )
         self.assertEquals(
-            response.context["ge_global_redirect_uri"], "http://example.com/"
+            response.context["ge_global_redirect_uri"], "http://example.com/",
         )
         self.assertEquals(
             response.context["ge_global_client_name"], self.client_obj.name
@@ -171,7 +172,8 @@ class TestRedirectManagementMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            )
+            ),
+            follow=True
         )
         self.assertEquals(
             response.context["ge_global_redirect_uri"], None
@@ -245,7 +247,8 @@ class TestRedirectManagementMiddleware(TestCase):
             reverse(
                 "registration"
             ) + "?response_type=code&scope=openid&client_id=client_id_1&"
-                "redirect_uri=http%3A%2F%2Fexample.com%2F"
+                "redirect_uri=http%3A%2F%2Fexample.com%2F",
+            follow=True
         )
         self.assertEquals(
             response.context["ge_global_redirect_uri"], "http://example.com/"
@@ -344,7 +347,8 @@ class TestThemeMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?theme=ninyampinga"
+            ) + "?theme=ninyampinga",
+            follow=True
         )
         self.assertEquals(
             self.client.session[
@@ -364,7 +368,8 @@ class TestThemeMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "edit_profile"
-            ) + "?theme=zathu"
+            ) + "?theme=zathu",
+            follow=True
         )
         self.assertEquals(
             self.client.session[
@@ -413,12 +418,14 @@ class TestThemeMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?theme=ninyampinga"
+            ) + "?theme=ninyampinga",
+            follow=True
         )
         response = self.client.get(
             reverse(
                 "registration"
-            )
+            ),
+            follow=True
         )
         self.assertEquals(
             self.client.session.get(
@@ -463,12 +470,14 @@ class TestThemeMiddleware(TestCase):
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?theme=ninyampinga"
+            ) + "?theme=ninyampinga",
+            follow=True
         )
         response = self.client.get(
             reverse(
                 "registration"
-            ) + "?theme=springster"
+            ) + "?theme=springster",
+            follow=True
         )
         self.assertEquals(
             self.client.session[

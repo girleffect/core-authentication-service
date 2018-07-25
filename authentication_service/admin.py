@@ -1,16 +1,30 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.forms import UserCreationForm
 
 from authentication_service import models
 
 
+class ExtendedCreationForm(UserCreationForm):
+    fields = ("username", "birth_date", "email", "msisdn", "organisation")
+
+
 @admin.register(models.CoreUser)
 class CoreUserAdmin(UserAdmin):
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ("Additional required fields", {
+            "fields": ("birth_date",),
+        }),
+        ("Additional fields", {
+            "fields": ("email", "msisdn", "organisation"),
+        }),
+    )
+    add_form = ExtendedCreationForm
     fieldsets = UserAdmin.fieldsets + (
         ("Extra data",
             {"fields": (
                 "nickname", "msisdn", "birth_date", "country", "avatar",
-                "email_verified", "msisdn_verified", "organisational_unit"
+                "email_verified", "msisdn_verified", "organisation"
             )}
         ),
     )
@@ -38,5 +52,5 @@ admin.site.register(models.Country, admin.ModelAdmin)
 admin.site.register(models.UserSecurityQuestion, admin.ModelAdmin)
 admin.site.register(models.SecurityQuestion, SecurityQuestionForm)
 admin.site.register(models.QuestionLanguageText, admin.ModelAdmin)
-admin.site.register(models.OrganisationalUnit, admin.ModelAdmin)
+admin.site.register(models.Organisation, admin.ModelAdmin)
 admin.site.register(models.UserSite, UserSiteAdmin)

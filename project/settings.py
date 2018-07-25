@@ -16,7 +16,7 @@ env = Env()
 # Project Settings
 HIDE_FIELDS = {
     "global_enable": True,
-    "global_fields": ["email", "birth_date", "avatar", "nickname"]
+    "global_fields": ["email", "birth_date", "nickname"]
 }
 
 # Django Settings
@@ -27,8 +27,13 @@ SESSION_COOKIE_AGE = 86400
 
 AUTH_USER_MODEL = "authentication_service.CoreUser"
 
-STATIC_URL = "/static/"
-STATIC_ROOT = "/app/static"
+
+# Defaults are for S3 and CloudFront usage
+STATIC_URL = env.str("STATIC_URL", "/static/")
+STATIC_ROOT = env.str("STATIC_ROOT", "/static")
+
+MEDIA_URL = env.str("MEDIA_URL", "/media/")
+MEDIA_ROOT = env.str("MEDIA_ROOT", "/media")
 
 LOCALE_PATHS = [
     "locale"
@@ -36,7 +41,24 @@ LOCALE_PATHS = [
 
 LANGUAGE_CODE = "en"
 
-LANGUAGES = global_settings.LANGUAGES + [
+# We explicitly exclude language variants.
+EXCLUDED_LANGUAGE_CODES = {
+    "en-au",
+    "en-gb",
+    "es-ar",
+    "es-co",
+    "es-mx",
+    "es-ni",
+    "es-ve",
+    "pt-br",
+    "sr-latn",
+    "zh-hans",
+    "zh-hant",
+}
+
+LANGUAGES = [
+    language for language in global_settings.LANGUAGES if language[0] not in EXCLUDED_LANGUAGE_CODES
+] + [
     ("tl", _("Tagalog")),
     ("rw", _("Kinyarwanda")),
     ("ha", _("Hausa")),
@@ -134,7 +156,10 @@ ADDITIONAL_APPS = [
     "corsheaders",
 
     # Sentry
-    "raven.contrib.django.raven_compat"
+    "raven.contrib.django.raven_compat",
+
+    # File storage
+    "storages",
 ]
 
 # Project app has to be first in the list.
@@ -191,7 +216,12 @@ CORS_ORIGIN_WHITELIST = [
     "localhost:8000", "127.0.0.1:8000",  # Development: Management Layer UI
     "localhost:3000", "127.0.0.1:3000",  # Development: Management Portal
     "core-management-layer:8000", "core-management-portal:3000",  # Demo environment
+
 ]
+if env.bool("USE_DEFAULT_STORAGE", True) is False:
+    # CloudFront domain
+    CORS_ORIGIN_WHITELIST.append(env.str("AWS_S3_CUSTOM_DOMAIN"))
+
 CORS_ORIGIN_ALLOW_ALL = False  # Setting this to true will cause CORS_ORIGIN_WHITELIST to be ignored
 CORS_ALLOW_CREDENTIALS = True  # Allow CORS requests to send cookies along
 CORS_ALLOW_HEADERS = default_headers + (
@@ -234,6 +264,7 @@ MAX_LISTING_LIMIT = 100
 MIN_LISTING_LIMIT = 1
 DEFAULT_LISTING_OFFSET = 0
 
+LOG_LEVEL = env.str("LOG_LEVEL", "info").upper()
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
@@ -256,9 +287,9 @@ LOGGING = {
         }
     },
     "loggers": {
-        "root": {
+        "": {
             "level": "WARNING",
-            "handlers": ["sentry"],
+            "handlers": ["sentry", "console"],
         },
         "django.db.backends": {
             "level": "ERROR",
@@ -280,6 +311,12 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": False,
         },
+        "authentication_service": {
+            "level": LOG_LEVEL,
+            "handlers": ["console", "sentry"],
+            # required to avoid double logging with root logger
+            "propagate": False,
+        }
     },
 }
 
@@ -291,21 +328,17 @@ RAVEN_CONFIG = {
 # EXTRA SETTINGS LOGIC #
 ########################
 
-# NOTE: Logic to reduce duplication of uneeded env vars for certain uses of
-# docker image.
-IS_WORKER = env.str("CELERY_APP", None) == "project"
-if IS_WORKER:
-    # Email settings
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
-    EMAIL_HOST_USER = env.str("EMAIL_USER", "")
-    EMAIL_HOST_PASSWORD = env.str("EMAIL_PASSWORD", "")
-    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", False)
-    EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", False)
-    EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", None)
+# Email settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
+EMAIL_HOST_USER = env.str("EMAIL_USER", "")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_PASSWORD", "")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", False)
+EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", False)
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", None)
 
-# NOTE: Celery workers do not currently require the apis either.
-if not any([IS_WORKER, env.bool("BUILDER", False)]):
+if not env.bool("BUILDER", False):
+    # Celery workers now require the Access Control API.
     # GE API settings and setup
     ALLOWED_API_KEYS = env.list("ALLOWED_API_KEYS")
     USER_DATA_STORE_API_URL = env.str("USER_DATA_STORE_API")
@@ -313,7 +346,7 @@ if not any([IS_WORKER, env.bool("BUILDER", False)]):
     ACCESS_CONTROL_API_URL = env.str("ACCESS_CONTROL_API")
     ACCESS_CONTROL_API_KEY = env.str("ACCESS_CONTROL_API_KEY")
 
-    ## Setup API clients
+    # Setup API clients
     config = user_data_store.configuration.Configuration()
     config.host = USER_DATA_STORE_API_URL
     USER_DATA_STORE_API = user_data_store.api.UserDataApi(
@@ -362,3 +395,49 @@ if DEBUG:
 
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+
+# STORAGE
+# Unless env.USE_DEFAULT_STORAGE is set to false, this service will make use of
+# the default storage backend and settings.
+if env.bool("USE_DEFAULT_STORAGE", True) is False:
+    # Storage
+    DEFAULT_FILE_STORAGE = "project.settings.FileStorage"
+
+    # Allow collectstatic to automatically put static files in the bucket
+    STATICFILES_STORAGE = "project.settings.StaticStorage"
+
+    # CloudFront domain
+    AWS_S3_CUSTOM_DOMAIN = env.str("AWS_S3_CUSTOM_DOMAIN")
+
+    AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME")
+
+    # Optional file paramaters
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=360",
+    }
+    # Create separate backends to prevent file overriding when saving to static
+    # and media.
+    # backends/s3boto3.py l:194; location = setting('AWS_LOCATION', '')
+    from storages.backends.s3boto3 import S3Boto3Storage
+    class FileStorage(S3Boto3Storage):
+        location = "/"
+
+    class StaticStorage(S3Boto3Storage):
+        location = STATIC_ROOT
+
+    class MediaStorage(S3Boto3Storage):
+        """
+        Media should not be on the bucket root. Means storage needs to be defined
+        one each FileField.
+        """
+        location = MEDIA_ROOT
+else:
+    from django.core.files.storage import FileSystemStorage
+    class MediaStorage(FileSystemStorage):
+        """
+        Due to MediaStorage needing to be used explicitly, it needs to be set
+        for DefaultStorage as well.
+        """
+        location = MEDIA_ROOT

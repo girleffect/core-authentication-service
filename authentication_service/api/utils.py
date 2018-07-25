@@ -45,25 +45,7 @@ def login_required_no_redirect(view_func):
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return view_func(request, *args, **kwargs)
-
-        if "HTTP_AUTHORIZATION" in request.META:
-            auth = request.META["HTTP_AUTHORIZATION"].split()
-            if len(auth) == 2:
-                # NOTE: We only support basic authentication for now.
-                if auth[0].lower() == "basic":
-                    base_val = base64.b64decode(auth[1])
-                    if sys.version_info[0] > 2:
-                        uname, passwd = base_val.split(b":")
-                    else:
-                        uname, passwd = base_val.split(":")
-                    user = authenticate(username=uname, password=passwd)
-                    if user and user.is_active:
-                        login(request, user)
-                        request.user = user
-                        return view_func(request, *args, **kwargs)
-
+        # For API calls, the only authentication mechanism allowed is the API key
         if "HTTP_X_API_KEY" in request.META:
             key = request.META["HTTP_X_API_KEY"]
             if key in settings.ALLOWED_API_KEYS:

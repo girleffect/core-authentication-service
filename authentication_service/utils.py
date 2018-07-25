@@ -131,6 +131,9 @@ def to_dict_with_custom_fields(instance, custom_fields):
                 result[field.name] = instance.logo.path if instance.logo else None
             elif field.name == "country":  # User field
                 result[field.name] = instance.country.code if instance.country else None
+            elif field.name == "organisation":  # User field
+                result["organisation_id"] = \
+                    instance.organisation.id if instance.organisation else None
             else:
                 result[field.name] = getattr(instance, field.name)
     return result
