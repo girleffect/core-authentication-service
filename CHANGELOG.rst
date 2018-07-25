@@ -1,8 +1,8 @@
 Changelog
 =========
 
-next
-----
+1.2.1
+-----
 #. feature/GE-1100: Prevent users younger than 13 from registering an account or reducing age via edit profile
 #. Reworked themes, reduce templates, update styles
 #. feature/GE-1128: Translation tag updates, reduce HTML and CSS elements in blocktrans blocks and trans tags. Reworked some python strings to not include none string characters where possible.
