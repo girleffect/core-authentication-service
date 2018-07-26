@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block title %}
     <h1>{{ error }}</h1>
+{% endblock %}
+
+{% block content %}
     <p>{{ message }}</p>
+    {% if links %}
+        {% for link in links %}
+            {% if link.href and link.text %}
+                <a href="{{ link.href }}">{{ link.text }}</a>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 {% endblock %}

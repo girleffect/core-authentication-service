@@ -133,12 +133,16 @@ class SiteInactiveMiddleware(MiddlewareMixin):
                 return authorize
             site_is_active = api_helpers.is_site_active(authorize.client)
             if not site_is_active:
+                referer = request.META.get("HTTP_REFERER", None)
                 return render(
                     request,
                     "authentication_service/redirect_middleware_error.html",
                     {
                         "error": _("Site access disabled"),
-                        "message": _("The site you are trying to log in to has been disabled.")
+                        "message": _("The site you are trying to log in to has been disabled."),
+                        "links": [
+                            {"text": _("Back to site"), "href": f"{referer}"}
+                        ]
                     },
                     status=403
                 )
