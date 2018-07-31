@@ -1063,6 +1063,7 @@ paths:
           name: data
           schema:
             $ref: '#/definitions/request_user_deletion'
+          required: true
       produces:
         - application/json
       responses:

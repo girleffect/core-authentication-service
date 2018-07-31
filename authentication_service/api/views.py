@@ -1686,6 +1686,7 @@ class __SWAGGER_SPEC__(View):
                     {
                         "in": "body",
                         "name": "data",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/request_user_deletion",
                             "x-scope": [
