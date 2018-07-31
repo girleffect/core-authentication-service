@@ -1058,6 +1058,10 @@ paths:
                 format: uuid
               reason:
                 type: string
+            required:
+              - user_id
+              - deleter_id
+              - reason
       produces:
         - application/json
       responses:

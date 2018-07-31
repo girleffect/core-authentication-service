@@ -563,6 +563,11 @@ class RequestUserDeletion(View):
             "type": "string"
         }
     },
+    "required": [
+        "user_id",
+        "deleter_id",
+        "reason"
+    ],
     "type": "object"
 }""")
 
@@ -1694,6 +1699,11 @@ class __SWAGGER_SPEC__(View):
                                     "type": "string"
                                 }
                             },
+                            "required": [
+                                "user_id",
+                                "deleter_id",
+                                "reason"
+                            ],
                             "type": "object"
                         }
                     }
