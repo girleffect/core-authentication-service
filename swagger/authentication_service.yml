@@ -335,6 +335,7 @@ definitions:
       - created_at
       - updated_at
 
+
 #  Token:
 #    description: |
 #      Successful token response
@@ -1035,6 +1036,33 @@ paths:
           description: 'Began task to purge invitations.'
         403:
           description: 'Forbidden'
+      tags:
+        - authentication
+
+  /request_user_deletion:
+    post:
+      operationId: request_user_deletion
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          schema:
+            type: object
+            properties:
+              user_id:
+                type: string
+                format: uuid
+              deleter_id:
+                type: string
+                format: uuid
+              reason:
+                type: string
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
       tags:
         - authentication
 

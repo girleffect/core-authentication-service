@@ -545,6 +545,57 @@ class OrganisationsOrganisationId(View):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="post")
+class RequestUserDeletion(View):
+
+    POST_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
+    POST_BODY_SCHEMA = json.loads("""{
+    "properties": {
+        "deleter_id": {
+            "format": "uuid",
+            "type": "string"
+        },
+        "reason": {
+            "type": "string"
+        },
+        "user_id": {
+            "format": "uuid",
+            "type": "string"
+        }
+    },
+    "type": "object"
+}""")
+
+    def post(self, request, *args, **kwargs):
+        """
+        :param self: A RequestUserDeletion instance
+        :param request: An HttpRequest
+        """
+        body = utils.body_to_dict(request.body, self.POST_BODY_SCHEMA)
+        if not body:
+            return HttpResponseBadRequest("Body required")
+
+        result = Stubs.request_user_deletion(request, body, )
+
+        if type(result) is tuple:
+            result, headers = result
+        else:
+            headers = {}
+
+        # The result may contain fields with date or datetime values that will not
+        # pass JSON validation. We first create the response, and then maybe validate
+        # the response content against the schema.
+        response = JsonResponse(result, safe=False)
+
+        maybe_validate_result(response.content, self.POST_RESPONSE_SCHEMA)
+
+        for key, val in headers.items():
+            response[key] = val
+
+        return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
 @method_decorator(utils.login_required_no_redirect, name="get")
 class Users(View):
 
@@ -1612,6 +1663,47 @@ class __SWAGGER_SPEC__(View):
                                 ""
                             ]
                         }
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            }
+        },
+        "/request_user_deletion": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "operationId": "request_user_deletion",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "data",
+                        "schema": {
+                            "properties": {
+                                "deleter_id": {
+                                    "format": "uuid",
+                                    "type": "string"
+                                },
+                                "reason": {
+                                    "type": "string"
+                                },
+                                "user_id": {
+                                    "format": "uuid",
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
                     }
                 },
                 "tags": [

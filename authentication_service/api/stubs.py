@@ -140,6 +140,16 @@ class AbstractStubClass(object):
         """
         raise NotImplementedError()
 
+    # request_user_deletion -- Synchronisation point for meld
+    @staticmethod
+    def request_user_deletion(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        raise NotImplementedError()
+
     # user_list -- Synchronisation point for meld
     @staticmethod
     def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisation_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisation=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
@@ -544,6 +554,22 @@ class MockedStubClass(AbstractStubClass):
         :type organisation_id: integer
         """
         response_schema = schemas.organisation
+        if "type" not in response_schema:
+            response_schema["type"] = "object"
+
+        if response_schema["type"] == "array" and "type" not in response_schema["items"]:
+            response_schema["items"]["type"] = "object"
+
+        return MockedStubClass.GENERATOR.random_value(response_schema)
+
+    @staticmethod
+    def request_user_deletion(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        response_schema = schemas.__UNSPECIFIED__
         if "type" not in response_schema:
             response_schema["type"] = "object"
 

@@ -11,6 +11,7 @@ import authentication_service.api.views as views
 urlpatterns = [
     url(r"^users/(?P<user_id>.+)$", views.UsersUserId.as_view()),
     url(r"^users$", views.Users.as_view()),
+    url(r"^request_user_deletion$", views.RequestUserDeletion.as_view()),
     url(r"^organisations/(?P<organisation_id>.+)$", views.OrganisationsOrganisationId.as_view()),
     url(r"^organisations$", views.Organisations.as_view()),
     url(r"^invitations/purge_expired$", views.InvitationsPurgeExpired.as_view()),
