@@ -334,7 +334,21 @@ definitions:
       - consented_at
       - created_at
       - updated_at
-
+  request_user_deletion:
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: uuid
+      deleter_id:
+        type: string
+        format: uuid
+      reason:
+        type: string
+    required:
+      - user_id
+      - deleter_id
+      - reason
 
 #  Token:
 #    description: |
@@ -1048,20 +1062,7 @@ paths:
         - in: body
           name: data
           schema:
-            type: object
-            properties:
-              user_id:
-                type: string
-                format: uuid
-              deleter_id:
-                type: string
-                format: uuid
-              reason:
-                type: string
-            required:
-              - user_id
-              - deleter_id
-              - reason
+            $ref: '#/definitions/request_user_deletion'
       produces:
         - application/json
       responses:

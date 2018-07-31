@@ -161,6 +161,30 @@ organisation_update = json.loads("""
 }
 """)
 
+request_user_deletion = json.loads("""
+{
+    "properties": {
+        "deleter_id": {
+            "format": "uuid",
+            "type": "string"
+        },
+        "reason": {
+            "type": "string"
+        },
+        "user_id": {
+            "format": "uuid",
+            "type": "string"
+        }
+    },
+    "required": [
+        "user_id",
+        "deleter_id",
+        "reason"
+    ],
+    "type": "object"
+}
+""")
+
 user = json.loads("""
 {
     "properties": {

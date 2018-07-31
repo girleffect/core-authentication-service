@@ -549,27 +549,7 @@ class OrganisationsOrganisationId(View):
 class RequestUserDeletion(View):
 
     POST_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
-    POST_BODY_SCHEMA = json.loads("""{
-    "properties": {
-        "deleter_id": {
-            "format": "uuid",
-            "type": "string"
-        },
-        "reason": {
-            "type": "string"
-        },
-        "user_id": {
-            "format": "uuid",
-            "type": "string"
-        }
-    },
-    "required": [
-        "user_id",
-        "deleter_id",
-        "reason"
-    ],
-    "type": "object"
-}""")
+    POST_BODY_SCHEMA = schemas.request_user_deletion
 
     def post(self, request, *args, **kwargs):
         """
@@ -1012,6 +992,27 @@ class __SWAGGER_SPEC__(View):
                     "type": "string"
                 }
             },
+            "type": "object"
+        },
+        "request_user_deletion": {
+            "properties": {
+                "deleter_id": {
+                    "format": "uuid",
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "format": "uuid",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "user_id",
+                "deleter_id",
+                "reason"
+            ],
             "type": "object"
         },
         "user": {
@@ -1686,25 +1687,10 @@ class __SWAGGER_SPEC__(View):
                         "in": "body",
                         "name": "data",
                         "schema": {
-                            "properties": {
-                                "deleter_id": {
-                                    "format": "uuid",
-                                    "type": "string"
-                                },
-                                "reason": {
-                                    "type": "string"
-                                },
-                                "user_id": {
-                                    "format": "uuid",
-                                    "type": "string"
-                                }
-                            },
-                            "required": [
-                                "user_id",
-                                "deleter_id",
-                                "reason"
-                            ],
-                            "type": "object"
+                            "$ref": "#/definitions/request_user_deletion",
+                            "x-scope": [
+                                ""
+                            ]
                         }
                     }
                 ],
