@@ -175,6 +175,20 @@ class Implementation(AbstractStubClass):
 
         return {}
 
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: (optional) An optional cutoff date to purge invites before this date
+        :type cutoff_date: string
+        """
+        if cutoff_date is None:
+            cutoff_date = str(datetime.datetime.now().date())
+        tasks.purge_expired_invitations.apply_async(
+            cutoff_date=cutoff_date
+        )
+        return
+
     # organisation_list -- Synchronisation point for meld
     @staticmethod
     def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
@@ -271,6 +285,16 @@ class Implementation(AbstractStubClass):
         organisation.save()
         result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
         return strip_empty_optional_fields(result)
+
+    # request_user_deletion -- Synchronisation point for meld
+    @staticmethod
+    def request_user_deletion(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        raise NotImplementedError()
 
     # user_list -- Synchronisation point for meld
     @staticmethod
@@ -461,17 +485,3 @@ class Implementation(AbstractStubClass):
         instance.save()
         result = to_dict_with_custom_fields(instance, USER_VALUES)
         return strip_empty_optional_fields(result)
-
-    @staticmethod
-    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
-        """
-        :param request: An HttpRequest
-        :param cutoff_date: An optional cutoff date to purge invites before this date
-        :type cutoff_date: date
-        """
-        if cutoff_date is None:
-            cutoff_date = str(datetime.datetime.now().date())
-        tasks.purge_expired_invitations.apply_async(
-            cutoff_date=cutoff_date
-        )
-        return
