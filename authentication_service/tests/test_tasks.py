@@ -173,7 +173,7 @@ class SendInvitationMail(TestCase):
 
 class PurgeExpiredInvitations(TestCase):
 
-    @override_settings(AC_OPERTAIONAL_API=MagicMock(
+    @override_settings(AC_OPERATIONAL_API=MagicMock(
         purge_expired_invitations=MagicMock(return_value={
             "amount": 4
         }))
@@ -183,3 +183,32 @@ class PurgeExpiredInvitations(TestCase):
             cutoff_date=str(datetime.datetime.now().date())
         )
         self.assertEqual(result["amount"], 4)
+
+
+class DeleteUserAndData(TestCase):
+
+    @override_settings(
+        AC_OPERATIONAL_API=MagicMock(
+            delete_user_data=MagicMock(return_value={"amount": 10})
+        ),
+        DATA_STORE_API=MagicMock(
+            deleteduser_create=MagicMock(return_value={}),
+            deleteduser_update=MagicMock(return_value={}),
+            deletedusersite_update=MagicMock(return_value={}),
+            delete_user_data=MagicMock(return_value={"amount": 5})
+        )
+    )
+    def test_purge_expired_invitation_task(self):
+        with self.assertLogs(level=logging.DEBUG) as logger:
+            result = tasks.delete_user_and_data_task(
+                user_id=str(uuid.uuid4()),
+                deleter_id=str(uuid.uuid4()),
+                reason="Because this is a test"
+        )
+
+        self.assertEquals(
+            logger.output, [
+                "5 rows deleted from User Data Store",
+                "10  rows deleted from Access Control"
+            ])
+

@@ -1,6 +1,7 @@
 import logging
 import typing
 import uuid
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -11,10 +12,11 @@ from django.utils import timezone, translation
 from django.utils.html import strip_tags
 from django.utils.http import urlencode
 from django.utils.translation import ugettext as _
+from oidc_provider.models import Token, Code, UserConsent
 
 from celery.task import task
 
-from authentication_service.models import CoreUser, Organisation
+from authentication_service.models import CoreUser, Organisation, UserSite
 
 logger = logging.getLogger(__name__)
 
@@ -182,3 +184,69 @@ def purge_expired_invitations(cutoff_date):
         cutoff_date=cutoff_date
     )
 
+
+@task(name="delete_user_and_data_task")
+def delete_user_and_data_task(user_id, deleter_id, reason):
+    """
+    A task to clean up user-related data on the core components and remove
+    the specified user profile itself.
+    We keep track of deleted users (see the architecture documentation for the reasons)
+    as the sites that they have visited.
+    https://praekeltorg.atlassian.net/wiki/spaces/GECI/pages/477266059/Detailed+Architectural+Design#DetailedArchitecturalDesign-DeletionofUserData
+
+    :param user_id: The user to delete.
+    :param deleter_id: The user requesting the deletion.
+    :param reason: The reason for the deletion.
+    """
+    user_data_store_api = settings.USER_DATA_STORE_API
+    operational_api = settings.AC_OPERATIONAL_API
+
+    try:
+        user = CoreUser.objects.get(id=user_id)
+
+        # Disable user
+        user.is_active = False
+        user.save()
+
+        # Create DeletedUser entry
+        user_data_store_api.deleteduser_create(
+            data={
+                "id": user.id,
+                "deleter_id": deleter_id,
+                "reason": reason
+            })
+
+        # Create DeletedSite entries
+        for user_site in UserSite.objects.filter(user_id=user_id):
+            user_data_store_api.deletedusersite_create(
+                data={
+                    "deleted_user_id": user_id,
+                    "site_id": user_site.site.id,
+                }
+            )
+        # Delete tokens
+        Token.objects.filter(user_id=user_id).delete()
+
+        # Delete consent
+        UserConsent.objects.filter(user_id=user_id).delete()
+
+        # Delete code
+        Code.objects.filter(user_id=user_id).delete()
+
+        # Delete UserSite entries
+        UserSite.objects.filter(user_id=user_id).delete()
+
+        # Delete User Data Store data
+        result = user_data_store_api.delete_user_date(user_id)
+        logger.debug(f"{result['amount']} rows deleted from User Data Store")
+
+        # Delete Access Control data
+        result = operational_api.delete_user_data(user_id)
+        logger.debug(f"{result['amount']} rows deleted from Access Control")
+
+        # Set the "deleted_at" value of the DeletedUser entity
+        user_data_store_api.deleteduser_update(
+            user_id, data={"deleted_at": datetime.utcnow()}
+        )
+    except CoreUser.DoesNotExist:
+        logger.info(f"User {user_id} cannot be deleted because it does not exist.")

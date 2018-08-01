@@ -524,6 +524,1075 @@ class UserDataApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
+    def deleteduser_create(self, **kwargs):  # noqa: E501
+        """deleteduser_create  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_create(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param DeletedUserCreate data:
+        :return: DeletedUser
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deleteduser_create_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.deleteduser_create_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def deleteduser_create_with_http_info(self, **kwargs):  # noqa: E501
+        """deleteduser_create  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_create_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param DeletedUserCreate data:
+        :return: DeletedUser
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['data']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deleteduser_create" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'data' in params:
+            body_params = params['data']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deleteduser', 'POST',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletedUser',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deleteduser_delete(self, user_id, **kwargs):  # noqa: E501
+        """deleteduser_delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_delete(user_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :return: None
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deleteduser_delete_with_http_info(user_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deleteduser_delete_with_http_info(user_id, **kwargs)  # noqa: E501
+            return data
+
+    def deleteduser_delete_with_http_info(self, user_id, **kwargs):  # noqa: E501
+        """deleteduser_delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_delete_with_http_info(user_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :return: None
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['user_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deleteduser_delete" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'user_id' is set
+        if ('user_id' not in params or
+                params['user_id'] is None):
+            raise ValueError("Missing the required parameter `user_id` when calling `deleteduser_delete`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'user_id' in params:
+            path_params['user_id'] = params['user_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deleteduser/{user_id}', 'DELETE',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type=None,  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deleteduser_list(self, **kwargs):  # noqa: E501
+        """deleteduser_list  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_list(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int offset: An optional query parameter specifying the offset in the result set to start from.
+        :param int limit: An optional query parameter to limit the number of results returned.
+        :param str deleter_id: An optional query parameter to filter by deleter_id
+        :return: list[DeletedUser]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deleteduser_list_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.deleteduser_list_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def deleteduser_list_with_http_info(self, **kwargs):  # noqa: E501
+        """deleteduser_list  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_list_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int offset: An optional query parameter specifying the offset in the result set to start from.
+        :param int limit: An optional query parameter to limit the number of results returned.
+        :param str deleter_id: An optional query parameter to filter by deleter_id
+        :return: list[DeletedUser]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['offset', 'limit', 'deleter_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deleteduser_list" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        if 'offset' in params and params['offset'] < 0:  # noqa: E501
+            raise ValueError("Invalid value for parameter `offset` when calling `deleteduser_list`, must be a value greater than or equal to `0`")  # noqa: E501
+        if 'limit' in params and params['limit'] > 100:  # noqa: E501
+            raise ValueError("Invalid value for parameter `limit` when calling `deleteduser_list`, must be a value less than or equal to `100`")  # noqa: E501
+        if 'limit' in params and params['limit'] < 1:  # noqa: E501
+            raise ValueError("Invalid value for parameter `limit` when calling `deleteduser_list`, must be a value greater than or equal to `1`")  # noqa: E501
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'offset' in params:
+            query_params.append(('offset', params['offset']))  # noqa: E501
+        if 'limit' in params:
+            query_params.append(('limit', params['limit']))  # noqa: E501
+        if 'deleter_id' in params:
+            query_params.append(('deleter_id', params['deleter_id']))  # noqa: E501
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deleteduser', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[DeletedUser]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deleteduser_read(self, user_id, **kwargs):  # noqa: E501
+        """deleteduser_read  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_read(user_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :return: DeletedUser
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deleteduser_read_with_http_info(user_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deleteduser_read_with_http_info(user_id, **kwargs)  # noqa: E501
+            return data
+
+    def deleteduser_read_with_http_info(self, user_id, **kwargs):  # noqa: E501
+        """deleteduser_read  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_read_with_http_info(user_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :return: DeletedUser
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['user_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deleteduser_read" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'user_id' is set
+        if ('user_id' not in params or
+                params['user_id'] is None):
+            raise ValueError("Missing the required parameter `user_id` when calling `deleteduser_read`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'user_id' in params:
+            path_params['user_id'] = params['user_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deleteduser/{user_id}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletedUser',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deleteduser_update(self, user_id, **kwargs):  # noqa: E501
+        """deleteduser_update  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_update(user_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :param DeletedUserUpdate data:
+        :return: DeletedUser
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deleteduser_update_with_http_info(user_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deleteduser_update_with_http_info(user_id, **kwargs)  # noqa: E501
+            return data
+
+    def deleteduser_update_with_http_info(self, user_id, **kwargs):  # noqa: E501
+        """deleteduser_update  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deleteduser_update_with_http_info(user_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :param DeletedUserUpdate data:
+        :return: DeletedUser
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['user_id', 'data']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deleteduser_update" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'user_id' is set
+        if ('user_id' not in params or
+                params['user_id'] is None):
+            raise ValueError("Missing the required parameter `user_id` when calling `deleteduser_update`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'user_id' in params:
+            path_params['user_id'] = params['user_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'data' in params:
+            body_params = params['data']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deleteduser/{user_id}', 'PUT',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletedUser',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletedusersite_create(self, **kwargs):  # noqa: E501
+        """deletedusersite_create  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_create(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param DeletedUserSiteCreate data:
+        :return: DeletedUserSite
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletedusersite_create_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.deletedusersite_create_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def deletedusersite_create_with_http_info(self, **kwargs):  # noqa: E501
+        """deletedusersite_create  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_create_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param DeletedUserSiteCreate data:
+        :return: DeletedUserSite
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['data']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletedusersite_create" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'data' in params:
+            body_params = params['data']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletedusersite', 'POST',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletedUserSite',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletedusersite_delete(self, user_id, site_id, **kwargs):  # noqa: E501
+        """deletedusersite_delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_delete(user_id, site_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :param int site_id: A unique integer value identifying the site. (required)
+        :return: None
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletedusersite_delete_with_http_info(user_id, site_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deletedusersite_delete_with_http_info(user_id, site_id, **kwargs)  # noqa: E501
+            return data
+
+    def deletedusersite_delete_with_http_info(self, user_id, site_id, **kwargs):  # noqa: E501
+        """deletedusersite_delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_delete_with_http_info(user_id, site_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :param int site_id: A unique integer value identifying the site. (required)
+        :return: None
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['user_id', 'site_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletedusersite_delete" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'user_id' is set
+        if ('user_id' not in params or
+                params['user_id'] is None):
+            raise ValueError("Missing the required parameter `user_id` when calling `deletedusersite_delete`")  # noqa: E501
+        # verify the required parameter 'site_id' is set
+        if ('site_id' not in params or
+                params['site_id'] is None):
+            raise ValueError("Missing the required parameter `site_id` when calling `deletedusersite_delete`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'user_id' in params:
+            path_params['user_id'] = params['user_id']  # noqa: E501
+        if 'site_id' in params:
+            path_params['site_id'] = params['site_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletedusersite/{user_id}/{site_id}', 'DELETE',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type=None,  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletedusersite_list(self, **kwargs):  # noqa: E501
+        """deletedusersite_list  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_list(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int offset: An optional query parameter specifying the offset in the result set to start from.
+        :param int limit: An optional query parameter to limit the number of results returned.
+        :param str user_id: An optional query parameter to filter by user_id
+        :return: list[DeletedUserSite]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletedusersite_list_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.deletedusersite_list_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def deletedusersite_list_with_http_info(self, **kwargs):  # noqa: E501
+        """deletedusersite_list  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_list_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int offset: An optional query parameter specifying the offset in the result set to start from.
+        :param int limit: An optional query parameter to limit the number of results returned.
+        :param str user_id: An optional query parameter to filter by user_id
+        :return: list[DeletedUserSite]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['offset', 'limit', 'user_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletedusersite_list" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        if 'offset' in params and params['offset'] < 0:  # noqa: E501
+            raise ValueError("Invalid value for parameter `offset` when calling `deletedusersite_list`, must be a value greater than or equal to `0`")  # noqa: E501
+        if 'limit' in params and params['limit'] > 100:  # noqa: E501
+            raise ValueError("Invalid value for parameter `limit` when calling `deletedusersite_list`, must be a value less than or equal to `100`")  # noqa: E501
+        if 'limit' in params and params['limit'] < 1:  # noqa: E501
+            raise ValueError("Invalid value for parameter `limit` when calling `deletedusersite_list`, must be a value greater than or equal to `1`")  # noqa: E501
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'offset' in params:
+            query_params.append(('offset', params['offset']))  # noqa: E501
+        if 'limit' in params:
+            query_params.append(('limit', params['limit']))  # noqa: E501
+        if 'user_id' in params:
+            query_params.append(('user_id', params['user_id']))  # noqa: E501
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletedusersite', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[DeletedUserSite]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletedusersite_read(self, user_id, site_id, **kwargs):  # noqa: E501
+        """deletedusersite_read  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_read(user_id, site_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :param int site_id: A unique integer value identifying the site. (required)
+        :return: DeletedUserSite
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletedusersite_read_with_http_info(user_id, site_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deletedusersite_read_with_http_info(user_id, site_id, **kwargs)  # noqa: E501
+            return data
+
+    def deletedusersite_read_with_http_info(self, user_id, site_id, **kwargs):  # noqa: E501
+        """deletedusersite_read  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_read_with_http_info(user_id, site_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :param int site_id: A unique integer value identifying the site. (required)
+        :return: DeletedUserSite
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['user_id', 'site_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletedusersite_read" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'user_id' is set
+        if ('user_id' not in params or
+                params['user_id'] is None):
+            raise ValueError("Missing the required parameter `user_id` when calling `deletedusersite_read`")  # noqa: E501
+        # verify the required parameter 'site_id' is set
+        if ('site_id' not in params or
+                params['site_id'] is None):
+            raise ValueError("Missing the required parameter `site_id` when calling `deletedusersite_read`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'user_id' in params:
+            path_params['user_id'] = params['user_id']  # noqa: E501
+        if 'site_id' in params:
+            path_params['site_id'] = params['site_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletedusersite/{user_id}/{site_id}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletedUserSite',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletedusersite_update(self, user_id, site_id, **kwargs):  # noqa: E501
+        """deletedusersite_update  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_update(user_id, site_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :param int site_id: A unique integer value identifying the site. (required)
+        :param DeletedUserSiteUpdate data:
+        :return: DeletedUserSite
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletedusersite_update_with_http_info(user_id, site_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deletedusersite_update_with_http_info(user_id, site_id, **kwargs)  # noqa: E501
+            return data
+
+    def deletedusersite_update_with_http_info(self, user_id, site_id, **kwargs):  # noqa: E501
+        """deletedusersite_update  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletedusersite_update_with_http_info(user_id, site_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param str user_id: A UUID value identifying the user. (required)
+        :param int site_id: A unique integer value identifying the site. (required)
+        :param DeletedUserSiteUpdate data:
+        :return: DeletedUserSite
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['user_id', 'site_id', 'data']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletedusersite_update" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'user_id' is set
+        if ('user_id' not in params or
+                params['user_id'] is None):
+            raise ValueError("Missing the required parameter `user_id` when calling `deletedusersite_update`")  # noqa: E501
+        # verify the required parameter 'site_id' is set
+        if ('site_id' not in params or
+                params['site_id'] is None):
+            raise ValueError("Missing the required parameter `site_id` when calling `deletedusersite_update`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'user_id' in params:
+            path_params['user_id'] = params['user_id']  # noqa: E501
+        if 'site_id' in params:
+            path_params['site_id'] = params['site_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'data' in params:
+            body_params = params['data']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletedusersite/{user_id}/{site_id}', 'PUT',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletedUserSite',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def healthcheck(self, **kwargs):  # noqa: E501
+        """healthcheck  # noqa: E501
+
+        Get the status of the service.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.healthcheck(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :return: HealthInfo
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.healthcheck_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.healthcheck_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def healthcheck_with_http_info(self, **kwargs):  # noqa: E501
+        """healthcheck  # noqa: E501
+
+        Get the status of the service.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.healthcheck_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :return: HealthInfo
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = []  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method healthcheck" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = []  # noqa: E501
+
+        return self.api_client.call_api(
+            '/healthcheck', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='HealthInfo',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
     def sitedataschema_create(self, **kwargs):  # noqa: E501
         """sitedataschema_create  # noqa: E501
 
