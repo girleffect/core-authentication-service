@@ -180,13 +180,13 @@ def purge_expired_invitations(cutoff_date):
     :param cutoff_date: The cutoff_date for invitations.
     :return:
     """
-    return settings.AC_OPERTAIONAL_API.purge_expired_invitations(
+    return settings.AC_OPERATIONAL_API.purge_expired_invitations(
         cutoff_date=cutoff_date
     )
 
 
 @task(name="delete_user_and_data_task")
-def delete_user_and_data_task(user_id, deleter_id, reason):
+def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason: str):
     """
     A task to clean up user-related data on the core components and remove
     the specified user profile itself.
@@ -201,6 +201,11 @@ def delete_user_and_data_task(user_id, deleter_id, reason):
     user_data_store_api = settings.USER_DATA_STORE_API
     operational_api = settings.AC_OPERATIONAL_API
 
+    # Cast UUIDs to strings, which can be used in both the API calls and
+    # model lookups.
+    user_id = str(user_id)
+    deleter_id = str(deleter_id)
+
     try:
         user = CoreUser.objects.get(id=user_id)
 
@@ -211,7 +216,7 @@ def delete_user_and_data_task(user_id, deleter_id, reason):
         # Create DeletedUser entry
         user_data_store_api.deleteduser_create(
             data={
-                "id": user.id,
+                "id": user_id,
                 "deleter_id": deleter_id,
                 "reason": reason
             })
@@ -237,7 +242,7 @@ def delete_user_and_data_task(user_id, deleter_id, reason):
         UserSite.objects.filter(user_id=user_id).delete()
 
         # Delete User Data Store data
-        result = user_data_store_api.delete_user_date(user_id)
+        result = user_data_store_api.delete_user_data(user_id)
         logger.debug(f"{result['amount']} rows deleted from User Data Store")
 
         # Delete Access Control data
@@ -249,4 +254,4 @@ def delete_user_and_data_task(user_id, deleter_id, reason):
             user_id, data={"deleted_at": datetime.utcnow()}
         )
     except CoreUser.DoesNotExist:
-        logger.info(f"User {user_id} cannot be deleted because it does not exist.")
+        logger.error(f"User {user_id} cannot be deleted because it does not exist.")

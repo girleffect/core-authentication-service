@@ -187,28 +187,72 @@ class PurgeExpiredInvitations(TestCase):
 
 class DeleteUserAndData(TestCase):
 
+    @classmethod
+    def setUpTestData(cls):
+        user_model = get_user_model()
+
+        cls.organisation = Organisation.objects.create(
+            id=1,
+            name=f"test unit",
+            description="Description"
+        )
+
+        cls.deleter = user_model.objects.create(
+            username="deleter",
+            first_name="Del",
+            last_name="Eter",
+            email="deleter@example.com",
+            is_superuser=False,
+            is_staff=False,
+            birth_date=datetime.date(2000, 1, 1)
+        )
+
+        cls.user = user_model.objects.create(
+            username="user",
+            first_name="Us",
+            last_name="Er",
+            email="user@example.com",
+            is_superuser=False,
+            is_staff=False,
+            birth_date=datetime.date(2000, 1, 1)
+        )
+
     @override_settings(
         AC_OPERATIONAL_API=MagicMock(
             delete_user_data=MagicMock(return_value={"amount": 10})
         ),
-        DATA_STORE_API=MagicMock(
+        USER_DATA_STORE_API=MagicMock(
             deleteduser_create=MagicMock(return_value={}),
             deleteduser_update=MagicMock(return_value={}),
             deletedusersite_update=MagicMock(return_value={}),
             delete_user_data=MagicMock(return_value={"amount": 5})
         )
     )
-    def test_purge_expired_invitation_task(self):
+    def test_delete_user_and_data_task(self):
         with self.assertLogs(level=logging.DEBUG) as logger:
-            result = tasks.delete_user_and_data_task(
-                user_id=str(uuid.uuid4()),
-                deleter_id=str(uuid.uuid4()),
+            tasks.delete_user_and_data_task(
+                user_id=self.user.id,
+                deleter_id=self.deleter.id,
                 reason="Because this is a test"
-        )
+            )
 
         self.assertEquals(
             logger.output, [
-                "5 rows deleted from User Data Store",
-                "10  rows deleted from Access Control"
+                "DEBUG:authentication_service.tasks:5 rows deleted from User Data Store",
+                "DEBUG:authentication_service.tasks:10 rows deleted from Access Control"
             ])
 
+    def test_delete_user_and_data_task_nonexistent_user(self):
+        user_id = uuid.uuid4()
+        with self.assertLogs(level=logging.DEBUG) as logger:
+            tasks.delete_user_and_data_task(
+                user_id=user_id,
+                deleter_id=self.deleter.id,
+                reason="Because this is a test"
+            )
+
+        self.assertEquals(
+            logger.output, [
+                f"ERROR:authentication_service.tasks:User {user_id} cannot be deleted "
+                "because it does not exist."
+            ])
