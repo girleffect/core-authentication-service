@@ -222,8 +222,11 @@ class DeleteUserAndData(TestCase):
             delete_user_data=MagicMock(return_value={"amount": 10})
         ),
         USER_DATA_STORE_API=MagicMock(
+            deleteduser_read=MagicMock(return_value=None),
             deleteduser_create=MagicMock(return_value={}),
             deleteduser_update=MagicMock(return_value={}),
+            deletedusersite_read=MagicMock(return_value=None),
+            deletedusersite_create=MagicMock(return_value={}),
             deletedusersite_update=MagicMock(return_value={}),
             delete_user_data=MagicMock(return_value={"amount": 5})
         )
@@ -238,8 +241,8 @@ class DeleteUserAndData(TestCase):
 
         self.assertEquals(
             logger.output, [
+                "DEBUG:authentication_service.tasks:10 rows deleted from Access Control",
                 "DEBUG:authentication_service.tasks:5 rows deleted from User Data Store",
-                "DEBUG:authentication_service.tasks:10 rows deleted from Access Control"
             ])
 
     def test_delete_user_and_data_task_nonexistent_user(self):

@@ -17,6 +17,8 @@ from oidc_provider.models import Token, Code, UserConsent
 from celery.task import task
 
 from authentication_service.models import CoreUser, Organisation, UserSite
+from access_control.rest import ApiException as AccessControlApiException
+from user_data_store.rest import ApiException as UserDataStoreApiException
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +187,12 @@ def purge_expired_invitations(cutoff_date):
     )
 
 
-@task(name="delete_user_and_data_task")
+@task(name="delete_user_and_data_task",
+      default_retry_delay=5 * 60,
+      autoretry_for=(AccessControlApiException, UserDataStoreApiException),
+      retry_backoff=True,
+      retry_backoff_max=600,
+      retry_jitter=True)
 def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason: str):
     """
     A task to clean up user-related data on the core components and remove
@@ -193,6 +200,10 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
     We keep track of deleted users (see the architecture documentation for the reasons)
     as the sites that they have visited.
     https://praekeltorg.atlassian.net/wiki/spaces/GECI/pages/477266059/Detailed+Architectural+Design#DetailedArchitecturalDesign-DeletionofUserData
+
+    IMPORTANT: This function is written so that it is idempotent, i.e. it can be run repeatedly
+    without any unwanted side-effects. The reason is that, should something fail (like an API call),
+    this task can be retried at a later stage.
 
     :param user_id: The user to delete.
     :param deleter_id: The user requesting the deletion.
@@ -212,7 +223,14 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
         # Disable user
         user.is_active = False
         user.save()
+    except CoreUser.DoesNotExist:
+        logger.error(f"User {user_id} cannot be deleted because it does not exist.")
+        return  # Nothing to do
 
+    # Check if this job has been attempted before.
+    deleted_user = user_data_store_api.deleteduser_read(user_id)
+
+    if deleted_user is None:
         # Create DeletedUser entry
         user_data_store_api.deleteduser_create(
             data={
@@ -221,37 +239,42 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
                 "reason": reason
             })
 
-        # Create DeletedSite entries
-        for user_site in UserSite.objects.filter(user_id=user_id):
+    # Create DeletedSite entries
+    for user_site in UserSite.objects.filter(user_id=user_id):
+        deleted_user_site = user_data_store_api.deletedusersite_read(user_id, user_site.site_id)
+
+        if deleted_user_site is None:
             user_data_store_api.deletedusersite_create(
                 data={
                     "deleted_user_id": user_id,
                     "site_id": user_site.site.id,
                 }
             )
-        # Delete tokens
-        Token.objects.filter(user_id=user_id).delete()
 
-        # Delete consent
-        UserConsent.objects.filter(user_id=user_id).delete()
+    # Delete tokens
+    Token.objects.filter(user_id=user_id).delete()
 
-        # Delete code
-        Code.objects.filter(user_id=user_id).delete()
+    # Delete consent
+    UserConsent.objects.filter(user_id=user_id).delete()
 
-        # Delete UserSite entries
-        UserSite.objects.filter(user_id=user_id).delete()
+    # Delete code
+    Code.objects.filter(user_id=user_id).delete()
 
-        # Delete User Data Store data
-        result = user_data_store_api.delete_user_data(user_id)
-        logger.debug(f"{result['amount']} rows deleted from User Data Store")
+    # Delete UserSite entries
+    UserSite.objects.filter(user_id=user_id).delete()
 
-        # Delete Access Control data
-        result = operational_api.delete_user_data(user_id)
-        logger.debug(f"{result['amount']} rows deleted from Access Control")
+    # Delete Access Control data
+    result = operational_api.delete_user_data(user_id)
+    logger.debug(f"{result['amount']} rows deleted from Access Control")
 
-        # Set the "deleted_at" value of the DeletedUser entity
-        user_data_store_api.deleteduser_update(
-            user_id, data={"deleted_at": datetime.utcnow()}
-        )
-    except CoreUser.DoesNotExist:
-        logger.error(f"User {user_id} cannot be deleted because it does not exist.")
+    # Delete User Data Store data and set the "deleted_at" value
+    # of the DeletedUser entity.
+    result = user_data_store_api.delete_user_data(user_id)
+    logger.debug(f"{result['amount']} rows deleted from User Data Store")
+
+    user_data_store_api.deleteduser_update(
+        user_id, data={"deleted_at": datetime.utcnow()}
+    )
+
+    # Finally, delete the user
+    user.delete()
