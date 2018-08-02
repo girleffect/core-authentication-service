@@ -10,13 +10,13 @@ from django.test import override_settings, TestCase
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from oidc_provider.models import Token, UserConsent, Code
 
 from access_control import Invitation
-from authentication_service import tasks
-
+from authentication_service import tasks, models
 
 # TODO we need more test functions, for now only actual use cases are covered.
-from authentication_service.models import Organisation
+from authentication_service.models import Organisation, UserSite, UserSecurityQuestion
 
 
 class SendMailCase(TestCase):
@@ -217,6 +217,12 @@ class DeleteUserAndData(TestCase):
             birth_date=datetime.date(2000, 1, 1)
         )
 
+        cls.user_site = models.UserSite.objects.create(
+            user=cls.user,
+            site_id=1
+        )
+        cls.user_site.save()
+
     @override_settings(
         AC_OPERATIONAL_API=MagicMock(
             delete_user_data=MagicMock(return_value={"amount": 10})
@@ -244,6 +250,23 @@ class DeleteUserAndData(TestCase):
                 "DEBUG:authentication_service.tasks:10 rows deleted from Access Control",
                 "DEBUG:authentication_service.tasks:5 rows deleted from User Data Store",
             ])
+
+        self.assertFalse(Token.objects.filter(user=self.user).exists())
+
+        self.assertFalse(UserConsent.objects.filter(user=self.user).exists())
+
+        self.assertFalse(Code.objects.filter(user=self.user).exists())
+
+        self.assertFalse(UserSite.objects.filter(user=self.user).exists())
+
+        self.assertFalse(UserSecurityQuestion.objects.filter(user=self.user).exists())
+
+        with self.assertRaises(models.UserSite.DoesNotExist):
+            models.UserSite.objects.get(id=self.user_site.id)
+
+        user_model = get_user_model()
+        with self.assertRaises(user_model.DoesNotExist):
+            user_model.objects.get(id=self.user.id)
 
     def test_delete_user_and_data_task_nonexistent_user(self):
         user_id = uuid.uuid4()

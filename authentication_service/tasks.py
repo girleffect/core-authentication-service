@@ -16,7 +16,7 @@ from oidc_provider.models import Token, Code, UserConsent
 
 from celery.task import task
 
-from authentication_service.models import CoreUser, Organisation, UserSite
+from authentication_service.models import CoreUser, Organisation, UserSite, UserSecurityQuestion
 from access_control.rest import ApiException as AccessControlApiException
 from user_data_store.rest import ApiException as UserDataStoreApiException
 
@@ -247,7 +247,7 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
             user_data_store_api.deletedusersite_create(
                 data={
                     "deleted_user_id": user_id,
-                    "site_id": user_site.site.id,
+                    "site_id": user_site.site_id,
                 }
             )
 
@@ -262,6 +262,9 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
 
     # Delete UserSite entries
     UserSite.objects.filter(user_id=user_id).delete()
+
+    # Delete UserSecurityQuestion entries
+    UserSecurityQuestion.objects.filter(user_id=user_id).delete()
 
     # Delete Access Control data
     result = operational_api.delete_user_data(user_id)
