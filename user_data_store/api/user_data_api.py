@@ -602,7 +602,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deleteduser', 'POST',
+            '/deletedusers', 'POST',
             path_params,
             query_params,
             header_params,
@@ -691,7 +691,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deleteduser/{user_id}', 'DELETE',
+            '/deletedusers/{user_id}', 'DELETE',
             path_params,
             query_params,
             header_params,
@@ -794,7 +794,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deleteduser', 'GET',
+            '/deletedusers', 'GET',
             path_params,
             query_params,
             header_params,
@@ -887,7 +887,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deleteduser/{user_id}', 'GET',
+            '/deletedusers/{user_id}', 'GET',
             path_params,
             query_params,
             header_params,
@@ -988,7 +988,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deleteduser/{user_id}', 'PUT',
+            '/deletedusers/{user_id}', 'PUT',
             path_params,
             query_params,
             header_params,
@@ -1081,7 +1081,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deletedusersite', 'POST',
+            '/deletedusersites', 'POST',
             path_params,
             query_params,
             header_params,
@@ -1178,7 +1178,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deletedusersite/{user_id}/{site_id}', 'DELETE',
+            '/deletedusersites/{user_id}/{site_id}', 'DELETE',
             path_params,
             query_params,
             header_params,
@@ -1281,7 +1281,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deletedusersite', 'GET',
+            '/deletedusersites', 'GET',
             path_params,
             query_params,
             header_params,
@@ -1382,7 +1382,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deletedusersite/{user_id}/{site_id}', 'GET',
+            '/deletedusersites/{user_id}/{site_id}', 'GET',
             path_params,
             query_params,
             header_params,
@@ -1491,7 +1491,7 @@ class UserDataApi(object):
         auth_settings = ['APIKeyHeader']  # noqa: E501
 
         return self.api_client.call_api(
-            '/deletedusersite/{user_id}/{site_id}', 'PUT',
+            '/deletedusersites/{user_id}/{site_id}', 'PUT',
             path_params,
             query_params,
             header_params,

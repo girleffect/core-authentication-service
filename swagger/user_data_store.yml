@@ -686,7 +686,7 @@ paths:
       tags:
         - user_data
 
-  /deleteduser:
+  /deletedusers:
     get:
       operationId: deleteduser_list
       parameters:
@@ -727,7 +727,7 @@ paths:
       tags:
         - user_data
 
-  /deleteduser/{user_id}:
+  /deletedusers/{user_id}:
     parameters:
       - $ref: '#/parameters/user_id'
     delete:
@@ -767,7 +767,7 @@ paths:
       tags:
         - user_data
 
-  /deletedusersite:
+  /deletedusersites:
     get:
       operationId: deletedusersite_list
       parameters:
@@ -808,7 +808,7 @@ paths:
       tags:
         - user_data
 
-  /deletedusersite/{user_id}/{site_id}:
+  /deletedusersites/{user_id}/{site_id}:
     parameters:
       - $ref: '#/parameters/user_id'
       - $ref: '#/parameters/site_id'
