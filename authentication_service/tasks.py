@@ -3,6 +3,9 @@ import typing
 import uuid
 from datetime import datetime
 
+from celery.task import task
+from oidc_provider.models import Token, Code, UserConsent
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -14,9 +17,6 @@ from django.utils import timezone, translation
 from django.utils.html import strip_tags
 from django.utils.http import urlencode
 from django.utils.translation import ugettext as _
-from oidc_provider.models import Token, Code, UserConsent
-
-from celery.task import task
 
 from authentication_service.models import Organisation, UserSite, UserSecurityQuestion
 from access_control.rest import ApiException as AccessControlApiException
@@ -191,7 +191,7 @@ def purge_expired_invitations(cutoff_date):
     )
 
 
-@task(name="delete_user_and_data_task",
+@task(name="delete_user_and_data",
       default_retry_delay=5 * 60,
       autoretry_for=(AccessControlApiException, UserDataStoreApiException),
       retry_backoff=True,
@@ -310,7 +310,7 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
         logger.error(f"User {deleter_id} cannot be found, so we cannot send an email.")
 
 
-@task(name="send_deletion_confirmation_task",
+@task(name="send_deletion_confirmation",
       default_retry_delay=5 * 60,
       retry_backoff=True,
       retry_backoff_max=600,

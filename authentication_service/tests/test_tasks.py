@@ -203,8 +203,6 @@ class DeleteUserAndData(TestCase):
             first_name="Del",
             last_name="Eter",
             email="deleter@example.com",
-            is_superuser=False,
-            is_staff=False,
             birth_date=datetime.date(2000, 1, 1)
         )
 
@@ -213,8 +211,6 @@ class DeleteUserAndData(TestCase):
             first_name="Us",
             last_name="Er",
             email="user@example.com",
-            is_superuser=False,
-            is_staff=False,
             birth_date=datetime.date(2000, 1, 1)
         )
 
