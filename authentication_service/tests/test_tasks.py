@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.management import call_command
 from django.test import override_settings, TestCase
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -130,7 +131,7 @@ class SendInvitationMail(TestCase):
     def setUpTestData(cls):
         cls.organisation = Organisation.objects.create(
             id=1,
-            name=f"test unit",
+            name="test unit",
             description="Description"
         )
 
@@ -193,7 +194,7 @@ class DeleteUserAndData(TestCase):
 
         cls.organisation = Organisation.objects.create(
             id=1,
-            name=f"test unit",
+            name="test unit",
             description="Description"
         )
 
@@ -208,7 +209,7 @@ class DeleteUserAndData(TestCase):
         )
 
         cls.user = user_model.objects.create(
-            username="user",
+            username="Username",
             first_name="Us",
             last_name="Er",
             email="user@example.com",
@@ -222,6 +223,13 @@ class DeleteUserAndData(TestCase):
             site_id=1
         )
         cls.user_site.save()
+
+        call_command("load_security_questions")
+
+        cls.user_security_question = models.UserSecurityQuestion.objects.create(
+            user=cls.user,
+            question_id=1
+        )
 
     @override_settings(
         AC_OPERATIONAL_API=MagicMock(
@@ -249,6 +257,8 @@ class DeleteUserAndData(TestCase):
             logger.output, [
                 "DEBUG:authentication_service.tasks:10 rows deleted from Access Control",
                 "DEBUG:authentication_service.tasks:5 rows deleted from User Data Store",
+                "INFO:authentication_service.tasks:Queued deletion confirmation for Username"
+                f" ({self.user.id}) to Del Eter (deleter@example.com)",
             ])
 
         self.assertFalse(Token.objects.filter(user=self.user).exists())

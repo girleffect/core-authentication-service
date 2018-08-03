@@ -4,9 +4,11 @@ import uuid
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core import signing
 from django.core.mail import EmailMultiAlternatives
+from django.forms import model_to_dict
 from django.template import loader
 from django.utils import timezone, translation
 from django.utils.html import strip_tags
@@ -16,13 +18,15 @@ from oidc_provider.models import Token, Code, UserConsent
 
 from celery.task import task
 
-from authentication_service.models import CoreUser, Organisation, UserSite, UserSecurityQuestion
+from authentication_service.models import Organisation, UserSite, UserSecurityQuestion
 from access_control.rest import ApiException as AccessControlApiException
 from user_data_store.rest import ApiException as UserDataStoreApiException
 
 logger = logging.getLogger(__name__)
 
 FROM_EMAIL = "auth@gehosting.org"
+
+UserModel = get_user_model()
 
 MAIL_TYPE_DATA = {
     "default": {
@@ -135,7 +139,7 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
     """
     language = language or "en"
     with translation.override(language):
-        sender = CoreUser.objects.get(pk=invitation["invitor_id"])
+        sender = UserModel.objects.get(pk=invitation["invitor_id"])
         recipient = invitation["email"]
         subject = _("Please create your Girl Effect account")
 
@@ -218,12 +222,12 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
     deleter_id = str(deleter_id)
 
     try:
-        user = CoreUser.objects.get(id=user_id)
+        user = UserModel.objects.get(id=user_id)
 
         # Disable user
         user.is_active = False
         user.save()
-    except CoreUser.DoesNotExist:
+    except UserModel.DoesNotExist:
         logger.error(f"User {user_id} cannot be deleted because it does not exist.")
         return  # Nothing to do
 
@@ -279,5 +283,60 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
         user_id, data={"deleted_at": datetime.utcnow()}
     )
 
+    # Keep a copy of some of the fields for the email notification
+    user_dict = model_to_dict(user, fields=[
+        "id", "username", "first_name", "last_name"
+    ])
+    # For some reason model_to_dict does not include the id. Add it explicitly.
+    user_dict["id"] = user_id
+
     # Finally, delete the user
     user.delete()
+
+    # We try to send a confirmation email to the user requesting the deletion.
+    # If it fails, we cannot retry
+    try:
+        deleter = UserModel.objects.get(id=deleter_id)
+        deleter_dict = model_to_dict(deleter, fields=[
+            "username", "first_name", "last_name", "email"
+        ])
+        if deleter.email:
+            send_deletion_confirmation_task.delay(
+                user_dict, deleter_dict
+            )
+            logger.info(f"Queued deletion confirmation for {user_dict['username']} ({user_dict['id']})"
+                        f" to {deleter.first_name} {deleter.last_name} ({deleter.email})")
+    except UserModel.DoesNotExist:
+        logger.error(f"User {deleter_id} cannot be found, so we cannot send an email.")
+
+
+@task(name="send_deletion_confirmation_task",
+      default_retry_delay=5 * 60,
+      retry_backoff=True,
+      retry_backoff_max=600,
+      retry_jitter=True)
+def send_deletion_confirmation_task(
+    user: dict,
+    deleter: dict,
+):
+    subject = _("Confirmation of user and data deletion")
+
+    # Generate the email from the template
+    html_content = loader.render_to_string(
+        "authentication_service/email/deletion_confirmation.html",
+        {"user": user, "deleter": deleter}
+    )
+    text_content = strip_tags(html_content)
+    message = EmailMultiAlternatives(
+        subject=subject,
+        body=text_content,
+        from_email=FROM_EMAIL,
+        reply_to=["no-reply@gehosting.org"],
+        to=[deleter["email"]],  # Must be a list
+        headers={"Unique-ID": uuid.uuid1().hex},
+    )
+    message.attach_alternative(html_content, "text/html")
+    message.send()
+
+    logger.info(f"Sent deletion confirmation for {user['username']} ({user['id']})"
+                f" to {deleter['first_name']} {deleter['last_name']} ({deleter['email']})")
