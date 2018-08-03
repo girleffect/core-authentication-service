@@ -235,7 +235,9 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
     try:
         deleted_user = user_data_store_api.deleteduser_read(user_id)
     except UserDataStoreApiException as e:
-        if e.status != 404:
+        if e.status == 404:
+            deleted_user = None
+        else:
             raise
 
     if deleted_user is None:
@@ -252,7 +254,9 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
         try:
             deleted_user_site = user_data_store_api.deletedusersite_read(user_id, user_site.site_id)
         except UserDataStoreApiException as e:
-            if e.status != 404:
+            if e.status == 404:
+                deleted_user_site = None
+            else:
                 raise
 
         if deleted_user_site is None:
