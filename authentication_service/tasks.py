@@ -242,12 +242,19 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
 
     if deleted_user is None:
         # Create DeletedUser entry
-        user_data_store_api.deleteduser_create(
-            data={
-                "id": user_id,
-                "deleter_id": deleter_id,
-                "reason": reason
-            })
+        data = {
+            "id": user_id,
+            "username": user.username,
+            "deleter_id": deleter_id,
+            "reason": reason
+        }
+        if user.email:
+            data["email"] = user.email
+
+        if user.msisdn:
+            data["msisdn"] = user.msisdn
+
+        user_data_store_api.deleteduser_create(data=data)
 
     # Create DeletedSite entries
     for user_site in UserSite.objects.filter(user_id=user_id):
@@ -284,12 +291,12 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
 
     # Delete Access Control data
     result = operational_api.delete_user_data(user_id)
-    logger.debug(f"{result['amount']} rows deleted from Access Control")
+    logger.debug(f"{result.amount} rows deleted from Access Control")
 
     # Delete User Data Store data and set the "deleted_at" value
     # of the DeletedUser entity.
     result = user_data_store_api.delete_user_data(user_id)
-    logger.debug(f"{result['amount']} rows deleted from User Data Store")
+    logger.debug(f"{result.amount} rows deleted from User Data Store")
 
     user_data_store_api.deleteduser_update(
         user_id, data={"deleted_at": datetime.utcnow()}

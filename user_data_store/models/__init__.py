@@ -28,6 +28,7 @@ from user_data_store.models.health_info import HealthInfo
 from user_data_store.models.site_data_schema import SiteDataSchema
 from user_data_store.models.site_data_schema_create import SiteDataSchemaCreate
 from user_data_store.models.site_data_schema_update import SiteDataSchemaUpdate
+from user_data_store.models.user_deletion_data import UserDeletionData
 from user_data_store.models.user_site_data import UserSiteData
 from user_data_store.models.user_site_data_create import UserSiteDataCreate
 from user_data_store.models.user_site_data_update import UserSiteDataUpdate
