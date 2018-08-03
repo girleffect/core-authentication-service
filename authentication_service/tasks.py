@@ -232,7 +232,11 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
         return  # Nothing to do
 
     # Check if this job has been attempted before.
-    deleted_user = user_data_store_api.deleteduser_read(user_id)
+    try:
+        deleted_user = user_data_store_api.deleteduser_read(user_id)
+    except UserDataStoreApiException as e:
+        if e.status != 404:
+            raise
 
     if deleted_user is None:
         # Create DeletedUser entry
@@ -245,7 +249,11 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
 
     # Create DeletedSite entries
     for user_site in UserSite.objects.filter(user_id=user_id):
-        deleted_user_site = user_data_store_api.deletedusersite_read(user_id, user_site.site_id)
+        try:
+            deleted_user_site = user_data_store_api.deletedusersite_read(user_id, user_site.site_id)
+        except UserDataStoreApiException as e:
+            if e.status != 404:
+                raise
 
         if deleted_user_site is None:
             user_data_store_api.deletedusersite_create(
