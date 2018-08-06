@@ -13,7 +13,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from oidc_provider.models import Token, UserConsent, Code
 
-from access_control import Invitation
+import access_control
+import user_data_store
 from authentication_service import tasks, models
 
 # TODO we need more test functions, for now only actual use cases are covered.
@@ -147,7 +148,7 @@ class SendInvitationMail(TestCase):
 
     def test_send_invitation_mail(self):
         test_invitation_id = uuid.uuid4()
-        invitation = Invitation(
+        invitation = access_control.Invitation(
             id=test_invitation_id.hex,
             invitor_id=self.user.id,
             first_name="Thename",
@@ -229,7 +230,9 @@ class DeleteUserAndData(TestCase):
 
     @override_settings(
         AC_OPERATIONAL_API=MagicMock(
-            delete_user_data=MagicMock(return_value={"amount": 10})
+            delete_user_data=MagicMock(
+                return_value=access_control.UserDeletionData(amount=10)
+            )
         ),
         USER_DATA_STORE_API=MagicMock(
             deleteduser_read=MagicMock(return_value=None),
@@ -238,7 +241,9 @@ class DeleteUserAndData(TestCase):
             deletedusersite_read=MagicMock(return_value=None),
             deletedusersite_create=MagicMock(return_value={}),
             deletedusersite_update=MagicMock(return_value={}),
-            delete_user_data=MagicMock(return_value={"amount": 5})
+            delete_user_data=MagicMock(
+                return_value=user_data_store.UserDeletionData(amount=5)
+            )
         )
     )
     def test_delete_user_and_data_task(self):
