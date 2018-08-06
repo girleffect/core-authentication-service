@@ -938,8 +938,33 @@ definitions:
     required:
       - amount
 
+  user_deletion_data:
+    type: object
+    properties:
+      amount:
+        type: integer
+    required:
+      - amount
+
 
 paths:
+  /ops/users/{user_id}/delete:
+    parameters:
+      - $ref: '#/parameters/user_id'
+    get:
+      operationId: delete_user_data
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 'Delete all user data on UDS'
+          schema:
+            $ref: '#/definitions/user_deletion_data'
+        403:
+          description: 'Forbidden'
+      tags:
+        - operational
+
   /ops/healthcheck:
     get:
       security: [ ]

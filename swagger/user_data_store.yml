@@ -81,6 +81,15 @@ parameters:
     type: string
     format: uuid
 
+  optional_deleter_id_filter:
+    description: An optional query parameter to filter by deleter_id
+    in: query
+    name: deleter_id
+    required: false
+    type: string
+    format: uuid
+
+
 definitions:
   admin_note:
     type: object
@@ -221,7 +230,200 @@ definitions:
         type: object
     minProperties: 1
 
+  health_info:
+    description: 'Health check response'
+    type: object
+    properties:
+      host:
+        type: string
+      server_timestamp:
+        type: string
+        format: 'date-time'
+      version:
+        type: string
+      db_timestamp:
+        type: string
+        format: 'date-time'
+    required:
+    - host
+    - server_timestamp
+    - version
+    - db_timestamp
+
+  deleted_user:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      username:
+        type: string
+      email:
+        type: string
+        format: email
+      msisdn:
+        type: string
+      reason:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        readOnly: true
+      deleted_at:
+        type: string
+        format: date-time
+      deleter_id:
+        type: string
+        format: uuid
+    required:
+      - id
+      - username
+      - reason
+      - created_at
+      - updated_at
+      - deleter_id
+
+  deleted_user_create:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      username:
+        type: string
+      email:
+        type: string
+        format: email
+      msisdn:
+        type: string
+      reason:
+        type: string
+      deleter_id:
+        type: string
+        format: uuid
+    required:
+      - id
+      - username
+      - reason
+      - deleter_id
+
+  deleted_user_update:
+    type: object
+    properties:
+      username:
+        type: string
+      email:
+        type: string
+        format: email
+      msisdn:
+        type: string
+      reason:
+        type: string
+      deleted_at:
+        type: string
+        format: date-time
+      deleter_id:
+        type: string
+        format: uuid
+    minProperties: 1
+
+  deleted_user_site:
+    type: object
+    properties:
+      deleted_user_id:
+        type: string
+        format: uuid
+      site_id:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        readOnly: true
+      deletion_requested_at:
+        type: string
+        format: date-time
+      deletion_requested_via:
+        type: string
+      deletion_confirmed_at:
+        type: string
+        format: date-time
+      deletion_confirmed_via:
+        type: string
+    required:
+      - deleted_user_id
+      - site_id
+      - created_at
+      - updated_at
+
+  deleted_user_site_create:
+    type: object
+    properties:
+      deleted_user_id:
+        type: string
+        format: uuid
+      site_id:
+        type: integer
+      deletion_requested_at:
+        type: string
+        format: date-time
+      deletion_requested_via:
+        type: string
+      deletion_confirmed_at:
+        type: string
+        format: date-time
+      deletion_confirmed_via:
+        type: string
+    required:
+      - deleted_user_id
+      - site_id
+
+  deleted_user_site_update:
+    type: object
+    properties:
+      deletion_requested_at:
+        type: string
+        format: date-time
+      deletion_requested_via:
+        type: string
+      deletion_confirmed_at:
+        type: string
+        format: date-time
+      deletion_confirmed_via:
+        type: string
+    minProperties: 1
+
+  user_deletion_data:
+    type: object
+    properties:
+      amount:
+        type: integer
+    required:
+      - amount
+
 paths:
+  /healthcheck:
+    get:
+      security: [ ]
+      description: 'Get the status of the service.'
+      operationId: healthcheck
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 'The service is operating normally.'
+          schema:
+            $ref: '#/definitions/health_info'
+      tags:
+        - user_data
+
   /adminnotes:
     get:
       operationId: adminnote_list
@@ -489,5 +691,185 @@ paths:
           description: ''
           schema:
             $ref: '#/definitions/user_site_data'
+      tags:
+        - user_data
+
+  /deletedusers:
+    get:
+      operationId: deleteduser_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+        - $ref: '#/parameters/optional_deleter_id_filter'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          headers:
+            X-Total-Count:
+                type: integer
+                description: The total number of results matching the query
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/deleted_user'
+      tags:
+        - user_data
+    post:
+      operationId: deleteduser_create
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/deleted_user_create'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/deleted_user'
+      tags:
+        - user_data
+
+  /deletedusers/{user_id}:
+    parameters:
+      - $ref: '#/parameters/user_id'
+    delete:
+      operationId: deleteduser_delete
+      responses:
+        '204':
+          description: ''
+      tags:
+        - user_data
+    get:
+      operationId: deleteduser_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/deleted_user'
+      tags:
+        - user_data
+    put:
+      operationId: deleteduser_update
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/deleted_user_update'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/deleted_user'
+      tags:
+        - user_data
+
+  /deletedusersites:
+    get:
+      operationId: deletedusersite_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+        - $ref: '#/parameters/optional_user_filter'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          headers:
+            X-Total-Count:
+                type: integer
+                description: The total number of results matching the query
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/deleted_user_site'
+      tags:
+        - user_data
+    post:
+      operationId: deletedusersite_create
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/deleted_user_site_create'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/deleted_user_site'
+      tags:
+        - user_data
+
+  /deletedusersites/{user_id}/{site_id}:
+    parameters:
+      - $ref: '#/parameters/user_id'
+      - $ref: '#/parameters/site_id'
+    delete:
+      operationId: deletedusersite_delete
+      responses:
+        '204':
+          description: ''
+      tags:
+        - user_data
+    get:
+      operationId: deletedusersite_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/deleted_user_site'
+      tags:
+        - user_data
+    put:
+      operationId: deletedusersite_update
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/deleted_user_site_update'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/deleted_user_site'
+      tags:
+        - user_data
+
+  /users/{user_id}/delete:
+    parameters:
+      - $ref: '#/parameters/user_id'
+    get:
+      operationId: delete_user_data
+      produces:
+        - application/json
+      responses:
+        200:
+          description: 'Delete all user data on UDS'
+          schema:
+            $ref: '#/definitions/user_deletion_data'
+        403:
+          description: 'Forbidden'
       tags:
         - user_data

@@ -294,7 +294,11 @@ class Implementation(AbstractStubClass):
         :param body: A dictionary containing the parsed and validated body
         :type body: dict
         """
-        raise NotImplementedError()
+        # We check that the specified user and deleter actually exist, before
+        # calling the asynchronous deletion task.
+        user = get_object_or_404(CoreUser, id=body["user_id"])
+        deleter = get_object_or_404(CoreUser, id=body["deleter_id"])
+        tasks.delete_user_and_data_task.delay(user.id, deleter.id, body["reason"])
 
     # user_list -- Synchronisation point for meld
     @staticmethod
