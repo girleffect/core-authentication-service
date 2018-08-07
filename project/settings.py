@@ -323,7 +323,10 @@ LOGGING = {
 }
 
 RAVEN_CONFIG = {
-    "dsn": env.str("SENTRY_DSN", None)
+    "dsn": env.str("SENTRY_DSN", None),
+    "processors": (
+        "project.processors.SanitizeHeadersProcessor",
+    )
 }
 
 ########################
