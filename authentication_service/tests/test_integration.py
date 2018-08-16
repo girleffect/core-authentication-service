@@ -743,3 +743,39 @@ class IntegrationTestCase(TestCase):
         # Test without authorisation
         response = self.client.get(f"/api/v1/invitations/{test_invitation_id}/send")
         self.assertEqual(response.status_code, 401)
+
+    @override_settings(AC_OPERATIONAL_API=MagicMock(purge_expired_invitations=MagicMock()))
+    def test_purge_expired_invitations(self):
+        date_string = str(datetime.datetime.now().date())
+        # Test without explicit cutoff date
+        response = self.client.get("/api/v1/invitations/purge_expired",
+                                   **self.headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(settings.AC_OPERATIONAL_API.purge_expired_invitations.called_with(
+            date_string
+        ))
+        # Test with explicit cutoff date
+        response = self.client.get(f"/api/v1/invitations/purge_expired?cutoff_date={date_string}",
+                                   **self.headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(settings.AC_OPERATIONAL_API.purge_expired_invitations.called_with(
+            date_string
+        ))
+        # Test with malformed cutoff date
+        response = self.client.get("/api/v1/invitations/purge_expired?cutoff_date=2019-01-45a",
+                                   **self.headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(settings.AC_OPERATIONAL_API.purge_expired_invitations.called_with(
+            date_string
+        ))
+        # Test with invalid cutoff date
+        response = self.client.get("/api/v1/invitations/purge_expired?cutoff_date=2019-01-45",
+                                   **self.headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(settings.AC_OPERATIONAL_API.purge_expired_invitations.called_with(
+            date_string
+        ))
+
+        # Test without authorisation
+        response = self.client.get("/api/v1/invitations/purge_expired")
+        self.assertEqual(response.status_code, 401)
