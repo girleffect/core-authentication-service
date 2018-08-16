@@ -44,3 +44,9 @@ rstr==2.2.6 # For mock class in generated server code.
 raven==6.6.0
 
 django-debug-toolbar<=1.9.1,<2.0
+
+# The following requirements are required by jsonschema
+# in order to do proper validation of certain formats.
+rfc3987
+strict-rfc3339
+
