@@ -138,6 +138,25 @@ class Command(BaseCommand):
         )))
 
         c, created = Client.objects.update_or_create(
+            client_id="corporate_site",
+            defaults={
+                "name": "Corporate Site",
+                "client_secret": "corporate_site_secret",
+                "response_type": "code",
+                "jwt_alg": "HS256",
+                "redirect_uris": [
+                    "http://core-corporate-site/oidc/callback/",
+                ],
+                "post_logout_redirect_uris": [
+                    "http://core-corporate-site/",
+                ],
+            }
+        )
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", c.client_id
+        )))
+
+        c, created = Client.objects.update_or_create(
             client_id="management_portal",
             defaults={
                 "name": "Management Portal",
