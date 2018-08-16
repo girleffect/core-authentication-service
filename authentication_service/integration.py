@@ -184,9 +184,8 @@ class Implementation(AbstractStubClass):
         """
         if cutoff_date is None:
             cutoff_date = str(datetime.datetime.now().date())
-        tasks.purge_expired_invitations.apply_async(
-            cutoff_date=cutoff_date
-        )
+
+        tasks.purge_expired_invitations.delay(cutoff_date)
         return
 
     # organisation_list -- Synchronisation point for meld
@@ -362,26 +361,24 @@ class Implementation(AbstractStubClass):
 
         # Bools
         if tfa_enabled is not None:
-            check = tfa_enabled.lower() == "true"
             users = users.filter(
-                totpdevice__isnull=not check
+                totpdevice__isnull=not tfa_enabled
             )
         if has_organisation is not None:
-            check = has_organisation.lower() == "true"
             users = users.filter(
-                organisation__isnull=not check
+                organisation__isnull=not has_organisation
             )
         if email_verified is not None:
             users = users.filter(
-                email_verified=email_verified.lower() == "true"
+                email_verified=email_verified
             )
         if is_active is not None:
             users = users.filter(
-                is_active=is_active.lower() == "true"
+                is_active=is_active
             )
         if msisdn_verified is not None:
             users = users.filter(
-                msisdn_verified=msisdn_verified.lower() == "true"
+                msisdn_verified=msisdn_verified
             )
 
         # Dates
