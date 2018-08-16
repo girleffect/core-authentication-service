@@ -47,6 +47,6 @@ django-debug-toolbar<=1.9.1,<2.0
 
 # The following requirements are required by jsonschema
 # in order to do proper validation of certain formats.
-rfc3987
-strict-rfc3339
+rfc3987<=1.3.8,<2.0
+strict-rfc3339<=0.7,<1.0
 
