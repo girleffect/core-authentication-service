@@ -186,7 +186,7 @@ class Implementation(AbstractStubClass):
             cutoff_date = str(datetime.datetime.now().date())
 
         tasks.purge_expired_invitations.delay(cutoff_date)
-        return
+        return {}
 
     # organisation_list -- Synchronisation point for meld
     @staticmethod

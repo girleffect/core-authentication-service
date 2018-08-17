@@ -179,16 +179,22 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
                     f"to {invitation['first_name']} {invitation['last_name']}")
 
 
-@task(name="purge_expired_invitations_task")
+@task(name="purge_expired_invitations_task",
+      default_retry_delay=5 * 60,
+      autoretry_for=(AccessControlApiException,),
+      retry_backoff=True,
+      retry_backoff_max=600,
+      retry_jitter=True)
 def purge_expired_invitations(cutoff_date):
     """
     Task to call the purge_expired_invitations on the access_control API.
     :param cutoff_date: The cutoff_date for invitations.
     :return:
     """
-    return settings.AC_OPERATIONAL_API.purge_expired_invitations(
+    result = settings.AC_OPERATIONAL_API.purge_expired_invitations(
         cutoff_date=cutoff_date
     )
+    logger.info(f"Purged {result.amount} invitations.")
 
 
 @task(name="delete_user_and_data",
