@@ -222,7 +222,7 @@ definitions:
       date_joined:
         description: ''
         type: string
-        format: date
+        format: 'date-time'
         readOnly: true
       last_login:
         description: ''
