@@ -3,6 +3,7 @@ import logging
 import uuid
 from unittest.mock import MagicMock
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
@@ -15,6 +16,7 @@ from oidc_provider.models import Token, UserConsent, Code
 
 import access_control
 import user_data_store
+from access_control import PurgedInvitations
 from authentication_service import tasks, models
 
 # TODO we need more test functions, for now only actual use cases are covered.
@@ -176,15 +178,17 @@ class SendInvitationMail(TestCase):
 class PurgeExpiredInvitations(TestCase):
 
     @override_settings(AC_OPERATIONAL_API=MagicMock(
-        purge_expired_invitations=MagicMock(return_value={
-            "amount": 4
-        }))
+        purge_expired_invitations=MagicMock())
     )
     def test_purge_expired_invitation_task(self):
-        result = tasks.purge_expired_invitations(
-            cutoff_date=str(datetime.datetime.now().date())
-        )
-        self.assertEqual(result["amount"], 4)
+        settings.AC_OPERATIONAL_API.purge_expired_invitations.return_value = \
+            PurgedInvitations(amount=4)
+        with self.assertLogs(level=logging.INFO) as logs:
+            tasks.purge_expired_invitations(
+                cutoff_date=str(datetime.datetime.now().date())
+            )
+
+        self.assertEqual(logs.output, ["INFO:authentication_service.tasks:Purged 4 invitations."])
 
 
 class DeleteUserAndData(TestCase):
