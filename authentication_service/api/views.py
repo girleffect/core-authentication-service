@@ -724,7 +724,7 @@ class Users(View):
             },
             "date_joined": {
                 "description": "",
-                "format": "date",
+                "format": "date-time",
                 "readOnly": true,
                 "type": "string"
             },
@@ -1260,7 +1260,7 @@ class __SWAGGER_SPEC__(View):
                 },
                 "date_joined": {
                     "description": "",
-                    "format": "date",
+                    "format": "date-time",
                     "readOnly": true,
                     "type": "string"
                 },
