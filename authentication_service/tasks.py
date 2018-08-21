@@ -305,7 +305,7 @@ def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason:
     logger.debug(f"{result.amount} rows deleted from User Data Store")
 
     user_data_store_api.deleteduser_update(
-        user_id, data={"deleted_at": datetime.utcnow()}
+        user_id, data={"deleted_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")}
     )
 
     # Keep a copy of some of the fields for the email notification
