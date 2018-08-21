@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.2
+-----
+Bugfix: Correct format of datetime argument passed to the deleted_user_update() call of the User Data Store.
+
 1.2.1
 -----
 #. feature/GE-1100: Prevent users younger than 13 from registering an account or reducing age via edit profile
