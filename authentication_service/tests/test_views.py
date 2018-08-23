@@ -1415,7 +1415,8 @@ class EditProfileViewTestCase(TestCase):
             ),
             {
                 "email": "test@user.com",
-                "birth_date": "2001-01-01"
+                "birth_date": "2001-01-01",
+                "gender": "female"
             },
             follow=True
         )
@@ -1433,7 +1434,8 @@ class EditProfileViewTestCase(TestCase):
                 reverse("edit_profile"),
                 {
                     "email": "test@user.com",
-                    "age": "14"
+                    "age": "14",
+                    "gender": "female"
                 },
                 follow=True
             )

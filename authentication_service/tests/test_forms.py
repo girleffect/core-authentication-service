@@ -722,6 +722,7 @@ class EditProfileFormTestCase(TestCase):
             username="testuser",
             birth_date=datetime.date(2000, 1, 1),
             email="wrong@email.com",
+            gender="female",
             email_verified=True
         )
         cls.user.save()
@@ -741,7 +742,8 @@ class EditProfileFormTestCase(TestCase):
         data = {
             "email": "right@email.com",
             "msisdn": "+27821234567",
-            "age": 34
+            "age": 34,
+            "gender": "female"
         }
 
         form = EditProfileForm(instance=self.user, data=data)
@@ -800,7 +802,8 @@ class EditProfileFormTestCase(TestCase):
         self.assertEqual(form.errors, {
             "__all__": [
                 "Enter either birth date or age"
-            ]
+            ],
+            "gender": ["This field is required."],
         })
 
     def test_min_required_age(self):
@@ -809,6 +812,7 @@ class EditProfileFormTestCase(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
+            "gender": ["This field is required."],
             "age": [
                 "We are sorry, " \
                 f"users under the age of {constants.CONSENT_AGE}" \
@@ -830,6 +834,7 @@ class EditProfileFormTestCase(TestCase):
     def test_on_required_age(self):
         form = EditProfileForm(data={
             "age": constants.CONSENT_AGE,
+            "gender": "female"
         })
         self.assertTrue(form.is_valid())
         with mock.patch("authentication_service.forms.date") as mocked_date:
@@ -837,6 +842,7 @@ class EditProfileFormTestCase(TestCase):
             mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
             form = EditProfileForm(data={
                 "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 2),
+                "gender": "female"
             })
             self.assertTrue(form.is_valid())
 
