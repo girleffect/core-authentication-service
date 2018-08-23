@@ -16,7 +16,7 @@ env = Env()
 # Project Settings
 HIDE_FIELDS = {
     "global_enable": True,
-    "global_fields": ["email", "birth_date", "nickname"]
+    "global_fields": ["email", "birth_date", "nickname", "avatar"]
 }
 
 # Django Settings

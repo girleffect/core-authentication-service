@@ -23,10 +23,11 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView,
     PasswordChangeView
 )
-from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth import get_user_model
 from django.core import signing
+from django.core.exceptions import ValidationError
+from django.core.files.storage import DefaultStorage
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import connection
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -184,6 +185,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     form_list = registration_forms
     condition_dict = {"securityquestions": show_security_questions}
     template_name = "authentication_service/registration.html"
+    file_storage = DefaultStorage()
 
     # Needed to stop a NoneType error from triggering in django internals. The
     # formset does not require a queryset.
