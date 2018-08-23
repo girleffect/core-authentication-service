@@ -160,7 +160,11 @@ class RegistrationForm(UserCreationForm):
 
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
-            required_fields.update(["age"])
+            # Age is not on the model, but is used to calculate the user birth
+            # date. Gender is not required on the model but is required for all
+            # users.
+            required_fields.update(["age", "gender"])
+
             for field in settings.HIDE_FIELDS["global_fields"]:
                 if field in required_fields:
                     continue  # Required field cannot be hidden
@@ -422,9 +426,15 @@ class EditProfileForm(forms.ModelForm):
             }
         }
 
+        # Gender is not required on the model but is required for all users
+        required_fields = ["gender"]
+
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
             for field in settings.HIDE_FIELDS["global_fields"]:
+                if field in required_fields:
+                    continue  # Required field cannot be hidden
+
                 self.fields[field].required = False
                 self.fields[field].widget.is_required = False
                 hidden_fields.append(field)
@@ -446,6 +456,7 @@ class EditProfileForm(forms.ModelForm):
         update_form_fields(
             self,
             fields_data=fields_data,
+            required=required_fields,
             hidden=hidden_fields
         )
 

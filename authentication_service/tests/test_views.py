@@ -756,6 +756,7 @@ class TestRegistrationView(TestCase):
                         "userdata-username": "Username",
                         "userdata-password1": "@32786AGYJUFEtyfusegh,.,",
                         "userdata-password2": "@32786AGYJUFEtyfusegh,.,",
+                        "userdata-gender": "female",
                         "userdata-age": "18",
                         "userdata-birth_date": "2000-01-01",
                         "userdata-terms": True,
@@ -830,6 +831,7 @@ class TestRegistrationView(TestCase):
                         "userdata-username": "AmazingInviteUser",
                         "userdata-password1": "@A2315,./,asDV",
                         "userdata-password2": "@A2315,./,asDV",
+                        "userdata-gender": "female",
                         "userdata-age": "18",
                         "userdata-birth_date": "2000-01-01",
                         "userdata-terms": True,
@@ -854,6 +856,7 @@ class TestRegistrationView(TestCase):
                     "userdata-username": "Username",
                     "userdata-password1": "@A2315,./,asDV",
                     "userdata-password2": "@A2315,./,asDV",
+                    "userdata-gender": "female",
                     "userdata-age": "18",
                     "userdata-birth_date": "2000-01-01",
                     "userdata-terms": True,
@@ -872,6 +875,7 @@ class TestRegistrationView(TestCase):
                     "userdata-username": "Username0",
                     "userdata-password1": "password",
                     "userdata-password2": "password",
+                    "userdata-gender": "female",
                     "userdata-age": "16",
                     "userdata-terms": True,
                     "userdata-email": "email1@email.com",
@@ -890,6 +894,7 @@ class TestRegistrationView(TestCase):
                     "userdata-password1": "password",
                     "userdata-password2": "password",
                     "userdata-birth_date": "1999-01-01",
+                    "userdata-gender": "female",
                     "userdata-age": "16",
                     "userdata-terms": True,
                     "userdata-email": "email2@email.com",
@@ -932,6 +937,7 @@ class TestRegistrationView(TestCase):
                 "userdata-password1": "password",
                 "userdata-password2": "password",
                 "userdata-birth_date": "1999-01-01",
+                "userdata-gender": "female",
                 "userdata-age": "18",
                 "userdata-terms": True,
                 "userdata-email": "email2@email.com",
@@ -973,6 +979,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "Username2",
+                "userdata-gender": "female",
                 "userdata-age": "18",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1025,6 +1032,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "Username3",
+                "userdata-gender": "female",
                 "userdata-age": "18",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1063,6 +1071,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "RedirectUser",
+                "userdata-gender": "female",
                 "userdata-age": "18",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1090,6 +1099,7 @@ class TestRegistrationView(TestCase):
                     "userdata-terms": True,
                     "userdata-email": "emailunique@email.com",
                     "userdata-msisdn": "0856545698",
+                    "userdata-gender": "female",
                     "userdata-age": "16",
                 },
                 follow=True
@@ -1110,6 +1120,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "Unique@User@Name",
+                "userdata-gender": "female",
                 "userdata-age": "16",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1291,6 +1302,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "stupidnowrequiredtestuseroriginal",
+                "userdata-gender": "female",
                 "userdata-age": "16",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1322,6 +1334,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "stupidnowrequiredtestuser",
+                "userdata-gender": "female",
                 "userdata-age": "16",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1414,7 +1427,8 @@ class EditProfileViewTestCase(TestCase):
             ),
             {
                 "email": "test@user.com",
-                "birth_date": "2001-01-01"
+                "birth_date": "2001-01-01",
+                "gender": "female"
             },
             follow=True
         )
@@ -1432,7 +1446,8 @@ class EditProfileViewTestCase(TestCase):
                 reverse("edit_profile"),
                 {
                     "email": "test@user.com",
-                    "age": "14"
+                    "age": "14",
+                    "gender": "female"
                 },
                 follow=True
             )
