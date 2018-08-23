@@ -15,14 +15,25 @@
         {{ wizard.form.as_div }}
     {% endif %}
 
-    {% if wizard.steps.prev %}
+    {# Submit button text should display next for all steps except the last #}
+    {% if wizard.steps.current == wizard.steps.last %}
+        <input class="Button"type="submit" name="submit" value="{% trans "Submit" %}" />
+    {% else %}
+        <input class="Button"type="submit" name="submit" value="{% trans "Next" %}" />
+    {% endif %}
+
+    {# Only display the back to first step button if it is not the previous step #}
+    {% if wizard.steps.prev and wizard.steps.prev != wizard.steps.first %}
         <button class="Button" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">
             {% trans "First step" %}
         </button>
         <button class="Button" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">
             {% trans "Prev step" %}
         </button>
+    {% elif wizard.steps.prev %}
+        <button class="Button" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">
+            {% trans "Prev step" %}
+        </button>
     {% endif %}
-    <input class="Button"type="submit" name="submit" value="{% trans "Submit" %}" />
 </form>
 {% endblock content %}
