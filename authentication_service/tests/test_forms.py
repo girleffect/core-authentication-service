@@ -489,6 +489,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "username": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "gender": ["This field is required."],
             "age": ["This field is required."],
             "terms": ["This field is required."],
         })
@@ -498,6 +499,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "username": "Username",
             "password1": "password",
             "password2": "password",
+            "gender": "female",
             "age": "16",
             "terms": True,
         })
@@ -509,6 +511,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "password1": "password",
             "password2": "password",
             "email": "email@email.com",
+            "gender": "female",
             "age": "16",
             "terms": True,
         })
@@ -520,6 +523,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "password1": "password",
             "password2": "password",
             "msisdn": "0856545698",
+            "gender": "female",
             "age": "16",
             "terms": True,
         })
@@ -533,6 +537,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "email": "email@email.com",
             "msisdn": "0856545698",
             "birth_date": datetime.date(2000, 1, 1),
+            "gender": "female",
             "age": "16",
             "terms": True,
         })

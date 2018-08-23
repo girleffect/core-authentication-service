@@ -160,7 +160,11 @@ class RegistrationForm(UserCreationForm):
 
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
-            required_fields.update(["age"])
+            # Age is not on the model, but is used to calculate the user birth
+            # date. Gender is not required on the model but is required for all
+            # users.
+            required_fields.update(["age", "gender"])
+
             for field in settings.HIDE_FIELDS["global_fields"]:
                 if field in required_fields:
                     continue  # Required field cannot be hidden
@@ -186,6 +190,7 @@ class RegistrationForm(UserCreationForm):
         # can be indirectly populated if the age is provided.
         self.fields["birth_date"].required = False
         self.fields["birth_date"].widget.is_required = False
+
 
     def clean_age(self):
         age = self.cleaned_data.get("age")
