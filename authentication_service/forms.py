@@ -191,7 +191,6 @@ class RegistrationForm(UserCreationForm):
         self.fields["birth_date"].required = False
         self.fields["birth_date"].widget.is_required = False
 
-
     def clean_age(self):
         age = self.cleaned_data.get("age")
         if age and age < CONSENT_AGE:
