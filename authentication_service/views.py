@@ -5,6 +5,7 @@ import pkg_resources
 import socket
 import urllib
 
+import prometheus_client
 from defender.decorators import watch_login
 from defender.utils import is_user_already_locked, lockout_response
 from formtools.wizard.views import NamedUrlSessionWizardView
@@ -35,8 +36,8 @@ from django.utils.functional import cached_property
 from django.http import (
     HttpResponseRedirect,
     JsonResponse,
-    Http404
-)
+    Http404,
+    HttpResponse)
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -757,3 +758,11 @@ class HealthCheckView(View):
         }
 
         return JsonResponse(data)
+
+
+class MetricView(View):
+
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(prometheus_client.generate_latest(),
+                                content_type=prometheus_client.CONTENT_TYPE_LATEST)
+        return response

@@ -11,4 +11,6 @@ class AuthAppConfig(AppConfig):
         # We have to import signals only when the app is ready.
         from authentication_service import signals
         Field.register_lookup(lookups.Ilike)
+        from authentication_service import integration, metrics
+        metrics.add_prometheus_metrics_for_class(integration.Implementation)
 
