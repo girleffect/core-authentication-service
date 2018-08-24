@@ -66,19 +66,54 @@ class RegistrationForm(UserCreationForm):
     class Meta:
         model = get_user_model()
         fields = [
+            # Org field should never be directly editable via the form
+            "organisation",
             "username", "avatar", "first_name", "last_name", "email",
             "nickname", "msisdn", "gender", "age", "birth_date",
             "country", "password1", "password2"
         ]
         exclude = ["terms",]
 
-    def __init__(self, terms_url=None, security=None, required=None, hidden=None, *args, **kwargs):
+    def __init__(self, terms_url=None, security=None, required=None,
+            hidden=None, organisation_id=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
         self.terms_url = terms_url or GE_TERMS_URL
 
         # Security value is required later in form processes as well.
         self.security = security
+
+        # Organisation field setup and tweaking
+        if organisation_id:
+            # Oganisation is a special field, it was never meant to be user
+            # editable. Disabled and alter specific attributes manually.
+            field = self.fields["organisation"]
+            widget = field.widget
+
+            # Remove all other choices and ready cleaned_data value
+            filtered_choices = widget.choices.queryset.filter(
+                id=organisation_id
+            )
+            widget.choices.queryset = filtered_choices
+            self.organisation = filtered_choices.first()
+
+            # Update some field attributes
+            field.empty_label = None
+            field.label = _("Oragnisation user has been invited to:")
+
+            # Override widget templates
+            widget.template_name = "authentication_service/widgets/select.html"
+
+            # Dango form renderers patches the BoundField.css_classes() method
+            # to include the bound field name as part of the classes. This is a
+            # special case where organisation needs to be introduced relatively
+            # risk free, we require the normal underlying field to still behave
+            # as a ModelChoice field.
+            self["organisation"].field.__class__.__name__ = \
+                "OverridenBoundFieldClassName"
+        else:
+            # Fully remove field if no organisation id was provided
+            self.fields.pop("organisation")
 
         # Set update form update variables, for manipulation as init
         # progresses.
@@ -237,6 +272,9 @@ class RegistrationForm(UserCreationForm):
                 _("Password not long enough.")
             )
         return password2
+
+    def clean_organisation(self):
+        return self.organisation
 
     def _get_validation_exclusions(self):
         # By default fields that are allowed to be blank on the model are not

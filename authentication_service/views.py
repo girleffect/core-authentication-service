@@ -298,7 +298,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             initial = {
                 "first_name": invitation.get("first_name"),
                 "last_name": invitation.get("last_name"),
-                "email": invitation.get("email")
+                "email": invitation.get("email"),
             }
         # Formsets take a list of dictionaries for initial data.
         if step == "securityquestions":
@@ -313,7 +313,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             "security": self.request.GET.get("security"),
             "required": self.request.GET.getlist("requires"),
             "hidden": self.request.GET.getlist("hide"),
-            "question_ids": self.request.GET.getlist("question_ids", [])
+            "question_ids": self.request.GET.getlist("question_ids", []),
         }
 
         custom_kwargs.update(
@@ -326,6 +326,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 self.storage.extra_data[key] = value
 
         kwargs = super(RegistrationWizard, self).get_form_kwargs()
+        kwargs["organisation_id"] = 1
         if step == "userdata":
             security = self.storage.extra_data.get("security")
             hidden = self.storage.extra_data.get("hidden")
