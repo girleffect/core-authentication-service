@@ -126,11 +126,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 DATABASES = {
-    "default": env.dict("DB_DEFAULT", "ENGINE=django.db.backends.postgresql," \
-        "NAME=authentication_service," \
-        "USER=authentication_service," \
-        "PASSWORD=password," \
-        "HOST=127.0.0.1," \
+    "default": env.dict("DB_DEFAULT",
+        "ENGINE=django_prometheus.db.backends.postgresql,"
+        "NAME=authentication_service,"
+        "USER=authentication_service,"
+        "PASSWORD=password,"
+        "HOST=127.0.0.1,"
         "PORT=5432")
 }
 
@@ -162,13 +163,18 @@ ADDITIONAL_APPS = [
     "storages",
 ]
 
+if not env.bool("BUILDER", False):
+    ADDITIONAL_APPS.append("django_prometheus")  # Metrics
+
 # Project app has to be first in the list.
 INSTALLED_APPS = [
     "authentication_service",
     "authentication_service.user_migration"
 ] + INSTALLED_APPS + ADDITIONAL_APPS
 
-MIDDLEWARE = MIDDLEWARE + [
+MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must come first
+] + MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     # Subclasses django locale.LocaleMiddleware
     "authentication_service.middleware.GELocaleMiddleware",
@@ -176,6 +182,7 @@ MIDDLEWARE = MIDDLEWARE + [
     "authentication_service.middleware.ErrorMiddleware",
     "authentication_service.middleware.SessionDataManagementMiddleware",
     "crum.CurrentRequestUserMiddleware",
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must come last
 ]
 
 # TODO: django-layers-hr needs looking into
