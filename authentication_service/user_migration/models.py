@@ -28,6 +28,13 @@ class TemporaryMigrationUserStore(models.Model):
             models.Index(fields=["username", "client"]),
         ]
 
+    def get_hash_value(self, value):
+        """
+        Convenience method, a central space where hashed values for this
+        instance can be controller if needed.
+        """
+        return make_password(value)
+
     def check_password(self, raw_password):
         return check_password(raw_password, self.pw_hash)
 
@@ -38,12 +45,12 @@ class TemporaryMigrationUserStore(models.Model):
         return check_password(answer.strip().lower(), self.answer_two)
 
     def set_password(self, raw_password):
-        self.pw_hash = make_password(raw_password)
+        self.pw_hash = self.get_hash_value(raw_password)
         self.save()
 
     def set_answers(self, answer_one=None, answer_two=None):
         if answer_one:
-            self.answer_one = make_password(answer_one.strip().lower())
+            self.answer_one = self.get_hash_value(answer_one.strip().lower())
         if answer_two:
-            self.answer_two = make_password(answer_two.strip().lower())
+            self.answer_two = self.get_hash_value(answer_two.strip().lower())
         self.save()
