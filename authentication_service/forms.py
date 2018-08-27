@@ -106,9 +106,9 @@ class RegistrationForm(UserCreationForm):
 
             # Dango form renderer patches the BoundField.css_classes() method
             # to include the bound field name as part of the classes. This is a
-            # special case where we want the underlying functionalityof the
-            # ModelChoice field without any of its front end components or
-            # styling.
+            # special case where the underlying functionality of the
+            # ModelChoice field is to be used, without any of its front end
+            # components or styling.
             self["organisation"].field.__class__.__name__ = \
                 "OverridenBoundFieldClassName"
         else:
