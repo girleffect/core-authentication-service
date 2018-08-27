@@ -26,6 +26,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
+from authentication_service.fields import ParagraphField
 from authentication_service.utils import update_form_fields
 from authentication_service.constants import (
     SECURITY_QUESTION_COUNT,
@@ -73,6 +74,9 @@ class RegistrationForm(UserCreationForm):
             "country", "password1", "password2"
         ]
         exclude = ["terms",]
+        field_classes = {
+            "organisation": ParagraphField,
+        }
 
     def __init__(self, terms_url=None, security=None, required=None,
             hidden=None, organisation_id=None, *args, **kwargs):
@@ -86,31 +90,21 @@ class RegistrationForm(UserCreationForm):
         # Organisation field setup and tweaking
         if organisation_id:
             # Oganisation is a special field, it was never meant to be user
-            # editable. Disabled and alter specific attributes manually.
-            field = self.fields["organisation"]
-            widget = field.widget
+            # editable. Disable or alter specific attributes manually.
 
-            # Remove all other choices and ready cleaned_data value
-            filtered_choices = widget.choices.queryset.filter(
-                id=organisation_id
+            # The ModelForm is still passing the queryset to the field, make
+            # use of it instead of doing own lookup as well.
+            self.organisation = self["organisation"].field.queryset.filter(
+                id=organisation_id).first()
+
+            # Replace the existing ParagraphField with a new one that contains
+            # a new piece of text to display.
+            self["organisation"].field = ParagraphField(
+                paragraph="<b>%s</b>" % _(
+                    "Oragnisation user has been invited to:"
+                    f" {self.organisation.name}"
+                )
             )
-            widget.choices.queryset = filtered_choices
-            self.organisation = filtered_choices.first()
-
-            # Update some field attributes
-            field.empty_label = None
-            field.label = _("Oragnisation user has been invited to:")
-
-            # Override widget templates
-            widget.template_name = "authentication_service/widgets/options_display_only.html"
-
-            # Dango form renderer patches the BoundField.css_classes() method
-            # to include the bound field name as part of the classes. This is a
-            # special case where the underlying functionality of the
-            # ModelChoice field is to be used, without any of its front end
-            # components or styling.
-            self["organisation"].field.__class__.__name__ = \
-                "ARB_BOUND_FIELD_NAME_TO_AVOID_PATCHING"
         else:
             # Fully remove field if no organisation id was provided
             self.fields.pop("organisation")
