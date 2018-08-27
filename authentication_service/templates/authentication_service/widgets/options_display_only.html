@@ -1,0 +1,8 @@
+{# Template for widget that will only display its options as clear text and have no otehr functionality #}
+<div>
+    {% for group_name, group_choices, group_index in widget.optgroups %}
+        {% for option in group_choices %}
+            <p>{{ option.label }}</p>
+        {% endfor %}
+    {% endfor %}
+</div>

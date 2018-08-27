@@ -102,13 +102,13 @@ class RegistrationForm(UserCreationForm):
             field.label = _("Oragnisation user has been invited to:")
 
             # Override widget templates
-            widget.template_name = "authentication_service/widgets/select.html"
+            widget.template_name = "authentication_service/widgets/options_display_only.html"
 
-            # Dango form renderers patches the BoundField.css_classes() method
+            # Dango form renderer patches the BoundField.css_classes() method
             # to include the bound field name as part of the classes. This is a
-            # special case where organisation needs to be introduced relatively
-            # risk free, we require the normal underlying field to still behave
-            # as a ModelChoice field.
+            # special case where we want the underlying functionalityof the
+            # ModelChoice field without any of its front end components or
+            # styling.
             self["organisation"].field.__class__.__name__ = \
                 "OverridenBoundFieldClassName"
         else:
