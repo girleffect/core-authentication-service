@@ -197,7 +197,8 @@ class Command(BaseCommand):
                     site = settings.ACCESS_CONTROL_API.site_create(data={
                         "domain_id": 1,
                         "name": client.name,
-                        "client_id": client.id
+                        "client_id": client.id,
+                        "description": ""
                     })
                     self.stdout.write(
                         self.style.SUCCESS(f"Created site for {client.name}..."))
