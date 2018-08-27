@@ -34,6 +34,7 @@ registration_wizard = views.RegistrationWizard.as_view(
 
 
 urlpatterns = [
+    url(r"^metrics$", views.MetricView.as_view()),
     url(r"^i18n/", include("django.conf.urls.i18n")),
     # API URL's
     url(r"^api/v1/healthcheck$", views.HealthCheckView.as_view(), name="healthcheck"),

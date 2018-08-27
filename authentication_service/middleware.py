@@ -1,3 +1,4 @@
+import time
 from urllib.parse import urlparse, parse_qs, urlencode
 import logging
 
@@ -17,6 +18,7 @@ from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext as _
 from django.utils.translation.trans_real import language_code_prefix_re
 from django.views.i18n import LANGUAGE_QUERY_PARAMETER
+from prometheus_client import Histogram
 
 from authentication_service import exceptions, api_helpers
 from authentication_service.constants import SessionKeys, EXTRA_SESSION_KEY
@@ -350,3 +352,20 @@ class GELocaleMiddleware(LocaleMiddleware):
                     get_query["next"] = next_args["url"] + f"?{urlencode(next_args['qs'], doseq=True)}"
                 new_params = f"?{urlencode(get_query, doseq=True)}" if get_query else ""
                 return self.response_redirect_class(f"{path}{new_params}")
+
+
+H = Histogram(f"authentication_service_http_duration_seconds", "API duration (s)",
+              ["path_prefix", "method", "status"])
+
+
+class MetricMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        start_time = time.time()
+        response = self.get_response(request)
+        H.labels(path_prefix="/".join(request.path.split("/")[:4]),
+                 method=request.method,
+                 status=response.status_code).observe(time.time()-start_time)
+        return response

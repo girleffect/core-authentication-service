@@ -126,11 +126,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 DATABASES = {
-    "default": env.dict("DB_DEFAULT", "ENGINE=django.db.backends.postgresql," \
-        "NAME=authentication_service," \
-        "USER=authentication_service," \
-        "PASSWORD=password," \
-        "HOST=127.0.0.1," \
+    "default": env.dict("DB_DEFAULT",
+        "ENGINE=django.db.backends.postgresql,"
+        "NAME=authentication_service,"
+        "USER=authentication_service,"
+        "PASSWORD=password,"
+        "HOST=127.0.0.1,"
         "PORT=5432")
 }
 
@@ -168,7 +169,9 @@ INSTALLED_APPS = [
     "authentication_service.user_migration"
 ] + INSTALLED_APPS + ADDITIONAL_APPS
 
-MIDDLEWARE = MIDDLEWARE + [
+MIDDLEWARE = [
+    "authentication_service.middleware.MetricMiddleware",  # Must come first
+] + MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     # Subclasses django locale.LocaleMiddleware
     "authentication_service.middleware.GELocaleMiddleware",
