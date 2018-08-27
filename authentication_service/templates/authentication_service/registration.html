@@ -27,13 +27,13 @@
         {# Display terms field ONLY on first page, which is the user data page. #}
         {% if current_step == first_step %}
             <div class="{{ form.terms.css_classes }}">
-                <label class=" Field-label required" for="{{ form.terms.id_for_label }}">
-                    {{ form.terms.label }}
-                </label>
                 <div class="Field-item">
                     {{ form.terms }}
                     {{ form.terms.errors }}
                 </div>
+                <label class=" Field-label required" for="{{ form.terms.id_for_label }}">
+                    {{ form.terms.label }}
+                </label>
                 <div class="Field-message">
                     {{ form.terms.help_text|safe }}
                 </div>
