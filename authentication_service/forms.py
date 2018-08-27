@@ -110,7 +110,7 @@ class RegistrationForm(UserCreationForm):
             # ModelChoice field is to be used, without any of its front end
             # components or styling.
             self["organisation"].field.__class__.__name__ = \
-                "OverridenBoundFieldClassName"
+                "ARB_BOUND_FIELD_NAME_TO_AVOID_PATCHING"
         else:
             # Fully remove field if no organisation id was provided
             self.fields.pop("organisation")
