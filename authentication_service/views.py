@@ -314,6 +314,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             "required": self.request.GET.getlist("requires"),
             "hidden": self.request.GET.getlist("hide"),
             "question_ids": self.request.GET.getlist("question_ids", []),
+            "organisation_id": self.storage.extra_data.get("invitation_data", {}).get("organisation_id")
         }
 
         custom_kwargs.update(
@@ -326,7 +327,6 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 self.storage.extra_data[key] = value
 
         kwargs = super(RegistrationWizard, self).get_form_kwargs()
-        kwargs["organisation_id"] = 1
         if step == "userdata":
             security = self.storage.extra_data.get("security")
             hidden = self.storage.extra_data.get("hidden")
@@ -377,37 +377,24 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 data["user_id"] = user.id
                 data["language_code"] = self.language
                 models.UserSecurityQuestion.objects.create(**data)
-
-        invitation = self.storage.extra_data.get("invitation_data")
-        if invitation:
-            try:
-                organisation = models.Organisation.objects.get(
-                    id=invitation["organisation_id"]
-                )
-            except models.Organisation.DoesNotExist:
-                raise Http404(
-                    f"Organisation you have been invited for does not exist."
-                )
-            user.organisation = organisation
-            user.save()
-            response = api_helpers.invitation_redeem(invitation["id"], user.id)
-            if response.get("error"):
-                inviter = self.inviter
-                return render(
-                    self.request,
-                    "authentication_service/message.html",
-                    context={
-                        "page_meta_title": _("Registration invite error"),
-                        "page_title": _("Registration invite error"),
-                        "page_message": _(
-                            "Oops. You have successfully registered for a" \
-                            " Girl Effect account. Unfortunately something" \
-                            " went wrong while redeeming the invitation." \
-                            f" Please contact {inviter.first_name}" \
-                            f"{inviter.last_name} at {inviter.email}"
-                        ),
-                    }
-                )
+        response = api_helpers.invitation_redeem(invitation["id"], user.id)
+        if response.get("error"):
+            inviter = self.inviter
+            return render(
+                self.request,
+                "authentication_service/message.html",
+                context={
+                    "page_meta_title": _("Registration invite error"),
+                    "page_title": _("Registration invite error"),
+                    "page_message": _(
+                        "Oops. You have successfully registered for a" \
+                        " Girl Effect account. Unfortunately something" \
+                        " went wrong while redeeming the invitation." \
+                        f" Please contact {inviter.first_name}" \
+                        f"{inviter.last_name} at {inviter.email}"
+                    ),
+                }
+            )
 
         # GE-1065 requires ALL users to be logged in
         self.new_user = authenticate(username=username,
