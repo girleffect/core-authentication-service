@@ -299,7 +299,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             initial = {
                 "first_name": invitation.get("first_name"),
                 "last_name": invitation.get("last_name"),
-                "email": invitation.get("email")
+                "email": invitation.get("email"),
             }
         # Formsets take a list of dictionaries for initial data.
         if step == "securityquestions":
@@ -314,7 +314,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             "security": self.request.GET.get("security"),
             "required": self.request.GET.getlist("requires"),
             "hidden": self.request.GET.getlist("hide"),
-            "question_ids": self.request.GET.getlist("question_ids", [])
+            "question_ids": self.request.GET.getlist("question_ids", []),
         }
 
         custom_kwargs.update(
@@ -341,6 +341,11 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 kwargs["required"] = required
             if hidden:
                 kwargs["hidden"] = hidden
+
+            # Organisation id, used to do a lot of extra work on the form if
+            # supplied.
+            kwargs["organisation_id"] = self.storage.extra_data.get(
+                "invitation_data", {}).get("organisation_id")
 
         if step == "securityquestions":
             kwargs = {
@@ -377,19 +382,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 data["user_id"] = user.id
                 data["language_code"] = self.language
                 models.UserSecurityQuestion.objects.create(**data)
-
         invitation = self.storage.extra_data.get("invitation_data")
         if invitation:
-            try:
-                organisation = models.Organisation.objects.get(
-                    id=invitation["organisation_id"]
-                )
-            except models.Organisation.DoesNotExist:
-                raise Http404(
-                    f"Organisation you have been invited for does not exist."
-                )
-            user.organisation = organisation
-            user.save()
             response = api_helpers.invitation_redeem(invitation["id"], user.id)
             if response.get("error"):
                 inviter = self.inviter
