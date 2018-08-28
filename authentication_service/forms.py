@@ -192,7 +192,7 @@ class RegistrationForm(UserCreationForm):
         self.fields["birth_date"].widget.is_required = False
 
     def _html_output(self, *args, **kwargs):
-        # Django does not allow the exclusion of fields on none ModelForm forms.
+        # Django does not allow the exclusion of fields on non-ModelForm forms.
 
         # Remove the field from the form during the html output creation added
         # to template directly.
