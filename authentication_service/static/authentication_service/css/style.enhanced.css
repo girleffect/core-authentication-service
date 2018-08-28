@@ -184,16 +184,14 @@ hr {
       border-color: #4D7779; }
 .Form .BooleanField {
   width: 100%;
-  display: table;
-  position: relative;
-  margin: 0; }
+  position: relative; }
   .Form .BooleanField .Field-label {
-    width: 80%;
-    display: table-cell;
-    vertical-align: middle; }
+    margin-top: 10px;
+    line-height: 22px; }
   .Form .BooleanField .Field-item {
-    vertical-align: middle;
-    text-align: right; }
+    float: left;
+    margin-top: 0;
+    margin-right: 10px; }
     .Form .BooleanField .Field-item .CheckboxInput {
       -webkit-appearance: none;
       -moz-appearance: none;
@@ -205,6 +203,8 @@ hr {
       .Form .BooleanField .Field-item .CheckboxInput:checked {
         border-color: #4D7779;
         background-color: #4D7779; }
+  .Form .BooleanField .Field-message {
+    margin-top: 0; }
 .Form .Field-message--error.Field--required .Field-item input {
   border-color: #ff674d; }
 .Form-buttons {

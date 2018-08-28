@@ -220,6 +220,19 @@ class RegistrationForm(UserCreationForm):
         self.fields["birth_date"].required = False
         self.fields["birth_date"].widget.is_required = False
 
+    def _html_output(self, *args, **kwargs):
+        # Django does not allow the exclusion of fields on non-ModelForm forms.
+
+        # Remove the field from the form during the html output creation added
+        # to template directly.
+        original_fields = self.fields.copy()
+        self.fields.pop("terms")
+        html = super(RegistrationForm, self)._html_output(*args, **kwargs)
+
+        # Replace the original fields.
+        self.fields = original_fields
+        return html
+
     def clean_age(self):
         age = self.cleaned_data.get("age")
         if age and age < CONSENT_AGE:
