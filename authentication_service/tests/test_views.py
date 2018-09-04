@@ -22,6 +22,7 @@ from defender.utils import unblock_username
 from access_control import Invitation
 
 from authentication_service import constants
+from django.contrib.auth.hashers import check_password, make_password
 from authentication_service.models import (
     SecurityQuestion,
     UserSecurityQuestion,
@@ -2096,3 +2097,54 @@ class HealthCheckTestCase(TestCase):
         self.assertContains(response, "server_timestamp")
         self.assertContains(response, "db_timestamp")
         self.assertContains(response, "version")
+
+
+class TestResetPasswordSecurityQuestionsView(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user = get_user_model().objects.create_user(
+            username="user_who_forgets_creds",
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.save()
+
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+        cls.user_answer_one = UserSecurityQuestion.objects.create(
+            question=cls.question_one,
+            user=cls.user,
+            answer=make_password("right")
+        )
+        cls.user_answer_two = UserSecurityQuestion.objects.create(
+            question=cls.question_two,
+            user=cls.user,
+            answer=make_password("right")
+        )
+
+    def test_with_no_answer(self):
+        # Sets up the lookup user id
+        response = self.client.post(
+            reverse("reset_password"), {"email": self.user.username}, follow=True)
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            {}
+        )
+        self.assertEqual(
+            response.context["form"].errors,
+            {
+                f"question_{self.user_answer_one.id}": [
+                    "This field is required."],
+                f"question_{self.user_answer_two.id}": [
+                    "This field is required."],
+                "__all__": ["Please answer all your security questions."],
+            }
+        )
+
