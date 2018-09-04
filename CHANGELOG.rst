@@ -1,6 +1,24 @@
 Changelog
 =========
 
+1.3.0
+-----
+- GEINFRA-60
+- GEINFRA-118
+- GEINFRA-119
+- GEINFRA-124
+- GEINFRA-138
+- GEINFRA-154
+- GEINFRA-236
+- GEINFRA-237
+- GEINFRA-239
+- GEINFRA-245
+- GEINFRA-246
+- GEINFRA-248
+- GEINFRA-249
+- GEINFRA-251
+
+
 1.2.2
 -----
 Bugfix: Correct format of datetime argument passed to the deleted_user_update() call of the User Data Store.
