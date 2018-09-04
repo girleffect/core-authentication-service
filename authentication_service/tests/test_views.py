@@ -2144,7 +2144,7 @@ class TestResetPasswordSecurityQuestionsView(TestCase):
                     "This field is required."],
                 f"question_{self.user_answer_two.id}": [
                     "This field is required."],
-                "__all__": ["Please enter all the answers."],
+                "__all__": ["Please answer all your security questions."],
             }
         )
 

@@ -675,7 +675,9 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
     def clean(self):
         for question in self.questions:
             if not self.cleaned_data.get("question_%s" % question.id, None):
-                raise ValidationError(_("Please enter all the answers."))
+                raise ValidationError(
+                    _("Please answer all your security questions.")
+                )
 
 
 class DeleteAccountForm(forms.Form):
