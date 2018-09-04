@@ -663,7 +663,7 @@ class ResetPasswordForm(PasswordResetForm):
 class ResetPasswordSecurityQuestionsForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        self.questions = kwargs.pop("questions")
+        self.questions = kwargs.pop("questions", [])
         super(
             ResetPasswordSecurityQuestionsForm, self).__init__(*args, **kwargs)
 
@@ -674,8 +674,8 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
 
     def clean(self):
         for question in self.questions:
-            if not self.cleaned_data["question_%s" % question.id]:
-                raise ValidationError(_("Please enter your answer."))
+            if not self.cleaned_data.get("question_%s" % question.id, None):
+                raise ValidationError(_("Please enter all the answers."))
 
 
 class DeleteAccountForm(forms.Form):
