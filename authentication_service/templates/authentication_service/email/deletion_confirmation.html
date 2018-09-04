@@ -1,0 +1,23 @@
+{% load i18n %}
+<html>
+
+<body>
+    <div>
+    {% blocktrans with name=deleter.first_name|title surname=deleter.last_name|title %}
+    Dear {{name}} {{surname}}
+    {% endblocktrans %}
+    </div>
+    <br/>
+    <br/>
+    <div>
+    {% blocktrans with username=user.username id=user.id %}
+    This email serves as confirmation that user '{{ username }}' with ID '{{ id }}' has been removed
+    from the core components, along with all data under our control.
+    {% endblocktrans %}
+    </div>
+    <div>
+    {% trans "Regards," %}<br/>
+    {% trans "The Girl Effect Authentication Service" %}
+    </div>
+</body>
+</html>

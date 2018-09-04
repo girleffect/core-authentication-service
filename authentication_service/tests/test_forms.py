@@ -138,7 +138,7 @@ class TestRegistrationForm(TestCase):
     def test_default_required_toggle(self):
         required = [
             "username", "first_name", "last_name", "email",
-            "nickname", "msisdn", "gender", "birth_date", "country", # TODO: S3-reliant "avatar"
+            "nickname", "msisdn", "gender", "birth_date", "country", "avatar"
         ]
         form = RegistrationForm(data={}, required=required)
         self.assertFalse(form.is_valid())
@@ -151,8 +151,7 @@ class TestRegistrationForm(TestCase):
             "msisdn": ["This field is required."],
             "gender": ["This field is required."],
             "country": ["This field is required."],
-            # TODO: S3-reliant
-            #"avatar": ["This field is required."],
+            "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
@@ -170,8 +169,7 @@ class TestRegistrationForm(TestCase):
             "first_name": ["This field is required."],
             "last_name": ["This field is required."],
             "nickname": ["This field is required."],
-            # TODO: S3-reliant
-            #"avatar": ["This field is required."],
+            "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
@@ -314,7 +312,7 @@ class TestRegistrationForm(TestCase):
     def test_high_security_required_toggle(self):
         required = [
             "username", "first_name", "last_name", "email",
-            "nickname", "msisdn", "gender", "birth_date", "country", # TODO: S3-reliant "avatar"
+            "nickname", "msisdn", "gender", "birth_date", "country", "avatar"
         ]
         form = RegistrationForm(data={}, security="high", required=required)
         self.assertFalse(form.is_valid())
@@ -327,8 +325,7 @@ class TestRegistrationForm(TestCase):
             "msisdn": ["This field is required."],
             "gender": ["This field is required."],
             "country": ["This field is required."],
-            # TODO: S3-reliant
-            #"avatar": ["This field is required."],
+            "avatar": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
             "terms": ["This field is required."],
@@ -489,6 +486,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "username": ["This field is required."],
             "password1": ["This field is required."],
             "password2": ["This field is required."],
+            "gender": ["This field is required."],
             "age": ["This field is required."],
             "terms": ["This field is required."],
         })
@@ -498,6 +496,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "username": "Username",
             "password1": "password",
             "password2": "password",
+            "gender": "female",
             "age": "16",
             "terms": True,
         })
@@ -509,6 +508,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "password1": "password",
             "password2": "password",
             "email": "email@email.com",
+            "gender": "female",
             "age": "16",
             "terms": True,
         })
@@ -520,6 +520,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "password1": "password",
             "password2": "password",
             "msisdn": "0856545698",
+            "gender": "female",
             "age": "16",
             "terms": True,
         })
@@ -533,6 +534,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
             "email": "email@email.com",
             "msisdn": "0856545698",
             "birth_date": datetime.date(2000, 1, 1),
+            "gender": "female",
             "age": "16",
             "terms": True,
         })
@@ -717,6 +719,7 @@ class EditProfileFormTestCase(TestCase):
             username="testuser",
             birth_date=datetime.date(2000, 1, 1),
             email="wrong@email.com",
+            gender="female",
             email_verified=True
         )
         cls.user.save()
@@ -736,7 +739,8 @@ class EditProfileFormTestCase(TestCase):
         data = {
             "email": "right@email.com",
             "msisdn": "+27821234567",
-            "age": 34
+            "age": 34,
+            "gender": "female"
         }
 
         form = EditProfileForm(instance=self.user, data=data)
@@ -795,7 +799,8 @@ class EditProfileFormTestCase(TestCase):
         self.assertEqual(form.errors, {
             "__all__": [
                 "Enter either birth date or age"
-            ]
+            ],
+            "gender": ["This field is required."],
         })
 
     def test_min_required_age(self):
@@ -804,6 +809,7 @@ class EditProfileFormTestCase(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
+            "gender": ["This field is required."],
             "age": [
                 "We are sorry, " \
                 f"users under the age of {constants.CONSENT_AGE}" \
@@ -825,6 +831,7 @@ class EditProfileFormTestCase(TestCase):
     def test_on_required_age(self):
         form = EditProfileForm(data={
             "age": constants.CONSENT_AGE,
+            "gender": "female"
         })
         self.assertTrue(form.is_valid())
         with mock.patch("authentication_service.forms.date") as mocked_date:
@@ -832,6 +839,7 @@ class EditProfileFormTestCase(TestCase):
             mocked_date.side_effect = lambda *args, **kw: datetime.date(*args, **kw)
             form = EditProfileForm(data={
                 "birth_date": datetime.date(2018-constants.CONSENT_AGE, 1, 2),
+                "gender": "female"
             })
             self.assertTrue(form.is_valid())
 

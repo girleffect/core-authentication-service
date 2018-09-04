@@ -16,7 +16,7 @@ env = Env()
 # Project Settings
 HIDE_FIELDS = {
     "global_enable": True,
-    "global_fields": ["email", "birth_date", "nickname"]
+    "global_fields": ["email", "birth_date", "nickname", "avatar"]
 }
 
 # Django Settings
@@ -126,11 +126,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 DATABASES = {
-    "default": env.dict("DB_DEFAULT", "ENGINE=django.db.backends.postgresql," \
-        "NAME=authentication_service," \
-        "USER=authentication_service," \
-        "PASSWORD=password," \
-        "HOST=127.0.0.1," \
+    "default": env.dict("DB_DEFAULT",
+        "ENGINE=django.db.backends.postgresql,"
+        "NAME=authentication_service,"
+        "USER=authentication_service,"
+        "PASSWORD=password,"
+        "HOST=127.0.0.1,"
         "PORT=5432")
 }
 
@@ -168,7 +169,9 @@ INSTALLED_APPS = [
     "authentication_service.user_migration"
 ] + INSTALLED_APPS + ADDITIONAL_APPS
 
-MIDDLEWARE = MIDDLEWARE + [
+MIDDLEWARE = [
+    "authentication_service.middleware.MetricMiddleware",  # Must come first
+] + MIDDLEWARE + [
     "corsheaders.middleware.CorsMiddleware",
     # Subclasses django locale.LocaleMiddleware
     "authentication_service.middleware.GELocaleMiddleware",
@@ -243,7 +246,9 @@ OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
     "authentication_service.oidc_provider_settings.CustomScopeClaims"
 OIDC_GRANT_TYPE_PASSWORD_ENABLE = True  # https://tools.ietf.org/html/rfc6749#section-4.3
-OIDC_IDTOKEN_EXPIRE = 60 * 60  # An hour
+OIDC_IDTOKEN_EXPIRE = 2 * 60 * 60  # Two hours
+OIDC_TOKEN_EXPIRE = 2 * 60 * 60  # Two hours
+OIDC_CODE_EXPIRE = 2 * 60 * 60  # Two hours
 
 FORM_RENDERERS = {
     "replace-as-p": True,
@@ -321,7 +326,10 @@ LOGGING = {
 }
 
 RAVEN_CONFIG = {
-    "dsn": env.str("SENTRY_DSN", None)
+    "dsn": env.str("SENTRY_DSN", None),
+    "processors": (
+        "project.processors.SanitizeHeadersProcessor",
+    )
 }
 
 ########################

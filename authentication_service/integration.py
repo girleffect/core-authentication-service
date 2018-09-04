@@ -175,6 +175,19 @@ class Implementation(AbstractStubClass):
 
         return {}
 
+    @staticmethod
+    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param cutoff_date: (optional) An optional cutoff date to purge invites before this date
+        :type cutoff_date: string
+        """
+        if cutoff_date is None:
+            cutoff_date = str(datetime.datetime.now().date())
+
+        tasks.purge_expired_invitations.delay(cutoff_date)
+        return {}
+
     # organisation_list -- Synchronisation point for meld
     @staticmethod
     def organisation_list(request, offset=None, limit=None, organisation_ids=None, *args, **kwargs):
@@ -272,6 +285,20 @@ class Implementation(AbstractStubClass):
         result = to_dict_with_custom_fields(organisation, ORGANISATION_VALUES)
         return strip_empty_optional_fields(result)
 
+    # request_user_deletion -- Synchronisation point for meld
+    @staticmethod
+    def request_user_deletion(request, body, *args, **kwargs):
+        """
+        :param request: An HttpRequest
+        :param body: A dictionary containing the parsed and validated body
+        :type body: dict
+        """
+        # We check that the specified user and deleter actually exist, before
+        # calling the asynchronous deletion task.
+        user = get_object_or_404(CoreUser, id=body["user_id"])
+        deleter = get_object_or_404(CoreUser, id=body["deleter_id"])
+        tasks.delete_user_and_data_task.delay(user.id, deleter.id, body["reason"])
+
     # user_list -- Synchronisation point for meld
     @staticmethod
     def user_list(request, offset=None, limit=None, birth_date=None, country=None, date_joined=None, email=None, email_verified=None, first_name=None, gender=None, is_active=None, last_login=None, last_name=None, msisdn=None, msisdn_verified=None, nickname=None, organisation_id=None, updated_at=None, username=None, q=None, tfa_enabled=None, has_organisation=None, order_by=None, user_ids=None, site_ids=None, *args, **kwargs):
@@ -334,26 +361,24 @@ class Implementation(AbstractStubClass):
 
         # Bools
         if tfa_enabled is not None:
-            check = tfa_enabled.lower() == "true"
             users = users.filter(
-                totpdevice__isnull=not check
+                totpdevice__isnull=not tfa_enabled
             )
         if has_organisation is not None:
-            check = has_organisation.lower() == "true"
             users = users.filter(
-                organisation__isnull=not check
+                organisation__isnull=not has_organisation
             )
         if email_verified is not None:
             users = users.filter(
-                email_verified=email_verified.lower() == "true"
+                email_verified=email_verified
             )
         if is_active is not None:
             users = users.filter(
-                is_active=is_active.lower() == "true"
+                is_active=is_active
             )
         if msisdn_verified is not None:
             users = users.filter(
-                msisdn_verified=msisdn_verified.lower() == "true"
+                msisdn_verified=msisdn_verified
             )
 
         # Dates
@@ -461,17 +486,3 @@ class Implementation(AbstractStubClass):
         instance.save()
         result = to_dict_with_custom_fields(instance, USER_VALUES)
         return strip_empty_optional_fields(result)
-
-    @staticmethod
-    def purge_expired_invitations(request, cutoff_date=None, *args, **kwargs):
-        """
-        :param request: An HttpRequest
-        :param cutoff_date: An optional cutoff date to purge invites before this date
-        :type cutoff_date: date
-        """
-        if cutoff_date is None:
-            cutoff_date = str(datetime.datetime.now().date())
-        tasks.purge_expired_invitations.apply_async(
-            cutoff_date=cutoff_date
-        )
-        return

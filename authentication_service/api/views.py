@@ -5,7 +5,6 @@ Do not modify this file. It is generated from the Swagger specification.
 import importlib
 import logging
 import json
-import jsonschema
 from jsonschema import ValidationError
 
 from django.conf import settings
@@ -44,7 +43,7 @@ Stubs = getattr(Module, class_name)
 def maybe_validate_result(result_string, schema):
     if VALIDATE_RESPONSES:
         try:
-            jsonschema.validate(json.loads(result_string, encoding="utf8"), schema)
+            utils.validate(json.loads(result_string, encoding="utf8"), schema)
         except ValidationError as e:
             LOGGER.error(e.message)
 
@@ -124,34 +123,56 @@ class Clients(View):
         :param self: A Clients instance
         :param request: An HttpRequest
         """
-        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
-        offset = request.GET.get("offset", None)
-        # limit (optional): integer An optional query parameter to limit the number of results returned.
-        limit = request.GET.get("limit", None)
-        # client_ids (optional): array An optional list of client ids
-        client_ids = request.GET.get("client_ids", None)
-        if client_ids is not None:
-            client_ids = client_ids.split(",")
-        # client_token_id (optional): string An optional client id to filter on. This is not the primary key.
-        client_token_id = request.GET.get("client_token_id", None)
-        result = Stubs.client_list(request, offset, limit, client_ids, client_token_id, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
+            offset = request.GET.get("offset", None)
+            if offset is not None:
+                offset = int(offset)
+                schema = {'type': 'integer', 'default': 0, 'minimum': 0}
+                utils.validate(offset, schema)
+            # limit (optional): integer An optional query parameter to limit the number of results returned.
+            limit = request.GET.get("limit", None)
+            if limit is not None:
+                limit = int(limit)
+                schema = {'type': 'integer', 'minimum': 1, 'maximum': 100, 'default': 20}
+                utils.validate(limit, schema)
+            # client_ids (optional): array An optional list of client ids
+            client_ids = request.GET.get("client_ids", None)
+            if client_ids is not None:
+                client_ids = client_ids.split(",")
+                if client_ids:
+                    client_ids = [int(e) for e in client_ids]
+            if client_ids is not None:
+                schema = {'type': 'array', 'items': {'type': 'integer'}, 'minItems': 1, 'uniqueItems': True}
+                utils.validate(client_ids, schema)
+            # client_token_id (optional): string An optional client id to filter on. This is not the primary key.
+            client_token_id = request.GET.get("client_token_id", None)
+            if client_token_id is not None:
+                schema = {'type': 'string'}
+                utils.validate(client_token_id, schema)
+            result = Stubs.client_list(request, offset, limit, client_ids, client_token_id, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -166,24 +187,30 @@ class ClientsClientId(View):
         :param request: An HttpRequest
         :param client_id: string A string value identifying the client
         """
-        result = Stubs.client_read(request, client_id, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.client_read(request, client_id, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -220,32 +247,49 @@ class Countries(View):
         :param self: A Countries instance
         :param request: An HttpRequest
         """
-        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
-        offset = request.GET.get("offset", None)
-        # limit (optional): integer An optional query parameter to limit the number of results returned.
-        limit = request.GET.get("limit", None)
-        # country_codes (optional): array An optional list of country codes
-        country_codes = request.GET.get("country_codes", None)
-        if country_codes is not None:
-            country_codes = country_codes.split(",")
-        result = Stubs.country_list(request, offset, limit, country_codes, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
+            offset = request.GET.get("offset", None)
+            if offset is not None:
+                offset = int(offset)
+                schema = {'type': 'integer', 'default': 0, 'minimum': 0}
+                utils.validate(offset, schema)
+            # limit (optional): integer An optional query parameter to limit the number of results returned.
+            limit = request.GET.get("limit", None)
+            if limit is not None:
+                limit = int(limit)
+                schema = {'type': 'integer', 'minimum': 1, 'maximum': 100, 'default': 20}
+                utils.validate(limit, schema)
+            # country_codes (optional): array An optional list of country codes
+            country_codes = request.GET.get("country_codes", None)
+            if country_codes is not None:
+                country_codes = country_codes.split(",")
+            if country_codes is not None:
+                schema = {'type': 'array', 'items': {'type': 'string', 'minLength': 2, 'maxLength': 2}, 'minItems': 1, 'uniqueItems': True}
+                utils.validate(country_codes, schema)
+            result = Stubs.country_list(request, offset, limit, country_codes, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -260,24 +304,30 @@ class CountriesCountryCode(View):
         :param request: An HttpRequest
         :param country_code: string A string value identifying the country
         """
-        result = Stubs.country_read(request, country_code, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.country_read(request, country_code, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -292,26 +342,35 @@ class InvitationsInvitationIdSend(View):
         :param request: An HttpRequest
         :param invitation_id: string 
         """
-        # language (optional): string 
-        language = request.GET.get("language", None)
-        result = Stubs.invitation_send(request, invitation_id, language, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            # language (optional): string 
+            language = request.GET.get("language", None)
+            if language is not None:
+                schema = {'type': 'string', 'default': 'en'}
+                utils.validate(language, schema)
+            result = Stubs.invitation_send(request, invitation_id, language, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -325,26 +384,35 @@ class InvitationsPurgeExpired(View):
         :param self: A InvitationsPurgeExpired instance
         :param request: An HttpRequest
         """
-        # cutoff_date (optional): string An optional cutoff date to purge invites before this date
-        cutoff_date = request.GET.get("cutoff_date", None)
-        result = Stubs.purge_expired_invitations(request, cutoff_date, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            # cutoff_date (optional): string An optional cutoff date to purge invites before this date
+            cutoff_date = request.GET.get("cutoff_date", None)
+            if cutoff_date is not None:
+                schema = {'type': 'string', 'format': 'date'}
+                utils.validate(cutoff_date, schema)
+            result = Stubs.purge_expired_invitations(request, cutoff_date, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -397,32 +465,51 @@ class Organisations(View):
         :param self: A Organisations instance
         :param request: An HttpRequest
         """
-        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
-        offset = request.GET.get("offset", None)
-        # limit (optional): integer An optional query parameter to limit the number of results returned.
-        limit = request.GET.get("limit", None)
-        # organisation_ids (optional): array An optional list of organisation ids
-        organisation_ids = request.GET.get("organisation_ids", None)
-        if organisation_ids is not None:
-            organisation_ids = organisation_ids.split(",")
-        result = Stubs.organisation_list(request, offset, limit, organisation_ids, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
+            offset = request.GET.get("offset", None)
+            if offset is not None:
+                offset = int(offset)
+                schema = {'type': 'integer', 'default': 0, 'minimum': 0}
+                utils.validate(offset, schema)
+            # limit (optional): integer An optional query parameter to limit the number of results returned.
+            limit = request.GET.get("limit", None)
+            if limit is not None:
+                limit = int(limit)
+                schema = {'type': 'integer', 'minimum': 1, 'maximum': 100, 'default': 20}
+                utils.validate(limit, schema)
+            # organisation_ids (optional): array An optional list of organisation ids
+            organisation_ids = request.GET.get("organisation_ids", None)
+            if organisation_ids is not None:
+                organisation_ids = organisation_ids.split(",")
+                if organisation_ids:
+                    organisation_ids = [int(e) for e in organisation_ids]
+            if organisation_ids is not None:
+                schema = {'type': 'array', 'items': {'type': 'integer'}, 'minItems': 1, 'uniqueItems': True}
+                utils.validate(organisation_ids, schema)
+            result = Stubs.organisation_list(request, offset, limit, organisation_ids, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
     def post(self, request, *args, **kwargs):
         """
@@ -433,24 +520,30 @@ class Organisations(View):
         if not body:
             return HttpResponseBadRequest("Body required")
 
-        result = Stubs.organisation_create(request, body, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.organisation_create(request, body, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.POST_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.POST_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -470,24 +563,30 @@ class OrganisationsOrganisationId(View):
         :param request: An HttpRequest
         :param organisation_id: integer An integer identifying an organisation a user belongs to
         """
-        result = Stubs.organisation_delete(request, organisation_id, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.organisation_delete(request, organisation_id, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.DELETE_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.DELETE_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
     def get(self, request, organisation_id, *args, **kwargs):
         """
@@ -495,24 +594,30 @@ class OrganisationsOrganisationId(View):
         :param request: An HttpRequest
         :param organisation_id: integer An integer identifying an organisation a user belongs to
         """
-        result = Stubs.organisation_read(request, organisation_id, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.organisation_read(request, organisation_id, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
     def put(self, request, organisation_id, *args, **kwargs):
         """
@@ -524,24 +629,72 @@ class OrganisationsOrganisationId(View):
         if not body:
             return HttpResponseBadRequest("Body required")
 
-        result = Stubs.organisation_update(request, body, organisation_id, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.organisation_update(request, body, organisation_id, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.PUT_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.PUT_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(utils.login_required_no_redirect, name="post")
+class RequestUserDeletion(View):
+
+    POST_RESPONSE_SCHEMA = schemas.__UNSPECIFIED__
+    POST_BODY_SCHEMA = schemas.request_user_deletion
+
+    def post(self, request, *args, **kwargs):
+        """
+        :param self: A RequestUserDeletion instance
+        :param request: An HttpRequest
+        """
+        body = utils.body_to_dict(request.body, self.POST_BODY_SCHEMA)
+        if not body:
+            return HttpResponseBadRequest("Body required")
+
+        try:
+
+            result = Stubs.request_user_deletion(request, body, )
+
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
+
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
+
+            maybe_validate_result(response.content, self.POST_RESPONSE_SCHEMA)
+
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -571,7 +724,7 @@ class Users(View):
             },
             "date_joined": {
                 "description": "",
-                "format": "date",
+                "format": "date-time",
                 "readOnly": true,
                 "type": "string"
             },
@@ -653,78 +806,166 @@ class Users(View):
         :param self: A Users instance
         :param request: An HttpRequest
         """
-        # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
-        offset = request.GET.get("offset", None)
-        # limit (optional): integer An optional query parameter to limit the number of results returned.
-        limit = request.GET.get("limit", None)
-        # birth_date (optional): string An optional birth_date range filter
-        birth_date = request.GET.get("birth_date", None)
-        # country (optional): string An optional country filter
-        country = request.GET.get("country", None)
-        # date_joined (optional): string An optional date joined range filter
-        date_joined = request.GET.get("date_joined", None)
-        # email (optional): string An optional case insensitive email inner match filter
-        email = request.GET.get("email", None)
-        # email_verified (optional): boolean An optional email verified filter
-        email_verified = request.GET.get("email_verified", None)
-        # first_name (optional): string An optional case insensitive first name inner match filter
-        first_name = request.GET.get("first_name", None)
-        # gender (optional): string An optional gender filter
-        gender = request.GET.get("gender", None)
-        # is_active (optional): boolean An optional is_active filter
-        is_active = request.GET.get("is_active", None)
-        # last_login (optional): string An optional last login range filter
-        last_login = request.GET.get("last_login", None)
-        # last_name (optional): string An optional case insensitive last name inner match filter
-        last_name = request.GET.get("last_name", None)
-        # msisdn (optional): string An optional case insensitive MSISDN inner match filter
-        msisdn = request.GET.get("msisdn", None)
-        # msisdn_verified (optional): boolean An optional MSISDN verified filter
-        msisdn_verified = request.GET.get("msisdn_verified", None)
-        # nickname (optional): string An optional case insensitive nickname inner match filter
-        nickname = request.GET.get("nickname", None)
-        # organisation_id (optional): integer An optional filter on the organisation id
-        organisation_id = request.GET.get("organisation_id", None)
-        # updated_at (optional): string An optional updated_at range filter
-        updated_at = request.GET.get("updated_at", None)
-        # username (optional): string An optional case insensitive username inner match filter
-        username = request.GET.get("username", None)
-        # q (optional): string An optional case insensitive inner match filter across all searchable text fields
-        q = request.GET.get("q", None)
-        # tfa_enabled (optional): boolean An optional filter based on whether a user has 2FA enabled or not
-        tfa_enabled = request.GET.get("tfa_enabled", None)
-        # has_organisation (optional): boolean An optional filter based on whether a user belongs to an organisation or not
-        has_organisation = request.GET.get("has_organisation", None)
-        # order_by (optional): array Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
-        order_by = request.GET.get("order_by", None)
-        if order_by is not None:
-            order_by = order_by.split(",")
-        # user_ids (optional): array An optional list of user ids
-        user_ids = request.GET.get("user_ids", None)
-        if user_ids is not None:
-            user_ids = user_ids.split(",")
-        # site_ids (optional): array An optional list of site ids
-        site_ids = request.GET.get("site_ids", None)
-        if site_ids is not None:
-            site_ids = site_ids.split(",")
-        result = Stubs.user_list(request, offset, limit, birth_date, country, date_joined, email, email_verified, first_name, gender, is_active, last_login, last_name, msisdn, msisdn_verified, nickname, organisation_id, updated_at, username, q, tfa_enabled, has_organisation, order_by, user_ids, site_ids, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            # offset (optional): integer An optional query parameter specifying the offset in the result set to start from.
+            offset = request.GET.get("offset", None)
+            if offset is not None:
+                offset = int(offset)
+                schema = {'type': 'integer', 'default': 0, 'minimum': 0}
+                utils.validate(offset, schema)
+            # limit (optional): integer An optional query parameter to limit the number of results returned.
+            limit = request.GET.get("limit", None)
+            if limit is not None:
+                limit = int(limit)
+                schema = {'type': 'integer', 'minimum': 1, 'maximum': 100, 'default': 20}
+                utils.validate(limit, schema)
+            # birth_date (optional): string An optional birth_date range filter
+            birth_date = request.GET.get("birth_date", None)
+            if birth_date is not None:
+                schema = {'type': 'string'}
+                utils.validate(birth_date, schema)
+            # country (optional): string An optional country filter
+            country = request.GET.get("country", None)
+            if country is not None:
+                schema = {'type': 'string', 'minLength': 2, 'maxLength': 2}
+                utils.validate(country, schema)
+            # date_joined (optional): string An optional date joined range filter
+            date_joined = request.GET.get("date_joined", None)
+            if date_joined is not None:
+                schema = {'type': 'string'}
+                utils.validate(date_joined, schema)
+            # email (optional): string An optional case insensitive email inner match filter
+            email = request.GET.get("email", None)
+            if email is not None:
+                schema = {'type': 'string', 'minLength': 3}
+                utils.validate(email, schema)
+            # email_verified (optional): boolean An optional email verified filter
+            email_verified = request.GET.get("email_verified", None)
+            if email_verified is not None:
+                email_verified = (email_verified.lower() == "true")
+                schema = {'type': 'boolean'}
+                utils.validate(email_verified, schema)
+            # first_name (optional): string An optional case insensitive first name inner match filter
+            first_name = request.GET.get("first_name", None)
+            if first_name is not None:
+                schema = {'type': 'string', 'minLength': 3}
+                utils.validate(first_name, schema)
+            # gender (optional): string An optional gender filter
+            gender = request.GET.get("gender", None)
+            if gender is not None:
+                schema = {'type': 'string'}
+                utils.validate(gender, schema)
+            # is_active (optional): boolean An optional is_active filter
+            is_active = request.GET.get("is_active", None)
+            if is_active is not None:
+                is_active = (is_active.lower() == "true")
+                schema = {'type': 'boolean'}
+                utils.validate(is_active, schema)
+            # last_login (optional): string An optional last login range filter
+            last_login = request.GET.get("last_login", None)
+            if last_login is not None:
+                schema = {'type': 'string'}
+                utils.validate(last_login, schema)
+            # last_name (optional): string An optional case insensitive last name inner match filter
+            last_name = request.GET.get("last_name", None)
+            if last_name is not None:
+                schema = {'type': 'string', 'minLength': 3}
+                utils.validate(last_name, schema)
+            # msisdn (optional): string An optional case insensitive MSISDN inner match filter
+            msisdn = request.GET.get("msisdn", None)
+            if msisdn is not None:
+                schema = {'type': 'string', 'minLength': 3}
+                utils.validate(msisdn, schema)
+            # msisdn_verified (optional): boolean An optional MSISDN verified filter
+            msisdn_verified = request.GET.get("msisdn_verified", None)
+            if msisdn_verified is not None:
+                msisdn_verified = (msisdn_verified.lower() == "true")
+                schema = {'type': 'boolean'}
+                utils.validate(msisdn_verified, schema)
+            # nickname (optional): string An optional case insensitive nickname inner match filter
+            nickname = request.GET.get("nickname", None)
+            if nickname is not None:
+                schema = {'type': 'string', 'minLength': 3}
+                utils.validate(nickname, schema)
+            # organisation_id (optional): integer An optional filter on the organisation id
+            organisation_id = request.GET.get("organisation_id", None)
+            if organisation_id is not None:
+                organisation_id = int(organisation_id)
+                schema = {'type': 'integer'}
+                utils.validate(organisation_id, schema)
+            # updated_at (optional): string An optional updated_at range filter
+            updated_at = request.GET.get("updated_at", None)
+            if updated_at is not None:
+                schema = {'type': 'string'}
+                utils.validate(updated_at, schema)
+            # username (optional): string An optional case insensitive username inner match filter
+            username = request.GET.get("username", None)
+            if username is not None:
+                schema = {'type': 'string', 'minLength': 3}
+                utils.validate(username, schema)
+            # q (optional): string An optional case insensitive inner match filter across all searchable text fields
+            q = request.GET.get("q", None)
+            if q is not None:
+                schema = {'type': 'string', 'minLength': 3}
+                utils.validate(q, schema)
+            # tfa_enabled (optional): boolean An optional filter based on whether a user has 2FA enabled or not
+            tfa_enabled = request.GET.get("tfa_enabled", None)
+            if tfa_enabled is not None:
+                tfa_enabled = (tfa_enabled.lower() == "true")
+                schema = {'type': 'boolean'}
+                utils.validate(tfa_enabled, schema)
+            # has_organisation (optional): boolean An optional filter based on whether a user belongs to an organisation or not
+            has_organisation = request.GET.get("has_organisation", None)
+            if has_organisation is not None:
+                has_organisation = (has_organisation.lower() == "true")
+                schema = {'type': 'boolean'}
+                utils.validate(has_organisation, schema)
+            # order_by (optional): array Fields and directions to order by, e.g. "-created_at,username". Add "-" in front of a field name to indicate descending order.
+            order_by = request.GET.get("order_by", None)
+            if order_by is not None:
+                order_by = order_by.split(",")
+            if order_by is not None:
+                schema = {'type': 'array', 'items': {'type': 'string'}, 'uniqueItems': True}
+                utils.validate(order_by, schema)
+            # user_ids (optional): array An optional list of user ids
+            user_ids = request.GET.get("user_ids", None)
+            if user_ids is not None:
+                user_ids = user_ids.split(",")
+            if user_ids is not None:
+                schema = {'type': 'array', 'items': {'type': 'string', 'format': 'uuid'}, 'minItems': 1, 'uniqueItems': True}
+                utils.validate(user_ids, schema)
+            # site_ids (optional): array An optional list of site ids
+            site_ids = request.GET.get("site_ids", None)
+            if site_ids is not None:
+                site_ids = site_ids.split(",")
+                if site_ids:
+                    site_ids = [int(e) for e in site_ids]
+            if site_ids is not None:
+                schema = {'type': 'array', 'items': {'type': 'integer'}, 'minItems': 1, 'uniqueItems': True}
+                utils.validate(site_ids, schema)
+            result = Stubs.user_list(request, offset, limit, birth_date, country, date_joined, email, email_verified, first_name, gender, is_active, last_login, last_name, msisdn, msisdn_verified, nickname, organisation_id, updated_at, username, q, tfa_enabled, has_organisation, order_by, user_ids, site_ids, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -744,24 +985,30 @@ class UsersUserId(View):
         :param request: An HttpRequest
         :param user_id: string A UUID value identifying the user.
         """
-        result = Stubs.user_delete(request, user_id, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.user_delete(request, user_id, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.DELETE_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.DELETE_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
     def get(self, request, user_id, *args, **kwargs):
         """
@@ -769,24 +1016,30 @@ class UsersUserId(View):
         :param request: An HttpRequest
         :param user_id: string A UUID value identifying the user.
         """
-        result = Stubs.user_read(request, user_id, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.user_read(request, user_id, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.GET_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
     def put(self, request, user_id, *args, **kwargs):
         """
@@ -798,24 +1051,30 @@ class UsersUserId(View):
         if not body:
             return HttpResponseBadRequest("Body required")
 
-        result = Stubs.user_update(request, body, user_id, )
+        try:
 
-        if type(result) is tuple:
-            result, headers = result
-        else:
-            headers = {}
+            result = Stubs.user_update(request, body, user_id, )
 
-        # The result may contain fields with date or datetime values that will not
-        # pass JSON validation. We first create the response, and then maybe validate
-        # the response content against the schema.
-        response = JsonResponse(result, safe=False)
+            if type(result) is tuple:
+                result, headers = result
+            else:
+                headers = {}
 
-        maybe_validate_result(response.content, self.PUT_RESPONSE_SCHEMA)
+            # The result may contain fields with date or datetime values that will not
+            # pass JSON validation. We first create the response, and then maybe validate
+            # the response content against the schema.
+            response = JsonResponse(result, safe=False)
 
-        for key, val in headers.items():
-            response[key] = val
+            maybe_validate_result(response.content, self.PUT_RESPONSE_SCHEMA)
 
-        return response
+            for key, val in headers.items():
+                response[key] = val
+
+            return response
+        except ValidationError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve.message))
+        except ValueError as ve:
+            return HttpResponseBadRequest("Parameter validation failed: {}".format(ve))
 
 
 class __SWAGGER_SPEC__(View):
@@ -958,6 +1217,27 @@ class __SWAGGER_SPEC__(View):
             },
             "type": "object"
         },
+        "request_user_deletion": {
+            "properties": {
+                "deleter_id": {
+                    "format": "uuid",
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "format": "uuid",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "user_id",
+                "deleter_id",
+                "reason"
+            ],
+            "type": "object"
+        },
         "user": {
             "properties": {
                 "avatar": {
@@ -980,7 +1260,7 @@ class __SWAGGER_SPEC__(View):
                 },
                 "date_joined": {
                     "description": "",
-                    "format": "date",
+                    "format": "date-time",
                     "readOnly": true,
                     "type": "string"
                 },
@@ -1612,6 +1892,38 @@ class __SWAGGER_SPEC__(View):
                                 ""
                             ]
                         }
+                    }
+                },
+                "tags": [
+                    "authentication"
+                ]
+            }
+        },
+        "/request_user_deletion": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "operationId": "request_user_deletion",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "data",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request_user_deletion",
+                            "x-scope": [
+                                ""
+                            ]
+                        }
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
                     }
                 },
                 "tags": [

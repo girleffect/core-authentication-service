@@ -222,7 +222,7 @@ definitions:
       date_joined:
         description: ''
         type: string
-        format: date
+        format: 'date-time'
         readOnly: true
       last_login:
         description: ''
@@ -334,6 +334,21 @@ definitions:
       - consented_at
       - created_at
       - updated_at
+  request_user_deletion:
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: uuid
+      deleter_id:
+        type: string
+        format: uuid
+      reason:
+        type: string
+    required:
+      - user_id
+      - deleter_id
+      - reason
 
 #  Token:
 #    description: |
@@ -1035,6 +1050,25 @@ paths:
           description: 'Began task to purge invitations.'
         403:
           description: 'Forbidden'
+      tags:
+        - authentication
+
+  /request_user_deletion:
+    post:
+      operationId: request_user_deletion
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/request_user_deletion'
+          required: true
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
       tags:
         - authentication
 

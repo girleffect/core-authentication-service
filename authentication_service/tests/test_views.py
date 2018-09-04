@@ -22,6 +22,7 @@ from defender.utils import unblock_username
 from access_control import Invitation
 
 from authentication_service import constants
+from django.contrib.auth.hashers import check_password, make_password
 from authentication_service.models import (
     SecurityQuestion,
     UserSecurityQuestion,
@@ -756,6 +757,7 @@ class TestRegistrationView(TestCase):
                         "userdata-username": "Username",
                         "userdata-password1": "@32786AGYJUFEtyfusegh,.,",
                         "userdata-password2": "@32786AGYJUFEtyfusegh,.,",
+                        "userdata-gender": "female",
                         "userdata-age": "18",
                         "userdata-birth_date": "2000-01-01",
                         "userdata-terms": True,
@@ -830,6 +832,7 @@ class TestRegistrationView(TestCase):
                         "userdata-username": "AmazingInviteUser",
                         "userdata-password1": "@A2315,./,asDV",
                         "userdata-password2": "@A2315,./,asDV",
+                        "userdata-gender": "female",
                         "userdata-age": "18",
                         "userdata-birth_date": "2000-01-01",
                         "userdata-terms": True,
@@ -854,6 +857,7 @@ class TestRegistrationView(TestCase):
                     "userdata-username": "Username",
                     "userdata-password1": "@A2315,./,asDV",
                     "userdata-password2": "@A2315,./,asDV",
+                    "userdata-gender": "female",
                     "userdata-age": "18",
                     "userdata-birth_date": "2000-01-01",
                     "userdata-terms": True,
@@ -872,6 +876,7 @@ class TestRegistrationView(TestCase):
                     "userdata-username": "Username0",
                     "userdata-password1": "password",
                     "userdata-password2": "password",
+                    "userdata-gender": "female",
                     "userdata-age": "16",
                     "userdata-terms": True,
                     "userdata-email": "email1@email.com",
@@ -890,6 +895,7 @@ class TestRegistrationView(TestCase):
                     "userdata-password1": "password",
                     "userdata-password2": "password",
                     "userdata-birth_date": "1999-01-01",
+                    "userdata-gender": "female",
                     "userdata-age": "16",
                     "userdata-terms": True,
                     "userdata-email": "email2@email.com",
@@ -932,6 +938,7 @@ class TestRegistrationView(TestCase):
                 "userdata-password1": "password",
                 "userdata-password2": "password",
                 "userdata-birth_date": "1999-01-01",
+                "userdata-gender": "female",
                 "userdata-age": "18",
                 "userdata-terms": True,
                 "userdata-email": "email2@email.com",
@@ -973,6 +980,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "Username2",
+                "userdata-gender": "female",
                 "userdata-age": "18",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1025,6 +1033,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "Username3",
+                "userdata-gender": "female",
                 "userdata-age": "18",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1063,6 +1072,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "RedirectUser",
+                "userdata-gender": "female",
                 "userdata-age": "18",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1090,6 +1100,7 @@ class TestRegistrationView(TestCase):
                     "userdata-terms": True,
                     "userdata-email": "emailunique@email.com",
                     "userdata-msisdn": "0856545698",
+                    "userdata-gender": "female",
                     "userdata-age": "16",
                 },
                 follow=True
@@ -1110,6 +1121,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "Unique@User@Name",
+                "userdata-gender": "female",
                 "userdata-age": "16",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1184,6 +1196,12 @@ class TestRegistrationView(TestCase):
             'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
             'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
             'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
             'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
             'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
             'WARNING:authentication_service.forms:Received required field that is not on form: someawesomefield',
@@ -1216,6 +1234,12 @@ class TestRegistrationView(TestCase):
             'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
             'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
             'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: notontheform',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
+            'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
             'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
             'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
             'WARNING:authentication_service.forms:Received hidden field that is not on form: someawesomefield',
@@ -1279,6 +1303,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "stupidnowrequiredtestuseroriginal",
+                "userdata-gender": "female",
                 "userdata-age": "16",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1310,6 +1335,7 @@ class TestRegistrationView(TestCase):
             {
                 "registration_wizard-current_step": "userdata",
                 "userdata-username": "stupidnowrequiredtestuser",
+                "userdata-gender": "female",
                 "userdata-age": "16",
                 "userdata-password1": "awesom#saFe3",
                 "userdata-password2": "awesom#saFe3",
@@ -1402,7 +1428,8 @@ class EditProfileViewTestCase(TestCase):
             ),
             {
                 "email": "test@user.com",
-                "birth_date": "2001-01-01"
+                "birth_date": "2001-01-01",
+                "gender": "female"
             },
             follow=True
         )
@@ -1420,7 +1447,8 @@ class EditProfileViewTestCase(TestCase):
                 reverse("edit_profile"),
                 {
                     "email": "test@user.com",
-                    "age": "14"
+                    "age": "14",
+                    "gender": "female"
                 },
                 follow=True
             )
@@ -2069,3 +2097,54 @@ class HealthCheckTestCase(TestCase):
         self.assertContains(response, "server_timestamp")
         self.assertContains(response, "db_timestamp")
         self.assertContains(response, "version")
+
+
+class TestResetPasswordSecurityQuestionsView(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user = get_user_model().objects.create_user(
+            username="user_who_forgets_creds",
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        cls.user.save()
+
+        cls.question_one = SecurityQuestion.objects.create(
+            question_text="Some text for the one question"
+        )
+        cls.question_two = SecurityQuestion.objects.create(
+            question_text="Some text for the other question"
+        )
+
+        cls.user_answer_one = UserSecurityQuestion.objects.create(
+            question=cls.question_one,
+            user=cls.user,
+            answer=make_password("right")
+        )
+        cls.user_answer_two = UserSecurityQuestion.objects.create(
+            question=cls.question_two,
+            user=cls.user,
+            answer=make_password("right")
+        )
+
+    def test_with_no_answer(self):
+        # Sets up the lookup user id
+        response = self.client.post(
+            reverse("reset_password"), {"email": self.user.username}, follow=True)
+        response = self.client.post(
+            response.redirect_chain[-1][0],
+            {}
+        )
+        self.assertEqual(
+            response.context["form"].errors,
+            {
+                f"question_{self.user_answer_one.id}": [
+                    "This field is required."],
+                f"question_{self.user_answer_two.id}": [
+                    "This field is required."],
+                "__all__": ["Please answer all your security questions."],
+            }
+        )
+

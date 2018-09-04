@@ -26,6 +26,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from authentication_service import models, tasks
+from authentication_service.fields import ParagraphField
 from authentication_service.utils import update_form_fields
 from authentication_service.constants import (
     SECURITY_QUESTION_COUNT,
@@ -66,19 +67,47 @@ class RegistrationForm(UserCreationForm):
     class Meta:
         model = get_user_model()
         fields = [
-            "username", "first_name", "last_name", "email",
+            # Org field should never be directly editable via the form
+            "organisation",
+            "username", "avatar", "first_name", "last_name", "email",
             "nickname", "msisdn", "gender", "age", "birth_date",
             "country", "password1", "password2"
         ]
         exclude = ["terms",]
+        field_classes = {
+            "organisation": ParagraphField,
+        }
 
-    def __init__(self, terms_url=None, security=None, required=None, hidden=None, *args, **kwargs):
+    def __init__(self, terms_url=None, security=None, required=None,
+            hidden=None, organisation_id=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
         self.terms_url = terms_url or GE_TERMS_URL
 
         # Security value is required later in form processes as well.
         self.security = security
+
+        # Organisation field setup and tweaking
+        if organisation_id:
+            # Oganisation is a special field, it was never meant to be user
+            # editable. Disable or alter specific attributes manually.
+
+            # The ModelForm is still passing the queryset to the field, make
+            # use of it instead of doing own lookup as well.
+            self.organisation = self["organisation"].field.queryset.filter(
+                id=organisation_id).first()
+
+            # Replace the existing ParagraphField with a new one that contains
+            # a new piece of text to display.
+            self["organisation"].field = ParagraphField(
+                paragraph="<b>%s</b>" % _(
+                    "Oragnisation user has been invited to:"
+                    f" {self.organisation.name}"
+                )
+            )
+        else:
+            # Fully remove field if no organisation id was provided
+            self.fields.pop("organisation")
 
         # Set update form update variables, for manipulation as init
         # progresses.
@@ -160,7 +189,11 @@ class RegistrationForm(UserCreationForm):
 
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
-            required_fields.update(["age"])
+            # Age is not on the model, but is used to calculate the user birth
+            # date. Gender is not required on the model but is required for all
+            # users.
+            required_fields.update(["age", "gender"])
+
             for field in settings.HIDE_FIELDS["global_fields"]:
                 if field in required_fields:
                     continue  # Required field cannot be hidden
@@ -186,6 +219,19 @@ class RegistrationForm(UserCreationForm):
         # can be indirectly populated if the age is provided.
         self.fields["birth_date"].required = False
         self.fields["birth_date"].widget.is_required = False
+
+    def _html_output(self, *args, **kwargs):
+        # Django does not allow the exclusion of fields on non-ModelForm forms.
+
+        # Remove the field from the form during the html output creation added
+        # to template directly.
+        original_fields = self.fields.copy()
+        self.fields.pop("terms")
+        html = super(RegistrationForm, self)._html_output(*args, **kwargs)
+
+        # Replace the original fields.
+        self.fields = original_fields
+        return html
 
     def clean_age(self):
         age = self.cleaned_data.get("age")
@@ -233,6 +279,9 @@ class RegistrationForm(UserCreationForm):
                 _("Password not long enough.")
             )
         return password2
+
+    def clean_organisation(self):
+        return self.organisation
 
     def _get_validation_exclusions(self):
         # By default fields that are allowed to be blank on the model are not
@@ -422,9 +471,15 @@ class EditProfileForm(forms.ModelForm):
             }
         }
 
+        # Gender is not required on the model but is required for all users
+        required_fields = ["gender"]
+
         # Final overrides from settings
         if settings.HIDE_FIELDS["global_enable"]:
             for field in settings.HIDE_FIELDS["global_fields"]:
+                if field in required_fields:
+                    continue  # Required field cannot be hidden
+
                 self.fields[field].required = False
                 self.fields[field].widget.is_required = False
                 hidden_fields.append(field)
@@ -446,6 +501,7 @@ class EditProfileForm(forms.ModelForm):
         update_form_fields(
             self,
             fields_data=fields_data,
+            required=required_fields,
             hidden=hidden_fields
         )
 
@@ -607,7 +663,7 @@ class ResetPasswordForm(PasswordResetForm):
 class ResetPasswordSecurityQuestionsForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        self.questions = kwargs.pop("questions")
+        self.questions = kwargs.pop("questions", [])
         super(
             ResetPasswordSecurityQuestionsForm, self).__init__(*args, **kwargs)
 
@@ -618,8 +674,10 @@ class ResetPasswordSecurityQuestionsForm(forms.Form):
 
     def clean(self):
         for question in self.questions:
-            if not self.cleaned_data["question_%s" % question.id]:
-                raise ValidationError(_("Please enter your answer."))
+            if not self.cleaned_data.get("question_%s" % question.id, None):
+                raise ValidationError(
+                    _("Please answer all your security questions.")
+                )
 
 
 class DeleteAccountForm(forms.Form):

@@ -59,23 +59,6 @@ class UserDataForm(forms.Form):
         return password2
 
 
-class CreateTempUserForm(forms.ModelForm):
-    class Meta:
-        model = TemporaryMigrationUserStore
-        fields = "__all__"
-
-    def save(self, *args, **kwargs):
-        instance = super().save(*args, **kwargs)
-
-        # Instance has clear text saved at this stage, hash it
-        instance.set_password(self.instance.pw_hash)
-        instance.set_answers(
-            answer_one=self.instance.answer_one,
-            answer_two=self.instance.answer_two
-        )
-        return instance
-
-
 class SecurityQuestionGateForm(forms.Form):
     """
     NOTE agreed upon, if user only has one answer, it must be answer_one

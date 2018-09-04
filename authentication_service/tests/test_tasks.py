@@ -3,20 +3,24 @@ import logging
 import uuid
 from unittest.mock import MagicMock
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.management import call_command
 from django.test import override_settings, TestCase
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from oidc_provider.models import Token, UserConsent, Code
 
-from access_control import Invitation
-from authentication_service import tasks
-
+import access_control
+import user_data_store
+from access_control import PurgedInvitations
+from authentication_service import tasks, models
 
 # TODO we need more test functions, for now only actual use cases are covered.
-from authentication_service.models import Organisation
+from authentication_service.models import Organisation, UserSite, UserSecurityQuestion
 
 
 class SendMailCase(TestCase):
@@ -130,7 +134,7 @@ class SendInvitationMail(TestCase):
     def setUpTestData(cls):
         cls.organisation = Organisation.objects.create(
             id=1,
-            name=f"test unit",
+            name="test unit",
             description="Description"
         )
 
@@ -146,7 +150,7 @@ class SendInvitationMail(TestCase):
 
     def test_send_invitation_mail(self):
         test_invitation_id = uuid.uuid4()
-        invitation = Invitation(
+        invitation = access_control.Invitation(
             id=test_invitation_id.hex,
             invitor_id=self.user.id,
             first_name="Thename",
@@ -173,13 +177,123 @@ class SendInvitationMail(TestCase):
 
 class PurgeExpiredInvitations(TestCase):
 
-    @override_settings(AC_OPERTAIONAL_API=MagicMock(
-        purge_expired_invitations=MagicMock(return_value={
-            "amount": 4
-        }))
+    @override_settings(AC_OPERATIONAL_API=MagicMock(
+        purge_expired_invitations=MagicMock())
     )
     def test_purge_expired_invitation_task(self):
-        result = tasks.purge_expired_invitations(
-            cutoff_date=str(datetime.datetime.now().date())
+        settings.AC_OPERATIONAL_API.purge_expired_invitations.return_value = \
+            PurgedInvitations(amount=4)
+        with self.assertLogs(level=logging.INFO) as logs:
+            tasks.purge_expired_invitations(
+                cutoff_date=str(datetime.datetime.now().date())
+            )
+
+        self.assertEqual(logs.output, ["INFO:authentication_service.tasks:Purged 4 invitations."])
+
+
+class DeleteUserAndData(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        user_model = get_user_model()
+
+        cls.organisation = Organisation.objects.create(
+            id=1,
+            name="test unit",
+            description="Description"
         )
-        self.assertEqual(result["amount"], 4)
+
+        cls.deleter = user_model.objects.create(
+            username="deleter",
+            first_name="Del",
+            last_name="Eter",
+            email="deleter@example.com",
+            birth_date=datetime.date(2000, 1, 1)
+        )
+
+        cls.user = user_model.objects.create(
+            username="Username",
+            first_name="Us",
+            last_name="Er",
+            email="user@example.com",
+            birth_date=datetime.date(2000, 1, 1)
+        )
+
+        cls.user_site = models.UserSite.objects.create(
+            user=cls.user,
+            site_id=1
+        )
+        cls.user_site.save()
+
+        call_command("load_security_questions")
+
+        cls.user_security_question = models.UserSecurityQuestion.objects.create(
+            user=cls.user,
+            question_id=1
+        )
+
+    @override_settings(
+        AC_OPERATIONAL_API=MagicMock(
+            delete_user_data=MagicMock(
+                return_value=access_control.UserDeletionData(amount=10)
+            )
+        ),
+        USER_DATA_STORE_API=MagicMock(
+            deleteduser_read=MagicMock(return_value=None),
+            deleteduser_create=MagicMock(return_value={}),
+            deleteduser_update=MagicMock(return_value={}),
+            deletedusersite_read=MagicMock(return_value=None),
+            deletedusersite_create=MagicMock(return_value={}),
+            deletedusersite_update=MagicMock(return_value={}),
+            delete_user_data=MagicMock(
+                return_value=user_data_store.UserDeletionData(amount=5)
+            )
+        )
+    )
+    def test_delete_user_and_data_task(self):
+        with self.assertLogs(level=logging.DEBUG) as logger:
+            tasks.delete_user_and_data_task(
+                user_id=self.user.id,
+                deleter_id=self.deleter.id,
+                reason="Because this is a test"
+            )
+
+        self.assertEquals(
+            logger.output, [
+                "DEBUG:authentication_service.tasks:10 rows deleted from Access Control",
+                "DEBUG:authentication_service.tasks:5 rows deleted from User Data Store",
+                "INFO:authentication_service.tasks:Queued deletion confirmation for Username"
+                f" ({self.user.id}) to Del Eter (deleter@example.com)",
+            ])
+
+        self.assertFalse(Token.objects.filter(user=self.user).exists())
+
+        self.assertFalse(UserConsent.objects.filter(user=self.user).exists())
+
+        self.assertFalse(Code.objects.filter(user=self.user).exists())
+
+        self.assertFalse(UserSite.objects.filter(user=self.user).exists())
+
+        self.assertFalse(UserSecurityQuestion.objects.filter(user=self.user).exists())
+
+        with self.assertRaises(models.UserSite.DoesNotExist):
+            models.UserSite.objects.get(id=self.user_site.id)
+
+        user_model = get_user_model()
+        with self.assertRaises(user_model.DoesNotExist):
+            user_model.objects.get(id=self.user.id)
+
+    def test_delete_user_and_data_task_nonexistent_user(self):
+        user_id = uuid.uuid4()
+        with self.assertLogs(level=logging.DEBUG) as logger:
+            tasks.delete_user_and_data_task(
+                user_id=user_id,
+                deleter_id=self.deleter.id,
+                reason="Because this is a test"
+            )
+
+        self.assertEquals(
+            logger.output, [
+                f"ERROR:authentication_service.tasks:User {user_id} cannot be deleted "
+                "because it does not exist."
+            ])

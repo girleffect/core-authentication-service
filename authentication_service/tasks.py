@@ -1,24 +1,32 @@
 import logging
 import typing
 import uuid
+from datetime import datetime
+
+from celery.task import task
+from oidc_provider.models import Token, Code, UserConsent
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core import signing
 from django.core.mail import EmailMultiAlternatives
+from django.forms import model_to_dict
 from django.template import loader
 from django.utils import timezone, translation
 from django.utils.html import strip_tags
 from django.utils.http import urlencode
 from django.utils.translation import ugettext as _
 
-from celery.task import task
-
-from authentication_service.models import CoreUser, Organisation
+from authentication_service.models import Organisation, UserSite, UserSecurityQuestion
+from access_control.rest import ApiException as AccessControlApiException
+from user_data_store.rest import ApiException as UserDataStoreApiException
 
 logger = logging.getLogger(__name__)
 
 FROM_EMAIL = "auth@gehosting.org"
+
+UserModel = get_user_model()
 
 MAIL_TYPE_DATA = {
     "default": {
@@ -131,7 +139,7 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
     """
     language = language or "en"
     with translation.override(language):
-        sender = CoreUser.objects.get(pk=invitation["invitor_id"])
+        sender = UserModel.objects.get(pk=invitation["invitor_id"])
         recipient = invitation["email"]
         subject = _("Please create your Girl Effect account")
 
@@ -171,14 +179,189 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
                     f"to {invitation['first_name']} {invitation['last_name']}")
 
 
-@task(name="purge_expired_invitations_task")
+@task(name="purge_expired_invitations_task",
+      default_retry_delay=5 * 60,
+      autoretry_for=(AccessControlApiException,),
+      retry_backoff=True,
+      retry_backoff_max=600,
+      retry_jitter=True)
 def purge_expired_invitations(cutoff_date):
     """
     Task to call the purge_expired_invitations on the access_control API.
     :param cutoff_date: The cutoff_date for invitations.
     :return:
     """
-    return settings.AC_OPERTAIONAL_API.purge_expired_invitations(
+    result = settings.AC_OPERATIONAL_API.purge_expired_invitations(
         cutoff_date=cutoff_date
     )
+    logger.info(f"Purged {result.amount} invitations.")
 
+
+@task(name="delete_user_and_data",
+      default_retry_delay=5 * 60,
+      autoretry_for=(AccessControlApiException, UserDataStoreApiException),
+      retry_backoff=True,
+      retry_backoff_max=600,
+      retry_jitter=True)
+def delete_user_and_data_task(user_id: uuid.UUID, deleter_id: uuid.UUID, reason: str):
+    """
+    A task to clean up user-related data on the core components and remove
+    the specified user profile itself.
+    We keep track of deleted users (see the architecture documentation for the reasons)
+    as the sites that they have visited.
+    https://praekeltorg.atlassian.net/wiki/spaces/GECI/pages/477266059/Detailed+Architectural+Design#DetailedArchitecturalDesign-DeletionofUserData
+
+    IMPORTANT: This function is written so that it is idempotent, i.e. it can be run repeatedly
+    without any unwanted side-effects. The reason is that, should something fail (like an API call),
+    this task can be retried at a later stage.
+
+    :param user_id: The user to delete.
+    :param deleter_id: The user requesting the deletion.
+    :param reason: The reason for the deletion.
+    """
+    user_data_store_api = settings.USER_DATA_STORE_API
+    operational_api = settings.AC_OPERATIONAL_API
+
+    # Cast UUIDs to strings, which can be used in both the API calls and
+    # model lookups.
+    user_id = str(user_id)
+    deleter_id = str(deleter_id)
+
+    try:
+        user = UserModel.objects.get(id=user_id)
+
+        # Disable user
+        user.is_active = False
+        user.save()
+    except UserModel.DoesNotExist:
+        logger.error(f"User {user_id} cannot be deleted because it does not exist.")
+        return  # Nothing to do
+
+    # Check if this job has been attempted before.
+    try:
+        deleted_user = user_data_store_api.deleteduser_read(user_id)
+    except UserDataStoreApiException as e:
+        if e.status == 404:
+            deleted_user = None
+        else:
+            raise
+
+    if deleted_user is None:
+        # Create DeletedUser entry
+        data = {
+            "id": user_id,
+            "username": user.username,
+            "deleter_id": deleter_id,
+            "reason": reason
+        }
+        if user.email:
+            data["email"] = user.email
+
+        if user.msisdn:
+            data["msisdn"] = user.msisdn
+
+        user_data_store_api.deleteduser_create(data=data)
+
+    # Create DeletedSite entries
+    for user_site in UserSite.objects.filter(user_id=user_id):
+        try:
+            deleted_user_site = user_data_store_api.deletedusersite_read(user_id, user_site.site_id)
+        except UserDataStoreApiException as e:
+            if e.status == 404:
+                deleted_user_site = None
+            else:
+                raise
+
+        if deleted_user_site is None:
+            user_data_store_api.deletedusersite_create(
+                data={
+                    "deleted_user_id": user_id,
+                    "site_id": user_site.site_id,
+                }
+            )
+
+    # Delete tokens
+    Token.objects.filter(user_id=user_id).delete()
+
+    # Delete consent
+    UserConsent.objects.filter(user_id=user_id).delete()
+
+    # Delete code
+    Code.objects.filter(user_id=user_id).delete()
+
+    # Delete UserSite entries
+    UserSite.objects.filter(user_id=user_id).delete()
+
+    # Delete UserSecurityQuestion entries
+    UserSecurityQuestion.objects.filter(user_id=user_id).delete()
+
+    # Delete Access Control data
+    result = operational_api.delete_user_data(user_id)
+    logger.debug(f"{result.amount} rows deleted from Access Control")
+
+    # Delete User Data Store data and set the "deleted_at" value
+    # of the DeletedUser entity.
+    result = user_data_store_api.delete_user_data(user_id)
+    logger.debug(f"{result.amount} rows deleted from User Data Store")
+
+    user_data_store_api.deleteduser_update(
+        user_id, data={"deleted_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")}
+    )
+
+    # Keep a copy of some of the fields for the email notification
+    user_dict = model_to_dict(user, fields=[
+        "id", "username", "first_name", "last_name"
+    ])
+    # For some reason model_to_dict does not include the id. Add it explicitly.
+    user_dict["id"] = user_id
+
+    # Finally, delete the user
+    user.delete()
+
+    # We try to send a confirmation email to the user requesting the deletion.
+    # If it fails, we cannot retry
+    try:
+        deleter = UserModel.objects.get(id=deleter_id)
+        deleter_dict = model_to_dict(deleter, fields=[
+            "username", "first_name", "last_name", "email"
+        ])
+        if deleter.email:
+            send_deletion_confirmation_task.delay(
+                user_dict, deleter_dict
+            )
+            logger.info(f"Queued deletion confirmation for {user_dict['username']} ({user_dict['id']})"
+                        f" to {deleter.first_name} {deleter.last_name} ({deleter.email})")
+    except UserModel.DoesNotExist:
+        logger.error(f"User {deleter_id} cannot be found, so we cannot send an email.")
+
+
+@task(name="send_deletion_confirmation",
+      default_retry_delay=5 * 60,
+      retry_backoff=True,
+      retry_backoff_max=600,
+      retry_jitter=True)
+def send_deletion_confirmation_task(
+    user: dict,
+    deleter: dict,
+):
+    subject = _("Confirmation of user and data deletion")
+
+    # Generate the email from the template
+    html_content = loader.render_to_string(
+        "authentication_service/email/deletion_confirmation.html",
+        {"user": user, "deleter": deleter}
+    )
+    text_content = strip_tags(html_content)
+    message = EmailMultiAlternatives(
+        subject=subject,
+        body=text_content,
+        from_email=FROM_EMAIL,
+        reply_to=["no-reply@gehosting.org"],
+        to=[deleter["email"]],  # Must be a list
+        headers={"Unique-ID": uuid.uuid1().hex},
+    )
+    message.attach_alternative(html_content, "text/html")
+    message.send()
+
+    logger.info(f"Sent deletion confirmation for {user['username']} ({user['id']})"
+                f" to {deleter['first_name']} {deleter['last_name']} ({deleter['email']})")

@@ -5,6 +5,7 @@ import pkg_resources
 import socket
 import urllib
 
+import prometheus_client
 from defender.decorators import watch_login
 from defender.utils import is_user_already_locked, lockout_response
 from formtools.wizard.views import NamedUrlSessionWizardView
@@ -23,10 +24,11 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView,
     PasswordChangeView
 )
-from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth import get_user_model
 from django.core import signing
+from django.core.exceptions import ValidationError
+from django.core.files.storage import DefaultStorage
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import connection
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -35,8 +37,8 @@ from django.utils.functional import cached_property
 from django.http import (
     HttpResponseRedirect,
     JsonResponse,
-    Http404
-)
+    Http404,
+    HttpResponse)
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -184,6 +186,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
     form_list = registration_forms
     condition_dict = {"securityquestions": show_security_questions}
     template_name = "authentication_service/registration.html"
+    file_storage = DefaultStorage()
 
     # Needed to stop a NoneType error from triggering in django internals. The
     # formset does not require a queryset.
@@ -296,7 +299,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             initial = {
                 "first_name": invitation.get("first_name"),
                 "last_name": invitation.get("last_name"),
-                "email": invitation.get("email")
+                "email": invitation.get("email"),
             }
         # Formsets take a list of dictionaries for initial data.
         if step == "securityquestions":
@@ -311,7 +314,7 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             "security": self.request.GET.get("security"),
             "required": self.request.GET.getlist("requires"),
             "hidden": self.request.GET.getlist("hide"),
-            "question_ids": self.request.GET.getlist("question_ids", [])
+            "question_ids": self.request.GET.getlist("question_ids", []),
         }
 
         custom_kwargs.update(
@@ -338,6 +341,11 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 kwargs["required"] = required
             if hidden:
                 kwargs["hidden"] = hidden
+
+            # Organisation id, used to do a lot of extra work on the form if
+            # supplied.
+            kwargs["organisation_id"] = self.storage.extra_data.get(
+                "invitation_data", {}).get("organisation_id")
 
         if step == "securityquestions":
             kwargs = {
@@ -374,19 +382,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                 data["user_id"] = user.id
                 data["language_code"] = self.language
                 models.UserSecurityQuestion.objects.create(**data)
-
         invitation = self.storage.extra_data.get("invitation_data")
         if invitation:
-            try:
-                organisation = models.Organisation.objects.get(
-                    id=invitation["organisation_id"]
-                )
-            except models.Organisation.DoesNotExist:
-                raise Http404(
-                    f"Organisation you have been invited for does not exist."
-                )
-            user.organisation = organisation
-            user.save()
             response = api_helpers.invitation_redeem(invitation["id"], user.id)
             if response.get("error"):
                 inviter = self.inviter
@@ -757,3 +754,11 @@ class HealthCheckView(View):
         }
 
         return JsonResponse(data)
+
+
+class MetricView(View):
+
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(prometheus_client.generate_latest(),
+                                content_type=prometheus_client.CONTENT_TYPE_LATEST)
+        return response
