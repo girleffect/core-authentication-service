@@ -66,6 +66,7 @@ LANGUAGES = [
     ("my", _("Burmese")),
     ("ny", _("Chichewa")),
     ("prs", _("Dari")),
+    ("en-you", _("Springster english youth")),
 ]
 
 EXTRA_LANG_INFO = {
