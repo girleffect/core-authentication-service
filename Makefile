@@ -8,6 +8,11 @@ CODEGEN_VERSION=2.4.0
 CODEGEN=java -jar swagger-codegen-cli-$(CODEGEN_VERSION).jar generate
 USER_DATA_STORE_CLIENT_DIR=user_data_store
 ACCESS_CONTROL_CLIENT_DIR=access_control
+
+# Seemingly the language directory naming is case, underscore and possibly char
+# count sensitive. Based on django/conf/locale; en_GB, zh_Hant,... An underscore
+# followed by two characters, both should be uppercase. Underscore followed by
+# more than two characters, only the first should be uppercase.
 LANGUAGES=ar bn bur_MM en es fa fr ha id khm_KH kin_RW ny prs pt ru swa_TZ th tl ur vi en_You
 
 # Colours.
