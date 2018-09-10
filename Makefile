@@ -8,7 +8,7 @@ CODEGEN_VERSION=2.4.0
 CODEGEN=java -jar swagger-codegen-cli-$(CODEGEN_VERSION).jar generate
 USER_DATA_STORE_CLIENT_DIR=user_data_store
 ACCESS_CONTROL_CLIENT_DIR=access_control
-LANGUAGES=ar bn bur_MM en es fa fr ha id khm_KH kin_RW ny prs pt ru swa_TZ th tl ur vi en-you
+LANGUAGES=ar bn bur_MM en es fa fr ha id khm_KH kin_RW ny prs pt ru swa_TZ th tl ur vi en_You
 
 # Colours.
 CLEAR=\033[0m
