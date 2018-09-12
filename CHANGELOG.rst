@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.4.0
+-----
+- Added test language: en-you
+- Added `CORS_ORIGIN_WHITELIST` environment variable setting.
+
 1.3.0
 -----
 - GEINFRA-60
