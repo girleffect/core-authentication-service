@@ -8,7 +8,12 @@ CODEGEN_VERSION=2.4.0
 CODEGEN=java -jar swagger-codegen-cli-$(CODEGEN_VERSION).jar generate
 USER_DATA_STORE_CLIENT_DIR=user_data_store
 ACCESS_CONTROL_CLIENT_DIR=access_control
-LANGUAGES=ar bn bur_MM en es fa fr ha id khm_KH kin_RW ny prs pt ru swa_TZ th tl ur vi
+
+# Seemingly the language directory naming is case, underscore and possibly char
+# count sensitive. Based on django/conf/locale; en_GB, zh_Hant,... An underscore
+# followed by two characters, both should be uppercase. Underscore followed by
+# more than two characters, only the first should be uppercase.
+LANGUAGES=ar bn bur_MM en es fa fr ha id khm_KH kin_RW ny prs pt ru swa_TZ th tl ur vi en_You
 
 # Colours.
 CLEAR=\033[0m
@@ -101,7 +106,7 @@ make-translations:
 	@echo "$(CYAN)Ensuring that language directories exists...$(CLEAR)"
 	for language in ${LANGUAGES}; do mkdir -p "locale/$${language}"; done
 	@echo "$(CYAN)Generating .po files...$(CLEAR)"
-	mkdir other_packages
+	mkdir -p other_packages
 	cp -r ./ve/lib/python3.6/site-packages/oidc_provider ./other_packages
 	cp -r ./ve/lib/python3.6/site-packages/two_factor ./other_packages
 	django-admin makemessages --all -i "ve/*"
@@ -111,7 +116,7 @@ make-translations:
 translate:
 	@echo "$(CYAN)Compiling translation files...$(CLEAR)"
 	django-admin compilemessages
-	@echo "$(GREEN)DONE($CLEAR)"
+	@echo "$(GREEN)DONE$(CLEAR)"
 
 swagger-codegen-cli-$(CODEGEN_VERSION).jar:
 	# curl https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/$(CODEGEN_VERSION)/swagger-codegen-cli-$(CODEGEN_VERSION).jar
