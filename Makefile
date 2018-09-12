@@ -106,7 +106,7 @@ make-translations:
 	@echo "$(CYAN)Ensuring that language directories exists...$(CLEAR)"
 	for language in ${LANGUAGES}; do mkdir -p "locale/$${language}"; done
 	@echo "$(CYAN)Generating .po files...$(CLEAR)"
-	mkdir other_packages
+	mkdir -p other_packages
 	cp -r ./ve/lib/python3.6/site-packages/oidc_provider ./other_packages
 	cp -r ./ve/lib/python3.6/site-packages/two_factor ./other_packages
 	django-admin makemessages --all -i "ve/*"
@@ -116,7 +116,7 @@ make-translations:
 translate:
 	@echo "$(CYAN)Compiling translation files...$(CLEAR)"
 	django-admin compilemessages
-	@echo "$(GREEN)DONE($CLEAR)"
+	@echo "$(GREEN)DONE$(CLEAR)"
 
 swagger-codegen-cli-$(CODEGEN_VERSION).jar:
 	# curl https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/$(CODEGEN_VERSION)/swagger-codegen-cli-$(CODEGEN_VERSION).jar
