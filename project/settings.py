@@ -220,7 +220,7 @@ CORS_ORIGIN_WHITELIST = env.str("CORS_ORIGIN_WHITELIST",
     "localhost:8000,127.0.0.1:8000,"  # Development: Management Layer UI
     "localhost:3000,127.0.0.1:3000,"  # Development: Management Portal
     "core-management-layer:8000,core-management-portal:3000"  # Demo environment
-)
+).split(",")
 
 if env.bool("USE_DEFAULT_STORAGE", True) is False:
     # CloudFront domain
