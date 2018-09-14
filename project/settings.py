@@ -219,7 +219,7 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", "127.0.0.1,localhost")
 CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST",
     "localhost:8000,127.0.0.1:8000,"  # Development: Management Layer UI
     "localhost:3000,127.0.0.1:3000,"  # Development: Management Portal
-    "core-management-layer:8000,core-management-portal:3000"  # Demo environment
+    "core-management-layer:8000,core-management-portal:3000,core-management-portal"  # Demo environment
 )
 
 if env.bool("USE_DEFAULT_STORAGE", True) is False:
