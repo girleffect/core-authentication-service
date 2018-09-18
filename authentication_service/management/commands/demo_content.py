@@ -177,6 +177,25 @@ class Command(BaseCommand):
             "Created" if created else "Updated", c.client_id
         )))
 
+        c, created = Client.objects.update_or_create(
+            client_id="core_data_ingestion",
+            defaults={
+                "name": "Data ingestion service",
+                "client_secret": "core_data_ingestion_secret",
+                "response_type": "code",
+                "jwt_alg": "HS256",
+                "redirect_uris": [
+                    "http://core-data-ingestion-site/oidc/callback/",
+                ],
+                "post_logout_redirect_uris": [
+                    "http://core-data-ingestion-site/",
+                ],
+            }
+        )
+        self.stdout.write(self.style.SUCCESS("{} {}".format(
+            "Created" if created else "Updated", c.client_id
+        )))
+
         # Set up Site and SiteDataSchema objects
         if not options["no_api_calls"]:
             for client in Client.objects.all():
