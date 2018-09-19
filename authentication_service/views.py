@@ -288,7 +288,6 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
                     f"Organisation you have been invited for does not exist."
                 )
 
-
         return dispatch
 
     def get_form_initial(self, step):
@@ -420,7 +419,12 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
     def get_success_response(self):
         key = CLIENT_URI_SESSION_KEY
-        uri = utils.get_session_data(self.request, key)
+        invitation = self.storage.extra_data.get("invitation_data")
+        if invitation and "redirect_url" in invitation:
+            # If a redirect URL was specified in the invitation, it takes precedence.
+            uri = invitation["redirect_url"]
+        else:
+            uri = utils.get_session_data(self.request, key)
 
         ## GE-1117: Disabled
         #if hasattr(
