@@ -185,7 +185,7 @@ class Command(BaseCommand):
                 "response_type": "code",
                 "jwt_alg": "HS256",
                 "redirect_uris": [
-                    "http://core-data-ingestion-site/oidc/callback/",
+                    "http://core-data-ingestion-site:8000/oidc/callback/",
                 ],
                 "post_logout_redirect_uris": [
                     "http://core-data-ingestion-site/",
