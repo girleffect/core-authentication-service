@@ -625,13 +625,6 @@ class TestRegistrationView(TestCase):
             created_at=timezone.now(),
             updated_at=timezone.now()
         )
-        cls.invitation_redirect_url = InvitationRedirectUrl(
-            id=1,
-            url="http://example.com/redirect?foo=bar",
-            description="The description",
-            created_at=datetime.datetime.now(),
-            updated_at=datetime.datetime.now(),
-        )
 
     def test_invite_tampered_signature(self):
         invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
@@ -856,7 +849,7 @@ class TestRegistrationView(TestCase):
 
     @override_settings(ACCESS_CONTROL_API=MagicMock())
     @patch("authentication_service.api_helpers.invitation_redeem")
-    def test_form_redeem_success_with_redirect(self, mocked_redeem):
+    def test_form_redeem_success_with_invitation_redirect(self, mocked_redeem):
         # NOTE self.invitation.id != invite_id, due to invitation values being
         # mocked as well.
         with mock.patch("authentication_service.api_helpers.settings") as mocked_settings:
