@@ -109,6 +109,12 @@ parameters:
     required: true
     type: string
     format: uuid
+  invitationredirecturl_id:
+    description: A unique integer value identifying the redirect URL.
+    in: path
+    name: invitationredirecturl_id
+    required: true
+    type: integer
   permission_id:
     description: A unique integer value identifying the permission.
     in: path
@@ -640,6 +646,8 @@ definitions:
       expires_at:
         type: string
         format: 'date-time'
+      invitation_redirect_url_id:
+        type: integer
       created_at:
         type: string
         format: 'date-time'
@@ -680,6 +688,8 @@ definitions:
       expires_at:
         type: string
         format: 'date-time'
+      invitation_redirect_url_id:
+        type: integer
     required:
       - invitor_id
       - first_name
@@ -708,6 +718,55 @@ definitions:
       expires_at:
         type: string
         format: 'date-time'
+      invitation_redirect_url_id:
+        type: integer
+    minProperties: 1
+
+  invitation_redirect_url:
+    type: object
+    properties:
+      id:
+        type: integer
+      url:
+        type: string
+        format: uri
+      description:
+        type: string
+      created_at:
+        type: string
+        format: 'date-time'
+        readOnly: true
+      updated_at:
+        type: string
+        format: 'date-time'
+        readOnly: true
+    required:
+    - id
+    - url
+    - description
+    - created_at
+    - updated_at
+
+  invitation_redirect_url_create:
+    type: object
+    properties:
+      url:
+        type: string
+        format: uri
+      description:
+        type: string
+    required:
+    - url
+    - description
+
+  invitation_redirect_url_update:
+    type: object
+    properties:
+      url:
+        type: string
+        format: uri
+      description:
+        type: string
     minProperties: 1
 
   invitation_domain_role:
@@ -1494,6 +1553,96 @@ paths:
           description: 'Gone: Resource has expired or no longer exists'
       tags:
         - access_control
+
+  /invitationredirecturls:
+    get:
+      operationId: invitationredirecturl_list
+      parameters:
+      - $ref: '#/parameters/optional_offset'
+      - $ref: '#/parameters/optional_limit'
+      - name: invitationredirecturl_ids
+        description: An optional list of invitationredirecturl ids
+        in: query
+        type: array
+        items:
+          type: integer
+        required: false
+        minItems: 1
+        collectionFormat: csv
+        uniqueItems: true
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: ''
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/invitation_redirect_url'
+      tags:
+      - access_control
+    post:
+      consumes:
+      - application/json
+      operationId: invitationredirecturl_create
+      parameters:
+      - in: body
+        name: data
+        schema:
+          $ref: '#/definitions/invitation_redirect_url_create'
+      produces:
+      - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/invitation_redirect_url'
+      tags:
+      - access_control
+
+  '/invitationredirecturls/{invitationredirecturl_id}':
+    parameters:
+    - $ref: '#/parameters/invitationredirecturl_id'
+    delete:
+      operationId: invitationredirecturl_delete
+      responses:
+        '204':
+          description: ''
+      tags:
+      - access_control
+    get:
+      operationId: invitationredirecturl_read
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/invitation_redirect_url'
+      tags:
+      - access_control
+    put:
+      consumes:
+      - application/json
+      operationId: invitationredirecturl_update
+      parameters:
+      - in: body
+        name: data
+        schema:
+          $ref: '#/definitions/invitation_redirect_url_update'
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/invitation_redirect_url'
+      tags:
+      - access_control
 
   /invitationdomainroles:
     get:
