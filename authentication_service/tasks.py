@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 
 from celery.task import task
-from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_datetime
 from oidc_provider.models import Token, Code, UserConsent
 
 from django.conf import settings
@@ -164,9 +164,9 @@ def send_invitation_email(invitation: dict, registration_url: str, language=None
         context["url"] = registration_url
         context["organisation"] = Organisation.objects.get(pk=invitation["organisation_id"])
         context["sender"] = sender
-        # Convert expires_at from string to date. This way we can tweak the template in terms
+        # Convert expires_at from string to datetime. This way we can tweak the template in terms
         # of rendering.
-        context["expires_at"] = datetime.strptime(context["expires_at"], "%Y-%m-%dT%H:%M:%SZ")
+        context["expires_at"] = parse_datetime(context["expires_at"])
 
         # Generate the email from the template
         html_content = loader.render_to_string("authentication_service/email/invitation.html",

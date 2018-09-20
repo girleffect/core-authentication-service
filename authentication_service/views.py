@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from urllib.parse import urlparse, parse_qs
 import datetime
 import pkg_resources
@@ -200,8 +199,8 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
             self.request,
             "authentication_service/message.html",
             context={
-                "page_meta_title": _("Registration invite error"),
-                "page_title": _("Registration invite error"),
+                "page_meta_title": _("Registration invitation error"),
+                "page_title": _("Registration invitation error"),
                 "page_message": _(
                     "The invitation is incorrect or the URL" \
                     " has been tampered with."
@@ -419,11 +418,13 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
 
     def get_success_response(self):
         key = CLIENT_URI_SESSION_KEY
-        invitation = self.storage.extra_data.get("invitation_data")
+        invitation = self.storage.extra_data.get("invitation_setup")
         if invitation and "redirect_url" in invitation:
             # If a redirect URL was specified in the invitation, it takes precedence.
-            uri = invitation["redirect_url"]
+            invitation_redirect_url = invitation["redirect_url"]
+            uri = None
         else:
+            invitation_redirect_url = None
             uri = utils.get_session_data(self.request, key)
 
         ## GE-1117: Disabled
@@ -434,18 +435,20 @@ class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
         #    return reverse("two_factor_auth:setup")
         if uri:
             return redirect(uri)
+
+        context = {
+            "page_meta_title": _("Registration success"),
+            "page_title": _("Registration success"),
+            "page_message": _("Congratulations, you have successfully registered for a Girl Effect "
+                              "account."),
+        }
+        if invitation_redirect_url:
+            context["redirect_url"] = invitation_redirect_url
+
         return render(
             self.request,
             "authentication_service/message.html",
-            context={
-                "page_meta_title": _("Registration success"),
-                "page_title": _("Registration success"),
-                "page_message": _(
-                    "Congratulations," \
-                    " you have successfully registered" \
-                    " for a Girl Effect account."
-                ),
-            }
+            context=context
         )
 
 
