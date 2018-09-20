@@ -19,7 +19,7 @@ from django_otp.util import random_hex
 from oidc_provider.models import Client
 from unittest.mock import patch, MagicMock
 from defender.utils import unblock_username
-from access_control import Invitation
+from access_control import Invitation, InvitationRedirectUrl
 
 from authentication_service import constants
 from django.contrib.auth.hashers import check_password, make_password
@@ -625,6 +625,13 @@ class TestRegistrationView(TestCase):
             created_at=timezone.now(),
             updated_at=timezone.now()
         )
+        cls.invitation_redirect_url = InvitationRedirectUrl(
+            id=1,
+            url="http://example.com/redirect?foo=bar",
+            description="The description",
+            created_at=datetime.datetime.now(),
+            updated_at=datetime.datetime.now(),
+        )
 
     def test_invite_tampered_signature(self):
         invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
@@ -844,6 +851,58 @@ class TestRegistrationView(TestCase):
                 mocked_settings.ACCESS_CONTROL_API.invitation_read.assert_called_with(invite_id)
                 mocked_redeem.assert_called_with(self.invitation.id, user.id)
         self.assertContains(response, "Congratulations, you have successfully")
+
+        self.assertEqual(user.organisation, self.organisation)
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    @patch("authentication_service.api_helpers.invitation_redeem")
+    def test_form_redeem_success_with_redirect(self, mocked_redeem):
+        # NOTE self.invitation.id != invite_id, due to invitation values being
+        # mocked as well.
+        with mock.patch("authentication_service.api_helpers.settings") as mocked_settings:
+            mocked_settings.ACCESS_CONTROL_API.invitation_read.return_value = self.invitation
+            mocked_redeem.return_value = {
+                "error": False
+            }
+            invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
+            redirect_url = "http://example.com/redirect?foo=bar"
+            params = {
+                "security": "high",
+                "invitation_id": invite_id,
+                "redirect_url": redirect_url
+            }
+            signature = signing.dumps(params, salt="invitation")
+            response = self.client.get(
+                reverse("registration"
+                        ) + f"?invitation={signature}",
+                follow=True
+            )
+            self.assertIn(
+                "/registration/userdata/",
+                response.redirect_chain[-1][0],
+            )
+            with self.assertTemplateUsed("authentication_service/message.html"):
+                response = self.client.post(
+                    reverse("registration"),
+                    {
+                        "registration_wizard-current_step": "userdata",
+                        "userdata-username": "AmazingInviteUser",
+                        "userdata-password1": "@A2315,./,asDV",
+                        "userdata-password2": "@A2315,./,asDV",
+                        "userdata-gender": "female",
+                        "userdata-age": "18",
+                        "userdata-birth_date": "2000-01-01",
+                        "userdata-terms": True,
+                        "userdata-email": "email@email.com",
+                    },
+                    follow=True
+                )
+                user = get_user_model().objects.get(username="AmazingInviteUser")
+                mocked_settings.ACCESS_CONTROL_API.invitation_read.assert_called_with(invite_id)
+                mocked_redeem.assert_called_with(self.invitation.id, user.id)
+
+        self.assertContains(response, "Congratulations, you have successfully")
+        self.assertContains(response, redirect_url)
 
         self.assertEqual(user.organisation, self.organisation)
 
