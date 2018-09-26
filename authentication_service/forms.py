@@ -101,7 +101,7 @@ class RegistrationForm(UserCreationForm):
             # a new piece of text to display.
             self["organisation"].field = ParagraphField(
                 paragraph="<b>%s</b>" % _(
-                    "Oragnisation user has been invited to:"
+                    "Organisation user has been invited to:"
                     f" {self.organisation.name}"
                 )
             )

@@ -15,4 +15,11 @@
 
 {% block content %}
     <p>{{ page_message }}</p>
+    {% if redirect_url %}<br/>
+        <p>
+        {% blocktrans %}
+        Click <a href="{{ redirect_url }}">here</a> to continue.
+        {% endblocktrans %}
+        </p>
+    {% endif %}
 {% endblock %}

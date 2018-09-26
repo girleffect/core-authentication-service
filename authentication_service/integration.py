@@ -169,9 +169,24 @@ class Implementation(AbstractStubClass):
         # Ensure the organisation exists
         get_object_or_404(Organisation, id=invitation.organisation_id)
 
+        redirect_url = None
+        if invitation.invitation_redirect_url_id is not None:
+            try:
+                response = settings.ACCESS_CONTROL_API.invitationredirecturl_read(
+                    invitation.invitation_redirect_url_id
+                )
+                if response:
+                    redirect_url = response.url
+            except Exception as e:
+                LOGGER.error(str(e))
+
         registration_url = request.build_absolute_uri(reverse("registration"))
 
-        tasks.send_invitation_email.delay(invitation.to_dict(), registration_url, language)
+        invitation_dict = invitation.to_dict()
+        if redirect_url:
+            invitation_dict["redirect_url"] = redirect_url
+
+        tasks.send_invitation_email.delay(invitation_dict, registration_url, language)
 
         return {}
 
