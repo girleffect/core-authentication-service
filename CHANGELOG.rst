@@ -1,8 +1,8 @@
 Changelog
 =========
 
-next
-----
+1.4.1
+-----
 - Generate endpoints for invitation redirect url addition
 - Update registration success to display unique template if invitation had a redirect url
 - Invitation email now includes expiry date
