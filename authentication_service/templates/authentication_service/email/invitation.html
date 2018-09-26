@@ -29,6 +29,11 @@ As part of the registration process you will be asked to download and install th
     </div>
     <br/>
     <div>
+    {% blocktrans with expiry=expires_at|date:"Y-m-d" %}
+    This link will expire on {{ expiry }}. To request an extension, please reply to this email.
+    {% endblocktrans %}
+    </div>
+    <div>
     {% trans "Regards," %}<br/>
     {{ sender.first_name|title }} {{ sender.last_name|title }}
     {% trans "(on behalf of Girl Effect)" %}

@@ -38,6 +38,7 @@ class Invitation(object):
         'email': 'str',
         'organisation_id': 'int',
         'expires_at': 'datetime',
+        'invitation_redirect_url_id': 'int',
         'created_at': 'datetime',
         'updated_at': 'datetime'
     }
@@ -50,11 +51,12 @@ class Invitation(object):
         'email': 'email',
         'organisation_id': 'organisation_id',
         'expires_at': 'expires_at',
+        'invitation_redirect_url_id': 'invitation_redirect_url_id',
         'created_at': 'created_at',
         'updated_at': 'updated_at'
     }
 
-    def __init__(self, id=None, invitor_id=None, first_name=None, last_name=None, email=None, organisation_id=None, expires_at=None, created_at=None, updated_at=None):  # noqa: E501
+    def __init__(self, id=None, invitor_id=None, first_name=None, last_name=None, email=None, organisation_id=None, expires_at=None, invitation_redirect_url_id=None, created_at=None, updated_at=None):  # noqa: E501
         """Invitation - a model defined in Swagger"""  # noqa: E501
 
         self._id = None
@@ -64,6 +66,7 @@ class Invitation(object):
         self._email = None
         self._organisation_id = None
         self._expires_at = None
+        self._invitation_redirect_url_id = None
         self._created_at = None
         self._updated_at = None
         self.discriminator = None
@@ -75,6 +78,8 @@ class Invitation(object):
         self.email = email
         self.organisation_id = organisation_id
         self.expires_at = expires_at
+        if invitation_redirect_url_id is not None:
+            self.invitation_redirect_url_id = invitation_redirect_url_id
         self.created_at = created_at
         self.updated_at = updated_at
 
@@ -244,6 +249,27 @@ class Invitation(object):
             raise ValueError("Invalid value for `expires_at`, must not be `None`")  # noqa: E501
 
         self._expires_at = expires_at
+
+    @property
+    def invitation_redirect_url_id(self):
+        """Gets the invitation_redirect_url_id of this Invitation.  # noqa: E501
+
+
+        :return: The invitation_redirect_url_id of this Invitation.  # noqa: E501
+        :rtype: int
+        """
+        return self._invitation_redirect_url_id
+
+    @invitation_redirect_url_id.setter
+    def invitation_redirect_url_id(self, invitation_redirect_url_id):
+        """Sets the invitation_redirect_url_id of this Invitation.
+
+
+        :param invitation_redirect_url_id: The invitation_redirect_url_id of this Invitation.  # noqa: E501
+        :type: int
+        """
+
+        self._invitation_redirect_url_id = invitation_redirect_url_id
 
     @property
     def created_at(self):
