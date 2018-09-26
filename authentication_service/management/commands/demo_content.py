@@ -180,7 +180,7 @@ class Command(BaseCommand):
         c, created = Client.objects.update_or_create(
             client_id="core_data_ingestion",
             defaults={
-                "name": "Data ingestion service",
+                "name": "Data Ingestion Service",
                 "client_secret": "core_data_ingestion_secret",
                 "response_type": "code",
                 "jwt_alg": "HS256",
