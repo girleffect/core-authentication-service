@@ -167,7 +167,8 @@ ADDITIONAL_APPS = [
 # Project app has to be first in the list.
 INSTALLED_APPS = [
     "authentication_service",
-    "authentication_service.user_migration"
+    "authentication_service.user_migration",
+    "authentication_service.request_client"
 ] + INSTALLED_APPS + ADDITIONAL_APPS
 
 MIDDLEWARE = [

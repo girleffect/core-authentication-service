@@ -44,6 +44,12 @@ MAIL_TYPE_DATA = {
         # TODO GE mail address to be added.
         "recipients": ["ge@ge.com"]
     },
+    "request_client_creation": {
+        "subject": "Client creation request",
+        "template_name": "request_client/email/request_client.html",
+        # TODO
+        "recipients": ["TODO@TODO.com"]
+    },
 }
 
 
