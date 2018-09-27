@@ -12,7 +12,7 @@ from oidc_provider.models import (
 )
 
 
-def user_avatar_path(instance, filename):
+def client_logo_path(instance, filename):
     return f"client_logos/user_{instance.requesting_user.id}/{instance.name}_{filename}"
 
 
@@ -68,7 +68,7 @@ class RequestedClient(models.Model):
     logo = models.ImageField(
         blank=True,
         null=True,
-        upload_to=user_avatar_path,
+        upload_to=client_logo_path,
         storage=MediaStorage()
     )
     reuse_consent = models.BooleanField(
