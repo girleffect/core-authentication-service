@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from authentication_service.request_client import models
+
+admin.site.register(models.RequestedClient, admin.ModelAdmin)

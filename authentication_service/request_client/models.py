@@ -76,6 +76,19 @@ class RequestedClient(models.Model):
         verbose_name=_("Reuse Consent?"),
         help_text=_("If enabled, server will save the user consent given to this specific site, "
                     "so that user won\'t be prompted for the same authorization multiple times."))
+    redirect_uris = models.TextField(
+        verbose_name=_("Redirect URIs"),
+        help_text=_("Post login URIs. Please use a comma delimited list."))
+    post_logout_redirect_uris = models.TextField(
+        blank=True,
+        default="",
+        verbose_name=_("Post Logout Redirect URIs"),
+        help_text=_("Post logout URIs. Please use a comma delimited list."))
+    scope = models.TextField(
+        blank=True,
+        default="",
+        verbose_name=_("Scopes"),
+        help_text=_("Specifies the authorized scope values for the site."))
 
 def send_request_mail(sender, instance, created, **kwargs):
     if created:
@@ -87,6 +100,7 @@ def send_request_mail(sender, instance, created, **kwargs):
         }
         tasks.send_mail.apply_async(
             kwargs={
+                "context": {},
                 "mail_type": "request_client_creation",
                 "objects_to_fetch": [model]
             }
