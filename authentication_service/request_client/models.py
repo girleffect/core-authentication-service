@@ -90,6 +90,7 @@ class RequestedClient(models.Model):
         verbose_name=_("Scopes"),
         help_text=_("Specifies the authorized scope values for the site."))
 
+
 def send_request_mail(sender, instance, created, **kwargs):
     if created:
         model = {
@@ -105,5 +106,6 @@ def send_request_mail(sender, instance, created, **kwargs):
                 "objects_to_fetch": [model]
             }
         )
+
 
 post_save.connect(send_request_mail, sender=RequestedClient)

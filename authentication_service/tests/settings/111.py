@@ -160,7 +160,8 @@ ADDITIONAL_APPS = [
 INSTALLED_APPS = [
     "authentication_service.tests",
     "authentication_service",
-    "authentication_service.user_migration"
+    "authentication_service.user_migration",
+    "authentication_service.request_client"
 ] + INSTALLED_APPS + ADDITIONAL_APPS
 
 MIDDLEWARE = MIDDLEWARE + [
