@@ -15,14 +15,15 @@ class TestRequest(TestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.user = get_user_model().objects.create_superuser(
-            username="testuser",
+            username="clientrequesttestuser",
             email="an@email.com",
             password="Qwer!234",
             birth_date=datetime.date(2001, 12, 12)
         )
 
     def test_default_errors(self):
-        self.client.login(username="testuser", password="Qwer!234")
+        self.client.login(
+            username="clientrequesttestuser", password="Qwer!234")
         response = self.client.post(
             reverse("request_client:request_form"),
         )
@@ -30,6 +31,7 @@ class TestRequest(TestCase):
             response.context["form"].errors,
             {
                 "name": ["This field is required."],
+                "client_environment": ["This field is required."],
                 "client_type": ["This field is required."],
                 "response_type": ["This field is required."],
                 "jwt_alg": ["This field is required."],
@@ -40,12 +42,13 @@ class TestRequest(TestCase):
 
     @patch("authentication_service.tasks.send_mail.apply_async")
     def test_client_request(self, send_mail):
-        self.client.login(username="testuser", password="Qwer!234")
+        self.client.login(username="clientrequesttestuser", password="Qwer!234")
         response = self.client.post(
             reverse("request_client:request_form"),
             data={
                 "name": "Test-client",
                 "client_type": "confidential",
+                "client_environment": "qa",
                 "response_type": "code",
                 "jwt_alg": "HS256",
                 "redirect_uris": "aaaa.com",

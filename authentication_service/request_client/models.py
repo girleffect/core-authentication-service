@@ -11,6 +11,11 @@ from oidc_provider.models import (
     JWT_ALGS
 )
 
+ENVIRONMENT_CHOICES = (
+    ("qa", _("QA")),
+    ("prod", _("Production")),
+)
+
 
 def client_logo_path(instance, filename):
     return f"client_logos/user_{instance.requesting_user.id}/{instance.name}_{filename}"
@@ -23,6 +28,13 @@ class RequestedClient(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    client_environment = models.CharField(
+        max_length=10,
+        choices=ENVIRONMENT_CHOICES,
+        help_text=_(
+            "The environment the site needs a client for."
+        )
+    )
 
     # Variable names correspond with oidc_provider.models.Client
     name = models.CharField(max_length=100, verbose_name=_("Name"))
