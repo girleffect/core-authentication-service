@@ -13,11 +13,15 @@ import user_data_store
 
 env = Env()
 
-# Project Settings
+#--Project settings
 HIDE_FIELDS = {
     "global_enable": True,
-    "global_fields": ["email", "birth_date", "nickname"]
+    "global_fields": ["email", "birth_date", "nickname", "avatar"]
 }
+
+# NOTE: If the value is not set, the celery task will error.
+CLIENT_REQUEST_EMAIL = env.list("CLIENT_REQUEST_EMAIL", [])
+#--Project settings end
 
 # Django Settings
 SECRET_KEY = env.str("SECRET_KEY", "_n(_w(3!i4-p((jz8(o0fb*_r5fb5t!qh1g@m9%4vryx5lale=")
