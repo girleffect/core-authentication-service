@@ -16,7 +16,7 @@ env = Env()
 #--Project settings
 HIDE_FIELDS = {
     "global_enable": True,
-    "global_fields": ["email", "birth_date", "nickname", "avatar"]
+    "global_fields": ["email", "birth_date", "nickname"]
 }
 
 # NOTE: If the value is not set, the celery task will error.

@@ -754,14 +754,9 @@ class EditProfileFormTestCase(TestCase):
         self.assertEqual(data["msisdn"], user.msisdn)
 
     def test_nothing_updated(self):
-        user = get_user_model().objects.create_user(
-            username="localtestuser",
-            email="anotherwrong@email.com",
-            gender="female",
-        )
-        data = model_to_dict(user)
+        data = model_to_dict(self.user)
 
-        form = EditProfileForm(instance=user, data=data)
+        form = EditProfileForm(instance=self.user, data=data)
         self.assertFalse(form.has_changed())
         self.assertTrue(form.is_valid())
 
