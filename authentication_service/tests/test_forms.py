@@ -756,10 +756,8 @@ class EditProfileFormTestCase(TestCase):
     def test_nothing_updated(self):
         user = get_user_model().objects.create_user(
             username="localtestuser",
-            birth_date=datetime.date(2000, 1, 1),
             email="anotherwrong@email.com",
             gender="female",
-            email_verified=True
         )
         data = model_to_dict(user)
 
