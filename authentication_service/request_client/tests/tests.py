@@ -24,6 +24,10 @@ class TestRequest(TestCase):
     def test_default_errors(self):
         self.client.login(
             username="clientrequesttestuser", password="Qwer!234")
+        response = self.client.get(
+            reverse("request_client:request_form"),
+        )
+        self.assertEqual(response.status_code, 200)
         response = self.client.post(
             reverse("request_client:request_form"),
         )
@@ -43,6 +47,10 @@ class TestRequest(TestCase):
     @patch("authentication_service.tasks.send_mail.apply_async")
     def test_client_request(self, send_mail):
         self.client.login(username="clientrequesttestuser", password="Qwer!234")
+        response = self.client.get(
+            reverse("request_client:request_form"),
+        )
+        self.assertEqual(response.status_code, 200)
         response = self.client.post(
             reverse("request_client:request_form"),
             data={
@@ -68,3 +76,17 @@ class TestRequest(TestCase):
                 }]
             }
         )
+
+    def test_permission(self):
+        user = get_user_model().objects.create_user(
+            username="nonesupernoneorguser",
+            email="anotherish@email.com",
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 12, 12)
+        )
+        self.client.login(
+            username="nonesupernoneorguser", password="Qwer!234")
+        response = self.client.get(
+            reverse("request_client:request_form"),
+        )
+        self.assertEqual(response.status_code, 403)
