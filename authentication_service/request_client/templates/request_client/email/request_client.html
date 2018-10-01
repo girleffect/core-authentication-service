@@ -1,0 +1,21 @@
+Details for the Client request.
+
+Requested Client model id: {{ requested_client.id }}
+
+Requesting user id: {{ requested_client.requesting_user.id }}
+Requesting user username: {{ requested_client.requesting_user.username }}
+Requesting user email: {{ requested_client.requesting_user.email }}
+
+Client name: {{ requested_client.name }}
+Client type: {{ requested_client.client_type }}
+Client response type: {{ requested_client.response_type }}
+Client jwt alg: {{ requested_client.jwt_alg }}
+Client redirect URIs: {{ requested_client.redirect_uris }}
+Client post logout redirect URIs: {{ requested_client.post_logout_redirect_uris }}
+Client scope: {{ requested_client.scope }}
+Client reuse consent: {{ requested_client.reuse_consent }}
+{% if requested_client.logo %}
+    Client logo: {{ requested_client.logo.url }}
+{% endif %}
+Client terms url: {{ requested_client.terms_url }}
+Client website url: {{ requested_client.website_url }}
