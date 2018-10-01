@@ -452,18 +452,6 @@ class TestRegistrationForm(TestCase):
             })
             self.assertTrue(form.is_valid())
 
-    def test_required_labels(self):
-        form = RegistrationForm()
-        html = form.as_div()
-        for name, field in form.fields.items():
-            # Terms is not rendered as part of the form html method
-            if field.required and name is not "terms":
-                self.assertIn("*", field.label)
-                self.assertIn(
-                    field.label,
-                    html
-                )
-
 
 class TestRegistrationFormHTML(TestCase):
 
@@ -1149,3 +1137,35 @@ class TestPasswordChangeForm(TestCase):
             "new_password2": "asdasdasdA@1"
         })
         self.assertTrue(form.is_valid())
+
+
+class TestRequiredDecorator(TestCase):
+
+    def test_registration(self):
+        form = RegistrationForm()
+        html = form.as_div()
+        for name, field in form.fields.items():
+            # Terms is not rendered as part of the form html method
+            if field.required and name is not "terms":
+                self.assertIn("*", field.label)
+                self.assertIn(
+                    field.label,
+                    html
+                )
+
+    def test_edit_profile(self):
+        user = get_user_model().objects.create_user(
+            username="requiredlabeluser",
+            email="awesome@email.com",
+            password="Awesome!234",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        form = EditProfileForm(instance=user)
+        html = form.as_div()
+        for name, field in form.fields.items():
+            if field.required:
+                self.assertIn("*", field.label)
+                self.assertIn(
+                    field.label,
+                    html
+                )

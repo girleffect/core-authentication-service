@@ -459,6 +459,7 @@ class EditProfileForm(forms.ModelForm):
         required=False
     )
 
+    @required_form_fields_label_alter()
     def __init__(self, *args, **kwargs):
         super(EditProfileForm, self).__init__(*args, **kwargs)
         hidden_fields = []
