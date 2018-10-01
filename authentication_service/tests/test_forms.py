@@ -452,6 +452,18 @@ class TestRegistrationForm(TestCase):
             })
             self.assertTrue(form.is_valid())
 
+    def test_required_labels(self):
+        form = RegistrationForm()
+        html = form.as_div()
+        for name, field in form.fields.items():
+            # Terms is not rendered as part of the form html method
+            if field.required and name is not "terms":
+                self.assertIn("*", field.label)
+                self.assertIn(
+                    field.label,
+                    html
+                )
+
 
 class TestRegistrationFormHTML(TestCase):
 
