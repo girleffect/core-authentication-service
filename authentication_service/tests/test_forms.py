@@ -14,6 +14,9 @@ from authentication_service.forms import (
 )
 from authentication_service.models import SecurityQuestion, Organisation
 from authentication_service import constants
+from authentication_service.user_migration.forms import (
+    UserDataForm
+)
 
 
 @override_settings(
@@ -1161,6 +1164,17 @@ class TestRequiredDecorator(TestCase):
             birth_date=datetime.date(2001, 1, 1)
         )
         form = EditProfileForm(instance=user)
+        html = form.as_div()
+        for name, field in form.fields.items():
+            if field.required:
+                self.assertIn("*", field.label)
+                self.assertIn(
+                    field.label,
+                    html
+                )
+
+    def test_user_migration(self):
+        form = UserDataForm()
         html = form.as_div()
         for name, field in form.fields.items():
             if field.required:

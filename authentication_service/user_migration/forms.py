@@ -7,6 +7,7 @@ from django.utils import six
 from django.utils.translation import ugettext as _
 
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
+from authentication_service.decorators import required_form_fields_label_alter
 
 # Lifted from Django user model validator.
 USERNAME_VALIDATOR = (
@@ -16,11 +17,13 @@ USERNAME_VALIDATOR = (
 
 class UserDataForm(forms.Form):
     username = forms.CharField(
+        label=_("Username"),
         max_length=150,
         help_text=_("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
         validators=[USERNAME_VALIDATOR],
     )
     age = forms.IntegerField(
+        label=_("Age"),
         min_value=1,
         max_value=100
     )
@@ -57,6 +60,7 @@ class UserDataForm(forms.Form):
                 _("Password needs to be at least 4 characters long.")
             )
         return password2
+UserDataForm.__init__ = required_form_fields_label_alter(UserDataForm.__init__)
 
 
 class SecurityQuestionGateForm(forms.Form):

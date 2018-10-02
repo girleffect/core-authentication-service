@@ -80,7 +80,7 @@ class RegistrationForm(UserCreationForm):
             "organisation": ParagraphField,
         }
 
-    @required_form_fields_label_alter()
+    @required_form_fields_label_alter
     def __init__(self, terms_url=None, security=None, required=None,
             hidden=None, organisation_id=None, *args, **kwargs):
         # Super needed before we can actually update the form.
@@ -459,7 +459,7 @@ class EditProfileForm(forms.ModelForm):
         required=False
     )
 
-    @required_form_fields_label_alter()
+    @required_form_fields_label_alter
     def __init__(self, *args, **kwargs):
         super(EditProfileForm, self).__init__(*args, **kwargs)
         hidden_fields = []

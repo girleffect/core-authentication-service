@@ -1,4 +1,5 @@
 import warnings
+from functools import wraps
 
 
 class generic_deprecation(object):
@@ -14,24 +15,23 @@ class generic_deprecation(object):
         return wrapped
 
 
-class required_form_fields_label_alter(object):
+def required_form_fields_label_alter(init_func, required_character=None):
     """
     Decorator for Django form's __init__ method.
 
     Appends an asterisk or provided character to labels of fields that are
     required.
     """
-    def __init__(self, required_character=None):
-        self.required_character = required_character or "*"
+    @wraps(init_func)
+    def _wrapped(*args, **kwargs):
+        # Form needs to be initialised before labels are changed
+        init = init_func(*args, **kwargs)
 
-    def __call__(self, method):
-        def wrapped(*args, **kwargs):
-            # Form needs to be initialised before labels are changed
-            init = method(*args, **kwargs)
-
-            # Append required character to the existing label
-            for name, field in args[0].fields.items():
-                if field.required:
-                    field.label += f" {self.required_character}"
-            return init
-        return wrapped
+        # Append required character to the existing label
+        for name, field in args[0].fields.items():
+            # NOTE: If the label was not specified on the field, there is
+            # nothing to append to.
+            if field.required and field.label:
+                field.label += f" {required_character or '*'}"
+        return init
+    return _wrapped
