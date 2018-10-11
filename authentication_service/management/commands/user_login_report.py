@@ -133,21 +133,18 @@ class Command(BaseCommand):
             flag = True if options["user_status"] == "active" else False
             filter_kwargs["is_active"] = flag
 
+        fields = ["id", "last_login", "is_active"]
         # Filter the users
         users = user_model.objects.filter(
             **{k: v for k, v in filter_kwargs.items()}
-        )
+        ).values_list(*fields)
 
         # Write a csv to memory
         file = io.StringIO()
-        fields = ["id", "last_login"]
-        writer = csv.DictWriter(file, fieldnames=fields)
-        writer.writeheader()
+        writer = csv.writer(file, delimiter=",")
+        writer.writerow(fields)
         for user in users:
-            row = {}
-            for field in fields:
-                row[field] = getattr(user, field)
-            writer.writerow(row)
+            writer.writerow(user)
 
         # Create email message
         message = EmailMultiAlternatives(
