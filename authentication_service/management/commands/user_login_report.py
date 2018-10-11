@@ -97,7 +97,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Fetching users..."))
-        recipients = settings.USER_LOGIN_REQUEST_EMAIL
+        recipients = settings.USER_LOGIN_REQUEST_EMAILS
         now = timezone.now()
 
         # Append the email provided via the client arg
