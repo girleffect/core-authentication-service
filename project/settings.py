@@ -21,6 +21,9 @@ HIDE_FIELDS = {
 
 # NOTE: If the value is not set, the celery task will error.
 CLIENT_REQUEST_EMAIL = env.list("CLIENT_REQUEST_EMAIL", [])
+
+# authentication_service/management/commands/user_login_report.py
+USER_LOGIN_REQUEST_EMAIL = env.list("USER_LOGIN_REQUEST_EMAIL", [])
 #--Project settings end
 
 # Django Settings

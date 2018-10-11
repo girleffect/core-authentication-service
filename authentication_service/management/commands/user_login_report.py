@@ -3,14 +3,18 @@ import csv
 import datetime
 import io
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.mail import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
 from django.core.validators import validate_email
 from django.utils import timezone
-from django.core.mail import EmailMultiAlternatives
 
 from dateutil.relativedelta import relativedelta
+
+from authentication_service.tasks import FROM_EMAIL
 
 
 def date_range(string):
@@ -93,7 +97,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Fetching users..."))
-        self.stdout.write(self.style.SUCCESS(f"{options}"))
+        recipients = settings.USER_LOGIN_REQUEST_EMAIL
+        now = timezone.now()
+
+        # Append the email provided via the clie arg
+        if options.get("additional_email") is not None:
+            recipients.append(options["additional_email"])
+
+        # Ensure there is an email recipient
+        if len(recipients) < 1:
+            raise CommandError(
+                "No recipient mail specified,"
+                " try adding one by using --additional-email"
+            )
+
         user_model = get_user_model()
 
         filter_kwargs = {}
@@ -105,11 +122,11 @@ class Command(BaseCommand):
             if date_range[1]:
                 filter_kwargs["last_login__date__lte"] = date_range[1]
         elif options.get("months") is not None:
-            filter_kwargs["last_login__date__gte"] = timezone.now() - relativedelta(months=options["months"])
+            filter_kwargs["last_login__date__gte"] = now - relativedelta(months=options["months"])
         elif options.get("weeks") is not None:
-            filter_kwargs["last_login__date__gte"] = timezone.now() - relativedelta(weeks=options["weeks"])
+            filter_kwargs["last_login__date__gte"] = now - relativedelta(weeks=options["weeks"])
         elif options.get("days") is not None:
-            filter_kwargs["last_login__date__gte"] = timezone.now() - relativedelta(days=options["days"])
+            filter_kwargs["last_login__date__gte"] = now - relativedelta(days=options["days"])
 
         # Add filter for active flag
         if options.get("user_status") != "both":
@@ -120,8 +137,8 @@ class Command(BaseCommand):
         users = user_model.objects.filter(
             **{k: v for k, v in filter_kwargs.items()}
         )
-        print (users)
 
+        # Write a csv to memory
         file = io.StringIO()
         fields = ["id", "username", "email", "last_login", "created_at", "updated_at"]
         writer = csv.DictWriter(file, fieldnames=fields)
@@ -131,11 +148,18 @@ class Command(BaseCommand):
             for field in fields:
                 row[field] = getattr(user, field)
             writer.writerow(row)
+
+        # Create email message
         message = EmailMultiAlternatives(
             subject="Requested user login data",
-            body="",
-            from_email="auth@gehosting.org",
-            to=["mothershipmaiosl@gmail.com"],  # Must be a list
+            body=f"User login data requested on: {now.strftime('%Y-%m-%d; %H:%M')}",
+            from_email=FROM_EMAIL,
+            to=recipients,
         )
+
+        # Add in memory csv attachement
         message.attach("user.csv",file.getvalue(), "text/csv")
+
+        # Send mail
         message.send()
+        self.stdout.write(self.style.SUCCESS(f"Email has been sent to {recipients}"))
