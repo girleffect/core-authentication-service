@@ -140,7 +140,7 @@ class Command(BaseCommand):
 
         # Write a csv to memory
         file = io.StringIO()
-        fields = ["id", "username", "email", "last_login", "created_at", "updated_at"]
+        fields = ["id", "last_login"]
         writer = csv.DictWriter(file, fieldnames=fields)
         writer.writeheader()
         for user in users:
