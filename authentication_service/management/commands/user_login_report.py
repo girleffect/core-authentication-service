@@ -44,14 +44,16 @@ def date_range(string):
     return value
 
 
-def email(string):
-    try:
-        validate_email(string)
-    except ValidationError:
-        raise argparse.ArgumentTypeError(
-            f"{string} does not seem to be a valid email address."
-        )
-    return string
+def emails(string):
+    emails = string.strip().split(",")
+    for email in emails:
+        try:
+            validate_email(email)
+        except ValidationError:
+            raise argparse.ArgumentTypeError(
+                f"{email} does not seem to be a valid email address."
+            )
+    return emails
 
 
 class Command(BaseCommand):
@@ -65,9 +67,9 @@ class Command(BaseCommand):
             help="Account status for users to include.",
         )
         parser.add_argument(
-            "--additional-email",
-            type=email,
-            help="Adds an extra email to the recipient list.",
+            "--additional-emails",
+            type=emails,
+            help="Adds an extra email to the recipient list. Comma delimited list",
         )
 
         group = parser.add_mutually_exclusive_group()
@@ -101,14 +103,13 @@ class Command(BaseCommand):
         now = timezone.now()
 
         # Append the email provided via the client arg
-        if options.get("additional_email") is not None:
-            recipients.append(options["additional_email"])
+        recipients.extend(options.get("additional_emails", []))
 
         # Ensure there is an email recipient
         if len(recipients) < 1:
             raise CommandError(
                 "No recipient mail specified,"
-                " try adding one by using --additional-email"
+                " try adding one by using --additional-emails"
             )
 
         user_model = get_user_model()
