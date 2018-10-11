@@ -23,7 +23,7 @@ HIDE_FIELDS = {
 CLIENT_REQUEST_EMAIL = env.list("CLIENT_REQUEST_EMAIL", [])
 
 # authentication_service/management/commands/user_login_report.py
-USER_LOGIN_REQUEST_EMAILS = env.list("USER_LOGIN_REQUEST_EMAILS", [])
+REPORT_EMAILS = env.list("REPORT_EMAILS", [])
 #--Project settings end
 
 # Django Settings
