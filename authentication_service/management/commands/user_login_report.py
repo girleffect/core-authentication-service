@@ -100,7 +100,7 @@ class Command(BaseCommand):
         recipients = settings.USER_LOGIN_REQUEST_EMAIL
         now = timezone.now()
 
-        # Append the email provided via the clie arg
+        # Append the email provided via the client arg
         if options.get("additional_email") is not None:
             recipients.append(options["additional_email"])
 
