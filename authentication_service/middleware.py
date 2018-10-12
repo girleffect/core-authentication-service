@@ -365,7 +365,12 @@ class MetricMiddleware(object):
     def __call__(self, request):
         start_time = time.time()
         response = self.get_response(request)
-        H.labels(path_prefix="/".join(request.path.split("/")[:4]),
+        if response.status_code == 404:
+            H.labels(path_prefix="not_found",
                  method=request.method,
-                 status=response.status_code).observe(time.time()-start_time)
+                 status=404).observe(time.time()-start_time)
+        else:
+            H.labels(path_prefix="/".join(request.path.split("/")[:4]),
+                method=request.method,
+                status=response.status_code).observe(time.time()-start_time)
         return response
