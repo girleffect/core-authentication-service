@@ -155,6 +155,13 @@ urlpatterns += i18n_patterns(
             "authentication_service.user_migration.urls",
             namespace="user_migration"
         )
+    ),
+
+    # Include the request client app
+    url(r"^request-client/", include(
+            "authentication_service.request_client.urls",
+            namespace="request_client"
+        )
     )
 )
 

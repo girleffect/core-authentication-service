@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.4.2
+-----
+- Add form to request client application registration
+- Added asterisk to all required fields on registration, edit profile and user migration
+- Add management command to get a list of users filtered by last login and active status
+- Prevent metrics related denial of service
+
 1.4.1
 -----
 - Generate endpoints for invitation redirect url addition
