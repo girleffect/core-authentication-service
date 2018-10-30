@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-14 12:52+0200\n"
+"POT-Creation-Date: 2018-10-30 10:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,19 +17,47 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: authentication_service/tests/settings/111.py:141
+#: authentication_service/tests/settings/111.py:66
+msgid "Tagalog"
+msgstr ""
+
+#: authentication_service/tests/settings/111.py:67
+msgid "Kinyarwanda"
+msgstr ""
+
+#: authentication_service/tests/settings/111.py:68
+msgid "Hausa"
+msgstr ""
+
+#: authentication_service/tests/settings/111.py:69
+msgid "Bengali"
+msgstr ""
+
+#: authentication_service/tests/settings/111.py:70
+msgid "Burmese"
+msgstr ""
+
+#: authentication_service/tests/settings/111.py:71
+msgid "Chichewa"
+msgstr ""
+
+#: authentication_service/tests/settings/111.py:72
+msgid "Dari"
+msgstr ""
+
+#: authentication_service/tests/settings/111.py:235
 msgid "Your account has been deactivated. Please contact support."
 msgstr ""
 
-#: authentication_service/tests/settings/111.py:143
+#: authentication_service/tests/settings/111.py:237
 #, python-format
 msgid ""
 "Please enter a correct %(username)s and password. Note that both fields may "
 "be case-sensitive."
 msgstr ""
 
-msgid "Accept terms and conditions"
-msgstr "RIGHT NOW IM JUST FOR UNIT TESTS"
+#~ msgid "Accept terms and conditions"
+#~ msgstr "RIGHT NOW IM JUST FOR UNIT TESTS"
 
-msgid "Forgot password?"
-msgstr "THIS IS JUST FOR UNITTESTS ATM"
+#~ msgid "Forgot password?"
+#~ msgstr "THIS IS JUST FOR UNITTESTS ATM"

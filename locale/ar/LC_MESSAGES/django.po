@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-30 09:26+0200\n"
+"POT-Creation-Date: 2018-10-30 10:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1158,11 +1158,11 @@ msgstr ""
 msgid "Springster english youth"
 msgstr ""
 
-#: build/lib/project/settings.py:241 project/settings.py:249
+#: build/lib/project/settings.py:241 project/settings.py:256
 msgid "Your account has been deactivated. Please contact support."
 msgstr ""
 
-#: build/lib/project/settings.py:243 project/settings.py:251
+#: build/lib/project/settings.py:243 project/settings.py:258
 #, python-format
 msgid ""
 "Please enter a correct %(username)s and password. Note that both fields may "
@@ -1170,5 +1170,9 @@ msgid ""
 msgstr ""
 
 #: project/settings.py:76
+msgid "Tanzanian Swahili"
+msgstr ""
+
+#: project/settings.py:77
 msgid "Springster English Youth"
 msgstr ""
