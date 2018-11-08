@@ -1,10 +1,13 @@
 import logging
 
+from django.conf import settings
+from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
 from oidc_provider.signals import user_accept_consent
 
 from authentication_service import api_helpers
 from authentication_service.models import UserSite
+from ge_event_log import events
 
 logger = logging.getLogger(__name__)
 
@@ -17,3 +20,12 @@ def user_accepted_consent_callback(sender, user, client, **kwargs):
     message = "Created UserSite entry for {user} on {client}." if created \
         else "UserSite entry for {user} on {client} exists."
     logger.debug(message.format(user=user, client=client))
+
+
+@receiver(user_logged_in)
+def user_login_kinesis_callback(sender, request, user, **kwargs):
+    events.put_event("user_login", {"user_id": str(user.id)})
+
+@receiver(user_logged_out)
+def user_logout_kinesis_callback(sender, request, user, **kwargs):
+    events.put_event("user_login", {"user_id": str(user.id)})

@@ -3,6 +3,11 @@ from django.db.models.fields import Field
 
 from authentication_service import lookups
 
+from django.conf import settings
+
+# Import to ensure kinesis producer gets instantiated
+#from ge_event_log import events
+
 
 class AuthAppConfig(AppConfig):
     name = "authentication_service"
@@ -13,4 +18,3 @@ class AuthAppConfig(AppConfig):
         Field.register_lookup(lookups.Ilike)
         from authentication_service import integration, metrics
         metrics.add_prometheus_metrics_for_class(integration.Implementation)
-
