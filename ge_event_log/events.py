@@ -57,7 +57,7 @@ def put_event(event_type, data, request=None):
         client_id = get_session_data(request, SessionKeys.CLIENT_ID)
         if client_id:
             # NOTE: This will raise a ImproperlyConfigured if the site does not exist
-            site_id = api_helpers.get_site_for_client(self.client.id)
+            site_id = api_helpers.get_site_for_client(client_id)
         else:
             # If no client was present on the request and no site_id was set in
             # data, assume the site is the Authentication Service itself.
