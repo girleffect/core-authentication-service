@@ -1,7 +1,9 @@
 import multiprocessing
+
 from kinesis.producer import AsyncProducer
 
-
+import logging
+LOGGER = logging.getLogger(__name__)
 class GEAsyncProducer(AsyncProducer):
     """
     Overriden AsyncProducer from kinesis-python package.
@@ -24,9 +26,9 @@ class GEAsyncProducer(AsyncProducer):
 
         if boto3_session is None:
             boto3_session = boto3.Session()
-
-        boto3_client_settings["service_name"] = "kinesis"
-        self.client = boto3_session.client(**boto3_client_settings)
+        client_settings = {"service_name": "kinesis"}
+        client_settings.update(boto3_client_settings)
+        self.client = boto3_session.client(**client_settings)
 
         self.start()
 

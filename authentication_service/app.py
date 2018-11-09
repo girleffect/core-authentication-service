@@ -3,11 +3,6 @@ from django.db.models.fields import Field
 
 from authentication_service import lookups
 
-from django.conf import settings
-
-# Import to ensure kinesis producer gets instantiated
-#from ge_event_log import events
-
 
 class AuthAppConfig(AppConfig):
     name = "authentication_service"

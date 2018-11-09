@@ -7,7 +7,7 @@ from oidc_provider.signals import user_accept_consent
 
 from authentication_service import api_helpers
 from authentication_service.models import UserSite
-from ge_event_log import events
+from ge_event_log import events, schemas
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +24,17 @@ def user_accepted_consent_callback(sender, user, client, **kwargs):
 
 @receiver(user_logged_in)
 def user_login_kinesis_callback(sender, request, user, **kwargs):
-    events.put_event("user_login", {"user_id": str(user.id)})
+    events.put_event(
+        event_type=schemas.EventTypes.USER_LOGIN,
+        data={"user_id": str(user.id)},
+        request=request
+    )
+
 
 @receiver(user_logged_out)
 def user_logout_kinesis_callback(sender, request, user, **kwargs):
-    events.put_event("user_login", {"user_id": str(user.id)})
+    events.put_event(
+        event_type=schemas.EventTypes.USER_LOGOUT,
+        data={"user_id": str(user.id)},
+        request=request
+    )
