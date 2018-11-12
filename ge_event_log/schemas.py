@@ -2,11 +2,6 @@ from ge_event_log import utils
 
 BASE_SCHEMA = {
     "type": "object",
-    "required": [
-        "event_type",
-        "timestamp",
-        "site_id"
-    ],
     "additionalProperties": True,
     "properties": {
         "event_type": {
@@ -19,6 +14,11 @@ BASE_SCHEMA = {
             "type": "object"
         }
     },
+    "required": [
+        "event_type",
+        "timestamp",
+        "site_id"
+    ],
 }
 
 
@@ -29,12 +29,6 @@ class EventTypes:
     SCHEMAS = {
         USER_LOGIN: {
             "type": "object",
-            "required": [
-                "event_type",
-                "timestamp",
-                "site_id",
-                "user_id"
-            ],
             "additionalProperties": False,
             "properties": {
                 "event_type": {
@@ -53,15 +47,15 @@ class EventTypes:
                     "type": "string"
                 },
             },
-        },
-        USER_LOGOUT: {
-            "type": "object",
             "required": [
                 "event_type",
                 "timestamp",
                 "site_id",
                 "user_id"
             ],
+        },
+        USER_LOGOUT: {
+            "type": "object",
             "additionalProperties": False,
             "properties": {
                 "event_type": {
@@ -80,6 +74,12 @@ class EventTypes:
                     "type": "string"
                 },
             },
+            "required": [
+                "event_type",
+                "timestamp",
+                "site_id",
+                "user_id"
+            ],
         }
     }
 
