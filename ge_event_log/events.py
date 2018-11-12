@@ -7,14 +7,11 @@ from django.utils import timezone
 
 from access_control.rest import ApiException
 from authentication_service import api_helpers
-from authentication_service.constants import SessionKeys
-from authentication_service.utils import get_session_data
 from ge_event_log import schemas, utils
 from ge_kinesis.producer import GEKinesisProducer
 
 env = Env()
 
-AUTHENTICATION_SERVICE_HARDCODED_SITE_ID = 0
 
 # To ensure there are no Django startup issues, this module does not rely
 # on settings.py for setup variables.
@@ -37,7 +34,7 @@ if not env.bool("BUILDER", False):
     KINESIS_PRODUCER = GEKinesisProducer(**PRODUCER_SETTINGS)
 
 
-def put_event(event_type, data, request=None):
+def put_event(event_type, data, site_id):
     """
     Used for all Kinesis put record events.
     """
@@ -48,20 +45,6 @@ def put_event(event_type, data, request=None):
     # Basic support for both dict and json strings
     if isinstance(data, str):
         data = json.loads(data)
-
-    # Authentication Service does not have client or site entries
-    site_id = AUTHENTICATION_SERVICE_HARDCODED_SITE_ID
-
-    # Lookup the site_id if the request is present.
-    if request:
-        client_id = get_session_data(request, SessionKeys.CLIENT_ID)
-        if client_id:
-            # NOTE: This will raise a ImproperlyConfigured if the site does not exist
-            site_id = api_helpers.get_site_for_client(client_id)
-        else:
-            # If no client was present on the request and no site_id was set in
-            # data, assume the site is the Authentication Service itself.
-            site_id = data.get("site_id", site_id)
 
     # Append BASE_SCHEMA values to all event data
     data.update(

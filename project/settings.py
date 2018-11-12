@@ -24,6 +24,11 @@ CLIENT_REQUEST_EMAIL = env.list("CLIENT_REQUEST_EMAIL", [])
 
 # authentication_service/management/commands/user_login_report.py
 REPORT_EMAILS = env.list("REPORT_EMAILS", [])
+
+# Used in authentication/signals.py: Hardcoded id to be used for authentication
+# service. This service can not have a client that is required to create a
+# site entry.
+AUTHENTICATION_SERVICE_HARDCODED_SITE_ID = 0
 #--Project settings end
 
 # Django Settings
