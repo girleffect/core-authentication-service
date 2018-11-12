@@ -73,6 +73,7 @@ LANGUAGES = [
     ("my", _("Burmese")),
     ("ny", _("Chichewa")),
     ("prs", _("Dari")),
+    ("swa-tz", _("Tanzanian Swahili")),
     ("en-you", _("Springster English Youth")),
 ]
 
@@ -118,6 +119,12 @@ EXTRA_LANG_INFO = {
         "code": "prs",
         "name": "Dari",
         "name_local": u"دری",
+    },
+    "swa-tz": {
+        "bidi": False,
+        "code": "swa_TZ",
+        "name": "Tanzanian Swahili",
+        "name_local": "Tanzanian Swahili"
     },
 }
 django.conf.locale.LANG_INFO.update(EXTRA_LANG_INFO)

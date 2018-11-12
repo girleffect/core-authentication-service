@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.4.3
+-----
+- Added Tanzanian Swahili locale
+- Regenerate base PO files
+
 1.4.2
 -----
 - Add form to request client application registration

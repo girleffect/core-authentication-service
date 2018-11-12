@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-25 11:56+0200\n"
+"POT-Creation-Date: 2018-10-30 10:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,166 +18,396 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: authentication_service/forms.py:53
+#: authentication_service/fields.py:35
+#: build/lib/authentication_service/fields.py:35
+msgid "Please set a value for this field."
+msgstr ""
+
+#: authentication_service/forms.py:60
+#: build/lib/authentication_service/forms.py:58
 msgid "Accept terms and conditions"
 msgstr ""
 
-#: authentication_service/forms.py:125 authentication_service/forms.py:406
+#: authentication_service/forms.py:107
+msgid "Organisation user has been invited to:"
+msgstr ""
+
+#: authentication_service/forms.py:160
+#: build/lib/authentication_service/forms.py:157
+msgid "Click here to view the terms and conditions"
+msgstr ""
+
+#: authentication_service/forms.py:165 authentication_service/forms.py:468
+#: build/lib/authentication_service/forms.py:162
+#: build/lib/authentication_service/forms.py:464
 msgid "Please use dd/mm/yyyy format"
 msgstr ""
 
-#: authentication_service/forms.py:130
+#: authentication_service/forms.py:178
+#: build/lib/authentication_service/forms.py:175
 msgid "Display name"
 msgstr ""
 
-#: authentication_service/forms.py:135
+#: authentication_service/forms.py:183
+#: build/lib/authentication_service/forms.py:180
 msgid "Mobile"
 msgstr ""
 
-#: authentication_service/forms.py:140 authentication_service/forms.py:411
+#: authentication_service/forms.py:188 authentication_service/forms.py:473
+#: authentication_service/user_migration/forms.py:26
+#: build/lib/authentication_service/forms.py:185
+#: build/lib/authentication_service/forms.py:469
 msgid "Age"
 msgstr ""
 
-#: authentication_service/forms.py:178 authentication_service/forms.py:195
-#: authentication_service/forms.py:464 authentication_service/forms.py:481
+#: authentication_service/forms.py:243 authentication_service/forms.py:260
+#: authentication_service/forms.py:552 authentication_service/forms.py:569
+#: build/lib/authentication_service/forms.py:240
+#: build/lib/authentication_service/forms.py:257
+#: build/lib/authentication_service/forms.py:548
+#: build/lib/authentication_service/forms.py:565
 #, python-brace-format
 msgid ""
 "We are sorry, users under the age of {CONSENT_AGE} cannot create an account."
 msgstr ""
 
-#: authentication_service/forms.py:217 authentication_service/forms.py:651
-#: authentication_service/user_migration/forms.py:152
+#: authentication_service/forms.py:282 authentication_service/forms.py:741
+#: authentication_service/user_migration/forms.py:139
+#: build/lib/authentication_service/forms.py:279
+#: build/lib/authentication_service/forms.py:737
+#: build/lib/authentication_service/user_migration/forms.py:135
 msgid "Password not long enough."
 msgstr ""
 
-#: authentication_service/forms.py:255
+#: authentication_service/forms.py:311
+#: build/lib/authentication_service/forms.py:308
 msgid "Enter either email or msisdn"
 msgstr ""
 
-#: authentication_service/forms.py:267 authentication_service/forms.py:501
+#: authentication_service/forms.py:323 authentication_service/forms.py:589
+#: build/lib/authentication_service/forms.py:320
+#: build/lib/authentication_service/forms.py:585
 msgid "Enter either birth date or age"
 msgstr ""
 
-#: authentication_service/forms.py:321 authentication_service/forms.py:336
+#: authentication_service/forms.py:382 authentication_service/forms.py:397
+#: build/lib/authentication_service/forms.py:379
+#: build/lib/authentication_service/forms.py:394
 msgid "Please fill in all Security Question fields."
 msgstr ""
 
-#: authentication_service/forms.py:328
+#: authentication_service/forms.py:389
+#: build/lib/authentication_service/forms.py:386
 msgid "Each question can only be picked once."
 msgstr ""
 
-#: authentication_service/forms.py:343
+#: authentication_service/forms.py:404
+#: build/lib/authentication_service/forms.py:401
 msgid "Select a question"
 msgstr ""
 
-#: authentication_service/forms.py:344
+#: authentication_service/forms.py:405
+#: build/lib/authentication_service/forms.py:402
 msgid "Question"
 msgstr ""
 
-#: authentication_service/forms.py:520
+#: authentication_service/forms.py:608
+#: build/lib/authentication_service/forms.py:604
 msgid "Username/email"
 msgstr ""
 
-#: authentication_service/forms.py:527
+#: authentication_service/forms.py:615
+#: build/lib/authentication_service/forms.py:611
 msgid "Please enter your username or email address."
 msgstr ""
 
-#: authentication_service/forms.py:594
-msgid "Please enter your answer."
+#: authentication_service/forms.py:683
+#: build/lib/authentication_service/forms.py:679
+msgid "Please answer all your security questions."
 msgstr ""
 
-#: authentication_service/forms.py:600
+#: authentication_service/forms.py:690
+#: build/lib/authentication_service/forms.py:686
 msgid "Please tell us why you want your account deleted"
 msgstr ""
 
-#: authentication_service/middleware.py:140
+#: authentication_service/middleware.py:143
+#: build/lib/authentication_service/middleware.py:143
 msgid "Site access disabled"
 msgstr ""
 
-#: authentication_service/middleware.py:141
+#: authentication_service/middleware.py:144
+#: build/lib/authentication_service/middleware.py:144
 msgid "The site you are trying to log in to has been disabled."
 msgstr ""
 
-#: authentication_service/models.py:16
-msgid "Female"
-msgstr ""
-
-#: authentication_service/models.py:17
-msgid "Male"
+#: authentication_service/middleware.py:146
+#: build/lib/authentication_service/middleware.py:146
+msgid "Back to site"
 msgstr ""
 
 #: authentication_service/models.py:18
+#: build/lib/authentication_service/models.py:18
+msgid "Female"
+msgstr ""
+
+#: authentication_service/models.py:19
+#: build/lib/authentication_service/models.py:19
+msgid "Male"
+msgstr ""
+
+#: authentication_service/models.py:20
+#: build/lib/authentication_service/models.py:20
 msgid "Other"
 msgstr ""
 
-#: authentication_service/models.py:73
+#: authentication_service/models.py:78
+#: build/lib/authentication_service/models.py:78
 msgid "email address"
 msgstr ""
 
-#: authentication_service/models.py:79
+#: authentication_service/models.py:84
+#: build/lib/authentication_service/models.py:84
 msgid "gender"
 msgstr ""
 
-#: authentication_service/models.py:84
+#: authentication_service/models.py:89
+#: build/lib/authentication_service/models.py:89
 msgid "country"
 msgstr ""
 
-#: authentication_service/models.py:175
+#: authentication_service/models.py:185
+#: build/lib/authentication_service/models.py:185
 msgid "Countries"
 msgstr ""
 
-#: authentication_service/models.py:183
+#: authentication_service/models.py:193
+#: build/lib/authentication_service/models.py:193
 msgid "answer"
 msgstr ""
 
-#: authentication_service/models.py:201
+#: authentication_service/models.py:211
+#: build/lib/authentication_service/models.py:211
 msgid "Default question text"
 msgstr ""
 
-#: authentication_service/models.py:222
+#: authentication_service/models.py:232
+#: build/lib/authentication_service/models.py:232
+msgid ""
+"The default question text is already in English. Please do not add an "
+"English translation."
+msgstr ""
+
+#: authentication_service/models.py:243
+#: build/lib/authentication_service/models.py:243
 msgid "Question text can not be assigned to more than one question."
 msgstr ""
 
 #: authentication_service/oidc_provider_settings.py:75
+#: build/lib/authentication_service/oidc_provider_settings.py:75
 msgid "Site"
 msgstr ""
 
 #: authentication_service/oidc_provider_settings.py:75
+#: build/lib/authentication_service/oidc_provider_settings.py:75
 msgid "Data for the requesting site"
 msgstr ""
 
 #: authentication_service/oidc_provider_settings.py:79
+#: build/lib/authentication_service/oidc_provider_settings.py:79
 msgid "Roles"
 msgstr ""
 
 #: authentication_service/oidc_provider_settings.py:79
+#: build/lib/authentication_service/oidc_provider_settings.py:79
 msgid "Roles for the requesting site"
 msgstr ""
 
 #: authentication_service/password_validation.py:26
 #: authentication_service/password_validation.py:34
+#: build/lib/authentication_service/password_validation.py:26
+#: build/lib/authentication_service/password_validation.py:34
 msgid ""
 "The password must contain at least one uppercase letter, one lowercase one, "
 "a digit and special character."
 msgstr ""
 
-#: authentication_service/tasks.py:17
+#: authentication_service/request_client/models.py:15
+msgid "QA"
+msgstr ""
+
+#: authentication_service/request_client/models.py:16
+msgid "Production"
+msgstr ""
+
+#: authentication_service/request_client/models.py:35
+msgid "The environment the site needs a client for."
+msgstr ""
+
+#: authentication_service/request_client/models.py:40
+msgid "Name"
+msgstr ""
+
+#: authentication_service/request_client/models.py:45
+msgid "Client Type"
+msgstr ""
+
+#: authentication_service/request_client/models.py:47
+msgid ""
+"Confidential clients: Are capable of maintaining the confidentiality of "
+"their credentials. Public clients: are incapable of maintaining the "
+"confidentiality."
+msgstr ""
+
+#: authentication_service/request_client/models.py:55
+msgid "Response Type"
+msgstr ""
+
+#: authentication_service/request_client/models.py:61
+msgid "JWT Algorithm"
+msgstr ""
+
+#: authentication_service/request_client/models.py:62
+msgid "Algorithm used to encode ID Tokens."
+msgstr ""
+
+#: authentication_service/request_client/models.py:65
+msgid "Website URL"
+msgstr ""
+
+#: authentication_service/request_client/models.py:71
+msgid "Terms and conditions URL"
+msgstr ""
+
+#: authentication_service/request_client/models.py:77
+msgid "Website contact Email"
+msgstr ""
+
+#: authentication_service/request_client/models.py:88
+msgid "Reuse Consent?"
+msgstr ""
+
+#: authentication_service/request_client/models.py:89
+msgid ""
+"If enabled, server will save the user consent given to this specific site, "
+"so that user won't be prompted for the same authorization multiple times."
+msgstr ""
+
+#: authentication_service/request_client/models.py:92
+msgid "Redirect URIs"
+msgstr ""
+
+#: authentication_service/request_client/models.py:93
+msgid "Post login URIs. Please use a comma delimited list."
+msgstr ""
+
+#: authentication_service/request_client/models.py:97
+msgid "Post Logout Redirect URIs"
+msgstr ""
+
+#: authentication_service/request_client/models.py:98
+msgid "Post logout URIs. Please use a comma delimited list."
+msgstr ""
+
+#: authentication_service/request_client/models.py:102
+msgid "Scopes"
+msgstr ""
+
+#: authentication_service/request_client/models.py:103
+msgid "Specifies the authorized scope values for the site."
+msgstr ""
+
+#: authentication_service/request_client/views.py:31
+msgid "Request successfully sent."
+msgstr ""
+
+#: authentication_service/tasks.py:34
+#: build/lib/authentication_service/tasks.py:33
 msgid "Email from Girl Effect"
 msgstr ""
 
-#: authentication_service/tasks.py:21
+#: authentication_service/tasks.py:38
+#: build/lib/authentication_service/tasks.py:37
 msgid "Password reset for Girl Effect account"
 msgstr ""
 
+#: authentication_service/tasks.py:150
+#: build/lib/authentication_service/tasks.py:144
+msgid "Please create your Girl Effect account"
+msgstr ""
+
+#: authentication_service/tasks.py:361
+#: build/lib/authentication_service/tasks.py:347
+msgid "Confirmation of user and data deletion"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/email/deletion_confirmation.html:6
+#: authentication_service/templates/authentication_service/email/invitation.html:6
+#, python-format
+msgid ""
+"\n"
+"    Dear %(name)s %(surname)s\n"
+"    "
+msgstr ""
+
+#: authentication_service/templates/authentication_service/email/deletion_confirmation.html:13
+#, python-format
+msgid ""
+"\n"
+"    This email serves as confirmation that user '%(username)s' with ID "
+"'%(id)s' has been removed\n"
+"    from the core components, along with all data under our control.\n"
+"    "
+msgstr ""
+
+#: authentication_service/templates/authentication_service/email/deletion_confirmation.html:19
+#: authentication_service/templates/authentication_service/email/invitation.html:37
+msgid "Regards,"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/email/deletion_confirmation.html:20
+msgid "The Girl Effect Authentication Service"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/email/invitation.html:13
+#, python-format
+msgid ""
+"\n"
+"    You have been invited to join Girl Effect as part of the "
+"%(organisation_title)s organisation.\n"
+"    "
+msgstr ""
+
+#: authentication_service/templates/authentication_service/email/invitation.html:27
+msgid ""
+"Please click the link below or paste it into your browser to register your "
+"account."
+msgstr ""
+
+#: authentication_service/templates/authentication_service/email/invitation.html:32
+#, python-format
+msgid ""
+"\n"
+"    This link will expire on %(expiry)s. To request an extension, please "
+"reply to this email.\n"
+"    "
+msgstr ""
+
+#: authentication_service/templates/authentication_service/email/invitation.html:39
+msgid "(on behalf of Girl Effect)"
+msgstr ""
+
 #: authentication_service/templates/authentication_service/form.html:24
-#: authentication_service/templates/authentication_service/reset_password/reset_password.html:17
+#: authentication_service/templates/authentication_service/registration.html:45
+#: authentication_service/templates/authentication_service/reset_password/reset_password.html:18
 #: authentication_service/templates/authentication_service/reset_password/security_questions.html:18
+#: authentication_service/templates/formtools/wizard/wizard_form.html:21
 msgid "Submit"
 msgstr ""
 
 #: authentication_service/templates/authentication_service/lockout.html:5
 #: authentication_service/templates/authentication_service/lockout.html:9
-msgid "Oh no! You've been locked out"
+msgid "Maximum Login Attempts Exceeded"
 msgstr ""
 
 #: authentication_service/templates/authentication_service/lockout.html:15
@@ -198,6 +428,8 @@ msgstr ""
 #: authentication_service/templates/authentication_service/login.html:5
 #: authentication_service/templates/authentication_service/login.html:9
 #: authentication_service/templates/authentication_service/login.html:18
+#: authentication_service/templates/registration/password_reset_complete.html:14
+#: authentication_service/templates/registration/password_reset_confirm.html:25
 #: authentication_service/templates/registration/password_reset_done.html:15
 #: authentication_service/templates/two_factor/core/login.html:5
 #: authentication_service/templates/two_factor/core/login.html:9
@@ -220,6 +452,14 @@ msgstr ""
 
 #: authentication_service/templates/authentication_service/login.html:27
 msgid "Click here to reset it."
+msgstr ""
+
+#: authentication_service/templates/authentication_service/message.html:20
+#, python-format
+msgid ""
+"\n"
+"        Click <a href=\"%(redirect_url)s\">here</a> to continue.\n"
+"        "
 msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/delete_account.html:5
@@ -254,45 +494,13 @@ msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:5
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:9
-msgid "Edit Your Profile"
+msgid "Update Your Profile"
 msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/edit_profile.html:18
 #: authentication_service/templates/authentication_service/profile/update_password.html:17
 #: authentication_service/templates/authentication_service/profile/update_security_questions.html:21
 msgid "Update"
-msgstr ""
-
-#: authentication_service/templates/authentication_service/profile/edit_profile.html:23
-#: authentication_service/templates/ninyampinga/base.html:14
-#: authentication_service/templates/springster/base.html:14
-#: authentication_service/templates/zathu/base.html:14
-msgid "Menu"
-msgstr ""
-
-#: authentication_service/templates/authentication_service/profile/edit_profile.html:26
-#: authentication_service/templates/ninyampinga/base.html:23
-#: authentication_service/templates/springster/base.html:23
-#: authentication_service/templates/zathu/base.html:23
-msgid "Password update"
-msgstr ""
-
-#: authentication_service/templates/authentication_service/profile/edit_profile.html:27
-#: authentication_service/templates/ninyampinga/base.html:24
-#: authentication_service/templates/springster/base.html:24
-#: authentication_service/templates/zathu/base.html:24
-msgid "Security questions update"
-msgstr ""
-
-#: authentication_service/templates/authentication_service/profile/edit_profile.html:28
-#: authentication_service/templates/ninyampinga/base.html:25
-#: authentication_service/templates/springster/base.html:25
-#: authentication_service/templates/zathu/base.html:25
-msgid "Delete account"
-msgstr ""
-
-#: authentication_service/templates/authentication_service/profile/edit_profile.html:30
-msgid "2FA settings"
 msgstr ""
 
 #: authentication_service/templates/authentication_service/profile/update_password.html:5
@@ -319,17 +527,33 @@ msgstr ""
 msgid "Registration"
 msgstr ""
 
-#: authentication_service/templates/authentication_service/registration.html:39
-msgid "Click here to view the terms and conditions"
+#: authentication_service/templates/authentication_service/registration.html:47
+#: authentication_service/templates/formtools/wizard/wizard_form.html:23
+#: authentication_service/templates/two_factor/_wizard_actions.html:3
+msgid "Next"
 msgstr ""
 
-#: authentication_service/templates/authentication_service/registration.html:44
-msgid "Register"
+#: authentication_service/templates/authentication_service/registration.html:53
+#: authentication_service/templates/formtools/wizard/wizard_form.html:29
+msgid "First step"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/registration.html:56
+#: authentication_service/templates/authentication_service/registration.html:60
+#: authentication_service/templates/formtools/wizard/wizard_form.html:32
+#: authentication_service/templates/formtools/wizard/wizard_form.html:36
+msgid "Prev step"
 msgstr ""
 
 #: authentication_service/templates/authentication_service/reset_password/reset_password.html:5
 #: authentication_service/templates/authentication_service/reset_password/reset_password.html:9
 msgid "Forgot your password?"
+msgstr ""
+
+#: authentication_service/templates/authentication_service/reset_password/reset_password.html:13
+msgid ""
+"Please enter your email address below to retrieve your password. You will "
+"then receive an email which will allow you to complete the process"
 msgstr ""
 
 #: authentication_service/templates/authentication_service/reset_password/security_questions.html:5
@@ -341,30 +565,49 @@ msgstr ""
 msgid "Back to "
 msgstr ""
 
-#: authentication_service/templates/formtools/wizard/wizard_form.html:20
-msgid "first step"
+#: authentication_service/templates/base.html:109
+#: authentication_service/templates/ninyampinga/base.html:14
+#: authentication_service/templates/springster/base.html:14
+#: authentication_service/templates/zathu/base.html:14
+msgid "Menu"
 msgstr ""
 
-#: authentication_service/templates/formtools/wizard/wizard_form.html:23
-msgid "prev step"
-msgstr ""
-
-#: authentication_service/templates/formtools/wizard/wizard_form.html:26
-msgid "submit"
-msgstr ""
-
+#: authentication_service/templates/base.html:113
 #: authentication_service/templates/ninyampinga/base.html:18
 #: authentication_service/templates/springster/base.html:18
 #: authentication_service/templates/zathu/base.html:18
 msgid "Home"
 msgstr ""
 
+#: authentication_service/templates/base.html:118
+#: authentication_service/templates/ninyampinga/base.html:23
+#: authentication_service/templates/springster/base.html:23
+#: authentication_service/templates/zathu/base.html:23
+msgid "Password update"
+msgstr ""
+
+#: authentication_service/templates/base.html:119
+#: authentication_service/templates/ninyampinga/base.html:24
+#: authentication_service/templates/springster/base.html:24
+#: authentication_service/templates/zathu/base.html:24
+msgid "Security questions update"
+msgstr ""
+
+#: authentication_service/templates/base.html:120
+#: authentication_service/templates/ninyampinga/base.html:25
+#: authentication_service/templates/springster/base.html:25
+#: authentication_service/templates/zathu/base.html:25
+msgid "Delete account"
+msgstr ""
+
+#: authentication_service/templates/base.html:121
 #: authentication_service/templates/ninyampinga/base.html:26
 #: authentication_service/templates/springster/base.html:26
 #: authentication_service/templates/zathu/base.html:26
 msgid "Logout"
 msgstr ""
 
+#: authentication_service/templates/base.html:126
 #: authentication_service/templates/ninyampinga/base.html:31
 #: authentication_service/templates/springster/base.html:31
 #: authentication_service/templates/zathu/base.html:31
@@ -383,12 +626,13 @@ msgid ""
 "information of you:"
 msgstr ""
 
-#: authentication_service/templates/registration/password_reset_complete.html:13
-msgid "Your new password has been set."
+#: authentication_service/templates/registration/password_reset_complete.html:5
+#: authentication_service/templates/registration/password_reset_complete.html:9
+msgid "Password Reset Complete"
 msgstr ""
 
-#: authentication_service/templates/registration/password_reset_complete.html:14
-msgid "Log in"
+#: authentication_service/templates/registration/password_reset_complete.html:13
+msgid "Your new password has been set."
 msgstr ""
 
 #: authentication_service/templates/registration/password_reset_confirm.html:5
@@ -435,12 +679,14 @@ msgid "Token"
 msgstr ""
 
 #: authentication_service/templates/translation.html:8
-#: authentication_service/user_migration/forms.py:33
+#: authentication_service/user_migration/forms.py:36
+#: build/lib/authentication_service/user_migration/forms.py:33
 msgid "Password confirmation"
 msgstr ""
 
 #: authentication_service/templates/translation.html:9
-#: authentication_service/user_migration/forms.py:20
+#: authentication_service/user_migration/forms.py:22
+#: build/lib/authentication_service/user_migration/forms.py:20
 msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
 msgstr ""
 
@@ -461,12 +707,9 @@ msgid "Your password can't be entirely numeric."
 msgstr ""
 
 #: authentication_service/templates/translation.html:14
-#: authentication_service/user_migration/forms.py:36
+#: authentication_service/user_migration/forms.py:39
+#: build/lib/authentication_service/user_migration/forms.py:36
 msgid "Enter the same password as before, for verification."
-msgstr ""
-
-#: authentication_service/templates/two_factor/_wizard_actions.html:3
-msgid "Next"
 msgstr ""
 
 #: authentication_service/templates/two_factor/_wizard_actions.html:16
@@ -731,32 +974,44 @@ msgstr ""
 msgid "Back to app"
 msgstr ""
 
-#: authentication_service/user_migration/forms.py:28
-#: authentication_service/user_migration/forms.py:128
+#: authentication_service/user_migration/forms.py:20
+msgid "Username"
+msgstr ""
+
+#: authentication_service/user_migration/forms.py:31
+#: authentication_service/user_migration/forms.py:115
+#: build/lib/authentication_service/user_migration/forms.py:28
+#: build/lib/authentication_service/user_migration/forms.py:111
 msgid "Password"
 msgstr ""
 
-#: authentication_service/user_migration/forms.py:43
+#: authentication_service/user_migration/forms.py:46
+#: build/lib/authentication_service/user_migration/forms.py:43
 msgid "A user with that username already exists."
 msgstr ""
 
-#: authentication_service/user_migration/forms.py:57
+#: authentication_service/user_migration/forms.py:60
+#: build/lib/authentication_service/user_migration/forms.py:57
 msgid "Password needs to be at least 4 characters long."
 msgstr ""
 
-#: authentication_service/user_migration/forms.py:116
+#: authentication_service/user_migration/forms.py:103
+#: build/lib/authentication_service/user_migration/forms.py:99
 msgid "Incorrect answer provided"
 msgstr ""
 
-#: authentication_service/user_migration/forms.py:120
+#: authentication_service/user_migration/forms.py:107
+#: build/lib/authentication_service/user_migration/forms.py:103
 msgid "Incorrect answers provided"
 msgstr ""
 
-#: authentication_service/user_migration/forms.py:133
+#: authentication_service/user_migration/forms.py:120
+#: build/lib/authentication_service/user_migration/forms.py:116
 msgid "Confirm password"
 msgstr ""
 
-#: authentication_service/user_migration/forms.py:147
+#: authentication_service/user_migration/forms.py:134
+#: build/lib/authentication_service/user_migration/forms.py:130
 msgid "Passwords do not match."
 msgstr ""
 
@@ -770,88 +1025,153 @@ msgid "Create"
 msgstr ""
 
 #: authentication_service/user_migration/views.py:64
+#: build/lib/authentication_service/user_migration/views.py:64
 msgid "Migration url has expired, please login again."
 msgstr ""
 
 #: authentication_service/user_migration/views.py:171
 #: authentication_service/user_migration/views.py:268
+#: build/lib/authentication_service/user_migration/views.py:171
+#: build/lib/authentication_service/user_migration/views.py:268
 msgid ""
 "Password reset url has expired, please restart the password reset proces."
 msgstr ""
 
 #: authentication_service/user_migration/views.py:185
 #: authentication_service/user_migration/views.py:186
+#: build/lib/authentication_service/user_migration/views.py:185
+#: build/lib/authentication_service/user_migration/views.py:186
 msgid "Language not found"
 msgstr ""
 
 #: authentication_service/user_migration/views.py:188
+#: build/lib/authentication_service/user_migration/views.py:188
 msgid "No question translation matching the current language could be found."
 msgstr ""
 
-#: authentication_service/views.py:265 authentication_service/views.py:266
+#: authentication_service/views.py:202 authentication_service/views.py:203
+msgid "Registration invitation error"
+msgstr ""
+
+#: authentication_service/views.py:205
+#: build/lib/authentication_service/views.py:206
+msgid "The invitation is incorrect or the URL has been tampered with."
+msgstr ""
+
+#: authentication_service/views.py:216 authentication_service/views.py:217
+#: build/lib/authentication_service/views.py:217
+#: build/lib/authentication_service/views.py:218
+msgid "Registration invitation expired"
+msgstr ""
+
+#: authentication_service/views.py:219
+#: build/lib/authentication_service/views.py:220
+msgid "The invitation has expired."
+msgstr ""
+
+#: authentication_service/views.py:392 authentication_service/views.py:393
+#: build/lib/authentication_service/views.py:203
+#: build/lib/authentication_service/views.py:204
+#: build/lib/authentication_service/views.py:394
+#: build/lib/authentication_service/views.py:395
+msgid "Registration invite error"
+msgstr ""
+
+#: authentication_service/views.py:395
+#: build/lib/authentication_service/views.py:397
+msgid ""
+"Oops. You have successfully registered for a Girl Effect account. "
+"Unfortunately something went wrong while redeeming the invitation."
+msgstr ""
+
+#: authentication_service/views.py:440 authentication_service/views.py:441
+#: build/lib/authentication_service/views.py:437
+#: build/lib/authentication_service/views.py:438
 msgid "Registration success"
 msgstr ""
 
-#: authentication_service/views.py:268
+#: authentication_service/views.py:442
+#: build/lib/authentication_service/views.py:440
 msgid ""
 "Congratulations, you have successfully registered for a Girl Effect account."
 msgstr ""
 
-#: authentication_service/views.py:315
+#: authentication_service/views.py:494
+#: build/lib/authentication_service/views.py:487
 msgid "Successfully updated profile."
 msgstr ""
 
-#: authentication_service/views.py:329
+#: authentication_service/views.py:508
+#: build/lib/authentication_service/views.py:501
 msgid "Successfully updated password."
 msgstr ""
 
-#: authentication_service/views.py:421
+#: authentication_service/views.py:600
+#: build/lib/authentication_service/views.py:593
 msgid "Successfully requested account deletion."
 msgstr ""
 
-#: authentication_service/views.py:486
+#: authentication_service/views.py:665
+#: build/lib/authentication_service/views.py:658
 msgid "We are sorry, your account can not perform this action"
 msgstr ""
 
-#: authentication_service/views.py:542
+#: authentication_service/views.py:721
+#: build/lib/authentication_service/views.py:714
 msgid "One or more answers are incorrect"
 msgstr ""
 
-#: project/settings.py:40
+#: build/lib/authentication_service/forms.py:104
+msgid "Oragnisation user has been invited to:"
+msgstr ""
+
+#: build/lib/project/settings.py:62 project/settings.py:69
 msgid "Tagalog"
 msgstr ""
 
-#: project/settings.py:41
+#: build/lib/project/settings.py:63 project/settings.py:70
 msgid "Kinyarwanda"
 msgstr ""
 
-#: project/settings.py:42
+#: build/lib/project/settings.py:64 project/settings.py:71
 msgid "Hausa"
 msgstr ""
 
-#: project/settings.py:43
+#: build/lib/project/settings.py:65 project/settings.py:72
 msgid "Bengali"
 msgstr ""
 
-#: project/settings.py:44
+#: build/lib/project/settings.py:66 project/settings.py:73
 msgid "Burmese"
 msgstr ""
 
-#: project/settings.py:45
+#: build/lib/project/settings.py:67 project/settings.py:74
 msgid "Chichewa"
 msgstr ""
 
-#: project/settings.py:46
+#: build/lib/project/settings.py:68 project/settings.py:75
 msgid "Dari"
 msgstr ""
 
-#: project/settings.py:207
+#: build/lib/project/settings.py:69
+msgid "Springster english youth"
+msgstr ""
+
+#: build/lib/project/settings.py:241 project/settings.py:256
 msgid "Your account has been deactivated. Please contact support."
 msgstr ""
 
-#: project/settings.py:209
+#: build/lib/project/settings.py:243 project/settings.py:258
 #, python-format
 msgid ""
 "Please enter a correct %(username)s and password. Note that both fields may "
 "be case-sensitive."
+msgstr ""
+
+#: project/settings.py:76
+msgid "Tanzanian Swahili"
+msgstr ""
+
+#: project/settings.py:77
+msgid "Springster English Youth"
 msgstr ""
