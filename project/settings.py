@@ -409,16 +409,16 @@ except ImportError:
 
 # The debug flag can be overwritten by settings_local, so we check it here
 # to determine whether to include
-#if DEBUG:
-#    # IPs that are considered "internal" by Django Debug Toolbar
-#    INTERNAL_IPS = [
-#        "",  # For the docker compose environment
-#        "127.0.0.1"  # Localhost
-#    ]
-#    INTERNAL_IPS.extend(env.list("INTERNAL_IPS", ""))  # Add additional IPs passed in the env.
-#
-#    INSTALLED_APPS.append("debug_toolbar")
-#    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+if DEBUG:
+    # IPs that are considered "internal" by Django Debug Toolbar
+    INTERNAL_IPS = [
+        "",  # For the docker compose environment
+        "127.0.0.1"  # Localhost
+    ]
+    INTERNAL_IPS.extend(env.list("INTERNAL_IPS", ""))  # Add additional IPs passed in the env.
+
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 # STORAGE
 # Unless env.USE_DEFAULT_STORAGE is set to false, this service will make use of
