@@ -34,7 +34,7 @@ if not env.bool("BUILDER", False):
     KINESIS_PRODUCER = GEKinesisProducer(**PRODUCER_SETTINGS)
 
 
-def put_event(event_type, data, site_id):
+def put_event(event_type, data, site_id, **kwargs):
     """
     Used for all Kinesis put record events.
     """

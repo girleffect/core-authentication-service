@@ -2,8 +2,7 @@ import multiprocessing
 
 from kinesis.producer import AsyncProducer
 
-import logging
-LOGGER = logging.getLogger(__name__)
+
 class GEAsyncProducer(AsyncProducer):
     """
     Overriden AsyncProducer from kinesis-python package.
