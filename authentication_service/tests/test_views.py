@@ -2031,6 +2031,41 @@ class TestMigrationPasswordReset(TestCase):
         )
         self.assertTrue(user.check_password("CoolNew"))
 
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_ensure_client_id_always_present(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="Ididnotrealyforgetanything",
+            client_id="migration_client_id",
+            user_id=7,
+            question_one={'en': 'Some awesome question'},
+            question_two={}
+        )
+        temp_user.set_answers("Answer1")
+
+        # Setup session values
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+
+        # Trigger session values clear and setup again
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "Ididnotrealyforgetanything"
+            },
+            follow=True
+        )
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/question-gate/",
+            token_url
+        )
+
 
 class TestMigrationPasswordResetLockout(TestCase):
 

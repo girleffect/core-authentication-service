@@ -11,14 +11,16 @@ from django.core import signing
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import redirect
+from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.views.generic.edit import FormView
 
-from authentication_service import forms, models, views
+from authentication_service import forms, models, views, constants, utils
 from authentication_service.decorators import generic_deprecation
 from authentication_service.user_migration.forms import (
     UserDataForm, SecurityQuestionGateForm, PasswordResetForm
@@ -279,6 +281,33 @@ class PasswordResetView(FormView):
 
     def form_valid(self, form):
         form.update_password()
+        client_name = constants.get_theme_client_name(
+            self.request
+        )
+        client_web_url = utils.get_session_data(
+            self.request, constants.SessionKeys.CLIENT_WEBSITE
+        )
+        # If there is a client present, assume this user came from a
+        # client site. However if the client has no website_url setup we can
+        # not make an assumption on where the user needs to go back to.
+        if client_name and client_web_url:
+
+            # Render a success page that contains the website the user should
+            # attempt to login from again. This is saner than the auth service
+            # needing to persist the oidc authorise paramaters for the client.
+            return render(
+                self.request,
+                "authentication_service/message.html",
+                context={
+                    "page_meta_title": _("Password update success"),
+                    "page_title": _("Password update success"),
+                    "page_message": mark_safe(_(
+                        "Your password has been successfully updated,"
+                        " please login again from:"
+                        f" <a href='{client_web_url}'>{client_name}</a>"
+                    )),
+                }
+            )
         return self.get_success_url()
 
     @cached_property
