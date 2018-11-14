@@ -21,6 +21,11 @@ HIDE_FIELDS = {
 
 # NOTE: If the value is not set, the celery task will error.
 CLIENT_REQUEST_EMAIL = env.list("CLIENT_REQUEST_EMAIL", [])
+
+# Used in authentication/signals.py: Hardcoded id to be used for authentication
+# service. This service can not have a client that is required to create a
+# site entry.
+AUTHENTICATION_SERVICE_HARDCODED_SITE_ID = 0
 #--Project settings end
 
 # Django Settings

@@ -1,10 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env sh
+set -e
 
-ADDRESS_VALUE=${ADDRESS:=0.0.0.0:8000}
+# The kinesis producer/consumer module creates extra processes that halts
+# management commands as it does not auto terminate.
+BUILDER=true python manage.py migrate --noinput
 
-python manage.py migrate --noinput
+# With the current time constraints, reverted to starting Django via management
+# command. See: https://praekeltorg.atlassian.net/browse/GEINFRA-361
+python manage.py runserver 0.0.0.0:8000
 
-# TODO: Run as own service in docker compose, qa and prod environments.
-python manage.py compilemessages
-python manage.py collectstatic --no-input
-python manage.py runserver $ADDRESS_VALUE
+# Command that needs to be used instead of runserver
+#project.wsgi:application --threads 5 --timeout 50
