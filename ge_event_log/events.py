@@ -34,7 +34,7 @@ if not env.bool("BUILDER", False):
     KINESIS_PRODUCER = GEKinesisProducer(**PRODUCER_SETTINGS)
 
 
-def put_event(event_type, data, site_id, **kwargs):
+def put_event(event_type, site_id, **kwargs):
     """
     Used for all Kinesis put record events.
     """
@@ -42,20 +42,16 @@ def put_event(event_type, data, site_id, **kwargs):
     # TODO: Check if this needs more elegant handling.
     schema = schemas.EventTypes.SCHEMAS[event_type]
 
-    # Basic support for both dict and json strings
-    if isinstance(data, str):
-        data = json.loads(data)
-
     # Append BASE_SCHEMA values to all event data
-    data.update(
+    kwargs.update(
         {
             "timestamp": timezone.now().isoformat(),
             "site_id": site_id,
             "event_type": event_type
         }
     )
-    utils.validate(data, schema)
+    utils.validate(kwargs, schema)
 
     # Base producer supports only the singular put event, it does a
     # boto3.client.put_records of all queued events.
-    KINESIS_PRODUCER.put(json.dumps(data), partition_key=event_type)
+    KINESIS_PRODUCER.put(json.dumps(kwargs), partition_key=event_type)

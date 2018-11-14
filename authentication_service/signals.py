@@ -44,8 +44,8 @@ def user_login_kinesis_callback(sender, request, user, **kwargs):
     site_id = get_site_id(request)
     events.put_event(
         event_type=schemas.EventTypes.USER_LOGIN,
-        data={"user_id": str(user.id)},
-        site_id=site_id
+        site_id=site_id,
+        **{"user_id": str(user.id)},
     )
 
 
@@ -54,6 +54,6 @@ def user_logout_kinesis_callback(sender, request, user, **kwargs):
     site_id = get_site_id(request)
     events.put_event(
         event_type=schemas.EventTypes.USER_LOGOUT,
-        data={"user_id": str(user.id)},
-        site_id=site_id
+        site_id=site_id,
+        **{"user_id": str(user.id)},
     )
