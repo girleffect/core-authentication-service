@@ -1052,7 +1052,9 @@ class TestRegistrationView(TestCase):
         # self.assertin(response.url, reverse("two_factor_auth:setup"))
         self.assertEquals(response.redirect_chain[-1][0], "/test-redirect-url/")
 
-    def test_view_success_redirects_security_high(self):
+    @patch("ge_event_log.events.api_helpers.get_site_for_client")
+    def test_view_success_redirects_security_high(self, api_mock):
+        api_mock.return_value = 2
         response = self.client.get(
             reverse(
                 "registration"
