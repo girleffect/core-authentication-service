@@ -1052,7 +1052,9 @@ class TestRegistrationView(TestCase):
         # self.assertin(response.url, reverse("two_factor_auth:setup"))
         self.assertEquals(response.redirect_chain[-1][0], "/test-redirect-url/")
 
-    def test_view_success_redirects_security_high(self):
+    @patch("ge_event_log.events.api_helpers.get_site_for_client")
+    def test_view_success_redirects_security_high(self, api_mock):
+        api_mock.return_value = 2
         response = self.client.get(
             reverse(
                 "registration"
@@ -2036,6 +2038,41 @@ class TestMigrationPasswordReset(TestCase):
             user_id=self.temp_user.user_id,
         )
         self.assertTrue(user.check_password("CoolNew"))
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_ensure_client_id_always_present(self):
+        temp_user = TemporaryMigrationUserStore.objects.create(
+            username="Ididnotrealyforgetanything",
+            client_id="migration_client_id",
+            user_id=7,
+            question_one={'en': 'Some awesome question'},
+            question_two={}
+        )
+        temp_user.set_answers("Answer1")
+
+        # Setup session values
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+
+        # Trigger session values clear and setup again
+        self.client.get(
+            f"{reverse('oidc_provider:authorize')}?response_type=code&scope=openid&client_id=migration_client_id&redirect_uri=http%3A%2F%2Fexample.com%2F&state=3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            follow=True
+        )
+        response = self.client.post(
+            reverse("reset_password"),
+            data={
+                "email": "Ididnotrealyforgetanything"
+            },
+            follow=True
+        )
+        token_url = response.redirect_chain[-1][0]
+        self.assertIn(
+            "/en/user-migration/question-gate/",
+            token_url
+        )
 
 
 class TestMigrationPasswordResetLockout(TestCase):
