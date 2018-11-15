@@ -955,7 +955,9 @@ class TestRegistrationView(TestCase):
                 follow=True
             )
 
-    def test_view_success_redirects_no_2fa(self):
+    @patch("ge_event_log.events.api_helpers.get_site_for_client")
+    def test_view_success_redirects_no_2fa(self, api_mock):
+        api_mock.return_value = 2
         response = self.client.get(
             reverse(
                 "registration"
@@ -999,7 +1001,9 @@ class TestRegistrationView(TestCase):
         )
         self.assertEquals(response.redirect_chain[-1][0], "/test-redirect-url/")
 
-    def test_view_success_redirects_2fa(self):
+    @patch("ge_event_log.events.api_helpers.get_site_for_client")
+    def test_view_success_redirects_2fa(self, api_mock):
+        api_mock.return_value = 2
         response = self.client.get(
             reverse(
                 "registration"
@@ -1101,7 +1105,9 @@ class TestRegistrationView(TestCase):
         # self.assertin(response.url, reverse("two_factor_auth:setup"))
         self.assertEquals(response.redirect_chain[-1][0], "/test-redirect-url/")
 
-    def test_success_redirect(self):
+    @patch("ge_event_log.events.api_helpers.get_site_for_client")
+    def test_success_redirect(self, api_mock):
+        api_mock.return_value = 2
         # Test without redirect URI set.
         response = self.client.get(reverse("redirect_view"))
         self.assertIn(response.url, reverse("login"))
