@@ -18,7 +18,7 @@ env = Env()
 # It can also not be instantiated under all circumstances. The extra process
 # the producer creates halts some of Django's management commands, as the
 # process does not terminate automatically.
-if not env.bool("BUILDER", False):
+if env.bool("USE_KINESIS_PRODUCER", False):
     # Boto3 session that will be used for authentication
 
     KINESIS_SESSION = boto3.Session(**env.dict("KINESIS_SESSION"))
