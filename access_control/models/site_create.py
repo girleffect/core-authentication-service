@@ -35,7 +35,9 @@ class SiteCreate(object):
         'client_id': 'int',
         'domain_id': 'int',
         'description': 'str',
-        'is_active': 'bool'
+        'is_active': 'bool',
+        'deletion_method_id': 'int',
+        'deletion_method_data': 'object'
     }
 
     attribute_map = {
@@ -43,10 +45,12 @@ class SiteCreate(object):
         'client_id': 'client_id',
         'domain_id': 'domain_id',
         'description': 'description',
-        'is_active': 'is_active'
+        'is_active': 'is_active',
+        'deletion_method_id': 'deletion_method_id',
+        'deletion_method_data': 'deletion_method_data'
     }
 
-    def __init__(self, name=None, client_id=None, domain_id=None, description=None, is_active=None):  # noqa: E501
+    def __init__(self, name=None, client_id=None, domain_id=None, description=None, is_active=None, deletion_method_id=None, deletion_method_data=None):  # noqa: E501
         """SiteCreate - a model defined in Swagger"""  # noqa: E501
 
         self._name = None
@@ -54,6 +58,8 @@ class SiteCreate(object):
         self._domain_id = None
         self._description = None
         self._is_active = None
+        self._deletion_method_id = None
+        self._deletion_method_data = None
         self.discriminator = None
 
         self.name = name
@@ -64,6 +70,8 @@ class SiteCreate(object):
             self.description = description
         if is_active is not None:
             self.is_active = is_active
+        self.deletion_method_id = deletion_method_id
+        self.deletion_method_data = deletion_method_data
 
     @property
     def name(self):
@@ -175,6 +183,52 @@ class SiteCreate(object):
         """
 
         self._is_active = is_active
+
+    @property
+    def deletion_method_id(self):
+        """Gets the deletion_method_id of this SiteCreate.  # noqa: E501
+
+
+        :return: The deletion_method_id of this SiteCreate.  # noqa: E501
+        :rtype: int
+        """
+        return self._deletion_method_id
+
+    @deletion_method_id.setter
+    def deletion_method_id(self, deletion_method_id):
+        """Sets the deletion_method_id of this SiteCreate.
+
+
+        :param deletion_method_id: The deletion_method_id of this SiteCreate.  # noqa: E501
+        :type: int
+        """
+        if deletion_method_id is None:
+            raise ValueError("Invalid value for `deletion_method_id`, must not be `None`")  # noqa: E501
+
+        self._deletion_method_id = deletion_method_id
+
+    @property
+    def deletion_method_data(self):
+        """Gets the deletion_method_data of this SiteCreate.  # noqa: E501
+
+
+        :return: The deletion_method_data of this SiteCreate.  # noqa: E501
+        :rtype: object
+        """
+        return self._deletion_method_data
+
+    @deletion_method_data.setter
+    def deletion_method_data(self, deletion_method_data):
+        """Sets the deletion_method_data of this SiteCreate.
+
+
+        :param deletion_method_data: The deletion_method_data of this SiteCreate.  # noqa: E501
+        :type: object
+        """
+        if deletion_method_data is None:
+            raise ValueError("Invalid value for `deletion_method_data`, must not be `None`")  # noqa: E501
+
+        self._deletion_method_data = deletion_method_data
 
     def to_dict(self):
         """Returns the model properties as a dict"""

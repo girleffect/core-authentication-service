@@ -146,6 +146,18 @@ parameters:
     required: true
     type: string
     format: uuid
+  credentials_id:
+    description: A unique integer value identifying the credentials.
+    in: path
+    name: credentials_id
+    required: true
+    type: integer
+  deletionmethod_id:
+    description: A unique integer value identifying the credentials.
+    in: path
+    name: deletionmethod_id
+    required: true
+    type: integer
 
 definitions:
   domain:
@@ -221,6 +233,10 @@ definitions:
         type: string
       is_active:
         type: boolean
+      deletion_method_id:
+        type: integer
+      deletion_method_data:
+        type: object
       created_at:
         type: string
         format: 'date-time'
@@ -234,6 +250,8 @@ definitions:
       - domain_id
       - name
       - is_active
+      - deletion_method_id
+      - deletion_method_data
       - created_at
       - updated_at
 
@@ -251,9 +269,15 @@ definitions:
         type: string
       is_active:
         type: boolean
+      deletion_method_id:
+        type: integer
+      deletion_method_data:
+        type: object
     required:
       - domain_id
       - name
+      - deletion_method_id
+      - deletion_method_data
 
   site_update:
     type: object
@@ -269,6 +293,10 @@ definitions:
         type: string
       is_active:
         type: boolean
+      deletion_method_id:
+        type: integer
+      deletion_method_data:
+        type: object
     minProperties: 1
 
   role:
@@ -849,6 +877,62 @@ definitions:
       - site_id
       - role_id
 
+  deletion_method:
+    type: object
+    properties:
+      id:
+        type: integer
+        readOnly: true
+      label:
+        type: string
+        maxLength: 100
+      data_schema:
+        type: object
+      description:
+        type: string
+      created_at:
+        type: string
+        format: 'date-time'
+        readOnly: true
+      updated_at:
+        type: string
+        format: 'date-time'
+        readOnly: true
+    required:
+      - id
+      - label
+      - data_schema
+      - description
+      - created_at
+      - updated_at
+
+  deletion_method_create:
+    type: object
+    properties:
+      label:
+        type: string
+        maxLength: 100
+      data_schema:
+        type: object
+      description:
+        type: string
+    required:
+      - label
+      - data_schema
+      - description
+
+  deletion_method_update:
+    type: object
+    properties:
+      label:
+        type: string
+        maxLength: 100
+      data_schema:
+        type: object
+      description:
+        type: string
+    minProperties: 1
+
   site_role_labels_aggregated:
     description: 'An object containing a site ID and an aggregated list of all the role labels supported
       by the site and all the domains in its lineage.'
@@ -968,6 +1052,77 @@ definitions:
       - resource_id
       - permission_id
     additionalProperties: false
+
+  credentials:
+    description: 'An object containing account credentials'
+    type: object
+    properties:
+      id:
+        type: integer
+      site_id:
+        type: integer
+      account_id:
+        type: string
+        minLength: 32
+        maxLength: 256
+      account_secret:
+        type: string
+        minLength: 32
+        maxLength: 256
+      description:
+        type: string
+      created_at:
+        type: string
+        format: 'date-time'
+      updated_at:
+        type: string
+        format: 'date-time'
+    required:
+      - id
+      - site_id
+      - account_id
+      - account_secret
+      - description
+      - created_at
+      - updated_at
+
+  credentials_create:
+    type: object
+    properties:
+      site_id:
+        type: integer
+      account_id:
+        type: string
+        minLength: 32
+        maxLength: 256
+      account_secret:
+        type: string
+        minLength: 32
+        maxLength: 256
+      description:
+        type: string
+    required:
+    - site_id
+    - account_id
+    - account_secret
+    - description
+
+  credentials_update:
+    type: object
+    properties:
+      site_id:
+        type: integer
+      account_id:
+        type: string
+        minLength: 32
+        maxLength: 256
+      account_secret:
+        type: string
+        minLength: 32
+        maxLength: 256
+      description:
+        type: string
+    minProperties: 1
 
   health_info:
     description: 'Health check response'
@@ -2441,3 +2596,174 @@ paths:
             $ref: '#/definitions/user_site_role'
       tags:
         - access_control
+
+  /credentials:
+    get:
+      operationId: credentials_list
+      parameters:
+      - $ref: '#/parameters/optional_offset'
+      - $ref: '#/parameters/optional_limit'
+      - name: credentials_ids
+        description: An optional list of credentials ids
+        in: query
+        type: array
+        items:
+          type: integer
+        required: false
+        minItems: 0
+        collectionFormat: multi
+        uniqueItems: true
+      - $ref: '#/parameters/optional_site_filter'
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: ''
+          headers:
+            X-Total-Count:
+              type: integer
+              description: The total number of results matching the query
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/credentials'
+      tags:
+      - access_control
+    post:
+      consumes:
+      - application/json
+      operationId: credentials_create
+      parameters:
+      - in: body
+        name: data
+        schema:
+          $ref: '#/definitions/credentials_create'
+      produces:
+      - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/credentials'
+      tags:
+      - access_control
+
+  '/credentials/{credentials_id}':
+    parameters:
+    - $ref: '#/parameters/credentials_id'
+    delete:
+      operationId: credentials_delete
+      responses:
+        '204':
+          description: ''
+      tags:
+      - access_control
+    get:
+      operationId: credentials_read
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/credentials'
+      tags:
+      - access_control
+    put:
+      consumes:
+      - application/json
+      operationId: credentials_update
+      parameters:
+      - in: body
+        name: data
+        schema:
+          $ref: '#/definitions/credentials_update'
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/credentials'
+      tags:
+      - access_control
+
+  /deletionmethods:
+    get:
+      operationId: deletionmethod_list
+      parameters:
+        - $ref: '#/parameters/optional_offset'
+        - $ref: '#/parameters/optional_limit'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          headers:
+            X-Total-Count:
+                type: integer
+                description: The total number of results matching the query
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/deletion_method'
+      tags:
+        - access_control
+    post:
+      consumes:
+        - application/json
+      operationId: deletionmethod_create
+      parameters:
+        - in: body
+          name: data
+          schema:
+            $ref: '#/definitions/deletion_method_create'
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/deletion_method'
+      tags:
+        - access_control
+
+  '/deletionmethods/{deletionmethod_id}':
+    parameters:
+      - $ref: '#/parameters/deletionmethod_id'
+    delete:
+      operationId: deletionmethod_delete
+      responses:
+        '204':
+          description: ''
+      tags:
+        - access_control
+    get:
+      operationId: deletionmethod_read
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/deletion_method'
+      tags:
+        - access_control
+    put:
+      consumes:
+      - application/json
+      operationId: deletionmethod_update
+      parameters:
+      - in: body
+        name: data
+        schema:
+          $ref: '#/definitions/deletion_method_update'
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/deletion_method'
+      tags:
+      - access_control
