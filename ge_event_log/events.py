@@ -33,7 +33,7 @@ if env.bool("USE_KINESIS_PRODUCER", False) and not env.bool("BUILDER", False):
 
     print("Setting client settings...")
     # Override the boto3 client settings, if needed
-    CLIENT_SETTINGS = env.dict("KINESIS_BOTO3_CLIENT_SETTINGS")
+    CLIENT_SETTINGS = env.dict("KINESIS_BOTO3_CLIENT_SETTINGS", {})
     if CLIENT_SETTINGS.get("endpoint_url"):
         print("Setting producer client settings...")
         PRODUCER_SETTINGS["boto3_client_settings"] = CLIENT_SETTINGS
