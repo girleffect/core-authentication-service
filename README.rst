@@ -17,11 +17,15 @@ Notes on how the production system was bootstrapped can be found in `bootstrap.m
 
 
 Env vars:
+
 # Docker base image
+
 # Migrations can no longer be run without a specific env var being set specifically for it.
+
 - SKIP_MIGRATIONS=1
 
 # Django settings
+
 - CELERY_BROKER_URL=redis://redis:6379/2
 - REDIS_URI=redis://redis:6379/3
 - ALLOWED_HOSTS=*
@@ -30,12 +34,15 @@ Env vars:
 - EMAIL_HOST=smtp
 
 # Comma delimited, key=val pairs dictionary
+
 - DB_DEFAULT=ENGINE=django.db.backends.postgresql,NAME=authentication_service,USER=authentication_service,PASSWORD=password,HOST=db,PORT=5432
 
 # Not set on QA
+
 - LOG_LEVEL=DEBUG
 
 # API services
+
 - USER_DATA_STORE_API_KEY=demo-authentication-service-api-key
 - ACCESS_CONTROL_API_KEY=demo-authentication-service-api-key
 - ALLOWED_API_KEYS=demo-management-layer-api-key
@@ -43,14 +50,19 @@ Env vars:
 - USER_DATA_STORE_API=http://core-user-data-store:8080/api/v1
 
 # Kinesis related vars
+
 - USE_KINESIS_PRODUCER=true
+
 # If above is true, these are required
+
 # Comma delimited, key=val pairs dictionary
+
 - KINESIS_SESSION=aws_access_key_id=foobar,aws_secret_access_key=foobar,region_name=us-east-1
 - KINESIS_PRODUCER=stream_name=test-stream
 - KINESIS_BOTO3_CLIENT_SETTINGS=endpoint_url=http://localstack:4568
 
 # The variables below are not used in production, just the docker-compose env
+
 - WAGTAIL_1_CALLBACK=http://wagtail-demo-1-site-1:8000/oidc/callback/
 - WAGTAIL_2_CALLBACK=http://wagtail-demo-2-site-1:8000/oidc/callback/
 - WAGTAIL_3_CALLBACK=http://wagtail-demo-1-site-2:8000/oidc/callback/
