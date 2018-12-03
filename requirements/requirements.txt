@@ -1,6 +1,6 @@
 -e git+https://github.com/praekelt/swagger-django-generator@master#egg=swagger-django-generator
 -e git+https://github.com/praekelt/apitools@master#egg=apitools
--e git+https://github.com/girleffect/core-kinesis-conducer@feature/GEINFRA-360#egg=core-kinesis-conducer
+-e git+https://github.com/girleffect/core-kinesis-conducer@develop#egg=core-kinesis-conducer
 
 # Main Django requirement.
 django>=1.11,<2.0
