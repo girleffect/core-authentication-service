@@ -10,7 +10,9 @@ from authentication_service import api_helpers
 from authentication_service.constants import SessionKeys
 from authentication_service.models import UserSite
 from authentication_service.utils import get_session_data
-from ge_event_log import events, schemas
+
+# from kinesis_conducer import producer
+from kinesis_conducer.producer_events import events, schemas
 
 logger = logging.getLogger(__name__)
 
@@ -42,20 +44,18 @@ def get_site_id(request):
 @receiver(user_logged_in)
 def user_login_kinesis_callback(sender, request, user, **kwargs):
     site_id = get_site_id(request)
-    # TODO Add back in GEINFRA-375
-    #events.put_event(
-    #    event_type=schemas.EventTypes.USER_LOGIN,
-    #    site_id=site_id,
-    #    **{"user_id": str(user.id)},
-    #)
+    events.put_event(
+        event_type=schemas.EventTypes.USER_LOGIN,
+        site_id=site_id,
+        **{"user_id": str(user.id)},
+    )
 
 
 @receiver(user_logged_out)
 def user_logout_kinesis_callback(sender, request, user, **kwargs):
     site_id = get_site_id(request)
-    # TODO Add back in GEINFRA-375
-    #events.put_event(
-    #    event_type=schemas.EventTypes.USER_LOGOUT,
-    #    site_id=site_id,
-    #    **{"user_id": str(user.id)},
-    #)
+    events.put_event(
+        event_type=schemas.EventTypes.USER_LOGOUT,
+        site_id=site_id,
+        **{"user_id": str(user.id)},
+    )
