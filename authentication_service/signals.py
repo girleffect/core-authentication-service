@@ -11,7 +11,6 @@ from authentication_service.constants import SessionKeys
 from authentication_service.models import UserSite
 from authentication_service.utils import get_session_data
 
-# from kinesis_conducer import producer
 from kinesis_conducer.producer_events import events, schemas
 
 logger = logging.getLogger(__name__)
