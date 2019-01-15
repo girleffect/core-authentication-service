@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env sh
+set -e
 
-ADDRESS_VALUE=${ADDRESS:=0.0.0.0:8000}
+# The Kinesis producer/consumer module creates extra processes that halts
+# management commands as it does not auto terminate.
+BUILDER=true USE_KINESIS_PRODUCER=false python manage.py migrate --noinput
 
-python manage.py migrate --noinput
-
-# TODO: Run as own service in docker compose, qa and prod environments.
-python manage.py compilemessages
-python manage.py collectstatic --no-input
-python manage.py runserver $ADDRESS_VALUE
+# The --threads parameter is required, otherwise the application won't start.
+# It looks like, when omitted, it tries to spawn multiple processes which does
+# not work.
+/scripts/django-entrypoint.sh project.wsgi:application --threads 5 --timeout 50

@@ -161,6 +161,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
     client_terms_key = SessionKeys.CLIENT_TERMS
     client_website = SessionKeys.CLIENT_WEBSITE
     client_id_key = SessionKeys.CLIENT_ID
+    redirect_uri_validator_key = "redirect_uri_validation"
     oidc_values = None
 
     def process_request(self, request):
@@ -171,11 +172,6 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
         uri = request.GET.get("redirect_uri", None)
         client_id = request.GET.get("client_id", None)
 
-        # The authorization of a client does a lookup every time it gets
-        # called. Middleware, also fires off on each request. To guard against
-        # unneeded db queries, we added an extra key unique to this middleware
-        # that will not be effected if the redirect uri is changed elsewhere.
-        validator_uri = get_session_data(request, "redirect_uri_validation")
         if request.path.rstrip("/") in [
                 path.rstrip("/") for path in SESSION_UPDATE_URL_WHITELIST]:
             current_host = request.get_host()
@@ -189,7 +185,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                     request,
                     [
                         self.client_uri_key, self.client_name_key,
-                        self.client_terms_key, "redirect_uri_validation",
+                        self.client_terms_key, self.redirect_uri_validator_key,
                         self.client_id_key
                     ]
                 )
@@ -203,6 +199,14 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                         " redirect_uri found that is not a" \
                         " relative path or on the authentication service domain."
                     )
+
+            # The authorization of a client does a lookup every time it gets
+            # called. Middleware, also fires off on each request. To guard against
+            # unneeded db queries, we added an extra key unique to this middleware
+            # that will not be effected if the redirect uri is changed elsewhere.
+            validator_uri = get_session_data(
+                request, self.redirect_uri_validator_key
+            )
             if uri and request.method == "GET" and uri != validator_uri and client_id:
                 authorize = authorize_client(request)
                 if isinstance(authorize, HttpResponse):
@@ -239,7 +243,7 @@ class SessionDataManagementMiddleware(MiddlewareMixin):
                 )
                 update_session_data(
                     request,
-                    "redirect_uri_validation",
+                    self.redirect_uri_validator_key,
                     uri
                 )
 

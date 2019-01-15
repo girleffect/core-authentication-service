@@ -217,7 +217,9 @@ class Command(BaseCommand):
                         "domain_id": 1,
                         "name": client.name,
                         "client_id": client.id,
-                        "description": ""
+                        "description": "",
+                        "deletion_method_data": {},
+                        "deletion_method_id": 0
                     })
                     self.stdout.write(
                         self.style.SUCCESS(f"Created site for {client.name}..."))

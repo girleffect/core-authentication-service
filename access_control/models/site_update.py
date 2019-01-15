@@ -35,7 +35,9 @@ class SiteUpdate(object):
         'domain_id': 'int',
         'name': 'str',
         'description': 'str',
-        'is_active': 'bool'
+        'is_active': 'bool',
+        'deletion_method_id': 'int',
+        'deletion_method_data': 'object'
     }
 
     attribute_map = {
@@ -43,10 +45,12 @@ class SiteUpdate(object):
         'domain_id': 'domain_id',
         'name': 'name',
         'description': 'description',
-        'is_active': 'is_active'
+        'is_active': 'is_active',
+        'deletion_method_id': 'deletion_method_id',
+        'deletion_method_data': 'deletion_method_data'
     }
 
-    def __init__(self, client_id=None, domain_id=None, name=None, description=None, is_active=None):  # noqa: E501
+    def __init__(self, client_id=None, domain_id=None, name=None, description=None, is_active=None, deletion_method_id=None, deletion_method_data=None):  # noqa: E501
         """SiteUpdate - a model defined in Swagger"""  # noqa: E501
 
         self._client_id = None
@@ -54,6 +58,8 @@ class SiteUpdate(object):
         self._name = None
         self._description = None
         self._is_active = None
+        self._deletion_method_id = None
+        self._deletion_method_data = None
         self.discriminator = None
 
         if client_id is not None:
@@ -66,6 +72,10 @@ class SiteUpdate(object):
             self.description = description
         if is_active is not None:
             self.is_active = is_active
+        if deletion_method_id is not None:
+            self.deletion_method_id = deletion_method_id
+        if deletion_method_data is not None:
+            self.deletion_method_data = deletion_method_data
 
     @property
     def client_id(self):
@@ -173,6 +183,48 @@ class SiteUpdate(object):
         """
 
         self._is_active = is_active
+
+    @property
+    def deletion_method_id(self):
+        """Gets the deletion_method_id of this SiteUpdate.  # noqa: E501
+
+
+        :return: The deletion_method_id of this SiteUpdate.  # noqa: E501
+        :rtype: int
+        """
+        return self._deletion_method_id
+
+    @deletion_method_id.setter
+    def deletion_method_id(self, deletion_method_id):
+        """Sets the deletion_method_id of this SiteUpdate.
+
+
+        :param deletion_method_id: The deletion_method_id of this SiteUpdate.  # noqa: E501
+        :type: int
+        """
+
+        self._deletion_method_id = deletion_method_id
+
+    @property
+    def deletion_method_data(self):
+        """Gets the deletion_method_data of this SiteUpdate.  # noqa: E501
+
+
+        :return: The deletion_method_data of this SiteUpdate.  # noqa: E501
+        :rtype: object
+        """
+        return self._deletion_method_data
+
+    @deletion_method_data.setter
+    def deletion_method_data(self, deletion_method_data):
+        """Sets the deletion_method_data of this SiteUpdate.
+
+
+        :param deletion_method_data: The deletion_method_data of this SiteUpdate.  # noqa: E501
+        :type: object
+        """
+
+        self._deletion_method_data = deletion_method_data
 
     def to_dict(self):
         """Returns the model properties as a dict"""

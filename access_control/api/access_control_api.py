@@ -138,6 +138,968 @@ class AccessControlApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
+    def credentials_create(self, **kwargs):  # noqa: E501
+        """credentials_create  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_create(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param CredentialsCreate data:
+        :return: Credentials
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.credentials_create_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.credentials_create_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def credentials_create_with_http_info(self, **kwargs):  # noqa: E501
+        """credentials_create  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_create_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param CredentialsCreate data:
+        :return: Credentials
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['data']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method credentials_create" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'data' in params:
+            body_params = params['data']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/credentials', 'POST',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='Credentials',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def credentials_delete(self, credentials_id, **kwargs):  # noqa: E501
+        """credentials_delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_delete(credentials_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int credentials_id: A unique integer value identifying the credentials. (required)
+        :return: None
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.credentials_delete_with_http_info(credentials_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.credentials_delete_with_http_info(credentials_id, **kwargs)  # noqa: E501
+            return data
+
+    def credentials_delete_with_http_info(self, credentials_id, **kwargs):  # noqa: E501
+        """credentials_delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_delete_with_http_info(credentials_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int credentials_id: A unique integer value identifying the credentials. (required)
+        :return: None
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['credentials_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method credentials_delete" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'credentials_id' is set
+        if ('credentials_id' not in params or
+                params['credentials_id'] is None):
+            raise ValueError("Missing the required parameter `credentials_id` when calling `credentials_delete`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'credentials_id' in params:
+            path_params['credentials_id'] = params['credentials_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/credentials/{credentials_id}', 'DELETE',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type=None,  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def credentials_list(self, **kwargs):  # noqa: E501
+        """credentials_list  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_list(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int offset: An optional query parameter specifying the offset in the result set to start from.
+        :param int limit: An optional query parameter to limit the number of results returned.
+        :param list[int] credentials_ids: An optional list of credentials ids
+        :param int site_id: An optional query parameter to filter by site_id
+        :return: list[Credentials]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.credentials_list_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.credentials_list_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def credentials_list_with_http_info(self, **kwargs):  # noqa: E501
+        """credentials_list  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_list_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int offset: An optional query parameter specifying the offset in the result set to start from.
+        :param int limit: An optional query parameter to limit the number of results returned.
+        :param list[int] credentials_ids: An optional list of credentials ids
+        :param int site_id: An optional query parameter to filter by site_id
+        :return: list[Credentials]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['offset', 'limit', 'credentials_ids', 'site_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method credentials_list" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        if 'offset' in params and params['offset'] < 0:  # noqa: E501
+            raise ValueError("Invalid value for parameter `offset` when calling `credentials_list`, must be a value greater than or equal to `0`")  # noqa: E501
+        if 'limit' in params and params['limit'] > 100:  # noqa: E501
+            raise ValueError("Invalid value for parameter `limit` when calling `credentials_list`, must be a value less than or equal to `100`")  # noqa: E501
+        if 'limit' in params and params['limit'] < 1:  # noqa: E501
+            raise ValueError("Invalid value for parameter `limit` when calling `credentials_list`, must be a value greater than or equal to `1`")  # noqa: E501
+        if ('credentials_ids' in params and
+                len(params['credentials_ids']) < 0):
+            raise ValueError("Invalid value for parameter `credentials_ids` when calling `credentials_list`, number of items must be greater than or equal to `0`")  # noqa: E501
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'offset' in params:
+            query_params.append(('offset', params['offset']))  # noqa: E501
+        if 'limit' in params:
+            query_params.append(('limit', params['limit']))  # noqa: E501
+        if 'credentials_ids' in params:
+            query_params.append(('credentials_ids', params['credentials_ids']))  # noqa: E501
+            collection_formats['credentials_ids'] = 'multi'  # noqa: E501
+        if 'site_id' in params:
+            query_params.append(('site_id', params['site_id']))  # noqa: E501
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/credentials', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[Credentials]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def credentials_read(self, credentials_id, **kwargs):  # noqa: E501
+        """credentials_read  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_read(credentials_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int credentials_id: A unique integer value identifying the credentials. (required)
+        :return: Credentials
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.credentials_read_with_http_info(credentials_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.credentials_read_with_http_info(credentials_id, **kwargs)  # noqa: E501
+            return data
+
+    def credentials_read_with_http_info(self, credentials_id, **kwargs):  # noqa: E501
+        """credentials_read  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_read_with_http_info(credentials_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int credentials_id: A unique integer value identifying the credentials. (required)
+        :return: Credentials
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['credentials_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method credentials_read" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'credentials_id' is set
+        if ('credentials_id' not in params or
+                params['credentials_id'] is None):
+            raise ValueError("Missing the required parameter `credentials_id` when calling `credentials_read`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'credentials_id' in params:
+            path_params['credentials_id'] = params['credentials_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/credentials/{credentials_id}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='Credentials',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def credentials_update(self, credentials_id, **kwargs):  # noqa: E501
+        """credentials_update  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_update(credentials_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int credentials_id: A unique integer value identifying the credentials. (required)
+        :param CredentialsUpdate data:
+        :return: Credentials
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.credentials_update_with_http_info(credentials_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.credentials_update_with_http_info(credentials_id, **kwargs)  # noqa: E501
+            return data
+
+    def credentials_update_with_http_info(self, credentials_id, **kwargs):  # noqa: E501
+        """credentials_update  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.credentials_update_with_http_info(credentials_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int credentials_id: A unique integer value identifying the credentials. (required)
+        :param CredentialsUpdate data:
+        :return: Credentials
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['credentials_id', 'data']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method credentials_update" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'credentials_id' is set
+        if ('credentials_id' not in params or
+                params['credentials_id'] is None):
+            raise ValueError("Missing the required parameter `credentials_id` when calling `credentials_update`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'credentials_id' in params:
+            path_params['credentials_id'] = params['credentials_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'data' in params:
+            body_params = params['data']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/credentials/{credentials_id}', 'PUT',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='Credentials',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletionmethod_create(self, **kwargs):  # noqa: E501
+        """deletionmethod_create  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_create(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param DeletionMethodCreate data:
+        :return: DeletionMethod
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletionmethod_create_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.deletionmethod_create_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def deletionmethod_create_with_http_info(self, **kwargs):  # noqa: E501
+        """deletionmethod_create  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_create_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param DeletionMethodCreate data:
+        :return: DeletionMethod
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['data']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletionmethod_create" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'data' in params:
+            body_params = params['data']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletionmethods', 'POST',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletionMethod',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletionmethod_delete(self, deletionmethod_id, **kwargs):  # noqa: E501
+        """deletionmethod_delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_delete(deletionmethod_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int deletionmethod_id: A unique integer value identifying the credentials. (required)
+        :return: None
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletionmethod_delete_with_http_info(deletionmethod_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deletionmethod_delete_with_http_info(deletionmethod_id, **kwargs)  # noqa: E501
+            return data
+
+    def deletionmethod_delete_with_http_info(self, deletionmethod_id, **kwargs):  # noqa: E501
+        """deletionmethod_delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_delete_with_http_info(deletionmethod_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int deletionmethod_id: A unique integer value identifying the credentials. (required)
+        :return: None
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['deletionmethod_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletionmethod_delete" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'deletionmethod_id' is set
+        if ('deletionmethod_id' not in params or
+                params['deletionmethod_id'] is None):
+            raise ValueError("Missing the required parameter `deletionmethod_id` when calling `deletionmethod_delete`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'deletionmethod_id' in params:
+            path_params['deletionmethod_id'] = params['deletionmethod_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletionmethods/{deletionmethod_id}', 'DELETE',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type=None,  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletionmethod_list(self, **kwargs):  # noqa: E501
+        """deletionmethod_list  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_list(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int offset: An optional query parameter specifying the offset in the result set to start from.
+        :param int limit: An optional query parameter to limit the number of results returned.
+        :return: list[DeletionMethod]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletionmethod_list_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.deletionmethod_list_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def deletionmethod_list_with_http_info(self, **kwargs):  # noqa: E501
+        """deletionmethod_list  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_list_with_http_info(async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int offset: An optional query parameter specifying the offset in the result set to start from.
+        :param int limit: An optional query parameter to limit the number of results returned.
+        :return: list[DeletionMethod]
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['offset', 'limit']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletionmethod_list" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        if 'offset' in params and params['offset'] < 0:  # noqa: E501
+            raise ValueError("Invalid value for parameter `offset` when calling `deletionmethod_list`, must be a value greater than or equal to `0`")  # noqa: E501
+        if 'limit' in params and params['limit'] > 100:  # noqa: E501
+            raise ValueError("Invalid value for parameter `limit` when calling `deletionmethod_list`, must be a value less than or equal to `100`")  # noqa: E501
+        if 'limit' in params and params['limit'] < 1:  # noqa: E501
+            raise ValueError("Invalid value for parameter `limit` when calling `deletionmethod_list`, must be a value greater than or equal to `1`")  # noqa: E501
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'offset' in params:
+            query_params.append(('offset', params['offset']))  # noqa: E501
+        if 'limit' in params:
+            query_params.append(('limit', params['limit']))  # noqa: E501
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletionmethods', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='list[DeletionMethod]',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletionmethod_read(self, deletionmethod_id, **kwargs):  # noqa: E501
+        """deletionmethod_read  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_read(deletionmethod_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int deletionmethod_id: A unique integer value identifying the credentials. (required)
+        :return: DeletionMethod
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletionmethod_read_with_http_info(deletionmethod_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deletionmethod_read_with_http_info(deletionmethod_id, **kwargs)  # noqa: E501
+            return data
+
+    def deletionmethod_read_with_http_info(self, deletionmethod_id, **kwargs):  # noqa: E501
+        """deletionmethod_read  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_read_with_http_info(deletionmethod_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int deletionmethod_id: A unique integer value identifying the credentials. (required)
+        :return: DeletionMethod
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['deletionmethod_id']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletionmethod_read" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'deletionmethod_id' is set
+        if ('deletionmethod_id' not in params or
+                params['deletionmethod_id'] is None):
+            raise ValueError("Missing the required parameter `deletionmethod_id` when calling `deletionmethod_read`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'deletionmethod_id' in params:
+            path_params['deletionmethod_id'] = params['deletionmethod_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletionmethods/{deletionmethod_id}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletionMethod',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def deletionmethod_update(self, deletionmethod_id, **kwargs):  # noqa: E501
+        """deletionmethod_update  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_update(deletionmethod_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int deletionmethod_id: A unique integer value identifying the credentials. (required)
+        :param DeletionMethodUpdate data:
+        :return: DeletionMethod
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async'):
+            return self.deletionmethod_update_with_http_info(deletionmethod_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.deletionmethod_update_with_http_info(deletionmethod_id, **kwargs)  # noqa: E501
+            return data
+
+    def deletionmethod_update_with_http_info(self, deletionmethod_id, **kwargs):  # noqa: E501
+        """deletionmethod_update  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async=True
+        >>> thread = api.deletionmethod_update_with_http_info(deletionmethod_id, async=True)
+        >>> result = thread.get()
+
+        :param async bool
+        :param int deletionmethod_id: A unique integer value identifying the credentials. (required)
+        :param DeletionMethodUpdate data:
+        :return: DeletionMethod
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['deletionmethod_id', 'data']  # noqa: E501
+        all_params.append('async')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method deletionmethod_update" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'deletionmethod_id' is set
+        if ('deletionmethod_id' not in params or
+                params['deletionmethod_id'] is None):
+            raise ValueError("Missing the required parameter `deletionmethod_id` when calling `deletionmethod_update`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'deletionmethod_id' in params:
+            path_params['deletionmethod_id'] = params['deletionmethod_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'data' in params:
+            body_params = params['data']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['APIKeyHeader']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/deletionmethods/{deletionmethod_id}', 'PUT',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='DeletionMethod',  # noqa: E501
+            auth_settings=auth_settings,
+            async=params.get('async'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
     def domain_create(self, **kwargs):  # noqa: E501
         """domain_create  # noqa: E501
 

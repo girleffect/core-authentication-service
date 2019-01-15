@@ -71,6 +71,13 @@ class CustomScopeClaims(ScopeClaims):
     http://django-oidc-provider.readthedocs.io/en/latest/sections/scopesclaims.html#how-to-add-custom-scopes-and-claims
     """
 
+    # Update Basic profile description for GEINFRA-394
+    info_profile = (
+        _(u"Basic profile"),
+        _(u"Access to your basic information. Includes names, gender,"
+            " birthdate and other information."),
+    )
+
     info_site = (
         _(u"Site"), _(u"Data for the requesting site"),
     )

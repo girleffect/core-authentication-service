@@ -66,9 +66,11 @@ class TrigramIndex(GinIndex):
         sql_values["columns"] = ", ".join(new_columns)
         return sql_values
 
+
 def user_avatar_path(instance, filename):
     # file will be uploaded to <FileStorageRoot>/user_<id>/avatar_<filename>
     return f"user_{instance.id}/avatar_{filename}"
+
 
 # NOTE: Changing AUTH_USER_MODEL will cause migration 0001 from otp_totp to
 # break once migrations have already been run once.
