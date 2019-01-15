@@ -4,7 +4,7 @@ LONG_DESCRIPTION_FILES = ["README.rst", "AUTHORS.rst", "CHANGELOG.rst"]
 
 setup(
     name="authentication_service",
-    version="1.4.3",
+    version="1.4.4",
     description="Girl Effect Core Authentication Service",
     long_description="".join(open(filename, "r").read() for filename in LONG_DESCRIPTION_FILES),
     author="Praekelt Consulting",
