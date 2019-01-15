@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.4.4
+-----
+- Update minimum Django 1.11 version
+- Fix string issue in oidc authorise scope text
+
 1.4.3
 -----
 - Added Tanzanian Swahili locale
