@@ -1,4 +1,4 @@
-FROM praekeltfoundation/django-bootstrap:py3.6
+FROM praekeltfoundation/django-bootstrap:py3.6-prom
 
 ARG EXTRA_DEPS
 
