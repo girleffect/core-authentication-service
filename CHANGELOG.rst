@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.4.5
+-----
+- Change image base to the Prometheus one
+
 1.4.4
 -----
 - Update minimum Django 1.11 version
