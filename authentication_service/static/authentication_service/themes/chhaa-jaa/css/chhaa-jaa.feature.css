@@ -224,7 +224,7 @@ a:visited {
 
 
 .Header-branding {
-    background: url(/static/authentication_service/themes/chaajaa/images/logo2.png) no-repeat center 0/100%;
+    background: url(/static/authentication_service/themes/chhaa-jaa/images/logo2.png) no-repeat center 0/100%;
     width: 187px;
     padding: 0 10%;
     text-align: center;
@@ -249,7 +249,7 @@ a:visited {
 }
 
 .Header-title:before {
-    /* background: url(/static/authentication_service/themes/chaajaa/images/logo.png) no-repeat 20px center/contain; */
+    /* background: url(/static/authentication_service/themes/chhaa-jaa/images/logo.png) no-repeat 20px center/contain; */
     content: "";
     display: inline-block;
     height: 60px;
