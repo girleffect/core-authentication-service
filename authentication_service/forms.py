@@ -1,39 +1,33 @@
 import itertools
 import logging
-from datetime import date, \
-    timedelta  # Required because we patch it in the tests (test_forms.py)
+# Required because we patch it in the tests (test_forms.py)
+from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
 
 from django import forms
 from django.conf import settings
+from django.db.models import QuerySet
 from django.forms.widgets import Textarea
+from django.utils.encoding import force_bytes
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import UsernameField
+from django.utils.http import urlsafe_base64_encode
+from django.utils.functional import cached_property
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.forms import (
-    UserCreationForm,
-    PasswordResetForm,
-    AuthenticationForm)
+    UserCreationForm, PasswordResetForm, AuthenticationForm)
+from django.contrib.auth.tokens import default_token_generator
+from django.forms import BaseModelFormSet, HiddenInput, modelformset_factory
 from django.contrib.auth.forms import SetPasswordForm as DjangoSetPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import ValidationError
-from django.db.models import QuerySet
-from django.forms import BaseFormSet, BaseModelFormSet, HiddenInput, modelformset_factory
-from django.utils.encoding import force_bytes
-from django.utils.functional import cached_property
-from django.utils.http import urlsafe_base64_encode
-from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
 
+from authentication_service import constants
 from authentication_service import models, tasks
 from authentication_service.fields import ParagraphField
 from authentication_service.utils import update_form_fields
-from authentication_service.constants import (
-    SECURITY_QUESTION_COUNT,
-    MIN_NON_HIGH_PASSWORD_LENGTH,
-    CONSENT_AGE,
-    GE_TERMS_URL
-)
+
 from authentication_service.decorators import required_form_fields_label_alter
 
 
@@ -85,7 +79,7 @@ class RegistrationForm(UserCreationForm):
             hidden=None, organisation_id=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
-        self.terms_url = terms_url or GE_TERMS_URL
+        self.terms_url = terms_url or constants.GE_TERMS_URL
 
         # Security value is required later in form processes as well.
         self.security = security
@@ -238,12 +232,11 @@ class RegistrationForm(UserCreationForm):
 
     def clean_age(self):
         age = self.cleaned_data.get("age")
-        if age and age < CONSENT_AGE:
-            raise forms.ValidationError(_(
-                f"We are sorry, users under the age of {CONSENT_AGE}"
-                " cannot create an account."
-            ))
-        return self.cleaned_data.get("age")
+        if age and age < constants.CONSENT_AGE:
+            raise forms.ValidationError(
+                constants.AGE_VALIDATION_ERRORS.get('min_age'))
+
+        return age
 
     # NOTE the order of RegistrationForm.Meta.fields, age is needed before
     # birth_date. If this is not the case, the age value will always be None.
@@ -255,9 +248,9 @@ class RegistrationForm(UserCreationForm):
             birth_date = today - relativedelta(years=age)
         if birth_date:
             diff = relativedelta(today, birth_date)
-            if diff.years < CONSENT_AGE:
+            if diff.years < constants.CONSENT_AGE:
                 raise forms.ValidationError(_(
-                    f"We are sorry, users under the age of {CONSENT_AGE}"
+                    f"We are sorry, users under the age of {constants.CONSENT_AGE}"
                     " cannot create an account."
                 ))
         return birth_date
@@ -277,7 +270,7 @@ class RegistrationForm(UserCreationForm):
 
         # NOTE: Min length might need to be defined somewhere easier to change.
         # Setting doesn't feel 100% right though.
-        if not len(password2) >= MIN_NON_HIGH_PASSWORD_LENGTH:
+        if not len(password2) >= constants.MIN_NON_HIGH_PASSWORD_LENGTH:
             raise forms.ValidationError(
                 _("Password not long enough.")
             )
@@ -438,7 +431,7 @@ SecurityQuestionFormSet = modelformset_factory(
     models.UserSecurityQuestion,
     SecurityQuestionForm,
     formset=SecurityQuestionFormSetClass,
-    extra=SECURITY_QUESTION_COUNT
+    extra=constants.SECURITY_QUESTION_COUNT
 )
 
 UpdateSecurityQuestionFormSet = modelformset_factory(
@@ -547,9 +540,9 @@ class EditProfileForm(forms.ModelForm):
 
     def clean_age(self):
         age = self.cleaned_data.get("age")
-        if age and age < CONSENT_AGE:
+        if age and age < constants.CONSENT_AGE:
             raise forms.ValidationError(_(
-                f"We are sorry, users under the age of {CONSENT_AGE}"
+                f"We are sorry, users under the age of {constants.CONSENT_AGE}"
                 " cannot create an account."
             ))
         return self.cleaned_data.get("age")
@@ -564,9 +557,9 @@ class EditProfileForm(forms.ModelForm):
             birth_date = today - relativedelta(years=age)
         if birth_date:
             diff = relativedelta(today, birth_date)
-            if diff.years < CONSENT_AGE:
+            if diff.years < constants.CONSENT_AGE:
                 raise forms.ValidationError(_(
-                    f"We are sorry, users under the age of {CONSENT_AGE}"
+                    f"We are sorry, users under the age of {constants.CONSENT_AGE}"
                     " cannot create an account."
                 ))
         return birth_date
@@ -736,7 +729,7 @@ class SetPasswordForm(DjangoSetPasswordForm):
                 code='password_mismatch',
             )
 
-        if not len(password2) >= MIN_NON_HIGH_PASSWORD_LENGTH:
+        if not len(password2) >= constants.MIN_NON_HIGH_PASSWORD_LENGTH:
             raise forms.ValidationError(
                 _("Password not long enough.")
             )

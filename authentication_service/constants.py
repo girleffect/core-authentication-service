@@ -74,7 +74,7 @@ AGE_HELP_TEXT = _('To join you have to tell us your age. '
                   'Please use numbers only. We’ll keep this info private')
 
 AGE_VALIDATION_ERRORS = {
-    'min_age': _('We are sorry, users under the age of {} cannot create an account'
+    'min_age': _('We are sorry, users under the age of {} cannot create an account.'
                  .format(CONSENT_AGE))
 }
 
