@@ -18,7 +18,7 @@ GENDER_CHOICES = (
     ("female", _("Female")),
     ("male", _("Male")),
     ("other", _("Other")),
-    ("not_specified", _("I don’t want to say"))
+    ("none", _("I don’t want to say"))
 )
 
 

@@ -2,6 +2,7 @@ import string
 
 from django.utils.translation import ugettext
 from django.core.exceptions import ValidationError
+from authentication_service.constants import PASSWORD_VALIDATION_ERRORS
 
 
 class DiversityValidator(object):
@@ -22,10 +23,7 @@ class DiversityValidator(object):
         valid = all(password_chars.intersection(charset) for charset in charsets)
         if not valid:
             raise ValidationError(
-                ugettext(
-                    "The password must contain at least one uppercase "
-                    "letter, one lowercase one, a digit and special character.",
-                ),
+                PASSWORD_VALIDATION_ERRORS.get('complexity'),
                 code='password_not_diverse',
             )
 

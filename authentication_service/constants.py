@@ -94,10 +94,6 @@ PASSWORD_CONFIRM_LABEL = _('Repeat your password')
 
 PASSWORD_CONFIRM_HELP_TEXT = _('Double check that this password matches the one that you wrote above.')
 
-PASSWORD_CONFIRM_VALIDATION_ERRORS = {
-    'password_mismatch': _('The two password fields don\'t match. Please try again.')
-}
-
 TERMS_LABEL = _('I accept the Terms and Conditions')
 
 TERMS_HELP_TEXT = _('Our terms & conditions are here to keep you safe! '

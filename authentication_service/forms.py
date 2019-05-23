@@ -49,6 +49,8 @@ HIDDEN_DEFINITION = {
 class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
+    error_messages = constants.PASSWORD_VALIDATION_ERRORS
+
     terms = forms.BooleanField(
         label=constants.TERMS_LABEL,
         help_text=constants.TERMS_HELP_TEXT)
@@ -398,6 +400,13 @@ class SecurityQuestionForm(forms.ModelForm):
         help_text=constants.SECURITY_QUESTIONS_QUESTION_HELP_TEXT,
     )
 
+    answer = forms.CharField(
+        widget=forms.Textarea,
+        label=constants.SECURITY_QUESTIONS_ANSWER_LABEL,
+        help_text=constants.SECURITY_QUESTIONS_ANSWER_HELP_TEXT,
+        error_messages=constants.SECURITY_QUESTIONS_ANSWER_VALIDATION_ERRORS
+    )
+
     class Meta:
         model = models.UserSecurityQuestion
         fields = ["question", "answer"]
@@ -696,6 +705,8 @@ class SetPasswordForm(DjangoSetPasswordForm):
     to them. They also do not need to adhere to the full validation suite, only
     a limited subset.
     """
+    error_messages = constants.PASSWORD_VALIDATION_ERRORS
+
     def __init__(self, user, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(SetPasswordForm, self).__init__(user, *args, **kwargs)
