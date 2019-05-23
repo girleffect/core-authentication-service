@@ -679,9 +679,10 @@ class TestSecurityQuestionFormSet(TestCase):
         }
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
-        self.assertEqual(formset.non_form_errors(),
-                         ["Each question can only be picked once."]
-                         )
+        self.assertEqual(
+            formset.non_form_errors(),
+            ["Oops! You’ve already chosen this question. Please choose a different one."]
+        )
 
         # Test valid with email.
         data = {

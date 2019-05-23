@@ -371,14 +371,14 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
             if not email:
                 if not form.cleaned_data.get("question", None):
                     raise ValidationError(
-                        _("Please fill in all Security Question fields.")
+                        constants.SECURITY_QUESTIONS_QUESTION_VALIDATION_ERRORS.get('required')
                     )
 
             # Ensure unique questions are used.
             question = form.cleaned_data.get("question", None)
             if question in questions and question is not None:
                 raise forms.ValidationError(
-                    _("Each question can only be picked once.")
+                    constants.SECURITY_QUESTIONS_QUESTION_VALIDATION_ERRORS.get('unique')
                 )
             questions.append(question)
 
@@ -386,7 +386,7 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
         # but some have been, raise an error.
         if not all(questions) and any(questions):
             raise ValidationError(
-                _("Please fill in all Security Question fields.")
+                constants.SECURITY_QUESTIONS_QUESTION_VALIDATION_ERRORS.get('required')
             )
 
 
