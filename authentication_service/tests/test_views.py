@@ -1693,7 +1693,7 @@ class DeleteAccountTestCase(TestCase):
         )
         self.assertContains(
             response,
-            "<input name=\"confirmed_deletion\" type=\"submit\" value=\"Yes\" class=\"Button\" />"
+            '<input name="confirmed_deletion" type="submit" value="Delete account" class="Button" />'
         )
         self.assertContains(response,
             "<textarea name=\"reason\" cols=\"40\" rows=\"10\" id=\"id_reason\" class=\" Textarea \">"

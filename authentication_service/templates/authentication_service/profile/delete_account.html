@@ -21,7 +21,7 @@
                 Do not alter this name without updating the view.
             {% endcomment %}
             <div class="Form-buttons">
-                <input name="confirmed_deletion" type="submit" value="{% trans "Yes" %}" class="Button" />
+                <input name="confirmed_deletion" type="submit" value="{% trans "Delete account" %}" class="Button" />
             </div>
         </form>
         <p>
@@ -32,7 +32,7 @@
             {% csrf_token %}
             {{ form.as_div }}
             <div class="Form-buttons">
-                <input type="submit" value="{% trans "Delete account?" %}" class="Button" />
+                <input type="submit" value="{% trans "Delete account" %}" class="Button" />
             </div>
         </form>
         <p class="Additional-text">
