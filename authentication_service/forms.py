@@ -458,8 +458,37 @@ class EditProfileForm(forms.ModelForm):
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
         min_value=1, max_value=100, required=False,
+        label=constants.AGE_LABEL,
         help_text=constants.AGE_HELP_TEXT
     )
+    email = forms.EmailField(
+        required=False,
+        label=constants.EMAIL_LABEL,
+        help_text=constants.EMAIL_HELP_TEXT)
+    nickname = forms.CharField(
+        label=constants,
+        required=False, help_text=constants.USERNAME_HELP_TEXT)
+
+    last_name = forms.CharField(
+        label=constants.LAST_NAME_LABEL,
+        required=False, help_text=constants.LAST_NAME_HELP_TEXT)
+
+    first_name = forms.CharField(
+        label=constants.FIRST_NAME_LABEL,
+        required=False, help_text=constants.FIRST_NAME_HELP_TEXT)
+
+    msisdn = forms.CharField(
+        required=False,
+        label=constants.MOBILE_NUMBER_LABEL,
+        help_text=constants.MOBILE_NUMBER_HELP_TEXT
+    )
+    gender = forms.ChoiceField(
+        required=False,
+        label=constants.GENDER_LABEL,
+        choices=models.GENDER_CHOICES,
+        # help_text=constants.GENDER_HELP_TEXT,
+    )
+
     class Meta:
         model = get_user_model()
         fields = [
@@ -706,6 +735,11 @@ class SetPasswordForm(DjangoSetPasswordForm):
     a limited subset.
     """
     error_messages = constants.PASSWORD_VALIDATION_ERRORS
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput,
+        label=constants.PASSWORD_CONFIRM_UPDATE_LABEL,
+        help_text=constants.PASSWORD_CONFIRM_UPDATE_HELP_TEXT
+    )
 
     def __init__(self, user, *args, **kwargs):
         # Super needed before we can actually update the form.
@@ -747,7 +781,16 @@ class SetPasswordForm(DjangoSetPasswordForm):
 
 
 class PasswordChangeForm(SetPasswordForm, DjangoPasswordChangeForm):
-    pass
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput,
+        label=constants.PASSWORD_LABEL,
+        help_text=constants.PASSWORD_UPDATE_HELP_TEXT
+    )
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput,
+        label=constants.PASSWORD_CONFIRM_LABEL,
+        help_text=constants.PASSWORD_CONFIRM_UPDATE_HELP_TEXT
+    )
 
 
 class LoginForm(AuthenticationForm):
@@ -755,3 +798,15 @@ class LoginForm(AuthenticationForm):
         "invalid_login": settings.INCORRECT_CREDENTIALS_MESSAGE,
         "inactive": settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
     }
+    username = UsernameField(
+        max_length=254,
+        label=constants.LOGIN_USERNAME_LABEL,
+        help_text=constants.LOGIN_USERNAME_HELP_TEXT,
+        widget=forms.TextInput(attrs={'autofocus': True}),
+    )
+    password = forms.CharField(
+        strip=False,
+        label=constants.LOGIN_PASSWORD_LABEL,
+        help_text=constants.LOGIN_PASSWORD_HELP_TEXT,
+        widget=forms.PasswordInput,
+    )

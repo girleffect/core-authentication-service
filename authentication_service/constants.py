@@ -140,6 +140,11 @@ LOGIN_VALIDATION_ERRORS = {
 # Update Profile Page
 # ===================
 
+FIRST_NAME_LABEL = _('First Name')
+LAST_NAME_LABEL = _('Last Name')
+GENDER_LABEL = _('Gender')
+AGE_LABEL = _('AGE')
+
 UPDATE_VALIDATION_ERRORS = {
     'non_field_errors': _('Oops - there\'s a problem with that info. '
                           'No worries - check out the messages below and we can fix this')
