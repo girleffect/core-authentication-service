@@ -46,18 +46,16 @@ HIDDEN_DEFINITION = {
 }
 
 
-
 class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
     terms = forms.BooleanField(
-        label=_("Accept terms and conditions")
-    )
+        label=constants.TERMS_LABEL,
+        help_text=constants.TERMS_HELP_TEXT)
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
-        min_value=1,
-        max_value=100,
-        required=False
+        min_value=1, max_value=100, required=False,
+        help_text=constants.AGE_HELP_TEXT
     )
 
     class Meta:
@@ -128,7 +126,7 @@ class RegistrationForm(UserCreationForm):
             fields_data = {
                 "password1": {
                     "attributes": {
-                        "help_text": ""
+                        "help_text": constants.PASSWORD_HELP_TEXT
                     }
                 }
             }
@@ -162,6 +160,7 @@ class RegistrationForm(UserCreationForm):
             "terms": {
                 "attributes": {
                     "help_text": (
+                        f'<div class="Field-message">{constants.TERMS_HELP_TEXT}</div>'
                         f'<a href="{self.terms_url}">'
                         f"{none_html_tag_translatable_terms_anchor_text}</a>"
                     )
@@ -394,8 +393,9 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
 class SecurityQuestionForm(forms.ModelForm):
     question = forms.ModelChoiceField(
         queryset=QuerySet(),
-        empty_label=_("Select a question"),
-        label=_("Question")
+        label=constants.SECURITY_QUESTIONS_QUESTION_LABEL,
+        empty_label=constants.SECURITY_QUESTIONS_EMPTY_LABEL,
+        help_text=constants.SECURITY_QUESTIONS_QUESTION_HELP_TEXT,
     )
 
     class Meta:
@@ -448,9 +448,15 @@ class EditProfileForm(forms.ModelForm):
 
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
-        max_value=100,
-        required=False
+        min_value=1, max_value=100, required=False,
+        help_text=constants.AGE_HELP_TEXT
     )
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "first_name", "last_name", "nickname", "email", "msisdn", "gender",
+            "age", "birth_date", "country", "avatar"
+        ]
 
     @required_form_fields_label_alter
     def __init__(self, *args, **kwargs):
@@ -511,13 +517,6 @@ class EditProfileForm(forms.ModelForm):
         # can be indirectly populated if the age is provided.
         self.fields["birth_date"].required = False
         self.fields["birth_date"].widget.is_required = False
-
-    class Meta:
-        model = get_user_model()
-        fields = [
-            "first_name", "last_name", "nickname", "email", "msisdn", "gender",
-            "age", "birth_date", "country", "avatar"
-        ]
 
     def _html_output(self, *args, **kwargs):
         # Exclude fields from the html not the form itself. Makes using built
@@ -706,7 +705,7 @@ class SetPasswordForm(DjangoSetPasswordForm):
             fields_data = {
                 "new_password1": {
                     "attributes": {
-                        "help_text": ""
+                        "help_text": constants.PASSWORD_UPDATE_HELP_TEXT
                     }
                 }
             }
