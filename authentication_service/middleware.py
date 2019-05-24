@@ -69,7 +69,7 @@ def authorize_client(request):
 def fetch_theme(request, key=None):
     # Set get theme from either request or session. Request always wins to
     # ensure stale theme is not used.
-    theme = request.GET.get("theme")
+    theme = request.GET.get(key)
 
     # In the event no theme has been found, try to check if theme is present in
     # a next query. This is to cater for the event where Django auth middleware
@@ -85,7 +85,7 @@ def fetch_theme(request, key=None):
 
             # Query values are in list form. Only grab the first value from the
             # list.
-            theme = next_query_args.get("theme", [None])[0]
+            theme = next_query_args.get(key, [None])[0]
 
     return theme.lower() if isinstance(theme, str) else None
 
@@ -99,7 +99,7 @@ class ThemeManagementMiddleware(MiddlewareMixin):
             current_host = request.get_host()
             referer = request.META.get("HTTP_REFERER", None)
             parsed_referer = urlparse(referer)
-            is_on_domain =  current_host == parsed_referer.netloc
+            is_on_domain = current_host == parsed_referer.netloc
 
             # Grab theme value off of url if available
             query_theme = fetch_theme(request, self.session_theme_key)
