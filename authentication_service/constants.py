@@ -56,6 +56,16 @@ USERNAME_VALIDATION_ERRORS = {
                 'cooler one this time!'),
 }
 
+AGE_LABEL = _('AGE')
+
+GENDER_LABEL = _('Gender')
+
+NICKNAME_LABEL = _('Nickname')
+
+LAST_NAME_LABEL = _('Last Name')
+
+FIRST_NAME_LABEL = _('First Name')
+
 FIRST_NAME_HELP_TEXT = _('Please enter your first name')
 
 LAST_NAME_HELP_TEXT = _('Please enter your last name')
@@ -85,9 +95,6 @@ PASSWORD_HELP_TEXT = _('Make sure your password is super secure! '
 
 PASSWORD_VALIDATION_ERRORS = {
     'password_mismatch': _('The two password fields don\'t match. Please try again.'),
-    'complexity': _('Eeek - that password is too short! '
-                    'Please create a password that has at least 8 characters and is a '
-                    'combination of letters and numbers.')
 }
 
 PASSWORD_CONFIRM_LABEL = _('Repeat your password')
@@ -130,20 +137,9 @@ LOGIN_PASSWORD_LABEL = _('Password')
 
 LOGIN_PASSWORD_HELP_TEXT = _('Enter your password')
 
-LOGIN_VALIDATION_ERRORS = {
-    'validation': _('Hmmm this doesn’t look right. '
-                    'Check that you’ve entered your username and '
-                    'password correctly and try again!')
-}
-
 
 # Update Profile Page
 # ===================
-
-FIRST_NAME_LABEL = _('First Name')
-LAST_NAME_LABEL = _('Last Name')
-GENDER_LABEL = _('Gender')
-AGE_LABEL = _('AGE')
 
 UPDATE_VALIDATION_ERRORS = {
     'non_field_errors': _('Oops - there\'s a problem with that info. '
