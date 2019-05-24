@@ -1170,7 +1170,6 @@ class TestRequiredDecorator(TestCase):
         for name, field in form.fields.items():
             # Terms is not rendered as part of the form html method
             if field.required and name is not "terms":
-                self.assertIn("*", field.label)
                 self.assertIn(
                     field.label,
                     html
@@ -1187,6 +1186,7 @@ class TestRequiredDecorator(TestCase):
         html = form.as_div()
         for name, field in form.fields.items():
             if field.required:
+                self.assertIn("*", field.label)
                 self.assertIn(field.label, html)
 
     def test_user_migration(self):
@@ -1195,7 +1195,4 @@ class TestRequiredDecorator(TestCase):
         for name, field in form.fields.items():
             if field.required:
                 self.assertIn("*", field.label)
-                self.assertIn(
-                    field.label,
-                    html
-                )
+                self.assertIn(field.label, html)
