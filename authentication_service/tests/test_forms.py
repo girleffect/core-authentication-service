@@ -1170,6 +1170,7 @@ class TestRequiredDecorator(TestCase):
         for name, field in form.fields.items():
             # Terms is not rendered as part of the form html method
             if field.required and name is not "terms":
+                self.assertIn("*", field.label)
                 self.assertIn(
                     field.label,
                     html
