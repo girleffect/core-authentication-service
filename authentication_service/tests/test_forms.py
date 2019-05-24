@@ -1037,8 +1037,8 @@ class TestPasswordChangeForm(TestCase):
     def test_none_org_html_state(self):
         form = PasswordChangeForm(self.user)
         html = form.as_div()
-        self.assertNotIn(
-            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+        self.assertIn(
+            "Enter your new password",
             html
         )
 
@@ -1046,7 +1046,7 @@ class TestPasswordChangeForm(TestCase):
         form = PasswordChangeForm(self.org_user)
         html = form.as_div()
         self.assertIn(
-            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+            "Enter your new password",
             html
         )
 
