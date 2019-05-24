@@ -1,39 +1,33 @@
 import itertools
 import logging
-from datetime import date, \
-    timedelta  # Required because we patch it in the tests (test_forms.py)
+# Required because we patch it in the tests (test_forms.py)
+from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
 
 from django import forms
 from django.conf import settings
+from django.db.models import QuerySet
 from django.forms.widgets import Textarea
-from django.contrib.auth import get_user_model
+from django.utils.encoding import force_bytes
+from django.contrib.auth import get_user_model, password_validation
+from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import UsernameField
+from django.utils.http import urlsafe_base64_encode
+from django.utils.functional import cached_property
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.forms import (
-    UserCreationForm,
-    PasswordResetForm,
-    AuthenticationForm)
+    UserCreationForm, PasswordResetForm, AuthenticationForm)
+from django.contrib.auth.tokens import default_token_generator
+from django.forms import BaseModelFormSet, HiddenInput, modelformset_factory
 from django.contrib.auth.forms import SetPasswordForm as DjangoSetPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import ValidationError
-from django.db.models import QuerySet
-from django.forms import BaseFormSet, BaseModelFormSet, HiddenInput, modelformset_factory
-from django.utils.encoding import force_bytes
-from django.utils.functional import cached_property
-from django.utils.http import urlsafe_base64_encode
-from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
 
+from authentication_service import constants
 from authentication_service import models, tasks
 from authentication_service.fields import ParagraphField
 from authentication_service.utils import update_form_fields
-from authentication_service.constants import (
-    SECURITY_QUESTION_COUNT,
-    MIN_NON_HIGH_PASSWORD_LENGTH,
-    CONSENT_AGE,
-    GE_TERMS_URL
-)
+
 from authentication_service.decorators import required_form_fields_label_alter
 
 
@@ -52,18 +46,18 @@ HIDDEN_DEFINITION = {
 }
 
 
-
 class RegistrationForm(UserCreationForm):
     error_css_class = "error"
     required_css_class = "required"
+    error_messages = constants.PASSWORD_VALIDATION_ERRORS
+
     terms = forms.BooleanField(
-        label=_("Accept terms and conditions")
-    )
+        label=constants.TERMS_LABEL,
+        help_text=constants.TERMS_HELP_TEXT)
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
-        min_value=1,
-        max_value=100,
-        required=False
+        min_value=1, max_value=100, required=False,
+        help_text=constants.AGE_HELP_TEXT
     )
 
     class Meta:
@@ -75,7 +69,7 @@ class RegistrationForm(UserCreationForm):
             "nickname", "msisdn", "gender", "age", "birth_date",
             "country", "password1", "password2"
         ]
-        exclude = ["terms",]
+        exclude = ["terms"]
         field_classes = {
             "organisation": ParagraphField,
         }
@@ -85,7 +79,7 @@ class RegistrationForm(UserCreationForm):
             hidden=None, organisation_id=None, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(RegistrationForm, self).__init__(*args, **kwargs)
-        self.terms_url = terms_url or GE_TERMS_URL
+        self.terms_url = terms_url or constants.GE_TERMS_URL
 
         # Security value is required later in form processes as well.
         self.security = security
@@ -134,7 +128,8 @@ class RegistrationForm(UserCreationForm):
             fields_data = {
                 "password1": {
                     "attributes": {
-                        "help_text": ""
+                        "help_text": password_validation.password_validators_help_text_html()
+                        if self.security == 'high' else constants.PASSWORD_HELP_TEXT
                     }
                 }
             }
@@ -168,6 +163,7 @@ class RegistrationForm(UserCreationForm):
             "terms": {
                 "attributes": {
                     "help_text": (
+                        f'<div class="Field-message">{constants.TERMS_HELP_TEXT}</div>'
                         f'<a href="{self.terms_url}">'
                         f"{none_html_tag_translatable_terms_anchor_text}</a>"
                     )
@@ -175,17 +171,61 @@ class RegistrationForm(UserCreationForm):
             },
             "nickname": {
                 "attributes": {
-                    "label": _("Display name")
+                    "label": constants.NICKNAME_LABEL,
                 }
             },
             "msisdn": {
                 "attributes": {
-                    "label": _("Mobile")
+                    "label": constants.MOBILE_NUMBER_LABEL,
+                    "help_text": constants.MOBILE_NUMBER_HELP_TEXT,
                 }
             },
             "age": {
                 "attributes": {
-                    "label": _("Age")
+                    "label": constants.AGE_LABEL,
+                    "help_text": constants.AGE_HELP_TEXT,
+                }
+            },
+            "first_name": {
+                "attributes": {
+                    "label": constants.FIRST_NAME_LABEL,
+                    "help_text": constants.FIRST_NAME_HELP_TEXT,
+                }
+            },
+            "last_name": {
+                "attributes": {
+                    "label": constants.LAST_NAME_LABEL,
+                    "help_text": constants.LAST_NAME_HELP_TEXT,
+                }
+            },
+            "email": {
+                "attributes": {
+                    "label": constants.EMAIL_LABEL,
+                    "help_text": constants.EMAIL_HELP_TEXT,
+                }
+            },
+            "gender": {
+                "attributes": {
+                    "label": constants.GENDER_LABEL,
+                    "help_text": constants.GENDER_HELP_TEXT,
+                }
+            },
+            "password1": {
+                "attributes": {
+                    "label": constants.PASSWORD_LABEL,
+                    "help_text": password_validation.password_validators_help_text_html()
+                    if self.security == 'high' else constants.PASSWORD_HELP_TEXT,
+                }
+            },
+            "password2": {
+                "attributes": {
+                    "label": constants.PASSWORD_CONFIRM_LABEL,
+                    "help_text": constants.PASSWORD_CONFIRM_HELP_TEXT,
+                }
+            },
+            "username": {
+                "attributes": {
+                    "help_text": constants.USERNAME_HELP_TEXT,
                 }
             }
         })
@@ -238,12 +278,11 @@ class RegistrationForm(UserCreationForm):
 
     def clean_age(self):
         age = self.cleaned_data.get("age")
-        if age and age < CONSENT_AGE:
-            raise forms.ValidationError(_(
-                f"We are sorry, users under the age of {CONSENT_AGE}"
-                " cannot create an account."
-            ))
-        return self.cleaned_data.get("age")
+        if age and age < constants.CONSENT_AGE:
+            raise forms.ValidationError(
+                constants.AGE_VALIDATION_ERRORS.get('min_age'))
+
+        return age
 
     # NOTE the order of RegistrationForm.Meta.fields, age is needed before
     # birth_date. If this is not the case, the age value will always be None.
@@ -255,9 +294,9 @@ class RegistrationForm(UserCreationForm):
             birth_date = today - relativedelta(years=age)
         if birth_date:
             diff = relativedelta(today, birth_date)
-            if diff.years < CONSENT_AGE:
+            if diff.years < constants.CONSENT_AGE:
                 raise forms.ValidationError(_(
-                    f"We are sorry, users under the age of {CONSENT_AGE}"
+                    f"We are sorry, users under the age of {constants.CONSENT_AGE}"
                     " cannot create an account."
                 ))
         return birth_date
@@ -277,7 +316,7 @@ class RegistrationForm(UserCreationForm):
 
         # NOTE: Min length might need to be defined somewhere easier to change.
         # Setting doesn't feel 100% right though.
-        if not len(password2) >= MIN_NON_HIGH_PASSWORD_LENGTH:
+        if not len(password2) >= constants.MIN_NON_HIGH_PASSWORD_LENGTH:
             raise forms.ValidationError(
                 _("Password not long enough.")
             )
@@ -379,14 +418,14 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
             if not email:
                 if not form.cleaned_data.get("question", None):
                     raise ValidationError(
-                        _("Please fill in all Security Question fields.")
+                        constants.SECURITY_QUESTIONS_QUESTION_VALIDATION_ERRORS.get('required')
                     )
 
             # Ensure unique questions are used.
             question = form.cleaned_data.get("question", None)
             if question in questions and question is not None:
                 raise forms.ValidationError(
-                    _("Each question can only be picked once.")
+                    constants.SECURITY_QUESTIONS_QUESTION_VALIDATION_ERRORS.get('unique')
                 )
             questions.append(question)
 
@@ -394,15 +433,23 @@ class SecurityQuestionFormSetClass(BaseModelFormSet):
         # but some have been, raise an error.
         if not all(questions) and any(questions):
             raise ValidationError(
-                _("Please fill in all Security Question fields.")
+                constants.SECURITY_QUESTIONS_QUESTION_VALIDATION_ERRORS.get('required')
             )
 
 
 class SecurityQuestionForm(forms.ModelForm):
     question = forms.ModelChoiceField(
         queryset=QuerySet(),
-        empty_label=_("Select a question"),
-        label=_("Question")
+        label=constants.SECURITY_QUESTIONS_QUESTION_LABEL,
+        empty_label=constants.SECURITY_QUESTIONS_EMPTY_LABEL,
+        help_text=constants.SECURITY_QUESTIONS_QUESTION_HELP_TEXT,
+    )
+
+    answer = forms.CharField(
+        widget=forms.Textarea,
+        label=constants.SECURITY_QUESTIONS_ANSWER_LABEL,
+        help_text=constants.SECURITY_QUESTIONS_ANSWER_HELP_TEXT,
+        error_messages=constants.SECURITY_QUESTIONS_ANSWER_VALIDATION_ERRORS
     )
 
     class Meta:
@@ -438,7 +485,7 @@ SecurityQuestionFormSet = modelformset_factory(
     models.UserSecurityQuestion,
     SecurityQuestionForm,
     formset=SecurityQuestionFormSetClass,
-    extra=SECURITY_QUESTION_COUNT
+    extra=constants.SECURITY_QUESTION_COUNT
 )
 
 UpdateSecurityQuestionFormSet = modelformset_factory(
@@ -455,9 +502,44 @@ class EditProfileForm(forms.ModelForm):
 
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
-        max_value=100,
-        required=False
+        min_value=1, max_value=100, required=False,
+        label=constants.AGE_LABEL,
+        help_text=constants.AGE_HELP_TEXT
     )
+    email = forms.EmailField(
+        required=False,
+        label=constants.EMAIL_LABEL,
+        help_text=constants.EMAIL_HELP_TEXT)
+    nickname = forms.CharField(
+        label=constants,
+        required=False, help_text=constants.USERNAME_HELP_TEXT)
+
+    last_name = forms.CharField(
+        label=constants.LAST_NAME_LABEL,
+        required=False, help_text=constants.LAST_NAME_HELP_TEXT)
+
+    first_name = forms.CharField(
+        label=constants.FIRST_NAME_LABEL,
+        required=False, help_text=constants.FIRST_NAME_HELP_TEXT)
+
+    msisdn = forms.CharField(
+        required=False,
+        label=constants.MOBILE_NUMBER_LABEL,
+        help_text=constants.MOBILE_NUMBER_HELP_TEXT
+    )
+    gender = forms.ChoiceField(
+        required=False,
+        label=constants.GENDER_LABEL,
+        choices=models.GENDER_CHOICES,
+        # help_text=constants.GENDER_HELP_TEXT,
+    )
+
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "first_name", "last_name", "nickname", "email", "msisdn", "gender",
+            "age", "birth_date", "country", "avatar"
+        ]
 
     @required_form_fields_label_alter
     def __init__(self, *args, **kwargs):
@@ -519,13 +601,6 @@ class EditProfileForm(forms.ModelForm):
         self.fields["birth_date"].required = False
         self.fields["birth_date"].widget.is_required = False
 
-    class Meta:
-        model = get_user_model()
-        fields = [
-            "first_name", "last_name", "nickname", "email", "msisdn", "gender",
-            "age", "birth_date", "country", "avatar"
-        ]
-
     def _html_output(self, *args, **kwargs):
         # Exclude fields from the html not the form itself. Makes using built
         # in save method easier.
@@ -547,9 +622,9 @@ class EditProfileForm(forms.ModelForm):
 
     def clean_age(self):
         age = self.cleaned_data.get("age")
-        if age and age < CONSENT_AGE:
+        if age and age < constants.CONSENT_AGE:
             raise forms.ValidationError(_(
-                f"We are sorry, users under the age of {CONSENT_AGE}"
+                f"We are sorry, users under the age of {constants.CONSENT_AGE}"
                 " cannot create an account."
             ))
         return self.cleaned_data.get("age")
@@ -564,9 +639,9 @@ class EditProfileForm(forms.ModelForm):
             birth_date = today - relativedelta(years=age)
         if birth_date:
             diff = relativedelta(today, birth_date)
-            if diff.years < CONSENT_AGE:
+            if diff.years < constants.CONSENT_AGE:
                 raise forms.ValidationError(_(
-                    f"We are sorry, users under the age of {CONSENT_AGE}"
+                    f"We are sorry, users under the age of {constants.CONSENT_AGE}"
                     " cannot create an account."
                 ))
         return birth_date
@@ -704,6 +779,13 @@ class SetPasswordForm(DjangoSetPasswordForm):
     to them. They also do not need to adhere to the full validation suite, only
     a limited subset.
     """
+    error_messages = constants.PASSWORD_VALIDATION_ERRORS
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput,
+        label=constants.PASSWORD_CONFIRM_UPDATE_LABEL,
+        help_text=constants.PASSWORD_CONFIRM_UPDATE_HELP_TEXT
+    )
+
     def __init__(self, user, *args, **kwargs):
         # Super needed before we can actually update the form.
         super(SetPasswordForm, self).__init__(user, *args, **kwargs)
@@ -713,7 +795,7 @@ class SetPasswordForm(DjangoSetPasswordForm):
             fields_data = {
                 "new_password1": {
                     "attributes": {
-                        "help_text": ""
+                        "help_text": constants.PASSWORD_UPDATE_HELP_TEXT
                     }
                 }
             }
@@ -736,7 +818,7 @@ class SetPasswordForm(DjangoSetPasswordForm):
                 code='password_mismatch',
             )
 
-        if not len(password2) >= MIN_NON_HIGH_PASSWORD_LENGTH:
+        if not len(password2) >= constants.MIN_NON_HIGH_PASSWORD_LENGTH:
             raise forms.ValidationError(
                 _("Password not long enough.")
             )
@@ -744,7 +826,16 @@ class SetPasswordForm(DjangoSetPasswordForm):
 
 
 class PasswordChangeForm(SetPasswordForm, DjangoPasswordChangeForm):
-    pass
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput,
+        label=constants.PASSWORD_LABEL,
+        help_text=constants.PASSWORD_UPDATE_HELP_TEXT
+    )
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput,
+        label=constants.PASSWORD_CONFIRM_LABEL,
+        help_text=constants.PASSWORD_CONFIRM_UPDATE_HELP_TEXT
+    )
 
 
 class LoginForm(AuthenticationForm):
@@ -752,3 +843,15 @@ class LoginForm(AuthenticationForm):
         "invalid_login": settings.INCORRECT_CREDENTIALS_MESSAGE,
         "inactive": settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
     }
+    username = UsernameField(
+        max_length=254,
+        label=constants.LOGIN_USERNAME_LABEL,
+        help_text=constants.LOGIN_USERNAME_HELP_TEXT,
+        widget=forms.TextInput(attrs={'autofocus': True}),
+    )
+    password = forms.CharField(
+        strip=False,
+        label=constants.LOGIN_PASSWORD_LABEL,
+        help_text=constants.LOGIN_PASSWORD_HELP_TEXT,
+        widget=forms.PasswordInput,
+    )

@@ -17,7 +17,8 @@ from project.settings import MediaStorage
 GENDER_CHOICES = (
     ("female", _("Female")),
     ("male", _("Male")),
-    ("other", _("Other"))
+    ("other", _("Other")),
+    ("none", _("I don’t want to say"))
 )
 
 
