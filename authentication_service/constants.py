@@ -56,7 +56,7 @@ USERNAME_VALIDATION_ERRORS = {
                 'cooler one this time!'),
 }
 
-AGE_LABEL = _('AGE')
+AGE_LABEL = _('Age')
 
 GENDER_LABEL = _('Gender')
 

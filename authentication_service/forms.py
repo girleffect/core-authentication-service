@@ -69,7 +69,7 @@ class RegistrationForm(UserCreationForm):
             "nickname", "msisdn", "gender", "age", "birth_date",
             "country", "password1", "password2"
         ]
-        exclude = ["terms",]
+        exclude = ["terms"]
         field_classes = {
             "organisation": ParagraphField,
         }
@@ -170,17 +170,60 @@ class RegistrationForm(UserCreationForm):
             },
             "nickname": {
                 "attributes": {
-                    "label": _("Display name")
+                    "label": constants.NICKNAME_LABEL,
                 }
             },
             "msisdn": {
                 "attributes": {
-                    "label": _("Mobile")
+                    "label": constants.MOBILE_NUMBER_LABEL,
+                    "help_text": constants.MOBILE_NUMBER_HELP_TEXT,
                 }
             },
             "age": {
                 "attributes": {
-                    "label": _("Age")
+                    "label": constants.AGE_LABEL,
+                    "help_text": constants.AGE_HELP_TEXT,
+                }
+            },
+            "first_name": {
+                "attributes": {
+                    "label": constants.FIRST_NAME_LABEL,
+                    "help_text": constants.FIRST_NAME_HELP_TEXT,
+                }
+            },
+            "last_name": {
+                "attributes": {
+                    "label": constants.LAST_NAME_LABEL,
+                    "help_text": constants.LAST_NAME_HELP_TEXT,
+                }
+            },
+            "email": {
+                "attributes": {
+                    "label": constants.EMAIL_LABEL,
+                    "help_text": constants.EMAIL_HELP_TEXT,
+                }
+            },
+            "gender": {
+                "attributes": {
+                    "label": constants.GENDER_LABEL,
+                    "help_text": constants.GENDER_HELP_TEXT,
+                }
+            },
+            "password1": {
+                "attributes": {
+                    "label": constants.PASSWORD_LABEL,
+                    "help_text": constants.PASSWORD_HELP_TEXT,
+                }
+            },
+            "password2": {
+                "attributes": {
+                    "label": constants.PASSWORD_CONFIRM_LABEL,
+                    "help_text": constants.PASSWORD_CONFIRM_HELP_TEXT,
+                }
+            },
+            "username": {
+                "attributes": {
+                    "help_text": constants.USERNAME_HELP_TEXT,
                 }
             }
         })
