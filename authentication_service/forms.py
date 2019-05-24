@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db.models import QuerySet
 from django.forms.widgets import Textarea
 from django.utils.encoding import force_bytes
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UsernameField
 from django.utils.http import urlsafe_base64_encode
@@ -128,7 +128,8 @@ class RegistrationForm(UserCreationForm):
             fields_data = {
                 "password1": {
                     "attributes": {
-                        "help_text": constants.PASSWORD_HELP_TEXT
+                        "help_text": password_validation.password_validators_help_text_html()
+                        if self.security == 'high' else constants.PASSWORD_HELP_TEXT
                     }
                 }
             }
@@ -212,7 +213,8 @@ class RegistrationForm(UserCreationForm):
             "password1": {
                 "attributes": {
                     "label": constants.PASSWORD_LABEL,
-                    "help_text": constants.PASSWORD_HELP_TEXT,
+                    "help_text": password_validation.password_validators_help_text_html()
+                    if self.security == 'high' else constants.PASSWORD_HELP_TEXT,
                 }
             },
             "password2": {
