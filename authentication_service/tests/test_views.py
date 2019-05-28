@@ -68,6 +68,39 @@ class TestLogin(TestCase):
         )
         self.assertContains(response, "Your account has been deactivated. Please contact support.")
 
+    def test_invalid_user_login(self):
+        user = get_user_model().objects.create_user(
+            username="testusername",
+            email="testusername@email.com",
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 1, 1)
+        )
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": user.username,
+            "auth-password": "wrongpassword"
+        }
+        response = self.client.post(reverse("login"), data=data, follow=True)
+
+        self.assertEquals(response.context['form'].errors, {
+            '__all__': [
+                "Hmmm this doesn't look right. "
+                "Check that you've entered your username and password correctly and try again!"
+            ]
+        })
+
+    def test_invalid_user_creds(self):
+        data = {
+            "login_view-current_step": "auth",
+            "auth-username": "",
+            "auth-password": ""
+        }
+        response = self.client.post(reverse("login"), data=data, follow=True)
+        self.assertEquals(response.context['form'].errors, {
+            'username': ['Please fill in this field.'],
+            'password': ['This field is required.'],
+        })
+
     def test_active_user_login(self):
         self.user.is_active = True
         self.user.save()

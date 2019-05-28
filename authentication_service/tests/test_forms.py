@@ -956,7 +956,8 @@ class TestPasswordResetForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "new_password2": [
-                "Password not long enough."
+                "Eeek - that password is too short! "
+                "Please create a password that has at least 8 characters and is a combination of letters and numbers."
             ]
         })
 
@@ -1104,7 +1105,8 @@ class TestPasswordChangeForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "new_password2": [
-                "Password not long enough."
+                "Eeek - that password is too short! "
+                "Please create a password that has at least 8 characters and is a combination of letters and numbers."
             ]
         })
 
