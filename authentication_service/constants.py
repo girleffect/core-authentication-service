@@ -51,6 +51,7 @@ USERNAME_HELP_TEXT = _(
 
 
 USERNAME_VALIDATION_ERRORS = {
+    'required': _('This field is required.'),
     'unique': _('Oh no! Looks like somebody else already took your username. '
                 'Please try something else, you get to choose an even '
                 'cooler one this time!'),

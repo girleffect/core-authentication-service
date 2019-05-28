@@ -1,5 +1,4 @@
 from dateutil.relativedelta import relativedelta
-import copy
 import datetime
 
 from unittest import mock
@@ -9,11 +8,11 @@ from django.forms import model_to_dict
 from django.test import TestCase, override_settings
 
 from authentication_service.forms import (
-    RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
+    RegistrationForm, SecurityQuestionFormSet,
     EditProfileForm, SetPasswordForm, PasswordChangeForm
 )
-from authentication_service.models import SecurityQuestion, Organisation
 from authentication_service import constants
+from authentication_service.models import SecurityQuestion, Organisation
 from authentication_service.user_migration.forms import (
     UserDataForm
 )
@@ -455,6 +454,30 @@ class TestRegistrationForm(TestCase):
                 "password2": "asdasdasdA@1"
             })
             self.assertTrue(form.is_valid())
+
+    def test_unique_username(self):
+        user = get_user_model().objects.create_user(
+            username="testuser",
+            birth_date=datetime.date(2000, 1, 1),
+            email="wrong@email.com",
+            gender="female",
+            email_verified=True
+        )
+        form = RegistrationForm(data={
+            "username": user.username,
+            "email": "email@email.com",
+            "age": constants.CONSENT_AGE,
+            "terms": True,
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "username": [
+                "Oh no! Looks like somebody else already took your username. "
+                "Please try something else, you get to choose an even cooler one this time!"
+            ],
+        })
 
 
 class TestRegistrationFormHTML(TestCase):

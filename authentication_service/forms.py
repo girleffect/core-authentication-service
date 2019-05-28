@@ -53,7 +53,13 @@ class RegistrationForm(UserCreationForm):
 
     terms = forms.BooleanField(
         label=constants.TERMS_LABEL,
-        help_text=constants.TERMS_HELP_TEXT)
+        help_text=constants.TERMS_HELP_TEXT
+    )
+    username = forms.CharField(
+        label=constants.LOGIN_USERNAME_LABEL,
+        help_text=constants.USERNAME_HELP_TEXT,
+        error_messages=constants.USERNAME_VALIDATION_ERRORS
+    )
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
         min_value=1, max_value=100, required=False,
@@ -225,7 +231,9 @@ class RegistrationForm(UserCreationForm):
             },
             "username": {
                 "attributes": {
+                    "label": constants.LOGIN_USERNAME_LABEL,
                     "help_text": constants.USERNAME_HELP_TEXT,
+                    "error_messages": constants.USERNAME_VALIDATION_ERRORS
                 }
             }
         })
