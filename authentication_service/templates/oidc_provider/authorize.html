@@ -22,7 +22,16 @@
 
 {% block content %}
     <p class="Intro">
-        {% blocktrans with client_name=client.name %}You recently logged in to {{ client_name }}. They would like to access this information of you:{% endblocktrans %}
+        {% blocktrans %}
+            <p>
+                To make sure the site is as awesome as possible we need access to your profile information.
+                This includes the information that you gave us when you registered.
+
+                In order to register you as a member of the community we need to access this information. We will use this information in accordance with our Terms and Conditions.
+
+                Are you happy to provide access to your profile information?
+            </p>
+        {% endblocktrans %}
     </p>
     <form method="post" action="{% url 'oidc_provider:authorize' %}" class="Form">
         {% csrf_token %}
