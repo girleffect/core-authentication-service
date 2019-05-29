@@ -5,7 +5,7 @@
 {% comment %}
   <!-- OIDC COMPONENT STYLE IS NOT DE-COUPLED AND THEREFOR OVERRIDEN BY CSS/OIDC CSS | SOLVE TO RELOAD STLES FOR THEME TEMPLATES-->
 {% endcomment %}
-{% if  ge_global_theme == "chhaa-jaa" %}
+{% if ge_global_theme == "chhaa-jaa" %}
   {% block extrastyle-basic %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.feature.css" %}" />{% endblock %}
   {% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.enhanced.css" %}" />{% endblock %}
 {% elif ge_global_theme == "ninyampinga" %}
@@ -18,7 +18,6 @@
   {% block extrastyle-basic %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.feature.css" %}" />{% endblock %}
   {% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.enhanced.css" %}" />{% endblock %}
 {% else %}
-  {% block extrastyle-basic %}{% endblock %}
   {% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "oidc_provider/css/oidc.css" %}" />{% endblock %}
 {% endif %}
 
