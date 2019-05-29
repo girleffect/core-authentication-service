@@ -53,7 +53,13 @@ class RegistrationForm(UserCreationForm):
 
     terms = forms.BooleanField(
         label=constants.TERMS_LABEL,
-        help_text=constants.TERMS_HELP_TEXT)
+        help_text=constants.TERMS_HELP_TEXT
+    )
+    username = forms.CharField(
+        label=constants.LOGIN_USERNAME_LABEL,
+        help_text=constants.USERNAME_HELP_TEXT,
+        error_messages=constants.USERNAME_VALIDATION_ERRORS
+    )
     # Helper field that user's who don't know their birth date can use instead.
     age = forms.IntegerField(
         min_value=1, max_value=100, required=False,
@@ -225,7 +231,9 @@ class RegistrationForm(UserCreationForm):
             },
             "username": {
                 "attributes": {
+                    "label": constants.LOGIN_USERNAME_LABEL,
                     "help_text": constants.USERNAME_HELP_TEXT,
+                    "error_messages": constants.USERNAME_VALIDATION_ERRORS
                 }
             }
         })
@@ -820,8 +828,7 @@ class SetPasswordForm(DjangoSetPasswordForm):
 
         if not len(password2) >= constants.MIN_NON_HIGH_PASSWORD_LENGTH:
             raise forms.ValidationError(
-                _("Password not long enough.")
-            )
+                self.error_messages['password_min_length'])
         return password2
 
 
@@ -839,13 +846,12 @@ class PasswordChangeForm(SetPasswordForm, DjangoPasswordChangeForm):
 
 
 class LoginForm(AuthenticationForm):
-    error_messages = {
-        "invalid_login": settings.INCORRECT_CREDENTIALS_MESSAGE,
-        "inactive": settings.INACTIVE_ACCOUNT_LOGIN_MESSAGE,
-    }
+    error_messages = constants.LOGIN_VALIDATION_ERRORS
+
     username = UsernameField(
         max_length=254,
         label=constants.LOGIN_USERNAME_LABEL,
+        error_messages=constants.LOGIN_USERNAME_VALIDATION_ERRORS,
         help_text=constants.LOGIN_USERNAME_HELP_TEXT,
         widget=forms.TextInput(attrs={'autofocus': True}),
     )

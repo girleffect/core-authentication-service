@@ -51,6 +51,7 @@ USERNAME_HELP_TEXT = _(
 
 
 USERNAME_VALIDATION_ERRORS = {
+    'required': _('This field is required.'),
     'unique': _('Oh no! Looks like somebody else already took your username. '
                 'Please try something else, you get to choose an even '
                 'cooler one this time!'),
@@ -95,6 +96,9 @@ PASSWORD_HELP_TEXT = _('Make sure your password is super secure! '
 
 PASSWORD_VALIDATION_ERRORS = {
     'password_mismatch': _('The two password fields don\'t match. Please try again.'),
+    'password_min_length': _(
+        "Eeek - that password is too short! "
+        "Please create a password that has at least 8 characters and is a combination of letters and numbers."),
 }
 
 PASSWORD_CONFIRM_LABEL = _('Repeat your password')
@@ -136,6 +140,18 @@ LOGIN_USERNAME_HELP_TEXT = _('Enter your username')
 LOGIN_PASSWORD_LABEL = _('Password')
 
 LOGIN_PASSWORD_HELP_TEXT = _('Enter your password')
+
+LOGIN_USERNAME_VALIDATION_ERRORS = {
+    'required': _("Please fill in this field.")
+}
+
+LOGIN_VALIDATION_ERRORS = {
+    'inactive': _(
+        "Your account has been deactivated. Please contact support."),
+
+    'invalid_login': _("Hmmm this doesn't look right."
+                       " Check that you've entered your username and password correctly and try again!")
+}
 
 
 # Update Profile Page

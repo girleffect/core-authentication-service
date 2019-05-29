@@ -8,6 +8,7 @@ import django.conf.locale
 
 
 from project.settings_base import *
+from authentication_service.constants import LOGIN_VALIDATION_ERRORS
 import access_control
 import user_data_store
 
@@ -259,10 +260,8 @@ LOGIN_URL = reverse_lazy("login")
 # To avoid the login loop, we rather redirect to a page that shows
 # the message oops.
 LOGIN_REDIRECT_URL = "redirect_issue"
-INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
-    _("Your account has been deactivated. Please contact support.")
-INCORRECT_CREDENTIALS_MESSAGE = \
-    _("Hmmm this doesn’t look right. Check that you’ve entered your %(username) and password correctly and try again!")
+INACTIVE_ACCOUNT_LOGIN_MESSAGE = LOGIN_VALIDATION_ERRORS['inactive']
+INCORRECT_CREDENTIALS_MESSAGE = LOGIN_VALIDATION_ERRORS['invalid_login']
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
