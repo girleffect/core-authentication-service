@@ -1,6 +1,10 @@
 # Virtualenv as created in Makefile
 ve/
 
+# Static and media files on Debug
+static/
+media/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
