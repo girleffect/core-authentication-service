@@ -404,7 +404,7 @@ if not env.bool("BUILDER", False):
     )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DEBUG", False)
+DEBUG = env.bool("DEBUG", True)
 
 # Attempt to import local settings if present.
 try:
