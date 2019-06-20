@@ -424,6 +424,9 @@ if DEBUG:
 
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+    # remove static root from sys root on debug mode
+    MEDIA_ROOT = env.str("MEDIA_ROOT", "media")
+    STATIC_ROOT = env.str("STATIC_ROOT", "static")
 
 # STORAGE
 # Unless env.USE_DEFAULT_STORAGE is set to false, this service will make use of
