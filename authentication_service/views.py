@@ -1,4 +1,6 @@
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import \
+    urlsplit, parse_qs, urlunsplit, urlencode, urlparse
+
 import datetime
 import pkg_resources
 import socket
@@ -8,7 +10,12 @@ import prometheus_client
 from defender.decorators import watch_login
 from defender.utils import is_user_already_locked, lockout_response
 from formtools.wizard.views import NamedUrlSessionWizardView
+
 from oidc_provider.models import Client
+from oidc_provider.views import EndSessionView
+from oidc_provider import settings as oidc_settings
+from oidc_provider.lib.utils.token import client_id_from_id_token
+
 from two_factor.forms import AuthenticationTokenForm
 from two_factor.forms import BackupTokenForm
 from two_factor.utils import default_device
@@ -16,12 +23,15 @@ from two_factor.views import core
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.signals import user_logged_out
 from django.contrib.auth import login, authenticate, hashers
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import (
     PasswordChangeView,
     PasswordResetConfirmView,
     PasswordResetView,
+    LogoutView
 )
 from django.contrib.auth import get_user_model
 from django.core import signing
@@ -31,6 +41,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import connection
 from django.utils import timezone
 from django.utils.functional import cached_property
+from django.utils.translation import LANGUAGE_SESSION_KEY
 
 # NOTE: Can be refactored, both redirect import perform more or less the same.
 from django.http import (
@@ -46,12 +57,13 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.views.generic import View, TemplateView
+from django.views.decorators.cache import never_cache
 from django.views.generic.edit import UpdateView, FormView
 
 from authentication_service import api_helpers
-from authentication_service import forms, models, tasks, constants, utils
-from authentication_service.decorators import generic_deprecation
 from authentication_service.forms import LoginForm
+from authentication_service.decorators import generic_deprecation
+from authentication_service import forms, models, tasks, constants, utils
 from authentication_service.user_migration.models import TemporaryMigrationUserStore
 
 
@@ -99,8 +111,8 @@ class LoginView(core.LoginView):
     )
 
     @generic_deprecation(
-        "authentication_service.views.LoginView: def post(); makes use of" \
-        " models and urls found in 'authentication_service.user_migration'." \
+        "authentication_service.views.LoginView: def post(); makes use of"
+        " models and urls found in 'authentication_service.user_migration'."
         " The app is temporary and will be removed."
     )
     def post(self, *args, **kwargs):
@@ -161,6 +173,74 @@ class LoginView(core.LoginView):
                             # Let login fail as usual
                             pass
         return super(LoginView, self).post(*args, **kwargs)
+
+
+class AuthServiceLogout(LogoutView):
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        user = getattr(request, 'user', None)
+        if hasattr(user, 'is_authenticated') and not user.is_authenticated:
+            user = None
+        user_logged_out.send(sender=user.__class__, request=request, user=user)
+
+        # remember language choice saved to session
+        language = request.session.get(LANGUAGE_SESSION_KEY)
+        theme = utils.get_session_data(request, constants.SessionKeys.THEME)
+
+        request.session.flush()
+        if theme:
+            utils.update_session_data(
+                request, constants.SessionKeys.THEME, theme)
+
+        if language is not None:
+            request.session[LANGUAGE_SESSION_KEY] = language
+
+        if hasattr(request, 'user'):
+            request.user = AnonymousUser()
+
+        next_page = self.get_next_page()
+        if next_page:
+            # Redirect to this page until the session has been cleared.
+            return HttpResponseRedirect(next_page)
+        return super(LogoutView, self).dispatch(request, *args, **kwargs)
+
+
+class AuthServiceEndService(EndSessionView):
+    def get(self, request, *args, **kwargs):
+        id_token_hint = request.GET.get('id_token_hint', '')
+        post_logout_redirect_uri = request.GET.get('post_logout_redirect_uri', '')
+        state = request.GET.get('state', '')
+        client = None
+
+        next_page = oidc_settings.get('OIDC_LOGIN_URL')
+        after_end_session_hook = oidc_settings.get(
+            'OIDC_AFTER_END_SESSION_HOOK', import_str=True)
+
+        if id_token_hint:
+            client_id = client_id_from_id_token(id_token_hint)
+            try:
+                client = Client.objects.get(client_id=client_id)
+                if post_logout_redirect_uri in client.post_logout_redirect_uris:
+                    if state:
+                        uri = urlsplit(post_logout_redirect_uri)
+                        query_params = parse_qs(uri.query)
+                        query_params['state'] = state
+                        uri = uri._replace(query=urlencode(query_params, doseq=True))
+                        next_page = urlunsplit(uri)
+                    else:
+                        next_page = post_logout_redirect_uri
+            except Client.DoesNotExist:
+                pass
+
+        after_end_session_hook(
+            request=request,
+            id_token=id_token_hint,
+            post_logout_redirect_uri=post_logout_redirect_uri,
+            state=state,
+            client=client,
+            next_page=next_page
+        )
+        return AuthServiceLogout.as_view(next_page=next_page)(request)
 
 
 # Protect the login view using Defender. Defender provides a method decorator
