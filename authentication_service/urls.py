@@ -41,7 +41,7 @@ urlpatterns = [
     url(
         r"^api/v1/", include("authentication_service.api.urls"), name="api"
     ),
-    url(r'^openid/end-session/?$', views.AuthServiceEndService.as_view(), name='end-session'),
+    url(r'^openid/end-session/?$', views.AuthServiceEndService.as_view()),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
 
 ]

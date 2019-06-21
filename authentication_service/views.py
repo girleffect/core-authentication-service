@@ -27,6 +27,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.signals import user_logged_out
 from django.contrib.auth import login, authenticate, hashers
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (
     PasswordChangeView,
     PasswordResetConfirmView,
@@ -178,8 +179,8 @@ class LoginView(core.LoginView):
 class AuthServiceLogout(LogoutView):
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
-        user = getattr(request, 'user', None)
-        if hasattr(user, 'is_authenticated') and not user.is_authenticated:
+        user = request.user
+        if not user.is_authenticated:
             user = None
         user_logged_out.send(sender=user.__class__, request=request, user=user)
 
@@ -192,12 +193,10 @@ class AuthServiceLogout(LogoutView):
             utils.update_session_data(
                 request, constants.SessionKeys.THEME, theme)
 
-        if language is not None:
+        if language:
             request.session[LANGUAGE_SESSION_KEY] = language
 
-        if hasattr(request, 'user'):
-            request.user = AnonymousUser()
-
+        request.user = AnonymousUser()
         next_page = self.get_next_page()
         if next_page:
             # Redirect to this page until the session has been cleared.
@@ -205,7 +204,7 @@ class AuthServiceLogout(LogoutView):
         return super(LogoutView, self).dispatch(request, *args, **kwargs)
 
 
-class AuthServiceEndService(EndSessionView):
+class AuthServiceEndService(LoginRequiredMixin, EndSessionView):
     def get(self, request, *args, **kwargs):
         id_token_hint = request.GET.get('id_token_hint', '')
         post_logout_redirect_uri = request.GET.get('post_logout_redirect_uri', '')
