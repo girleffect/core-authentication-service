@@ -38,6 +38,18 @@
                     {{ form.terms.help_text|safe }}
                 </div>
             </div>
+            <div class="Form-item Field ModelChoiceField">
+              <label class="Field-label required">Select</label>
+              <div class="Field-item">
+                <select name="userdata-gender" label="Gender" help_text="We promise not to show this publicly" required="required" id="id_userdata-gender" class=" Select ">
+                  <option value="" selected="">Please tell use why you want your account deleted</option>
+                  <option value="female">Please tell use why you want your account deleted</option>
+                  <option value="male">Please tell use why you want your account deleted</option>
+                  <option value="other">Other</option>
+                  <option value="none">I don’t want to say</option>
+                </select>
+              </div>
+            </div>
         {% endif %}
 
         {# Submit button text should display next for all steps except the last #}
