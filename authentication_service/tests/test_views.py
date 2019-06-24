@@ -190,12 +190,21 @@ class TestLogout(LoginHelper, TestCase):
         )
 
     def test_logout(self):
-        data = {
-            "login_view-current_step": "auth",
-            "username": self.user.username,
-            "password": "Qwer!234"
-        }
-        self.do_login(data)
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.post(
+                reverse("registration"),
+                {
+                    "registration_wizard-current_step": "userdata",
+                    "userdata-username": "Username0",
+                    "userdata-password1": "password",
+                    "userdata-password2": "password",
+                    "userdata-gender": "female",
+                    "userdata-age": "16",
+                    "userdata-terms": True,
+                    "userdata-email": "email1@email.com",
+                },
+                follow=True
+            )
         response = self.client.get(reverse("oidc_provider:end-session"))
         self.assertRedirects(response, reverse('login'))
 
