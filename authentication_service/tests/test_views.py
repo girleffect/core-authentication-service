@@ -33,6 +33,24 @@ from authentication_service.user_migration.models import (
 )
 
 
+class LoginHelper(object):
+    """
+    Test urls can be handled a bit better, however this was the fastest way
+    to refactor the existing tests.
+    """
+
+    # Wizard helper methods
+    def do_login(self, data):
+        return self.client.post(
+            f"{reverse('login')}?next=/openid/authorize/"
+            f"%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id"
+            f"%3Dmigration_client_id%26redirect_uri%3Dhttp%3A%2F%2F"
+            f"example.com%2F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
+            data=data,
+            follow=True
+        )
+
+
 class TestLogin(TestCase):
 
     @classmethod
@@ -149,19 +167,53 @@ class TestLogin(TestCase):
         )
 
 
-class TestMigration(TestCase):
+class TestLogout(LoginHelper, TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestLogout, cls).setUpTestData()
+        cls.user = get_user_model().objects.create_superuser(
+            username="testuser",
+            email="wrong@email.com",
+            password="Qwer!234",
+            birth_date=datetime.date(2001, 12, 12)
+        )
+        cls.user.is_active = True
+        cls.user.save()
+        cls.client = Client.objects.create(
+            client_id="migration_client_id",
+            name="MigrationCLient",
+            client_secret="super_client_secret_1",
+            response_type="code",
+            jwt_alg="HS256",
+            redirect_uris=["http://example.com/"]
+        )
+
+    def test_logout(self):
+        with self.assertTemplateUsed("authentication_service/message.html"):
+            response = self.client.post(
+                reverse("registration"),
+                {
+                    "registration_wizard-current_step": "userdata",
+                    "userdata-username": "Username0",
+                    "userdata-password1": "password",
+                    "userdata-password2": "password",
+                    "userdata-gender": "female",
+                    "userdata-age": "16",
+                    "userdata-terms": True,
+                    "userdata-email": "email1@email.com",
+                },
+                follow=True
+            )
+        response = self.client.get(reverse("oidc_provider:end-session"))
+        self.assertRedirects(response, reverse('login'))
+
+
+class TestMigration(LoginHelper, TestCase):
     """
     Test urls can be handled a bit better, however this was the fastest way
     to refactor the existing tests.
     """
-
-    # Wizard helper methods
-    def do_login(self, data):
-        return self.client.post(
-            f"{reverse('login')}?next=/openid/authorize/%3Fresponse_type%3Dcode%26scope%3Dopenid%26client_id%3Dmigration_client_id%26redirect_uri%3Dhttp%3A%2F%2Fexample.com%2F%26state%3D3G3Rhw9O5n0okXjZ6mEd2paFgHPxOvoO",
-            data=data,
-            follow=True
-        )
 
     @classmethod
     def setUpTestData(cls):
