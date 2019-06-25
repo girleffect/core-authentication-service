@@ -123,3 +123,4 @@ prism
 # Ignore directories created for tests, except the `prs` directory.
 authentication_service/tests/locale/*
 ! authentication_service/tests/locale/prs/*
+dev/*
