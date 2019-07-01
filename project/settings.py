@@ -8,6 +8,7 @@ import django.conf.locale
 
 
 from project.settings_base import *
+from authentication_service.constants import LOGIN_VALIDATION_ERRORS
 import access_control
 import user_data_store
 
@@ -213,7 +214,9 @@ MIDDLEWARE = [
 #)
 
 # django-layers-hr
-LAYERS = {"tree": ["base", ["springster"], ["ninyampinga"], ["zathu"]]}
+LAYERS = {
+    "tree": ["base", ["springster"], ["ninyampinga"], ["chhaa-jaa"], ["zathu"]]
+}
 
 # https://docs.djangoproject.com/en/1.11/ref/settings/#password-reset-timeout-days
 PASSWORD_RESET_TIMEOUT_DAYS = 3
@@ -257,11 +260,8 @@ LOGIN_URL = reverse_lazy("login")
 # To avoid the login loop, we rather redirect to a page that shows
 # the message oops.
 LOGIN_REDIRECT_URL = "redirect_issue"
-INACTIVE_ACCOUNT_LOGIN_MESSAGE = \
-    _("Your account has been deactivated. Please contact support.")
-INCORRECT_CREDENTIALS_MESSAGE = \
-    _("Please enter a correct %(username)s and password. Note that both "
-      "fields may be case-sensitive.")
+INACTIVE_ACCOUNT_LOGIN_MESSAGE = LOGIN_VALIDATION_ERRORS['inactive']
+INCORRECT_CREDENTIALS_MESSAGE = LOGIN_VALIDATION_ERRORS['invalid_login']
 
 OIDC_USERINFO = "authentication_service.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = \
@@ -424,6 +424,9 @@ if DEBUG:
 
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+    # remove static root from sys root on debug mode
+    MEDIA_ROOT = env.str("MEDIA_ROOT", "media")
+    STATIC_ROOT = env.str("STATIC_ROOT", "static")
 
 # STORAGE
 # Unless env.USE_DEFAULT_STORAGE is set to false, this service will make use of

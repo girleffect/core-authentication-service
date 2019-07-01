@@ -2,9 +2,35 @@
 
 {% load i18n static %}
 
-{% block extrastyle-basic %}{% endblock %}
+{% comment %}
+  <!-- OIDC COMPONENT STYLE IS NOT DE-COUPLED AND THEREFOR OVERRIDEN BY CSS/OIDC CSS | SOLVE TO RELOAD STLES FOR THEME TEMPLATES-->
+{% endcomment %}
+{% block extrastyle-basic %}
+  {% if ge_global_theme == "chhaa-jaa" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.feature.css" %}" />
+  {% elif ge_global_theme == "ninyampinga" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.feature.css" %}" />
+  {% elif ge_global_theme == "springster" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.feature.css" %}" />
+  {% elif ge_global_theme == "zathu" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.feature.css" %}" />
+  {% endif %}
+{% endblock %}
 
-{% block extrastyle-enhanced %}<link rel="stylesheet" type="text/css" href="{% static "oidc_provider/css/oidc.css" %}" />{% endblock %}
+{% block extrastyle-enhanced %}
+  {% if ge_global_theme == "chhaa-jaa" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.enhanced.css" %}" />
+  {% elif ge_global_theme == "ninyampinga" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.enhanced.css" %}" />
+  {% elif ge_global_theme == "springster" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.enhanced.css" %}" />{
+  {% elif ge_global_theme == "zathu" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.enhanced.css" %}" />
+  {% else %}
+    <link rel="stylesheet" type="text/css" href="{% static "oidc_provider/css/oidc.css" %}" />
+  {% endif %}
+{% endblock %}
+
 
 {% block branding %}
     {% with client_name=client.name %}
@@ -22,7 +48,16 @@
 
 {% block content %}
     <p class="Intro">
-        {% blocktrans with client_name=client.name %}You recently logged in to {{ client_name }}. They would like to access this information of you:{% endblocktrans %}
+        <p>
+            {% blocktrans %}
+                To make sure the site is as awesome as possible we need access to your profile information.
+                This includes the information that you gave us when you registered.
+
+                In order to register you as a member of the community we need to access this information. We will use this information in accordance with our Terms and Conditions.
+
+                Are you happy to provide access to your profile information?
+            {% endblocktrans %}
+        </p>
     </p>
     <form method="post" action="{% url 'oidc_provider:authorize' %}" class="Form">
         {% csrf_token %}
@@ -33,8 +68,8 @@
             {% endfor %}
         </ul>
         <div class="Form-buttons">
-            <input name="allow" type="submit" value="Authorize" class="Button" />
-            <input type="submit" value="Decline" class="Button Button--warning" />
+            <input name="allow" type="submit" value="{% trans 'Authorize' %}" class="Button" />
+            <input type="submit" value="{% trans 'Decline' %}" class="Button Button--warning" />
         </div>
     </form>
 {% endblock %}

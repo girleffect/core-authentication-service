@@ -1,5 +1,4 @@
 from dateutil.relativedelta import relativedelta
-import copy
 import datetime
 
 from unittest import mock
@@ -9,11 +8,11 @@ from django.forms import model_to_dict
 from django.test import TestCase, override_settings
 
 from authentication_service.forms import (
-    RegistrationForm, SecurityQuestionForm, SecurityQuestionFormSet,
+    RegistrationForm, SecurityQuestionFormSet,
     EditProfileForm, SetPasswordForm, PasswordChangeForm
 )
-from authentication_service.models import SecurityQuestion, Organisation
 from authentication_service import constants
+from authentication_service.models import SecurityQuestion, Organisation
 from authentication_service.user_migration.forms import (
     UserDataForm
 )
@@ -24,6 +23,7 @@ from authentication_service.user_migration.forms import (
     "global_fields": ["email", "msisdn", "birth_date"]}
 )
 class TestRegistrationForm(TestCase):
+    maxDiff = None
 
     def test_default_state(self):
         form = RegistrationForm(data={})
@@ -61,7 +61,7 @@ class TestRegistrationForm(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "password2": ["The two password fields didn't match."],
+            "password2": ["The two password fields don't match. Please try again."],
         })
 
         # Test min length
@@ -218,7 +218,7 @@ class TestRegistrationForm(TestCase):
             security="high")
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "password2": ["The two password fields didn't match."],
+            "password2": ["The two password fields don't match. Please try again."],
         })
 
         # Test min length, unique validation and contains more than numeric
@@ -455,8 +455,33 @@ class TestRegistrationForm(TestCase):
             })
             self.assertTrue(form.is_valid())
 
+    def test_unique_username(self):
+        user = get_user_model().objects.create_user(
+            username="testuser",
+            birth_date=datetime.date(2000, 1, 1),
+            email="wrong@email.com",
+            gender="female",
+            email_verified=True
+        )
+        form = RegistrationForm(data={
+            "username": user.username,
+            "email": "email@email.com",
+            "age": constants.CONSENT_AGE,
+            "terms": True,
+            "password1": "asdasdasdA@1",
+            "password2": "asdasdasdA@1"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            "username": [
+                "Oh no! Looks like somebody else already took your username. "
+                "Please try something else, you get to choose an even cooler one this time!"
+            ],
+        })
+
 
 class TestRegistrationFormHTML(TestCase):
+    maxDiff = None
 
     def test_default_state(self):
         form = RegistrationForm(data={})
@@ -481,6 +506,7 @@ class TestRegistrationFormHTML(TestCase):
 
 
 class TestRegistrationFormWithHideSetting(TestCase):
+    maxDiff = None
 
     def test_default_state(self):
         form = RegistrationForm(data={})
@@ -495,6 +521,16 @@ class TestRegistrationFormWithHideSetting(TestCase):
         })
 
     def test_default_settings(self):
+        form = RegistrationForm(data={
+            "username": "Username",
+            "password1": "password",
+            "password2": "password",
+            "gender": "none",
+            "age": "16",
+            "terms": True,
+        })
+        self.assertTrue(form.is_valid())
+
         form = RegistrationForm(data={
             "username": "Username",
             "password1": "password",
@@ -545,6 +581,7 @@ class TestRegistrationFormWithHideSetting(TestCase):
 
 
 class TestSecurityQuestionFormSet(TestCase):
+    maxDiff = None
 
     @classmethod
     def setUpTestData(cls):
@@ -590,9 +627,10 @@ class TestSecurityQuestionFormSet(TestCase):
         }
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
-        self.assertEqual(formset.non_form_errors(),
-                         ["Please fill in all Security Question fields."]
-                         )
+        self.assertEqual(
+            formset.non_form_errors(),
+            ["Please fill in all Security Question fields."]
+        )
 
         # Ensure its valid if email is present
         data = {
@@ -658,12 +696,12 @@ class TestSecurityQuestionFormSet(TestCase):
         }
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
-        self.assertEqual(formset.errors,
-                         [
-                             {"answer": ["This field is required."]},
-                             {"answer": ["This field is required."]}
-                         ]
-                         )
+        self.assertEqual(
+            formset.errors, [
+                {"answer": ["Don’t forget to answer your question!"]},
+                {"answer": ["Don’t forget to answer your question!"]}
+            ]
+        )
 
         # Test same questions can't be selected more than once.
         data = {
@@ -679,9 +717,10 @@ class TestSecurityQuestionFormSet(TestCase):
         }
         formset = SecurityQuestionFormSet(data=data, language="en")
         self.assertFalse(formset.is_valid())
-        self.assertEqual(formset.non_form_errors(),
-                         ["Each question can only be picked once."]
-                         )
+        self.assertEqual(
+            formset.non_form_errors(),
+            ["Oops! You’ve already chosen this question. Please choose a different one."]
+        )
 
         # Test valid with email.
         data = {
@@ -715,6 +754,7 @@ class TestSecurityQuestionFormSet(TestCase):
 
 
 class EditProfileFormTestCase(TestCase):
+    maxDiff = None
 
     @classmethod
     def setUpTestData(cls):
@@ -848,6 +888,7 @@ class EditProfileFormTestCase(TestCase):
 
 
 class TestPasswordResetForm(TestCase):
+    maxDiff = None
 
     @classmethod
     def setUpTestData(cls):
@@ -904,7 +945,7 @@ class TestPasswordResetForm(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "new_password2": ["The two password fields didn't match."],
+            "new_password2": ["The two password fields don't match. Please try again."],
         })
 
         # Test min length
@@ -915,7 +956,8 @@ class TestPasswordResetForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "new_password2": [
-                "Password not long enough."
+                "Eeek - that password is too short! "
+                "Please create a password that has at least 8 characters and is a combination of letters and numbers."
             ]
         })
 
@@ -936,7 +978,7 @@ class TestPasswordResetForm(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "new_password2": ["The two password fields didn't match."],
+            "new_password2": ["The two password fields don't match. Please try again."],
         })
 
         # Test min length, unique validation and contains more than numeric
@@ -990,6 +1032,7 @@ class TestPasswordResetForm(TestCase):
 
 
 class TestPasswordChangeForm(TestCase):
+    maxDiff = None
 
     @classmethod
     def setUpTestData(cls):
@@ -1018,8 +1061,8 @@ class TestPasswordChangeForm(TestCase):
     def test_none_org_html_state(self):
         form = PasswordChangeForm(self.user)
         html = form.as_div()
-        self.assertNotIn(
-            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+        self.assertIn(
+            "Enter your new password",
             html
         )
 
@@ -1027,7 +1070,7 @@ class TestPasswordChangeForm(TestCase):
         form = PasswordChangeForm(self.org_user)
         html = form.as_div()
         self.assertIn(
-            "The password must contain at least one uppercase letter, one lowercase one, a digit and special character",
+            "Enter your new password",
             html
         )
 
@@ -1050,7 +1093,7 @@ class TestPasswordChangeForm(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "new_password2": ["The two password fields didn't match."],
+            "new_password2": ["The two password fields don't match. Please try again."],
         })
 
         # Test min length
@@ -1062,7 +1105,8 @@ class TestPasswordChangeForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
             "new_password2": [
-                "Password not long enough."
+                "Eeek - that password is too short! "
+                "Please create a password that has at least 8 characters and is a combination of letters and numbers."
             ]
         })
 
@@ -1085,7 +1129,7 @@ class TestPasswordChangeForm(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            "new_password2": ["The two password fields didn't match."],
+            "new_password2": ["The two password fields don't match. Please try again."],
         })
 
         # Test min length, unique validation and contains more than numeric
@@ -1143,6 +1187,7 @@ class TestPasswordChangeForm(TestCase):
 
 
 class TestRequiredDecorator(TestCase):
+    maxDiff = None
 
     def test_registration(self):
         form = RegistrationForm()
@@ -1168,10 +1213,7 @@ class TestRequiredDecorator(TestCase):
         for name, field in form.fields.items():
             if field.required:
                 self.assertIn("*", field.label)
-                self.assertIn(
-                    field.label,
-                    html
-                )
+                self.assertIn(field.label, html)
 
     def test_user_migration(self):
         form = UserDataForm()
@@ -1179,7 +1221,4 @@ class TestRequiredDecorator(TestCase):
         for name, field in form.fields.items():
             if field.required:
                 self.assertIn("*", field.label)
-                self.assertIn(
-                    field.label,
-                    html
-                )
+                self.assertIn(field.label, html)

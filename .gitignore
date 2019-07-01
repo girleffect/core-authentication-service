@@ -1,6 +1,10 @@
 # Virtualenv as created in Makefile
 ve/
 
+# Static and media files on Debug
+static/
+media/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -119,3 +123,4 @@ prism
 # Ignore directories created for tests, except the `prs` directory.
 authentication_service/tests/locale/*
 ! authentication_service/tests/locale/prs/*
+dev/*

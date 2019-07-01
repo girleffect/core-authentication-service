@@ -41,7 +41,9 @@ urlpatterns = [
     url(
         r"^api/v1/", include("authentication_service.api.urls"), name="api"
     ),
+    url(r'^openid/end-session/?$', views.AuthServiceEndService.as_view()),
     url(r"^openid/", include("oidc_provider.urls", namespace="oidc_provider")),
+
 ]
 
 urlpatterns += i18n_patterns(
@@ -167,6 +169,8 @@ urlpatterns += i18n_patterns(
 
 if settings.DEBUG:
     import debug_toolbar
+    from django.conf.urls.static import static
     urlpatterns = [
         url(r'^__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+    ] + urlpatterns + static(
+        settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,6 +1,16 @@
 Changelog
 =========
 
+1.4.7
+-----
+- Update themes
+- Add constant form labels
+- Override default OIDC de-authantication views
+
+1.4.6
+-----
+- Update themes
+
 1.4.5
 -----
 - Change image base to the Prometheus one
