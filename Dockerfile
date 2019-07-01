@@ -20,7 +20,7 @@ COPY . /app/
 
 RUN pip install -e .
 
-RUN BUILDER="true" python manage.py compilemessages
+RUN python manage.py compilemessages
 
 EXPOSE 8000
 
