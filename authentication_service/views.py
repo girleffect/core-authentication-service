@@ -74,7 +74,7 @@ USER_MODEL = get_user_model()
 
 class AnonUserRequiredMixin(UserPassesTestMixin):
 
-    def get_test_func(self):
+    def test_func(self):
         return not self.request.user.is_authenticated
 
 
