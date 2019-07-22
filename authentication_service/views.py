@@ -74,10 +74,8 @@ USER_MODEL = get_user_model()
 
 class AnonUserRequiredMixin(UserPassesTestMixin):
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return self.handle_no_permission()
-        return super(AnonUserRequiredMixin, self).dispatch(request, *args, **kwargs)
+    def get_test_func(self):
+        return not self.request.user.is_authenticated
 
 
 class LanguageMixin:
