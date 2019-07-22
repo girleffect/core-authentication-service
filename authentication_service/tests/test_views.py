@@ -73,6 +73,17 @@ class TestLogin(TestCase):
             redirect_uris= ["http://example.com/"]
         )
 
+    def test_logged_in_user(self):
+        url = reverse('login')
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        # force login a user, now he should not see registration page
+        self.client.force_login(self.user)
+
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 302)
+
     def test_inactive_user_login(self):
         data = {
             "login_view-current_step": "auth",
@@ -710,6 +721,17 @@ class TestRegistrationView(TestCase):
             created_at=timezone.now(),
             updated_at=timezone.now()
         )
+
+    def test_logged_in_user(self):
+        url = reverse('registration')
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        # force login a user, now he should not see registration page
+        self.client.force_login(self.admin_user)
+
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 302)
 
     def test_invite_tampered_signature(self):
         invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
@@ -1681,6 +1703,17 @@ class ResetPasswordTestCase(TestCase):
             user=cls.user_no_email, question=cls.question_two,
             language_code="en", answer="two"
         )
+
+    def test_logged_in_user(self):
+        url = reverse('registration')
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        # force login a user, now he should not see registration page
+        self.client.force_login(self.user)
+
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 302)
 
     def test_username_as_identifier(self):
         response = self.client.post(
