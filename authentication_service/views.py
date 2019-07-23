@@ -27,7 +27,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.signals import user_logged_out
 from django.contrib.auth import login, authenticate, hashers
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (
     PasswordChangeView,
     PasswordResetConfirmView,
@@ -72,10 +72,12 @@ CLIENT_URI_SESSION_KEY = constants.SessionKeys.CLIENT_URI
 USER_MODEL = get_user_model()
 
 
-class AnonUserRequiredMixin(UserPassesTestMixin):
+class AnonUserRequiredMixin(object):
 
-    def test_func(self):
-        return not self.request.user.is_authenticated
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('edit_profile')
+        return super(AnonUserRequiredMixin, self).dispatch(request, *args, **kwargs)
 
 
 class LanguageMixin:
