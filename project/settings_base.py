@@ -48,6 +48,7 @@ MIDDLEWARE = [
     # Non-Django common middleware
     'authentication_service.middleware.ThemeManagementMiddleware',
     'authentication_service.middleware.SiteInactiveMiddleware',
+    'authentication_service.middleware.GELocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'authentication_service.urls'

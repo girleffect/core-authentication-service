@@ -2065,7 +2065,7 @@ class TestMigrationPasswordReset(TestCase):
 
         # Change language
         response = self.client.get(
-            f"{reverse('reset_password')}?language=prs",
+            f"/prs{reverse('reset_password')}",
             follow=True
         )
         response = self.client.post(

@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
 from django.utils.translation import activate
+from django.utils.translation import LANGUAGE_SESSION_KEY
 
 from oidc_provider.models import Client
 
@@ -507,23 +508,11 @@ class TestLanguageUpdateMiddleware(TestCase):
         )
         cls.client_obj.save()
 
-    def test_language_update(self):
-        response = self.client.get(
-            reverse(
-                "login"
-            ) + "?language=prs&theme=zathu&required=username",
-            follow=True
-        )
-        self.assertRedirects(
-            response, "/prs/login/?theme=zathu&required=username"
-        )
-        self.assertContains(response, "THIS IS JUST FOR UNITTESTS ATM")
-
     def test_missing_language_update(self):
         response = self.client.get(
-            reverse(
+            'rts' + reverse(
                 "login"
-            ) + "?language=rts&theme=zathu&required=username",
+            ) + "?theme=zathu&required=username",
             follow=True
         )
         self.assertEquals(
@@ -536,7 +525,7 @@ class TestLanguageUpdateMiddleware(TestCase):
             reverse(
                 "oidc_provider:authorize"
             ) + "?response_type=code&scope=openid&client_id=client_id_language&"
-                "redirect_uri=http%3A%2F%2Fexample_one.com%2F&language=prs",
+                "redirect_uri=http%3A%2F%2Fexample_one.com%2F",
             follow=True
         )
         response = self.client.get(
@@ -545,22 +534,30 @@ class TestLanguageUpdateMiddleware(TestCase):
         )
         self.assertEquals(
             response.request["PATH_INFO"],
-            "/prs/login/"
+            "/en/login/"
         )
         self.assertEquals(
             response.request["QUERY_STRING"],
-            "next=%2Fopenid%2Fauthorize%3Fresponse_type%3Dcode%26scope%3Dopenid%26"
+            "next=/openid/authorize%3Fresponse_type%3Dcode%26scope%3Dopenid%26"
             "client_id%3Dclient_id_language%26redirect_uri%3Dhttp%253A%252F%252Fexample_one.com%252F"
         )
-        response = self.client.get(
-            "/login/?language=prs",
-            follow=True
+
+    @override_settings(ACCESS_CONTROL_API=MagicMock())
+    def test_session_language_session_key(self):
+        self.client.get("/login/")
+        self.assertEquals(
+            self.client.session[LANGUAGE_SESSION_KEY],
+            "en"
         )
 
-        """
-        redirect_chain = [('/en/login/?language=prs', 302), ('/prs/login/', 302)]
-        """
-        self.assertRedirects(
-            response,
-            "/prs/login/"
+        self.client.get("/prs/login/")
+        self.assertEquals(
+            self.client.session[LANGUAGE_SESSION_KEY],
+            "prs"
+        )
+
+        self.client.get("/openid/end-session/")
+        self.assertEquals(
+            self.client.session[LANGUAGE_SESSION_KEY],
+            "prs"
         )
