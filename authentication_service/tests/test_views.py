@@ -73,6 +73,17 @@ class TestLogin(TestCase):
             redirect_uris= ["http://example.com/"]
         )
 
+    def test_logged_in_user(self):
+        url = reverse('login')
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        # force login a user, now he should not see registration page
+        self.client.force_login(self.user)
+
+        res = self.client.get(url)
+        self.assertRedirects(res, reverse('edit_profile'))
+
     def test_inactive_user_login(self):
         data = {
             "login_view-current_step": "auth",
@@ -86,6 +97,9 @@ class TestLogin(TestCase):
         )
         self.assertContains(response, "Your account has been deactivated. Please contact support.")
 
+    # patch bellow django defender util to always return true
+    # func take 3 args (request, login_unsuccessful, get_username)
+    @patch("defender.utils.check_request", new=lambda a, b, c: True)
     def test_invalid_user_login(self):
         user = get_user_model().objects.create_user(
             username="testusername",
@@ -125,7 +139,7 @@ class TestLogin(TestCase):
 
         data = {
             "login_view-current_step": "auth",
-            "auth-username": "inactiveuser1",
+            "auth-username": self.user.username,
             "auth-password": "Qwer!234"
         }
         response = self.client.post(
@@ -133,7 +147,8 @@ class TestLogin(TestCase):
             data=data,
             follow=True
         )
-        self.assertRedirects(response, "{}?next=%2Fen%2Fadmin%2F".format(reverse("login")))
+        # user should be authenticated
+        self.assertRedirects(response, "{}".format(reverse("edit_profile")))
 
     def test_migrated_user_login(self):
         temp_user = TemporaryMigrationUserStore.objects.create(
@@ -710,6 +725,18 @@ class TestRegistrationView(TestCase):
             created_at=timezone.now(),
             updated_at=timezone.now()
         )
+
+    def test_logged_in_user(self):
+        url = reverse('registration')
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 302)
+        self.assertIn(url, res.url)
+
+        # force login a user, now he should not see registration page
+        self.client.force_login(self.admin_user)
+
+        res = self.client.get(url)
+        self.assertRedirects(res, reverse('edit_profile'))
 
     def test_invite_tampered_signature(self):
         invite_id = "8d81e01c-8a75-11e8-845e-0242ac120009"
@@ -1681,6 +1708,17 @@ class ResetPasswordTestCase(TestCase):
             user=cls.user_no_email, question=cls.question_two,
             language_code="en", answer="two"
         )
+
+    def test_logged_in_user(self):
+        url = reverse('reset_password')
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        # force login a user, now he should not see registration page
+        self.client.force_login(self.user)
+
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 302)
 
     def test_username_as_identifier(self):
         response = self.client.post(
