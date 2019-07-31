@@ -15,8 +15,8 @@ from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.utils import translation
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.translation import ugettext as _
 from django.utils.translation.trans_real import language_code_prefix_re
+from django.utils.translation import ugettext as _, LANGUAGE_SESSION_KEY
 from django.views.i18n import LANGUAGE_QUERY_PARAMETER
 from prometheus_client import Histogram
 
@@ -273,89 +273,13 @@ class ErrorMiddleware(MiddlewareMixin):
 
 
 class GELocaleMiddleware(LocaleMiddleware):
-    """
-    Subclasses Django LocaleMiddleware
-
-    Overrides the default logic to ALWAYS attempt to switch to the language
-    provided via querystring.
-
-    Most of this code was inspired by
-    django.middleware.locales.LocaleMiddleware itself.
-    """
 
     def process_request(self, request):
         super(GELocaleMiddleware, self).process_request(request)
-
-        # Get the language code to use, can be a query
-        language = {
-            "code": request.GET.get(LANGUAGE_QUERY_PARAMETER, None),
-            "type": "default"
-        }
-
-        # Need to cater for views with auth decorators that redirect to login
-        next_query = request.GET.get("next")
-        next_args = {}
-
-        # Only attempt to get the language if there is a next query present
-        if next_query:
-
-            # Split on ?, seemingly the only way to get the full next url, in
-            # the event the next is off domain .path will not suffice.
-            parsed_query = urlparse(next_query)
-            next_args = {
-                "url": parsed_query.geturl().split("?", maxsplit=1)[0],
-                "qs": parse_qs(parsed_query.query)
-            }
-
-            # Query values are in list form. Only grab the first value from the
-            # list.
-            language = {
-                "code": next_args["qs"].get("language", [None])[0],
-                "type": "next_query"
-            }
-
-        # If the language can not be obtained from the path, there is no use in
-        # appending the language and redirecting to it.
-        language_from_path = translation.get_language_from_path(
-            request.path_info
-        )
-
-        # Only if language code was provided, it is not the currently active
-        # language, the url we are currently on does not already contain a
-        # language code and the url does not contain the querystring language.
-        if (language["code"] and
-            language["code"] != translation.get_language() and
-            language["code"] != language_from_path and
-            language_from_path):
-
-            # Make use of the locales regex that is traditionally used to
-            # attempt to get the language from the url
-            regex_match = language_code_prefix_re.match(request.get_full_path())
-
-            # Ensure a language code is present, should not get here if not.
-            # However check again for safety.
-            if regex_match.group(1):
-
-                # Replace the current language code in the full path with the
-                # querystring one and redirect to it.
-                path = request.path_info.replace(
-                    regex_match.group(1),
-                    language["code"],
-                    1
-                )
-
-                # Remove the language parameter, can cause a infinite redirect
-                # loop if the language is not found. Due to the base local
-                # middleware also attempting redirects back to the default
-                # language on 404s.
-                get_query = request.GET.copy()
-                if language["type"] == "default":
-                    del get_query["language"]
-                elif language["type"] == "next_query" and next_args:
-                    next_args["qs"].pop("language")
-                    get_query["next"] = next_args["url"] + f"?{urlencode(next_args['qs'], doseq=True)}"
-                new_params = f"?{urlencode(get_query, doseq=True)}" if get_query else ""
-                return self.response_redirect_class(f"{path}{new_params}")
+        if request.LANGUAGE_CODE:
+            session_lang = request.session.get(LANGUAGE_SESSION_KEY)
+            if not session_lang == request.LANGUAGE_CODE:
+                request.session[LANGUAGE_SESSION_KEY] = request.LANGUAGE_CODE
 
 
 H = Histogram(f"authentication_service_http_duration_seconds", "API duration (s)",
