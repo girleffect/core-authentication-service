@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.4.9
+-----
+- Keep language preference in session
+- Redirect to Profile page when accessing anonymous user required views
+
+1.4.8
+-----
+- Update themes
+
 1.4.7
 -----
 - Update themes
