@@ -72,6 +72,14 @@ CLIENT_URI_SESSION_KEY = constants.SessionKeys.CLIENT_URI
 USER_MODEL = get_user_model()
 
 
+class AnonUserRequiredMixin(object):
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('edit_profile')
+        return super(AnonUserRequiredMixin, self).dispatch(request, *args, **kwargs)
+
+
 class LanguageMixin:
     """This mixin sets an instance variable called self.language, value is
     passed in via url or determined by django language middleware
@@ -98,7 +106,7 @@ class LockoutView(TemplateView):
         return ct
 
 
-class LoginView(core.LoginView):
+class LoginView(AnonUserRequiredMixin, core.LoginView):
     """This view simply extends the LoginView from two_factor.views.core. We
     only override the template and the done step, which we use to login
     superusers.
@@ -262,7 +270,7 @@ def show_security_questions(wizard):
     return cleaned_data["email"] is None
 
 
-class RegistrationWizard(LanguageMixin, NamedUrlSessionWizardView):
+class RegistrationWizard(AnonUserRequiredMixin, LanguageMixin, NamedUrlSessionWizardView):
     form_list = registration_forms
     condition_dict = {"securityquestions": show_security_questions}
     template_name = "authentication_service/registration.html"
@@ -682,7 +690,7 @@ class DeleteAccountView(FormView):
             return super(DeleteAccountView, self).form_valid(form)
 
 
-class ResetPasswordView(PasswordResetView):
+class ResetPasswordView(AnonUserRequiredMixin, PasswordResetView):
     """This view allows the user to enter either their username or their email
     address in order for us to identify them. After we have identified the user
     we check what method to user to help them reset their password. If the user
@@ -822,7 +830,7 @@ ResetPasswordSecurityQuestionsView.dispatch = watch_login_method(
     ResetPasswordSecurityQuestionsView.dispatch)
 
 
-class PasswordResetConfirmView(PasswordResetConfirmView):
+class PasswordResetConfirmView(AnonUserRequiredMixin, PasswordResetConfirmView):
     form_class = forms.SetPasswordForm
 
     def form_valid(self, form):
