@@ -8,35 +8,20 @@
 {% block extrastyle-basic %}
   {% if ge_global_theme == "chhaa-jaa" %}
     <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.feature.css" %}" />
-  {% elif ge_global_theme == "ninyampinga" %}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.feature.css" %}" />
-  {% elif ge_global_theme == "springster" %}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.feature.css" %}" />
-  {% elif ge_global_theme == "zathu" %}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.feature.css" %}" />
-  {% endif %}
-{% endblock %}
-
-{% block extrastyle-enhanced %}
-  {% if ge_global_theme == "chhaa-jaa" %}
     <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.enhanced.css" %}" />
   {% elif ge_global_theme == "ninyampinga" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.feature.css" %}" />
     <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.enhanced.css" %}" />
   {% elif ge_global_theme == "springster" %}
     <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.enhanced.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.feature.css" %}" />
   {% elif ge_global_theme == "zathu" %}
+    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.feature.css" %}" />
     <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.enhanced.css" %}" />
-  {% else %}
-    <link rel="stylesheet" type="text/css" href="{% static "oidc_provider/css/oidc.css" %}" />
   {% endif %}
 {% endblock %}
 
-
-{% block branding %}
-    {% with client_name=client.name %}
-        {{ client_name }}
-    {% endwith %}
-{% endblock %}
+{% block extrastyle-enhanced %}{% endblock %}
 
 {% block metatitle %}
     {% trans "Request for Permission" %}
