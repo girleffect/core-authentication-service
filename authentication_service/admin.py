@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm
 
+from oidc_provider.models import UserConsent
+
 from authentication_service import models
 
 
@@ -48,9 +50,16 @@ class UserSiteAdmin(admin.ModelAdmin):
     list_display = fields
 
 
+class UserConsentAdmin(admin.ModelAdmin):
+    list_display = ['user', 'client', 'date_given', 'expires_at']
+    search_fields = ['user__username', 'user__email', 'client__name']
+    list_filter = ['client__name', 'client__client_type', 'date_given', 'expires_at']
+
+
 admin.site.register(models.Country, admin.ModelAdmin)
 admin.site.register(models.UserSecurityQuestion, admin.ModelAdmin)
 admin.site.register(models.SecurityQuestion, SecurityQuestionForm)
 admin.site.register(models.QuestionLanguageText, admin.ModelAdmin)
 admin.site.register(models.Organisation, admin.ModelAdmin)
 admin.site.register(models.UserSite, UserSiteAdmin)
+admin.site.register(UserConsent, UserConsentAdmin)
