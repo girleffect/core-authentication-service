@@ -1,36 +1,34 @@
 {% extends "base.html" %}
-
 {% load i18n static %}
 
-{% comment %}
-  <!-- OIDC COMPONENT STYLE IS NOT DE-COUPLED AND THEREFOR OVERRIDEN BY CSS/OIDC CSS | SOLVE TO RELOAD STLES FOR THEME TEMPLATES-->
-{% endcomment %}
-{% block extrastyle-basic %}
-  {% if ge_global_theme == "chhaa-jaa" %}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.feature.css" %}" />
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.enhanced.css" %}" />
-  {% elif ge_global_theme == "ninyampinga" %}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.feature.css" %}" />
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.enhanced.css" %}" />
-  {% elif ge_global_theme == "springster" %}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.enhanced.css" %}" />
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.feature.css" %}" />
-  {% elif ge_global_theme == "zathu" %}
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.feature.css" %}" />
-    <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.enhanced.css" %}" />
-  {% endif %}
+{% block head %}
+  {% block generic-styles %}
+    {% comment %}
+      <!--LOAD ALL THEME STYLES  -->
+    {% endcomment %}
+      {% if ge_global_theme == "chhaa-jaa" %}
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.feature.css" %}" />
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/chhaa-jaa/css/chhaa-jaa.enhanced.css" %}" />
+      {% elif ge_global_theme == "ninyampinga" %}
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.feature.css" %}" />
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/ninyampinga/css/ninyampinga.enhanced.css" %}" />
+      {% elif ge_global_theme == "springster" %}
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.enhanced.css" %}" />
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/springster/css/springster.feature.css" %}" />
+      {% elif ge_global_theme == "zathu" %}
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.feature.css" %}" />
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/themes/zathu/css/zathu.enhanced.css" %}" />
+      {% else %}
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/style.feature.css" %}" />
+        <link rel="stylesheet" type="text/css" href="{% static "authentication_service/css/style.enhanced.css" %}" />
+      {% endif %}
+  {% endblock %}
+
+  {% block extrastyle-enhanced %}{% endblock %}
+
+  {% block metatitle %}{% trans "Request for Permission" %}{% endblock %}
 {% endblock %}
-
-{% block extrastyle-enhanced %}{% endblock %}
-
-{% block metatitle %}
-    {% trans "Request for Permission" %}
-{% endblock %}
-
-{% block title %}
-    <h1>{% trans "Request for Permission" %}</h1>
-{% endblock %}
-
+{% block title %}<h1>{% trans "Request for Permission" %}</h1>{% endblock %}
 {% block content %}
     <p class="Intro">
         <p>
