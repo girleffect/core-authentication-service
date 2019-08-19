@@ -25,8 +25,9 @@
   {% endblock %}
 
   {% block extrastyle-enhanced %}{% endblock %}
-
-  {% block metatitle %}{% trans "Request for Permission" %}{% endblock %}
+  {% comment %}
+    {% block metatitle %}{% trans "Request for Permission" %}{% endblock %}
+  {% endcomment %}
 {% endblock %}
 {% block title %}<h1>{% trans "Request for Permission" %}</h1>{% endblock %}
 {% block content %}
