@@ -16,7 +16,7 @@ djangorestframework==3.7.3
 
 # 3rd party auth packages.
 django-oidc-provider>=0.6.0,<0.7
-django-two-factor-auth==1.7.0
+django-two-factor-auth==1.12
 
 # 3rd Pary form tools.
 django-form-renderers>=0.3.2,<1.0
