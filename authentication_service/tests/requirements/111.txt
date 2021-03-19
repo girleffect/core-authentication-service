@@ -12,7 +12,7 @@ django-partial-index>=0.4.0,<0.5
 
 # API requirements.
 djangorestframework-extras==0.2.1
-djangorestframework==3.7.3
+djangorestframework==3.11.2
 
 # 3rd party auth packages.
 django-oidc-provider>=0.6.0,<0.7
